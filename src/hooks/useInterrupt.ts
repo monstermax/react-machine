@@ -1,5 +1,5 @@
 
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 
 import { MEMORY_MAP } from "@/lib/memory_map";
 import type { u16, u8 } from "@/types/cpu.types";
@@ -12,55 +12,59 @@ export const useInterrupt = () => {
     const [handlerAddr, setHandlerAddr] = useState(MEMORY_MAP.OS_START as u16); // Default handler
 
 
-    // Pour les callbacks stables
+    // Refs synchronisées automatiquement
     const enabledRef = useRef(enabled);
     const pendingRef = useRef(pending);
     const maskRef = useRef(mask);
 
-
-    // Synchroniser les refs
-    const updateRefs = useCallback(() => {
+    useEffect(() => {
         enabledRef.current = enabled;
+    }, [enabled]);
+
+    useEffect(() => {
         pendingRef.current = pending;
+    }, [pending]);
+
+    useEffect(() => {
         maskRef.current = mask;
-    }, [enabled, pending, mask]);
+    }, [mask]);
 
 
     // Lecture depuis les ports IO
     const read = useCallback((address: u8): u8 => {
-        const port = address - MEMORY_MAP.INTERRUPT_BASE;
+        const port = address;
 
         switch (port) {
             case 0x00: // INTERRUPT_ENABLE
-                return enabled;
+                return enabledRef.current;
 
             case 0x01: // INTERRUPT_PENDING (read-only)
                 // Retourne seulement les IRQs qui sont:
                 // 1. En attente (pending)
                 // 2. Activées (enabled) 
                 // 3. Non masquées (mask)
-                return (pending & enabled & ~mask) as u8;
+                return (pendingRef.current & enabledRef.current & ~maskRef.current) as u8;
 
             case 0x02: // INTERRUPT_ACK est write-only, retourne 0
                 return (0) as u8;
 
             case 0x03: // INTERRUPT_MASK
-                return mask;
+                return maskRef.current;
 
-            case 0x04: // INTERRUPT_HANDLER
-                return (handlerAddr & 0xFF) as u8; // Low byte
-            case 0x05:
-                return ((handlerAddr >> 8) & 0xFF) as u8; // High byte
+            case 0x04: // INTERRUPT_HANDLER low byte
+                return (handlerAddr & 0xFF) as u8;
+            case 0x05: // INTERRUPT_HANDLER high byte
+                return ((handlerAddr >> 8) & 0xFF) as u8;
 
             default:
                 return (0) as u8;
         }
-    }, [enabled, pending, mask, handlerAddr]);
+    }, [handlerAddr]);
 
 
     // Écriture vers les ports IO
     const write = useCallback((address: u8, value: u8): void => {
-        const port = address - MEMORY_MAP.INTERRUPT_BASE;
+        const port = address;
 
         switch (port) {
             case 0x00: // INTERRUPT_ENABLE
@@ -85,27 +89,28 @@ export const useInterrupt = () => {
 
             // INTERRUPT_PENDING (0x01) est read-only
         }
-
-        updateRefs();
-    }, [updateRefs]);
+    }, []);
 
 
     // Demander une interruption (appelé par les périphériques)
     const requestInterrupt = useCallback((irq: u8): void => {
-        if (irq < 0 || irq > 7) return;
+        if (irq < 0 || irq > 7) {
+            console.warn(`Invalid IRQ number: ${irq}`);
+            return;
+        }
 
         setPending(prev => {
             const newPending = (prev | (1 << irq)) as u8;
+            console.log(`🔔 IRQ ${irq} requested - Pending: 0b${newPending.toString(2).padStart(8, '0')}`);
             return newPending;
         });
-
-        updateRefs();
-    }, [updateRefs]);
+    }, []);
 
 
     // Vérifier si une interruption est prête
     const hasPendingInterrupt = useCallback((): boolean => {
-        return (pendingRef.current & enabledRef.current & ~maskRef.current) !== 0;
+        const active = pendingRef.current & enabledRef.current & ~maskRef.current;
+        return active !== 0;
     }, []);
 
 
@@ -126,9 +131,12 @@ export const useInterrupt = () => {
 
     // Fonction pour le CPU pour acquitter
     const acknowledgeInterrupt = useCallback((irq: u8): void => {
-        setPending(prev => (prev & ~(1 << irq)) as u8);
-        updateRefs();
-    }, [updateRefs]);
+        setPending(prev => {
+            const newPending = (prev & ~(1 << irq)) as u8;
+            console.log(`✅ IRQ ${irq} acknowledged - Pending: 0b${newPending.toString(2).padStart(8, '0')}`);
+            return newPending;
+        });
+    }, []);
 
 
     // Reset
@@ -137,8 +145,7 @@ export const useInterrupt = () => {
         setPending(0 as u8);
         setMask(0 as u8);
         setHandlerAddr(MEMORY_MAP.OS_START as u16);
-        updateRefs();
-    }, [updateRefs]);
+    }, []);
 
 
     const hook: InterruptHook = {
@@ -178,6 +185,4 @@ export type InterruptHook = {
     mask: u8;
     handlerAddr: u16;
 };
-
-
 

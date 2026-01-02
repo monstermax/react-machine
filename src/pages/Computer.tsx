@@ -9,6 +9,8 @@ import { PanelRegisters } from "@/components/computer/PanelRegisters";
 import { PanelInterrupt } from "@/components/computer/PanelInterrupt";
 import { SevenSegmentDisplay } from "@/components/io/SevenSegmentDisplay";
 import { LEDsDisplay } from "@/components/io/LEDsDisplay";
+import { KeyboardDisplay } from "@/components/io/Keyboarddisplay";
+import { ConsoleDisplay } from "@/components/io/Consoledisplay";
 
 
 export const ComputerPage: React.FC = () => {
@@ -38,7 +40,9 @@ export const ComputerPage: React.FC = () => {
 
 
                 {/* IOs Devices */}
-                <IosDevices computerHook={computerHook} />
+                <div className="lg:col-span-2">
+                    <IosDevices computerHook={computerHook} />
+                </div>
 
             </div>
         </div>
@@ -49,16 +53,16 @@ export const ComputerPage: React.FC = () => {
 
 const IosDevices: React.FC<{ computerHook: ComputerHook }> = ({ computerHook }) => {
     return (
-        <div className="flex gap-8 mb-8">
+           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            {(true /* || computerHook.loadedProgram === 'blink_leds' */) && (
+            {(computerHook.loadedProgram === 'blink_leds') && (
                 <>
                     {/* LEDs */}
                     <LEDsDisplay device={computerHook.ioHook.leds} />
                 </>
             )}
 
-            {(true /* || computerHook.loadedProgram === 'seven_segments' */) && (
+            {(computerHook.loadedProgram === 'seven_segments') && (
                 <>
                     {/* Seven Segment Display */}
                     <SevenSegmentDisplay
@@ -68,13 +72,20 @@ const IosDevices: React.FC<{ computerHook: ComputerHook }> = ({ computerHook }) 
                 </>
             )}
 
-            {(true /* || computerHook.loadedProgram === 'timer_demo' */) && (
-                <>
-                    <PanelInterrupt
-                        interruptHook={computerHook.ioHook.interrupt}
-                    />
-                </>
+            {(computerHook.loadedProgram === 'timer_demo') && (
+                <div className="lg:col-span-3">
+                    <PanelInterrupt interruptHook={computerHook.ioHook.interrupt} />
+                </div>
             )}
+
+            {/* Keyboard */}
+            <KeyboardDisplay device={computerHook.ioHook.keyboard} />
+
+
+            {/* Console */}
+            <ConsoleDisplay device={computerHook.ioHook.console} />
+
+
         </div>
     );
 }

@@ -102,6 +102,15 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         } else {
             registers.set(reg, (value & 0xFF) as u8);   // 8-bit
         }
+//        setRegisters(prev => {
+//            const newMap = new Map(prev);
+//            if (reg === "PC" || reg === "SP") {
+//                newMap.set(reg, (value & 0xFFFF) as u16); // 16-bit
+//            } else {
+//                newMap.set(reg, (value & 0xFF) as u8); // 8-bit
+//            }
+//            return newMap;
+//        });
     }, [registers])
 
 
@@ -112,27 +121,36 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
 
     const setFlags = useCallback((zero: boolean, carry: boolean) => {
-        registers.set("FLAGS", ((zero ? 0b10 : 0) | (carry ? 0b01 : 0)) as u8);
+        //registers.set("FLAGS", ((zero ? 0b10 : 0) | (carry ? 0b01 : 0)) as u8);
+        setRegister('FLAGS', ((zero ? 0b10 : 0) | (carry ? 0b01 : 0)) as u8)
     }, [registers])
 
 
     const reset = useCallback(() => {
-        // Hard-wired reset vector - CPU démarre TOUJOURS à 0x0000 (ROM)
-        setRegister("PC", MEMORY_MAP.ROM_START);
+        const resetRegisters = new Map<string, u8 | u16>([
+            ["A", 0 as u8],
+            ["B", 0 as u8],
+            ["C", 0 as u8],
+            ["D", 0 as u8],
+            ["PC", MEMORY_MAP.ROM_START],
+            ["IR", 0 as u8],
+            ["SP", 0 as u16],
+            ["FLAGS", 0 as u8],
+        ] as [string, u8 | u16][]);
 
-        for (const [key] of registers) {
-            if (key !== "PC") {
-                setRegister(key as Register, 0 as u8 | u16);
-            }
-        }
-
+        setRegisters(resetRegisters);
         setHalted(false);
         setClockCycle(0 as u16);
+        setInterruptsEnabled(false);
+        setInInterruptHandler(false);
     }, [registers])
 
 
     const tick = () => {
         setClockCycle(c => (c + 1) as u16)
+
+        // Tick du timer à chaque cycle CPU
+        ioHook.timer.tick();
     }
 
 
@@ -468,7 +486,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
                 console.error(`Unknown opcode at 0x${pc.toString(16)}: 0x${instruction.toString(16)}`);
                 setHalted(true);
         }
-    }, [memory]);
+    }, [memory, getRegister, setRegister]);
 
 
     const readMem8 = useCallback((pc: u16): u8 => {

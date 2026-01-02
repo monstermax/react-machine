@@ -19,7 +19,7 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
                 return (storage.size & 0xFF) as u8;
             case 2: // ADDRESS port - get current address - low
                 return (currentAddress & 0xFF) as u8;
-            case 2: // ADDRESS port - get current address - high
+            case 3: // ADDRESS port - get current address - high
                 return ((currentAddress >> 8) & 0xFF) as u8;
             default:
                 return 0 as u8;
@@ -29,10 +29,6 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
 
     const write = useCallback((port: u8, value: u8) => {
         switch (port) {
-            case 2: // ADDRESS port - set read/write address
-                setCurrentAddress(U16(value));
-                break;
-
             case 0: // DATA port - write byte at current address
                 setStorage(s => {
                     const newStorage = new Map(s);
@@ -41,6 +37,14 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
                 });
                 // Auto-increment address after write
                 setCurrentAddress(addr => U16(addr + 1));
+                break;
+
+            case 2: // ADDRESS port low byte - set read/write address
+                setCurrentAddress(prev => U16((prev & 0xFF00) | value));
+                break;
+
+            case 3: // ADDRESS port high byte
+                setCurrentAddress(prev => U16((prev & 0x00FF) | (value << 8)));
                 break;
         }
     }, [currentAddress]);

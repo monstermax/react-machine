@@ -1,6 +1,4 @@
 
-import { MEMORY_MAP } from "@/lib/memory_map";
-
 import type { InterruptHook } from "@/hooks/useInterrupt";
 
 
@@ -35,10 +33,16 @@ export const PanelInterrupt: React.FC<{ interruptHook: InterruptHook }> = ({ int
                                             IRQ{irq}: {irqNames[irq]}
                                         </span>
                                     </div>
-                                    <div className="text-xs text-slate-400">
-                                        {enabled ? 'E' : '-'}
-                                        {pending ? 'P' : '-'}
-                                        {masked ? 'M' : '-'}
+                                    <div className="flex gap-1 text-xs">
+                                        <span className={enabled ? 'text-green-400' : 'text-slate-600'} title="Enabled">
+                                            E
+                                        </span>
+                                        <span className={pending ? 'text-red-400' : 'text-slate-600'} title="Pending">
+                                            P
+                                        </span>
+                                        <span className={masked ? 'text-yellow-400' : 'text-slate-600'} title="Masked">
+                                            M
+                                        </span>
                                     </div>
                                 </div>
                             );
@@ -73,6 +77,15 @@ export const PanelInterrupt: React.FC<{ interruptHook: InterruptHook }> = ({ int
                             <span className="text-cyan-400 font-mono">
                                 0x{interruptHook.handlerAddr.toString(16).padStart(4, '0')}
                             </span>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 p-2 rounded bg-slate-900/50 border border-slate-600">
+                        <div className="text-xs text-slate-400 mb-1">Legend:</div>
+                        <div className="text-xs space-y-1">
+                            <div><span className="text-green-400">E</span> = Enabled</div>
+                            <div><span className="text-red-400">P</span> = Pending</div>
+                            <div><span className="text-yellow-400">M</span> = Masked</div>
                         </div>
                     </div>
                 </div>

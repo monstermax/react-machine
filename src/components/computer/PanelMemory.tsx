@@ -31,7 +31,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
 
 
     // Combiner toute la mémoire (ROM + RAM + I/O)
-    const fullMemoryView = useCallback((): Map<u16, u8> => {
+    const currentMemory = useMemo((): Map<u16, u8> => {
         const view = new Map<u16, u8>();
 
         // ROM
@@ -93,7 +93,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     }, [romHook.storage, ramHook.storage, ioHook]);
 
 
-    const currentMemory = fullMemoryView();
+    //const currentMemory = fullMemoryView();
     const currentPC = cpuHook.getRegister("PC");
     const sortedMemory = Array.from(currentMemory.entries()).sort(([a], [b]) => a - b);
 
@@ -269,7 +269,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
 
             <div>
                 <label className="flex gap-2">
-                    <input type="checkbox" checked={followInstruction} onClick={(event) => setFollowInstruction((event.target as any).checked)} />
+                    <input type="checkbox" checked={followInstruction} onChange={(event) => setFollowInstruction((event.target as any).checked)} />
                     <div>Follow current Instruction</div>
                 </label>
             </div>
