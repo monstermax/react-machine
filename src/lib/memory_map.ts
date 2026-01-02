@@ -50,6 +50,21 @@ export const MEMORY_MAP = {
     PROGRAM_DISK_DATA: 0xFF10, // Port 0: Read/Write data
     PROGRAM_DISK_SIZE: 0xFF11, // Port 1: Get size
     PROGRAM_DISK_ADDR: 0xFF12, // Port 2: Set address
+
+    // Device 3: LEDs
+    LEDS_BASE: 0xFF30,
+    LEDS_OUTPUT: 0xFF30,  // 8 LEDs (chaque bit = une LED)
+
+    // Device 4: Interrupt
+    INTERRUPT_BASE: 0xFF40,
+    INTERRUPT_ENABLE: 0xFF40,  // Bitmask des interruptions activées
+    INTERRUPT_PENDING: 0xFF41, // Interruptions en attente
+    INTERRUPT_HANDLER: 0xFF42, // Adresse du handler
+
+    // Device 6: Afficheur 7 Segments
+    SEVEN_SEG_BASE: 0xFF60,
+    SEVEN_SEG_DATA: 0xFF60,  // Chiffre à afficher (0-15 pour 0-F)
+    SEVEN_SEG_RAW: 0xFF61,   // Contrôle direct des segments (bits)
 } as const;
 
 
@@ -66,5 +81,18 @@ export const isIO = (addr: number) =>
 // Convertir adresse mémoire absolue en port I/O relatif
 export const memoryToIOPort = (addr: number): number => {
     return addr - MEMORY_MAP.IO_START;
+};
+
+
+export const isImportantIOAddress = (addr: number): boolean => {
+    return addr === MEMORY_MAP.LEDS_OUTPUT || 
+           addr === MEMORY_MAP.SEVEN_SEG_DATA ||
+           addr === MEMORY_MAP.SEVEN_SEG_RAW ||
+           addr === MEMORY_MAP.OS_DISK_DATA ||
+           addr === MEMORY_MAP.OS_DISK_SIZE ||
+           addr === MEMORY_MAP.OS_DISK_ADDR ||
+           addr === MEMORY_MAP.PROGRAM_DISK_DATA ||
+           addr === MEMORY_MAP.PROGRAM_DISK_SIZE ||
+           addr === MEMORY_MAP.PROGRAM_DISK_ADDR;
 };
 

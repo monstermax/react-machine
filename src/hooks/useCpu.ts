@@ -77,6 +77,8 @@ export const useCpu = (memory: MemoryHook): CpuHook => {
     }
 
 
+    // CPU METHODS
+
     // Execute a CPU cycle
     const executeClockCycle = useCallback(() => {
         if (halted) return;
@@ -151,6 +153,15 @@ export const useCpu = (memory: MemoryHook): CpuHook => {
                 setRegister("PC", pc + 1);
                 break;
 
+            case Opcode.INC_B:
+                setRegister("B", ALU.inc(getRegister("B")));
+                setRegister("PC", pc + 1);
+                break;
+            case Opcode.DEC_B:
+                setRegister("B", ALU.dec(getRegister("B")));
+                setRegister("PC", pc + 1);
+                break;
+
             case Opcode.JMP:
                 const jmpLow = memory.readMemory(pc + 1);
                 const jmpHigh = memory.readMemory(pc + 2);
@@ -205,8 +216,44 @@ export const useCpu = (memory: MemoryHook): CpuHook => {
                 const loadLow = memory.readMemory(pc + 1);
                 const loadHigh = memory.readMemory(pc + 2);
                 const loadAddr = (loadHigh << 8) | loadLow;
-                setRegister("A", memory.readMemory(loadAddr));
+                const value = memory.readMemory(loadAddr);
+                setRegister("A", value);
+                setFlags(value === 0, false);
                 setRegister("PC", pc + 3);
+                break;
+
+            case Opcode.SYSCALL:
+                const syscallNum = memory.readMemory(pc + 1);
+
+                switch (syscallNum) {
+                    case 0: // exit
+                        console.log("📍 Program exit (syscall 0)");
+                        // Clear program memory
+                        for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
+                            memory.writeMemory(addr, 0);
+                        }
+
+                        // Retour à l'OS
+                        setRegister("PC", MEMORY_MAP.OS_START);
+                        break;
+
+                    case 1: // print_char - afficher A comme caractère
+                        console.log(`📝 print_char: ${String.fromCharCode(getRegister("A"))}`);
+                        setRegister("PC", pc + 2);
+                        break;
+
+                    case 2: // print_num - afficher A comme nombre
+                        console.log(`📊 print_num: ${getRegister("A")}`);
+                        setRegister("PC", pc + 2);
+                        break;
+
+
+                    // Autres syscalls possibles : read, write, etc.
+
+                    default:
+                        console.warn(`Unknown syscall: ${syscallNum}`);
+                        setRegister("PC", pc + 2);
+                }
                 break;
 
             case Opcode.HALT:
@@ -219,10 +266,6 @@ export const useCpu = (memory: MemoryHook): CpuHook => {
         }
     }, [memory]);
 
-
-
-
-    // CPU METHODS
 
     const getRegister = (reg: Register): number => {
         return registers.get(reg) ?? 0;

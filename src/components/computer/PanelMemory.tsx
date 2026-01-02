@@ -1,8 +1,8 @@
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { getOpcodeName, INSTRUCTIONS_WITH_OPERAND, INSTRUCTIONS_WITH_TWO_OPERANDS, Opcode } from "@/lib/instructions";
-import { isROM, isRAM, MEMORY_MAP } from "@/lib/memory_map";
+import { isROM, isRAM, MEMORY_MAP, memoryToIOPort, isImportantIOAddress, isIO } from "@/lib/memory_map";
 
 import type { ComputerHook } from "@/hooks/useComputer";
 import type { Memory } from "@/types/cpu.types";
@@ -23,7 +23,11 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const addressRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
-    // Combiner toute la mémoire (ROM + RAM)
+    const sections: MemorySection[] = ["ROM", "RAM", "OS Disk", "Program Disk"];
+    let lastSection = "";
+
+
+    // Combiner toute la mémoire (ROM + RAM + I/O)
     const fullMemoryView = useCallback((): Memory => {
         const view = new Map<number, number>();
 
@@ -37,54 +41,102 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
             view.set(addr, value);
         }
 
-        return view;
-    }, [romHook.storage, ramHook.storage]);
+        // I/O - Adresses de départ des devices
+        const ioStartAddresses = [
+            MEMORY_MAP.OS_DISK_DATA,
+            MEMORY_MAP.PROGRAM_DISK_DATA,
+            MEMORY_MAP.LEDS_OUTPUT,
+            MEMORY_MAP.SEVEN_SEG_DATA,
+        ].sort((a, b) => a - b);
 
-    // Déterminer si une adresse est une instruction
-    const isInstructionAddress = useCallback((addr: number, storage: Memory): boolean => {
-        const memArray = Array.from(storage.entries()).sort(([a], [b]) => a - b);
+        // Pour chaque device, lire jusqu'à trouver des zéros ou atteindre le prochain device
+        for (let i = 0; i < ioStartAddresses.length; i++) {
+            const startAddr = ioStartAddresses[i];
+            const nextAddr = ioStartAddresses[i + 1] ?? MEMORY_MAP.IO_END + 1;
 
-        for (let i = 0; i < memArray.length; i++) {
-            const [address, value] = memArray[i];
+            let currentAddr = startAddr;
+            let consecutiveZeros = 0;
 
-            if (address === addr && Object.values(Opcode).includes(value)) {
-                // Vérifier si c'est un opérande d'une instruction précédente
-                if (i > 0) {
-                    const [prevAddr, prevValue] = memArray[i - 1];
-                    // 1 opérande
-                    if (INSTRUCTIONS_WITH_OPERAND.includes(prevValue) && prevAddr === addr - 1) {
-                        return false;
-                    }
-                    // 2 opérandes (premier ou second)
-                    if (INSTRUCTIONS_WITH_TWO_OPERANDS.includes(prevValue) &&
-                        (prevAddr === addr - 1 || prevAddr === addr - 2)) {
-                        return false;
-                    }
+            while (currentAddr < nextAddr) {
+                const ioPort = memoryToIOPort(currentAddr);
+                const value = ioHook.read(ioPort);
+
+                // Toujours afficher la première adresse du device
+                if (currentAddr === startAddr) {
+                    view.set(currentAddr, value);
+                    currentAddr++;
+                    continue;
                 }
-                if (i > 1) {
-                    const [prevPrevAddr, prevPrevValue] = memArray[i - 2];
-                    // Second opérande d'une instruction avec 2 opérandes
-                    if (INSTRUCTIONS_WITH_TWO_OPERANDS.includes(prevPrevValue) &&
-                        prevPrevAddr === addr - 2) {
-                        return false;
+
+                // Si on trouve des données non-nulles, continuer
+                if (value !== 0) {
+                    view.set(currentAddr, value);
+                    consecutiveZeros = 0;
+
+                } else {
+                    consecutiveZeros++;
+                    // Arrêter après 3 zéros consécutifs (pour ne pas tout afficher)
+                    if (consecutiveZeros >= 3) {
+                        break;
                     }
+                    view.set(currentAddr, value);
                 }
-                return true;
+
+                currentAddr++;
             }
         }
-        return false;
-    }, []);
+
+        return view;
+    }, [romHook.storage, ramHook.storage, ioHook]);
+
 
     const currentMemory = fullMemoryView();
     const currentPC = cpuHook.getRegister("PC");
+    const sortedMemory = Array.from(currentMemory.entries()).sort(([a], [b]) => a - b);
+
+
+    const instructionMap = useMemo(() => {
+        const isInstruction = new Map<number, boolean>();
+        const operandAddresses = new Set<number>();
+
+        const sorted = Array.from(currentMemory.entries()).sort(([a], [b]) => a - b);
+
+        for (const [address, value] of sorted) {
+            // Si déjà marqué comme opérande, ce n'est pas une instruction
+            if (operandAddresses.has(address)) {
+                isInstruction.set(address, false);
+                continue;
+            }
+
+            // Si c'est un opcode valide, c'est une instruction
+            if (Object.values(Opcode).includes(value)) {
+                isInstruction.set(address, true);
+
+                // Marquer les opérandes suivants
+                if (INSTRUCTIONS_WITH_OPERAND.includes(value)) {
+                    operandAddresses.add(address + 1);
+                }
+                if (INSTRUCTIONS_WITH_TWO_OPERANDS.includes(value)) {
+                    operandAddresses.add(address + 1);
+                    operandAddresses.add(address + 2);
+                }
+            } else {
+                isInstruction.set(address, false);
+            }
+        }
+
+        return isInstruction;
+    }, [currentMemory]);
+
 
     // Auto-scroll vers PC quand il change
     useEffect(() => {
         const pcElement = addressRefs.current.get(currentPC);
         if (pcElement && scrollContainerRef.current) {
-            //pcElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            pcElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }, [currentPC]);
+
 
     // Navigation vers une section
     const scrollToSection = useCallback((section: MemorySection) => {
@@ -114,9 +166,12 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
         }
     }, []);
 
+
     // Déterminer la section d'une adresse
     const getSection = (addr: number): string => {
         if (isROM(addr)) return "ROM";
+
+        if (isIO(addr)) return "I/O";
 
         if (isRAM(addr)) {
             if (addr >= MEMORY_MAP.OS_START && addr < MEMORY_MAP.PROGRAM_START) {
@@ -125,15 +180,8 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
             return "RAM / PROGRAM";
         }
 
-        return "I/O";
+        return "UNKNOWN";
     };
-
-
-    const sections: MemorySection[] = ["ROM", "RAM", "OS Disk", "Program Disk"];
-    const sortedMemory = Array.from(currentMemory.entries()).sort(([a], [b]) => a - b);
-
-    // Grouper par section pour afficher les séparateurs
-    let lastSection = "";
 
 
     return (
@@ -156,7 +204,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
             {/* Memory Display */}
             <div
                 ref={scrollContainerRef}
-                className="font-mono text-sm space-y-1 max-h-[450px] overflow-y-auto"
+                className="font-mono text-sm space-y-1 max-h-[550px] overflow-y-auto"
             >
                 <div className="text-xs text-slate-400 mb-2">
                     Total: {currentMemory.size} bytes
@@ -165,7 +213,8 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                 {sortedMemory.map(([addr, val]) => {
                     const section = getSection(addr);
                     const isPC = addr === currentPC;
-                    const isInstruction = isInstructionAddress(addr, currentMemory);
+                    //const isInstruction = isInstructionAddress(addr);
+                    const isInstruction = instructionMap.get(addr) ?? false;
                     const inROM = isROM(addr);
 
                     // Afficher séparateur de section
@@ -184,10 +233,10 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                                     if (el) addressRefs.current.set(addr, el);
                                 }}
                                 className={`flex justify-between p-2 rounded ${isPC
-                                        ? "bg-yellow-900/50 border-2 border-yellow-500"
-                                        : inROM
-                                            ? "bg-blue-900/30"
-                                            : "bg-slate-900/50"
+                                    ? "bg-yellow-900/50 border-2 border-yellow-500"
+                                    : inROM
+                                        ? "bg-blue-900/30"
+                                        : "bg-slate-900/50"
                                     }`}
                             >
                                 <span className="text-yellow-400">
@@ -208,18 +257,6 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                         No memory content
                     </div>
                 )}
-            </div>
-
-            {/* Disks info */}
-            <div className="mt-4 pt-4 border-t border-slate-600 grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-slate-900/50 p-2 rounded">
-                    <div className="text-slate-400">OS Disk:</div>
-                    <div className="text-green-400">{ioHook.osDisk.storage.size} bytes</div>
-                </div>
-                <div className="bg-slate-900/50 p-2 rounded">
-                    <div className="text-slate-400">Program Disk:</div>
-                    <div className="text-green-400">{ioHook.programDisk.storage.size} bytes</div>
-                </div>
             </div>
         </div>
     );

@@ -5,6 +5,9 @@ import { MINI_OS } from "@/lib/mini_os";
 import { useDiskDevice, type DiskDevice } from "./useDiskDevice";
 
 import type { Device } from "@/types/cpu.types";
+import { useLeds, type LedsDevice } from "./useLeds";
+import { useInterrupt, type InterruptHook } from "./useInterrupt";
+import { useSevenSegment, type SevenSegmentHook } from "./useSevenSegment";
 
 
 // Device Map: commence à 0xFF00, chaque device a 16 ports (0xFF00-0xFF0F, 0xFF10-0xFF1F, etc.)
@@ -15,13 +18,19 @@ export const useIo = (): IOHook => {
     // Devices
     const osDisk = useDiskDevice(MINI_OS);      // Device 0: 0xFF00-0xFF0F
     const programDisk = useDiskDevice(new Map); // Device 1: 0xFF10-0xFF1F
+    const leds = useLeds(); // Device 2: 0xFF20-0xFF2F
+    const interrupt = useInterrupt(); // Device 3
+    const sevenSegment = useSevenSegment(); // Device 6
 
 
     // Device registry
     const devices = useMemo(() => new Map<number, Device>([
         [0, osDisk],       // OS disk
         [1, programDisk],  // Program disk
-    ]), [osDisk, programDisk]);
+        [3, leds],         // LEDs
+        [4, interrupt],    // Interrupt
+        [6, sevenSegment], // Seven Segment Display
+    ]), [osDisk, programDisk, leds, interrupt, sevenSegment]);
 
 
     // I/O read: router vers le bon device
@@ -62,6 +71,9 @@ export const useIo = (): IOHook => {
         devices,
         osDisk,
         programDisk,
+        leds,
+        interrupt,
+        sevenSegment,
     };
 };
 
@@ -72,5 +84,8 @@ export type IOHook = {
     devices: Map<number, Device>;
     osDisk: DiskDevice;
     programDisk: DiskDevice;
+    leds: LedsDevice;
+    interrupt: InterruptHook;
+    sevenSegment: SevenSegmentHook;
 };
 

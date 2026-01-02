@@ -17,11 +17,20 @@ export const useComputer = (): ComputerHook => {
     const cpuHook = useCpu(memoryHook);
 
 
-    // Load OS into RAM a boot
+    // Initialize RAM & CPU at boot
     useEffect(() => {
+        resetComputer();
+    }, [])
+
+
+    const resetComputer = () => {
+        // Load OS into RAM
         const ramStorage = getMiniOSAbsolute()
         ramHook.setStorage(ramStorage);
-    }, [])
+
+        // Initialize CPU
+        cpuHook.reset();
+    }
 
 
     const computerHook: ComputerHook = {
@@ -30,6 +39,7 @@ export const useComputer = (): ComputerHook => {
         ioHook,
         memoryHook,
         cpuHook,
+        resetComputer,
     };
 
     return computerHook;
@@ -42,5 +52,6 @@ export type ComputerHook = {
     ioHook: IOHook
     memoryHook: MemoryHook
     cpuHook: CpuHook
+    resetComputer: () => void
 };
 
