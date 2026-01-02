@@ -268,7 +268,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
 
             <div>
                 <label className="flex gap-2">
-                    <input type="checkbox" onClick={(event) => setFollowInstruction((event.target as any).checked)} />
+                    <input type="checkbox" checked={followInstruction} onClick={(event) => setFollowInstruction((event.target as any).checked)} />
                     <div>Follow current Instruction</div>
                 </label>
             </div>

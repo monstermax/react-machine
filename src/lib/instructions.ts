@@ -111,10 +111,10 @@ export const INSTRUCTIONS_WITH_TWO_OPERANDS = [
 export const getOpcodeName = (opcode: number): string => {
     switch (opcode) {
         case Opcode.NOP: return "NOP";
-        case Opcode.R_LOAD_A: return "LOAD A";
-        case Opcode.R_LOAD_B: return "LOAD B";
-        case Opcode.R_LOAD_C: return "LOAD C";
-        case Opcode.R_LOAD_D: return "LOAD D";
+        case Opcode.R_LOAD_A: return "R_LOAD A";
+        case Opcode.R_LOAD_B: return "R_LOAD B";
+        case Opcode.R_LOAD_C: return "R_LOAD C";
+        case Opcode.R_LOAD_D: return "R_LOAD D";
         case Opcode.ADD: return "ADD";
         case Opcode.SUB: return "SUB";
         case Opcode.AND: return "AND";
@@ -132,14 +132,14 @@ export const getOpcodeName = (opcode: number): string => {
         case Opcode.JZ: return "JZ";
         case Opcode.JNZ: return "JNZ";
         case Opcode.JC: return "JC";
-        case Opcode.M_STORE_A: return "STORE_MEM_A";
-        case Opcode.M_STORE_B: return "STORE_MEM_B";
-        case Opcode.M_STORE_C: return "STORE_MEM_C";
-        case Opcode.M_STORE_D: return "STORE_MEM_D";
-        case Opcode.M_LOAD_A: return "LOAD_MEM_A";
-        case Opcode.M_LOAD_B: return "LOAD_MEM_B";
-        case Opcode.M_LOAD_C: return "LOAD_MEM_C";
-        case Opcode.M_LOAD_D: return "LOAD_MEM_D";
+        case Opcode.M_STORE_A: return "M_STORE A";
+        case Opcode.M_STORE_B: return "M_STORE B";
+        case Opcode.M_STORE_C: return "M_STORE C";
+        case Opcode.M_STORE_D: return "M_STORE D";
+        case Opcode.M_LOAD_A: return "M_LOAD A";
+        case Opcode.M_LOAD_B: return "M_LOAD B";
+        case Opcode.M_LOAD_C: return "M_LOAD C";
+        case Opcode.M_LOAD_D: return "M_LOAD D";
         case Opcode.SYSCALL: return "SYSCALL";
         case Opcode.PUSH_A: return "PUSH A";
         case Opcode.PUSH_B: return "PUSH B";
