@@ -9,7 +9,7 @@ export const useInterrupt = () => {
     const [enabled, setEnabled] = useState(0 as u8);      // IRQs activées
     const [pending, setPending] = useState(0 as u8);      // IRQs en attente
     const [mask, setMask] = useState(0 as u8);            // IRQs masquées
-    const [handlerAddr, setHandlerAddr] = useState(0x0040 as u16); // Default handler
+    const [handlerAddr, setHandlerAddr] = useState(MEMORY_MAP.OS_START as u16); // Default handler
 
 
     // Pour les callbacks stables
@@ -136,7 +136,7 @@ export const useInterrupt = () => {
         setEnabled(0 as u8);
         setPending(0 as u8);
         setMask(0 as u8);
-        setHandlerAddr(0x0040 as u16);
+        setHandlerAddr(MEMORY_MAP.OS_START as u16);
         updateRefs();
     }, [updateRefs]);
 

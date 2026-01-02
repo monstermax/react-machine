@@ -43,11 +43,12 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
         }
 
         // RAM write
-        ramHook.setStorage(m => {
-            const newMap = new Map(m);
-            newMap.set(address, (value & 0xFF) as u8);
-            return newMap;
-        });
+        ramHook.storage.set(address, (value & 0xFF) as u8);
+        //ramHook.setStorage(m => {
+        //    const newMap = new Map(m);
+        //    newMap.set(address, (value & 0xFF) as u8);
+        //    return newMap;
+        //});
     }, [ioHook]);
 
 

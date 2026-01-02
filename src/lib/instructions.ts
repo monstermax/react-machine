@@ -100,15 +100,6 @@ export const INSTRUCTIONS_WITH_TWO_OPERANDS = [
 ];
 
 
-//export const STACK_INSTRUCTIONS = [
-//    Opcode.PUSH_A,
-//    Opcode.POP_A,
-//    Opcode.CALL,
-//    Opcode.RET,
-//    Opcode.SET_SP,
-//];
-
-
 export const getOpcodeName = (opcode: u8): string => {
     switch (opcode) {
         case Opcode.NOP: return "NOP";

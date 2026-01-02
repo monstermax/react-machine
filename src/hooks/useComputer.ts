@@ -7,7 +7,7 @@ import { useMemory, type MemoryHook } from "@/hooks/useMemory";
 import { useIo, type IOHook } from "@/hooks/useIo";
 import { useRam, type RamHook } from "@/hooks/useRam";
 import { getMiniOSAbsolute } from "@/lib/mini_os";
-import type { ProgramInfo } from "@/types/cpu.types";
+import type { ProgramInfo, u8 } from "@/types/cpu.types";
 import { programs } from "@/lib/programs";
 import { MEMORY_MAP } from "@/lib/memory_map";
 import { U16 } from "@/lib/integers";
@@ -20,7 +20,7 @@ export const useComputer = (): ComputerHook => {
     const memoryHook = useMemory(romHook, ramHook, ioHook);
     const cpuHook = useCpu(memoryHook, ioHook);
 
-    const [currentProgram, setCurrentProgram] = useState<string | null>(null);
+    const [loadedProgram, setLoadedProgram] = useState<string | null>(null);
 
 
     // Initialize RAM & CPU at boot
@@ -33,6 +33,8 @@ export const useComputer = (): ComputerHook => {
         // Load OS into RAM
         const ramStorage = getMiniOSAbsolute()
         ramHook.setStorage(ramStorage);
+
+        setLoadedProgram(null);
 
         // Initialize CPU
         cpuHook.reset();
@@ -48,16 +50,36 @@ export const useComputer = (): ComputerHook => {
             return;
         }
 
+        const ADDRESS_START = MEMORY_MAP.PROGRAM_START;
+
         // Charger le programme DIRECTEMENT en RAM à PROGRAM_START
         ramHook.setStorage(current => {
             const newRam = new Map(current); // Garder l'OS
 
             for (const [relAddr, value] of program.code.entries()) {
-                newRam.set(U16(MEMORY_MAP.PROGRAM_START + relAddr), value);
+                newRam.set(U16(ADDRESS_START + relAddr), value);
             }
 
             return newRam;
         });
+
+        setLoadedProgram(programName);
+    }, [ramHook]);
+
+
+    const unloadProgram = useCallback(() => {
+        ramHook.setStorage(current => {
+            const newRam = new Map(current); // Garder l'OS
+
+            for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
+                newRam.set(U16(addr), 0x00 as u8);
+                break; // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
+            }
+
+            return newRam;
+        });
+
+        setLoadedProgram(null);
     }, [ramHook]);
 
 
@@ -67,10 +89,11 @@ export const useComputer = (): ComputerHook => {
         ioHook,
         memoryHook,
         cpuHook,
-        currentProgram,
+        loadedProgram,
         resetComputer,
         loadProgram,
-        setCurrentProgram,
+        unloadProgram,
+        setLoadedProgram,
     };
 
     return computerHook;
@@ -83,9 +106,10 @@ export type ComputerHook = {
     ioHook: IOHook
     memoryHook: MemoryHook
     cpuHook: CpuHook
-    currentProgram: string | null
+    loadedProgram: string | null
     resetComputer: () => void
     loadProgram: (programName: string) => void
-    setCurrentProgram: React.Dispatch<React.SetStateAction<string | null>>
+    unloadProgram: () => void
+    setLoadedProgram: React.Dispatch<React.SetStateAction<string | null>>
 };
 

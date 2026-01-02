@@ -1,7 +1,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { useComputer } from "@/hooks/useComputer";
+import { useComputer, type ComputerHook } from "@/hooks/useComputer";
 
 import { PanelMemory } from "@/components/computer/PanelMemory";
 import { PanelControls } from "@/components/computer/PanelControls";
@@ -13,9 +13,7 @@ import { LEDsDisplay } from "@/components/io/LEDsDisplay";
 
 export const ComputerPage: React.FC = () => {
     const computerHook = useComputer();
-    const { ramHook, ioHook } = computerHook;
-    const { resetComputer, loadProgram } = computerHook;
-
+    const { resetComputer, loadProgram, unloadProgram } = computerHook;
 
     return (
         <div className="min-h-screen bg-slate-950 text-white">
@@ -30,48 +28,54 @@ export const ComputerPage: React.FC = () => {
                     <PanelControls
                         computerHook={computerHook}
                         loadProgram={loadProgram}
+                        unloadProgram={unloadProgram}
                         resetComputer={resetComputer}
                     />
                 </div>
 
                 {/* Memory */}
-                <PanelMemory
-                    computerHook={computerHook}
-                />
+                <PanelMemory computerHook={computerHook} />
 
 
                 {/* IOs Devices */}
-
-                <div className="flex gap-8 mb-8">
-
-                    {(true /* || currentProgram === 'blink_leds' */ ) && (
-                        <>
-                            {/* LEDs */}
-                            <LEDsDisplay device={computerHook.ioHook.leds} />
-                        </>
-                    )}
-
-                    {(true /* || currentProgram === 'seven_segments' */ ) && (
-                        <>
-                            {/* Seven Segment Display */}
-                            <SevenSegmentDisplay
-                                device={ioHook.sevenSegment}
-                                label="Display 1"
-                            />
-                        </>
-                    )}
-
-                    {(true /* || currentProgram === 'timer_demo' */ ) && (
-                        <>
-                            <PanelInterrupt
-                                interruptHook={ioHook.interrupt}
-                            />
-                        </>
-                    )}
-                </div>
+                <IosDevices computerHook={computerHook} />
 
             </div>
         </div>
     );
 };
+
+
+
+const IosDevices: React.FC<{ computerHook: ComputerHook }> = ({ computerHook }) => {
+    return (
+        <div className="flex gap-8 mb-8">
+
+            {(true /* || computerHook.loadedProgram === 'blink_leds' */) && (
+                <>
+                    {/* LEDs */}
+                    <LEDsDisplay device={computerHook.ioHook.leds} />
+                </>
+            )}
+
+            {(true /* || computerHook.loadedProgram === 'seven_segments' */) && (
+                <>
+                    {/* Seven Segment Display */}
+                    <SevenSegmentDisplay
+                        device={computerHook.ioHook.sevenSegment}
+                        label="Display 1"
+                    />
+                </>
+            )}
+
+            {(true /* || computerHook.loadedProgram === 'timer_demo' */) && (
+                <>
+                    <PanelInterrupt
+                        interruptHook={computerHook.ioHook.interrupt}
+                    />
+                </>
+            )}
+        </div>
+    );
+}
 

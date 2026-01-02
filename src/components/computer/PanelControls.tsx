@@ -3,11 +3,13 @@ import { useEffect, useState, useRef } from "react";
 
 import { programs } from "@/lib/programs";
 import type { ComputerHook } from "@/hooks/useComputer";
+import { MEMORY_MAP } from "@/lib/memory_map";
 
 
 export type PanelControlsProps = {
     computerHook: ComputerHook;
     loadProgram: (programName: string) => void;
+    unloadProgram: () => void;
     resetComputer: () => void;
 }
 
@@ -29,9 +31,9 @@ const frequencies = [
 export const PanelControls: React.FC<PanelControlsProps> = (props) => {
     const { computerHook } = props;
     const { cpuHook } = computerHook;
-    const { loadProgram, resetComputer } = props;
+    const { loadProgram, unloadProgram, resetComputer } = props;
 
-    const [currentProgram, setCurrentProgram] = useState<string | null>(null);
+    const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
 
     // État Play/Pause
     const [isRunning, setIsRunning] = useState(false);
@@ -39,7 +41,12 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
     const intervalRef = useRef<number | null>(null);
 
 
-    const currentProgramInfo = currentProgram ? programs[currentProgram] : null;
+    const selectedProgramInfo = selectedProgram ? programs[selectedProgram] : null;
+    const loadedProgramInfo = computerHook.loadedProgram ? programs[computerHook.loadedProgram] : null;
+
+    const programInfo = selectedProgramInfo ?? loadedProgramInfo;
+
+    const isUnloaded = loadedProgramInfo ? (computerHook.memoryHook.readMemory(MEMORY_MAP.PROGRAM_START) === 0x00) : false;
 
 
     // Gestion du timer
@@ -71,6 +78,7 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
         }
     }, [cpuHook.halted, isRunning]);
 
+
     return (
         <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 lg:col-span-2">
             <h2 className="text-xl font-semibold mb-2 text-green-400">Controls</h2>
@@ -80,8 +88,8 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
                 <label className="text-sm font-medium text-slate-300">Select Program:</label>
 
                 <select
-                    value={currentProgram ?? ''}
-                    onChange={(e) => setCurrentProgram(e.target.value || null)}
+                    value={selectedProgram ?? ''}
+                    onChange={(e) => setSelectedProgram(e.target.value || null)}
                     className="bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white w-96"
                 >
                     <option key="none" value="">
@@ -96,13 +104,21 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
 
                 <button
                     onClick={() => {
-                        loadProgram(currentProgram ?? '');
-                        setCurrentProgram(null)
+                        loadProgram(selectedProgram ?? '');
+                        //setSelectedProgram(null)
                     }}
-                    disabled={!currentProgram}
+                    disabled={!selectedProgram}
                     className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
                 >
-                    Load Program
+                    Load
+                </button>
+
+                <button
+                    onClick={() => unloadProgram()}
+                    disabled={!computerHook.loadedProgram}
+                    className="bg-purple-800 hover:bg-purple-900 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
+                >
+                    Unload
                 </button>
             </div>
 
@@ -161,16 +177,22 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
 
             {/* Info programme */}
             {
-                currentProgramInfo && (
+                programInfo && (
                     <div className="mt-4 p-4 bg-slate-900/50 rounded border border-slate-600">
-                        <div className="text-sm text-slate-300">
-                            <strong className="text-blue-400">Program:</strong> {currentProgramInfo.name}
+                        <div className="flex text-sm text-slate-300">
+                            <strong className="text-blue-400 me-2">Program:</strong> {programInfo.name}
+
+                            {(loadedProgramInfo && (!selectedProgram || loadedProgramInfo.name === selectedProgramInfo?.name)) && (
+                                <div className={`ms-auto px-6 py-2 rounded ${isUnloaded ? "bg-orange-600 hover:bg-orange-700" : "bg-green-600 hover:bg-green-700"}`}>
+                                    <>[{isUnloaded ? "UNLOADED" : "LOADED"}]</>
+                                </div>
+                            )}
                         </div>
                         <div className="text-xs text-slate-400 mt-1">
-                            {currentProgramInfo.description}
+                            {programInfo.description}
                         </div>
                         <div className="mt-2 text-xs text-green-400">
-                            <strong>Expected:</strong> {currentProgramInfo.expectedResult}
+                            <strong>Expected:</strong> {programInfo.expectedResult}
                         </div>
                     </div>
                 )

@@ -13,9 +13,21 @@ export const BOOTLOADER: Map<u8, u8> = new Map([
     [0x01, MEMORY_MAP.STACK_END & 0xFF],
     [0x02, (MEMORY_MAP.STACK_END >> 8) & 0xFF],
 
+    // === WAIT_FOR_OS (0x00) ===
+    // Vérifier si un OS est chargé à OS_START
+    [0x03, Opcode.M_LOAD_A],
+    [0x04, MEMORY_MAP.OS_START & 0xFF],        // Low byte
+    [0x05, (MEMORY_MAP.OS_START >> 8) & 0xFF], // High byte
+
+    // Si pas d'OS, revenir à 0x03
+    [0x06, Opcode.JZ], // Si = 0, boucler
+    [0x07, 0x03],      // Low: 0x03
+    [0x08, 0x00],      // High: 0x00
+
+    // === RUN_OS (0x06) ===
     // Sauter à l'OS qui est déjà en RAM
-    [0x03, Opcode.JMP],
-    [0x04, MEMORY_MAP.OS_START & 0xFF],        // Low byte: 0x00
-    [0x05, (MEMORY_MAP.OS_START >> 8) & 0xFF], // High byte: 0x01
+    [0x09, Opcode.JMP],
+    [0x0A, MEMORY_MAP.OS_START & 0xFF],        // Low byte: 0x00
+    [0x0B, (MEMORY_MAP.OS_START >> 8) & 0xFF], // High byte: 0x01
 ] as [u8, u8][]);
 
