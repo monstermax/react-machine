@@ -45,8 +45,8 @@ export const programs: Record<string, ProgramInfo> = {
             [0x05, Opcode.LOAD_B],
             [0x06, 10],
             [0x07, Opcode.ADD],      // A = 18
-            [0x05, Opcode.SYSCALL],
-            [0x06, 0],               // ← Syscall 0 = exit
+            [0x08, Opcode.SYSCALL],
+            [0x09, 0],               // ← Syscall 0 = exit
         ]),
         expectedResult: "A = 18"
     },

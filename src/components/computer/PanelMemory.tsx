@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { getOpcodeName, INSTRUCTIONS_WITH_OPERAND, INSTRUCTIONS_WITH_TWO_OPERANDS, Opcode } from "@/lib/instructions";
 import { isROM, isRAM, MEMORY_MAP, memoryToIOPort, isImportantIOAddress, isIO } from "@/lib/memory_map";
@@ -19,6 +19,8 @@ type MemorySection = "ROM" | "RAM" | "OS Disk" | "Program Disk";
 export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     const { computerHook } = props;
     const { cpuHook, romHook, ramHook, ioHook } = computerHook;
+
+    const [followInstruction, setFollowInstruction] = useState(false);
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const addressRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -132,10 +134,10 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     // Auto-scroll vers PC quand il change
     useEffect(() => {
         const pcElement = addressRefs.current.get(currentPC);
-        if (pcElement && scrollContainerRef.current) {
+        if (followInstruction && pcElement && scrollContainerRef.current) {
             pcElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-    }, [currentPC]);
+    }, [currentPC, followInstruction]);
 
 
     // Navigation vers une section
@@ -257,6 +259,13 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                         No memory content
                     </div>
                 )}
+            </div>
+
+            <div>
+                <label className="flex gap-2">
+                    <input type="checkbox" onClick={(event) => setFollowInstruction((event.target as any).checked)} />
+                    <div>Follow current Instruction</div>
+                </label>
             </div>
         </div>
     );

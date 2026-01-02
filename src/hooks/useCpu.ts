@@ -231,6 +231,7 @@ export const useCpu = (memory: MemoryHook): CpuHook => {
                         // Clear program memory
                         for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
                             memory.writeMemory(addr, 0);
+                            break; // TRES TRES LENT !!! => on ne vide que la 1ere adresse
                         }
 
                         // Retour à l'OS
@@ -244,6 +245,11 @@ export const useCpu = (memory: MemoryHook): CpuHook => {
 
                     case 2: // print_num - afficher A comme nombre
                         console.log(`📊 print_num: ${getRegister("A")}`);
+                        setRegister("PC", pc + 2);
+                        break;
+
+                    case 3: // pause
+                        // TODO: mettre en pause dans l'interface UI
                         setRegister("PC", pc + 2);
                         break;
 
