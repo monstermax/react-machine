@@ -43,9 +43,9 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
     useEffect(() => {
         if (isRunning && !cpuHook.halted) {
             const interval = 1000 / frequency; // Intervalle en ms
-            
+
             intervalRef.current = setInterval(() => {
-                cpuHook.executeClockCycle();
+                cpuHook.executeCycle();
             }, interval);
         } else {
             if (intervalRef.current) {
@@ -73,12 +73,13 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
             <h2 className="text-xl font-semibold mb-2 text-green-400">Controls</h2>
 
             {/* Sélection de programme */}
-            <div className="mb-4 flex gap-4 items-center flex-wrap">
+            <div className="mb-4 flex gap-4 items-center">
                 <label className="text-sm font-medium text-slate-300">Select Program:</label>
+
                 <select
                     value={currentProgram ?? ''}
                     onChange={(e) => setCurrentProgram(e.target.value || null)}
-                    className="bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white"
+                    className="bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white w-96"
                 >
                     <option key="none" value="">
                         None
@@ -96,48 +97,27 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
                         setCurrentProgram(null)
                     }}
                     disabled={!currentProgram}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
                 >
                     Load Program
                 </button>
             </div>
 
-            {/* Contrôles d'exécution */}
-            <div className="mb-4 flex gap-4 items-center flex-wrap">
-                <div className="flex gap-2">
+            <div className="mb-4 flex gap-4 items-center">
+
+                {/* Auto-play */}
+                <div className="flex items-center gap-2">
                     <button
                         onClick={() => setIsRunning(!isRunning)}
                         disabled={cpuHook.halted}
-                        className={`${
-                            isRunning 
-                                ? "bg-yellow-600 hover:bg-yellow-700" 
-                                : "bg-green-600 hover:bg-green-700"
-                        } disabled:bg-slate-600 disabled:cursor-not-allowed px-6 py-2 rounded transition-colors font-semibold`}
+                        className={`${isRunning
+                            ? "bg-yellow-600 hover:bg-yellow-700"
+                            : "bg-green-600 hover:bg-green-700"
+                            } disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors font-semibold`}
                     >
-                        {isRunning ? "⏸ Pause" : "▶ Play"}
+                        {isRunning ? "⏸ Pause" : "▶ Auto-Play"}
                     </button>
 
-                    <button
-                        onClick={cpuHook.executeClockCycle}
-                        disabled={cpuHook.halted || isRunning}
-                        className="bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-600 disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
-                    >
-                        ⏭ Step
-                    </button>
-
-                    <button
-                        onClick={() => {
-                            setIsRunning(false);
-                            resetComputer();
-                        }}
-                        className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded transition-colors"
-                    >
-                        🔄 Reset
-                    </button>
-                </div>
-
-                {/* Sélecteur de fréquence */}
-                <div className="flex items-center gap-2">
                     <label className="text-sm font-medium text-slate-300">Speed:</label>
                     <select
                         value={frequency}
@@ -152,23 +132,47 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
                         ))}
                     </select>
                 </div>
+
+                <div className="ms-auto flex items-center gap-6">
+                    <button
+                        onClick={cpuHook.executeCycle}
+                        disabled={cpuHook.halted || isRunning}
+                        className="bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
+                    >
+                        ⏭ Step
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            setIsRunning(false);
+                            resetComputer();
+                        }}
+                        className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded cursor-pointer disabled:cursor-not-allowed transition-colors"
+                    >
+                        Reset
+                    </button>
+                </div>
+
             </div>
 
+
             {/* Info programme */}
-            {currentProgramInfo && (
-                <div className="mt-4 p-4 bg-slate-900/50 rounded border border-slate-600">
-                    <div className="text-sm text-slate-300">
-                        <strong className="text-blue-400">Program:</strong> {currentProgramInfo.name}
+            {
+                currentProgramInfo && (
+                    <div className="mt-4 p-4 bg-slate-900/50 rounded border border-slate-600">
+                        <div className="text-sm text-slate-300">
+                            <strong className="text-blue-400">Program:</strong> {currentProgramInfo.name}
+                        </div>
+                        <div className="text-xs text-slate-400 mt-1">
+                            {currentProgramInfo.description}
+                        </div>
+                        <div className="mt-2 text-xs text-green-400">
+                            <strong>Expected:</strong> {currentProgramInfo.expectedResult}
+                        </div>
                     </div>
-                    <div className="text-xs text-slate-400 mt-1">
-                        {currentProgramInfo.description}
-                    </div>
-                    <div className="mt-2 text-xs text-green-400">
-                        <strong>Expected:</strong> {currentProgramInfo.expectedResult}
-                    </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
 

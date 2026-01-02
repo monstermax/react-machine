@@ -20,7 +20,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     const { computerHook } = props;
     const { cpuHook, romHook, ramHook, ioHook } = computerHook;
 
-    const [followInstruction, setFollowInstruction] = useState(false);
+    const [followInstruction, setFollowInstruction] = useState(true);
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const addressRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -95,6 +95,10 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     const currentMemory = fullMemoryView();
     const currentPC = cpuHook.getRegister("PC");
     const sortedMemory = Array.from(currentMemory.entries()).sort(([a], [b]) => a - b);
+
+    const MEMORY_MAP_REVERSE = Object.fromEntries(
+        Object.entries(MEMORY_MAP).map(e => [e[1], e[0]])
+    );
 
 
     const instructionMap = useMemo(() => {
@@ -240,6 +244,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                                         ? "bg-blue-900/30"
                                         : "bg-slate-900/50"
                                     }`}
+                                title={MEMORY_MAP_REVERSE[addr] ?? ''}
                             >
                                 <span className="text-yellow-400">
                                     {isPC && "→ "}

@@ -9,7 +9,7 @@ import type { Memory } from "@/types/cpu.types";
 export const MINI_OS: Memory = new Map([
     // === WAIT_FOR_PROGRAM (0x00) ===
     // Vérifier si un programme est chargé à PROGRAM_START
-    [0x00, Opcode.LOAD_MEM],
+    [0x00, Opcode.M_LOAD_A],
     [0x01, MEMORY_MAP.PROGRAM_START & 0xFF],        // Low byte
     [0x02, (MEMORY_MAP.PROGRAM_START >> 8) & 0xFF], // High byte
 

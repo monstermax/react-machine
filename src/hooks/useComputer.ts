@@ -14,7 +14,7 @@ export const useComputer = (): ComputerHook => {
     const ramHook = useRam();
     const ioHook = useIo();             // I/O ports
     const memoryHook = useMemory(romHook, ramHook, ioHook);
-    const cpuHook = useCpu(memoryHook);
+    const cpuHook = useCpu(memoryHook, ioHook);
 
 
     // Initialize RAM & CPU at boot

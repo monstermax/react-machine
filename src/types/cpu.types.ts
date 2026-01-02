@@ -6,8 +6,8 @@ export type Register =
 | "C" // Register C
 | "D" // Register D
 | "PC" // Program Counter // contient l'adresse de la prochaine instruction à aller chercher en mémoire avant de l'exécuter
-| "IR"
-| "SP" // Stack Pointer
+| "IR" // Instruction Register // Stocke l'instruction en cours d'exécution pendant le cycle fetch-decode-execute.
+| "SP" // Stack Pointer // Pointe vers le haut de la pile (stack) en mémoire
 | "FLAGS" // Bit 0: Carry, Bit 1: Zero
 ;
 

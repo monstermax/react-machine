@@ -18,8 +18,8 @@ export const useIo = (): IOHook => {
     // Devices
     const osDisk = useDiskDevice(MINI_OS);      // Device 0: 0xFF00-0xFF0F
     const programDisk = useDiskDevice(new Map); // Device 1: 0xFF10-0xFF1F
-    const leds = useLeds(); // Device 2: 0xFF20-0xFF2F
-    const interrupt = useInterrupt(); // Device 3
+    const leds = useLeds(); // Device 3: 0xFF20-0xFF2F
+    const interrupt = useInterrupt(); // Device 4
     const sevenSegment = useSevenSegment(); // Device 6
 
 

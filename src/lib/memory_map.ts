@@ -51,15 +51,23 @@ export const MEMORY_MAP = {
     PROGRAM_DISK_SIZE: 0xFF11, // Port 1: Get size
     PROGRAM_DISK_ADDR: 0xFF12, // Port 2: Set address
 
+    // Timer
+    TIMER_BASE: 0xFF20,
+    TIMER_COUNTER: 0xFF20,  // Lecture seule: compteur incrémenté à chaque cycle
+    TIMER_CONTROL: 0xFF21,  // Écriture: 0=stop, 1=start, 2=reset
+    TIMER_PRESCALER: 0xFF22, // Diviseur de fréquence
+
     // Device 3: LEDs
     LEDS_BASE: 0xFF30,
     LEDS_OUTPUT: 0xFF30,  // 8 LEDs (chaque bit = une LED)
 
-    // Device 4: Interrupt
+    // Interrupt Controller (0xFF40-0xFF4F)
     INTERRUPT_BASE: 0xFF40,
-    INTERRUPT_ENABLE: 0xFF40,  // Bitmask des interruptions activées
-    INTERRUPT_PENDING: 0xFF41, // Interruptions en attente
-    INTERRUPT_HANDLER: 0xFF42, // Adresse du handler
+    INTERRUPT_ENABLE: 0xFF40,     // R/W - Activer/désactiver IRQs (bitmask)
+    INTERRUPT_PENDING: 0xFF41,    // R   - IRQs en attente (read-only pour CPU)
+    INTERRUPT_ACK: 0xFF42,        // W   - Acquitter une IRQ (write-only)
+    INTERRUPT_MASK: 0xFF43,       // R/W - Masquer des IRQs temporairement
+    INTERRUPT_HANDLER: 0xFF44,    // R/W - Adresse du handler (optionnel)
 
     // Device 5: Keyboard
     KEYBOARD_DATA: 0xFF50,    // Dernier caractère tapé (ASCII)
@@ -110,6 +118,16 @@ export const MEMORY_MAP = {
     // ADC (Analog-to-Digital) // Lecture de valeurs analogiques simulées
     ADC_CHANNEL: 0xFFF0,      // Sélection canal 0-7
     ADC_VALUE: 0xFFF1,        // Valeur lue (0-255)
+
+
+    // IRQ Sources (pour référence)
+    IRQ_TIMER: 0,      // Bit 0 - Timer
+    IRQ_KEYBOARD: 1,   // Bit 1 - Clavier
+    IRQ_DISK: 2,       // Bit 2 - Disque
+    IRQ_UART: 3,       // Bit 3 - UART/Console
+    IRQ_BUTTON: 4,     // Bit 4 - Boutons UI
+    // Bits 5-7 réservés
+
 } as const;
 
 

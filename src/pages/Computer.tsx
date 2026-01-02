@@ -13,6 +13,7 @@ import { PanelRegisters } from "@/components/computer/PanelRegisters";
 import type { ProgramInfo } from "@/types/cpu.types";
 import type { LedsDevice } from "@/hooks/devices/useLeds";
 import type { SevenSegmentHook } from "@/hooks/devices/useSevenSegment";
+import { InterruptPanel } from "@/components/computer/InterruptPanel";
 
 
 export const ComputerPage: React.FC = () => {
@@ -93,6 +94,14 @@ export const ComputerPage: React.FC = () => {
                             <SevenSegmentDisplay
                                 device={ioHook.sevenSegment}
                                 label="Display 1"
+                            />
+                        </>
+                    )}
+
+                    {(true || currentProgram === 'timer_demo') && (
+                        <>
+                            <InterruptPanel
+                                interruptHook={ioHook.interrupt}
                             />
                         </>
                     )}

@@ -1,63 +1,182 @@
 
+import { useCallback, useState, useRef } from "react";
+
 import { MEMORY_MAP } from "@/lib/memory_map";
-import { useCallback, useState } from "react";
 
 
-// TODO ?
+export const useInterrupt = () => {
+    const [enabled, setEnabled] = useState(0);      // IRQs activées
+    const [pending, setPending] = useState(0);      // IRQs en attente
+    const [mask, setMask] = useState(0);            // IRQs masquées
+    const [handlerAddr, setHandlerAddr] = useState(0x0040); // Default handler
 
 
-export const useInterrupt = (): InterruptHook => {
-    const [enabled, setEnabled] = useState(0);
-    const [pending, setPending] = useState(0);
-    const [handlerAddr, setHandlerAddr] = useState(0);
+    // Pour les callbacks stables
+    const enabledRef = useRef(enabled);
+    const pendingRef = useRef(pending);
+    const maskRef = useRef(mask);
 
 
-    const read = useCallback((port: number): number => {
+    // Synchroniser les refs
+    const updateRefs = useCallback(() => {
+        enabledRef.current = enabled;
+        pendingRef.current = pending;
+        maskRef.current = mask;
+    }, [enabled, pending, mask]);
+
+
+    // Lecture depuis les ports IO
+    const read = useCallback((address: number): number => {
+        const port = address - MEMORY_MAP.INTERRUPT_BASE;
+
         switch (port) {
-            case MEMORY_MAP.INTERRUPT_ENABLE: return enabled;
-            case MEMORY_MAP.INTERRUPT_PENDING: return pending;
-            case MEMORY_MAP.INTERRUPT_HANDLER: return handlerAddr;
-            default: return 0;
+            case 0x00: // INTERRUPT_ENABLE
+                return enabled;
+
+            case 0x01: // INTERRUPT_PENDING (read-only)
+                // Retourne seulement les IRQs qui sont:
+                // 1. En attente (pending)
+                // 2. Activées (enabled) 
+                // 3. Non masquées (mask)
+                return pending & enabled & ~mask;
+
+            case 0x02: // INTERRUPT_ACK est write-only, retourne 0
+                return 0;
+
+            case 0x03: // INTERRUPT_MASK
+                return mask;
+
+            case 0x04: // INTERRUPT_HANDLER
+                return handlerAddr & 0xFF; // Low byte
+            case 0x05:
+                return (handlerAddr >> 8) & 0xFF; // High byte
+
+            default:
+                return 0;
         }
-    }, [enabled, pending, handlerAddr])
+    }, [enabled, pending, mask, handlerAddr]);
 
 
-    const write = useCallback((port: number, value: number): void => {
+    // Écriture vers les ports IO
+    const write = useCallback((address: number, value: number): void => {
+        const port = address - MEMORY_MAP.INTERRUPT_BASE;
+
         switch (port) {
-            case MEMORY_MAP.INTERRUPT_ENABLE:
+            case 0x00: // INTERRUPT_ENABLE
                 setEnabled(value & 0xFF);
                 break;
-            case MEMORY_MAP.INTERRUPT_HANDLER:
-                setHandlerAddr(value & 0xFFFF);
+
+            case 0x02: // INTERRUPT_ACK - acquitter une IRQ
+                const irqToAck = value & 0x07;
+                setPending(prev => prev & ~(1 << irqToAck));
                 break;
+
+            case 0x03: // INTERRUPT_MASK
+                setMask(value & 0xFF);
+                break;
+
+            case 0x04: // INTERRUPT_HANDLER low byte
+                setHandlerAddr(prev => (prev & 0xFF00) | (value & 0xFF));
+                break;
+            case 0x05: // INTERRUPT_HANDLER high byte
+                setHandlerAddr(prev => (prev & 0x00FF) | ((value & 0xFF) << 8));
+                break;
+
+            // INTERRUPT_PENDING (0x01) est read-only
         }
-    }, [enabled, pending, handlerAddr])
+
+        updateRefs();
+    }, [updateRefs]);
 
 
-    const requestInterrupt = (irq: number): void => {
-        setPending(pending => pending |= (1 << irq));
-    }
+    // Demander une interruption (appelé par les périphériques)
+    const requestInterrupt = useCallback((irq: number): void => {
+        if (irq < 0 || irq > 7) return;
 
-    const clearInterrupt = (irq: number): void => {
-        setPending(pending => pending &= ~(1 << irq));
-    }
+        setPending(prev => {
+            const newPending = prev | (1 << irq);
+            return newPending;
+        });
+
+        updateRefs();
+    }, [updateRefs]);
 
 
-    const romHook: InterruptHook = {
+    // Vérifier si une interruption est prête
+    const hasPendingInterrupt = useCallback((): boolean => {
+        return (pendingRef.current & enabledRef.current & ~maskRef.current) !== 0;
+    }, []);
+
+
+    // Obtenir l'IRQ la plus prioritaire en attente
+    const getPendingIRQ = useCallback((): number | null => {
+        const active = pendingRef.current & enabledRef.current & ~maskRef.current;
+
+        if (active === 0) return null;
+
+        // Priorité simple: bit le plus bas (IRQ 0 = plus haute priorité)
+        for (let i = 0; i < 8; i++) {
+            if (active & (1 << i)) return i;
+        }
+
+        return null;
+    }, []);
+
+
+    // Fonction pour le CPU pour acquitter
+    const acknowledgeInterrupt = useCallback((irq: number): void => {
+        setPending(prev => prev & ~(1 << irq));
+        updateRefs();
+    }, [updateRefs]);
+
+
+    // Reset
+    const reset = useCallback(() => {
+        setEnabled(0);
+        setPending(0);
+        setMask(0);
+        setHandlerAddr(0x0040);
+        updateRefs();
+    }, [updateRefs]);
+
+
+    const hook = {
+        // Fonctions Device
         read,
         write,
+
+        // Fonctions de contrôle
         requestInterrupt,
-        clearInterrupt,
+        acknowledgeInterrupt,
+        hasPendingInterrupt,
+        getPendingIRQ,
+        reset,
+
+        // État (pour UI/debug)
+        enabled,
+        pending,
+        mask,
+        handlerAddr,
     };
 
-    return romHook;
+    return hook;
 };
+
 
 
 export type InterruptHook = {
-    read: (address: number) => number
-    write: (address: number, value: number) => void
-    requestInterrupt: (irq: number) => void
-    clearInterrupt: (irq: number) => void
+    read: (address: number) => number;
+    write: (address: number, value: number) => void;
+    requestInterrupt: (irq: number) => void;
+    acknowledgeInterrupt: (irq: number) => void;
+    hasPendingInterrupt: () => boolean;
+    getPendingIRQ: () => number | null;
+    reset: () => void;
+    enabled: number;
+    pending: number;
+    mask: number;
+    handlerAddr: number;
 };
+
+
 
