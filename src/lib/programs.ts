@@ -1,7 +1,7 @@
 
 import { Opcode } from "./instructions";
 
-import type { ProgramInfo } from "@/types/cpu.types";
+import type { ProgramInfo, u8 } from "@/types/cpu.types";
 import { MEMORY_MAP } from "./memory_map";
 
 
@@ -17,7 +17,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x04, Opcode.ADD],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "A = 8"
     },
     add_10_25: {
@@ -31,7 +31,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x04, Opcode.ADD],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "A = 35"
     },
     double_addition: {
@@ -48,7 +48,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x07, Opcode.ADD],      // A = 18
             [0x08, Opcode.SYSCALL],
             [0x09, 0],               // ← Syscall 0 = exit
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "A = 18"
     },
     subtraction: {
@@ -62,7 +62,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x04, Opcode.SUB],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "A = 7"
     },
     logical_ops: {
@@ -76,7 +76,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x04, Opcode.AND],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "A = 8 (0b1000)"
     },
     increment_loop: {
@@ -105,7 +105,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x0A, 5],                 // Restaurer A = 5 (car SUB l'a mis à 0)
             [0x0B, Opcode.SYSCALL],
             [0x0C, 0],
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "A = 5"
     },
     memory_ops: {
@@ -124,7 +124,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x09, 0x00],       // High byte (0x0080)
             [0x0A, Opcode.SYSCALL],
             [0x0B, 0],               // ← Syscall 0 = exit
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "A = 42, Memory[0x80] = 42"
     },
     conditional_jump: {
@@ -141,7 +141,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x07, 100],        // A = 100
             [0x08, Opcode.SYSCALL],
             [0x09, 0],               // ← Syscall 0 = exit
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "A = 100"
     },
     overflow_test: {
@@ -155,7 +155,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x04, Opcode.ADD],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "A = 44 (overflow), Carry flag = 1"
     },
     blink_leds: {
@@ -174,7 +174,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x06, Opcode.JMP],
             [0x07, 0x02],  // Low
             [0x08, 0x02],  // High (0x0202 = PROGRAM_START + 0x02)
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "LEDs qui comptent en binaire de 0 à 255"
     },
     seven_segments: {
@@ -203,7 +203,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x0F, Opcode.JMP],
             [0x10, 0x02],  // Low
             [0x11, 0x02],  // High (0x0202 = PROGRAM_START + 0x02)
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "Compteur 0→F qui boucle"
     },
     stack_demo: {
@@ -237,7 +237,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Retour à l'appelant
             [0x14, Opcode.RET],
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "SP décrémenté/incrementé, PC sauvegardé/restauré"
     },
     interrupt_demo: {
@@ -290,7 +290,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Retour d'interruption
             [0x5B, Opcode.IRET],
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "Compteur incrémenté par interruption timer"
     },
     timer_demo: {
@@ -358,7 +358,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Retour
             [0x52, Opcode.IRET],
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "Compteur à 0x0080 incrémenté par interruptions timer"
     },
     four_registers: {
@@ -408,7 +408,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x10, 0x00], [0x11, 0x80], // Adresse 0x8000
 
             [0x12, Opcode.HALT],
-        ]),
+        ] as [u8, u8][]),
         expectedResult: "A = 10 (1+2+3+4), stocké à 0x8000, B=3, C=3, D=4"
     },
 };

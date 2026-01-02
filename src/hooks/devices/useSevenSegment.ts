@@ -1,11 +1,13 @@
+
 import { MEMORY_MAP } from "@/lib/memory_map";
+import type { u8 } from "@/types/cpu.types";
 import { useCallback, useState } from "react";
 
 
 // seven_seg.ts
 export const useSevenSegment = (): SevenSegmentHook => {
-    const [currentValue, setCurrentValue] = useState(0);
-    const [rawSegments, setRawSegments] = useState(0);
+    const [currentValue, setCurrentValue] = useState<u8>(0 as u8);
+    const [rawSegments, setRawSegments] = useState<u8>(0 as u8);
 
 
     // Mapping chiffre -> segments (bitmask)
@@ -27,31 +29,31 @@ export const useSevenSegment = (): SevenSegmentHook => {
         0b01011110, // d: segments b,c,d,e,g
         0b01111001, // E: segments a,d,e,f,g
         0b01110001, // F: segments a,e,f,g
-    ])
+    ] as u8[])
 
 
-    const read = useCallback((port: number): number => {
+    const read = useCallback((port: u8): u8 => {
         switch (port) {
             case 0: // Port 0 = DATA
                 return currentValue;
             case 1: // Port 1 = RAW
                 return rawSegments;
             default:
-                return 0;
+                return 0 as u8;
         }
     }, [currentValue, rawSegments])
 
 
-    const write = (port: number, value: number): void => {
+    const write = (port: u8, value: u8): void => {
         switch (port) {
             case 0: // Port 0 = DATA (0xFF60)
-                const digit = value & 0x0F;
+                const digit = (value & 0x0F) as u8;
                 setCurrentValue(digit);
-                setRawSegments(digitToSegments[digit] || 0);
+                setRawSegments(digitToSegments[digit] || 0 as u8);
                 break;
 
             case 1: // Port 1 = RAW (0xFF61)
-                setRawSegments(value & 0x7F);
+                setRawSegments((value & 0x7F) as u8);
                 break;
         }
     }
@@ -84,8 +86,8 @@ export const useSevenSegment = (): SevenSegmentHook => {
 
 
 export type SevenSegmentHook = {
-    read: (port: number) => number,
-    write: (port: number, value: number) => void,
+    read: (port: u8) => u8,
+    write: (port: u8, value: u8) => void,
     getSegments: () => boolean[],
     getCurrentDigit: () => number,
 

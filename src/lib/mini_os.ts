@@ -1,12 +1,12 @@
 
 import { Opcode } from "./instructions";
-import { MEMORY_MAP } from "./memory_map";
+import { mapAddress8To16, MEMORY_MAP } from "./memory_map";
 
-import type { Memory } from "@/types/cpu.types";
+import type { u16, u8 } from "@/types/cpu.types";
 
 
 // Mini OS : Attend qu'un programme soit chargé en RAM, puis l'exécute
-export const MINI_OS: Memory = new Map([
+export const MINI_OS: Map<u8, u8> = new Map([
     // === WAIT_FOR_PROGRAM (0x00) ===
     // Vérifier si un programme est chargé à PROGRAM_START
     [0x00, Opcode.M_LOAD_A],
@@ -28,16 +28,13 @@ export const MINI_OS: Memory = new Map([
     [0x09, Opcode.JMP],
     [0x0A, MEMORY_MAP.OS_START & 0xFF],             // Low: 0x00
     [0x0B, (MEMORY_MAP.OS_START >> 8) & 0xFF],      // High: 0x01
-]);
+] as [u8, u8][]);
 
 
-export const getMiniOSAbsolute = (): Map<number, number> => {
-    const absolute = new Map<number, number>();
-    for (const [relAddr, value] of MINI_OS.entries()) {
-        absolute.set(MEMORY_MAP.OS_START + relAddr, value);
-    }
-    return absolute;
-};
+export const getMiniOSAbsolute = (): Map<u16, u8> => {
+    const mapped: Map<u16, u8> = mapAddress8To16(MINI_OS, MEMORY_MAP.OS_START);
+    return mapped;
+}
 
 
 //console.log('MINI_OS:', MINI_OS)

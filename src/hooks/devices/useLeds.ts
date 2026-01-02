@@ -1,23 +1,24 @@
 
+import type { u8 } from "@/types/cpu.types";
 import { useCallback, useState } from "react";
 
 
 export const useLeds = (): LedsDevice => {
-    const [leds, setLeds] = useState(0); // 8 bits
+    const [leds, setLeds] = useState(0 as u8); // 8 bits
 
 
-    const read = (port: number): number => {
+    const read = (port: u8): u8 => {
         return leds;
     }
 
-    const write = (port: number, value: number): void => {
-        setLeds(value & 0xFF); // Garder seulement 8 bits
+    const write = (port: u8, value: u8): void => {
+        setLeds((value & 0xFF) as u8); // Garder seulement 8 bits
     }
 
 
-    const getLeds = useCallback((): number[] => {
+    const getLeds = useCallback((): u8[] => {
         // Retourne un tableau de bits pour l'affichage UI
-        return Array.from({ length: 8 }, (_, i) => (leds >> i) & 1);
+        return Array.from({ length: 8 }, (_, i) => ((leds >> i) & 1) as u8);
     }, [leds])
 
 
@@ -32,7 +33,7 @@ export const useLeds = (): LedsDevice => {
 
 
 export type LedsDevice = {
-    read: (address: number) => number
-    write: (address: number, value: number) => void
-    getLeds: () => number[]
+    read: (address: u8) => u8
+    write: (address: u8, value: u8) => void
+    getLeds: () => u8[]
 };

@@ -21,8 +21,11 @@ At power-on:
 
 */
 
+import type { u16, u8 } from "@/types/cpu.types";
+import { U16, U8 } from "./integers";
 
-export const MEMORY_MAP = {
+
+export const MEMORY_MAP = createMemoryMap({
     // ROM
     ROM_START: 0x0000,
     ROM_END: 0x00FF,
@@ -128,26 +131,34 @@ export const MEMORY_MAP = {
     IRQ_BUTTON: 4,     // Bit 4 - Boutons UI
     // Bits 5-7 réservés
 
-} as const;
+});
 
 
-export const isROM = (addr: number) =>
+
+function createMemoryMap<T extends Record<string, number>>(obj: T): { [K in keyof T]: u16 } {
+    return Object.fromEntries(
+        Object.entries(obj).map(([key, value]) => [key, value as unknown as u16])
+    ) as any;
+}
+
+
+export const isROM = (addr: u16) =>
     addr >= MEMORY_MAP.ROM_START && addr <= MEMORY_MAP.ROM_END;
 
-export const isRAM = (addr: number) =>
+export const isRAM = (addr: u16) =>
     addr >= MEMORY_MAP.OS_START && addr <= MEMORY_MAP.STACK_END;
 
-export const isIO = (addr: number) =>
+export const isIO = (addr: u16) =>
     addr >= MEMORY_MAP.IO_START && addr <= MEMORY_MAP.IO_END;
 
 
 // Convertir adresse mémoire absolue en port I/O relatif
-export const memoryToIOPort = (addr: number): number => {
-    return addr - MEMORY_MAP.IO_START;
+export const memoryToIOPort = (addr: u16): u8 => {
+    return U8((addr - MEMORY_MAP.IO_START));
 };
 
 
-export const isImportantIOAddress = (addr: number): boolean => {
+export const isImportantIOAddress = (addr: u16): boolean => {
     return addr === MEMORY_MAP.LEDS_OUTPUT || 
            addr === MEMORY_MAP.SEVEN_SEG_DATA ||
            addr === MEMORY_MAP.SEVEN_SEG_RAW ||
@@ -159,3 +170,14 @@ export const isImportantIOAddress = (addr: number): boolean => {
            addr === MEMORY_MAP.PROGRAM_DISK_ADDR;
 };
 
+
+export const mapAddress8To16 = (memory8: Map<u8, u8>, offset: u16): Map<u16, u8> => {
+    const absolute = new Map<u16, u8>();
+
+    for (const [relAddr, value] of memory8.entries()) {
+        const absAddr = U16(offset + relAddr);
+        absolute.set(absAddr, value);
+    }
+
+    return absolute;
+};

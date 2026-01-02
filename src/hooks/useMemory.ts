@@ -4,17 +4,18 @@ import { MEMORY_MAP, isROM, isIO, memoryToIOPort } from "@/lib/memory_map";
 import type { IOHook } from "./useIo";
 import type { RomHook } from "./useRom";
 
-import type { Memory } from "@/types/cpu.types";
+import type { u16, u8 } from "@/types/cpu.types";
 import type { RamHook } from "./useRam";
+import { U8 } from "@/lib/integers";
 
 
 export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): MemoryHook => {
 
     // Read from Memory
-    const readMemory = useCallback((address: number): number => {
+    const readMemory = useCallback((address: u16): u8 => {
         // ROM read
         if (isROM(address)) {
-            return romHook.storage.get(address) ?? 0;
+            return romHook.storage.get(U8(address)) ?? 0 as u8;
         }
 
         // I/O read - déléguer au gestionnaire I/O
@@ -23,12 +24,12 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
         }
 
         // RAM read
-        return ramHook.storage.get(address) ?? 0;
+        return ramHook.storage.get(address) ?? 0 as u8;
     }, [ramHook.storage, ioHook, romHook.storage]);
 
 
     // Write to Memory
-    const writeMemory = useCallback((address: number, value: number) => {
+    const writeMemory = useCallback((address: u16, value: u8) => {
         // ROM is read-only!
         if (isROM(address)) {
             console.warn(`Attempted write to ROM at 0x${address.toString(16)}`);
@@ -44,7 +45,7 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
         // RAM write
         ramHook.setStorage(m => {
             const newMap = new Map(m);
-            newMap.set(address, value & 0xFF);
+            newMap.set(address, (value & 0xFF) as u8);
             return newMap;
         });
     }, [ioHook]);
@@ -60,6 +61,7 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
 
 
 export type MemoryHook = {
-    readMemory: (address: number) => number;
-    writeMemory: (address: number, value: number) => void;
+    readMemory: (address: u16) => u8;
+    writeMemory: (address: u16, value: u8) => void;
 };
+

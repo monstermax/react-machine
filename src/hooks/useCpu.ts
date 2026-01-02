@@ -5,23 +5,23 @@ import { Opcode } from "@/lib/instructions";
 import { MEMORY_MAP } from "@/lib/memory_map";
 import type { MemoryHook } from "./useMemory";
 
-import type { Register } from "@/types/cpu.types";
+import type { Register, Register16, Register8, u16, u8 } from "@/types/cpu.types";
 import type { IOHook } from "./useIo";
 
 
 export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
     // CPU STATES
-    const [registers, setRegisters] = useState<Map<string, number>>(new Map([
-        ["A", 0],      // Register A
-        ["B", 0],      // Register B
-        ["C", 0],      // Register C
-        ["D", 0],      // Register D
-        ["PC", 0],     // Program Counter
-        ["IR", 0],     // Instruction Register
-        ["SP", 0],     // Stack Pointer
-        ["FLAGS", 0],  // Bit 0: Carry, Bit 1: Zero
-    ]));
+    const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map([
+        ["A", 0 as u8],      // Register A
+        ["B", 0 as u8],      // Register B
+        ["C", 0 as u8],      // Register C
+        ["D", 0 as u8],      // Register D
+        ["PC", 0 as u16],     // Program Counter
+        ["IR", 0 as u8],     // Instruction Register
+        ["SP", 0 as u16],     // Stack Pointer
+        ["FLAGS", 0 as u8],  // Bit 0: Carry, Bit 1: Zero
+    ] as [string, u8 | u16][]));
 
     const [halted, setHalted] = useState<boolean>(false);
 
@@ -33,48 +33,48 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
     // ALU
     const ALU = {
-        add: (a: number, b: number): number => {
-            const result = (a + b) & 0xFF;
+        add: (a: u8, b: u8): u8 => {
+            const result = ((a + b) & 0xFF) as u8;
             const carry = (a + b) > 0xFF;
             const zero = result === 0;
             setFlags(zero, carry);
             return result;
         },
 
-        sub: (a: number, b: number): number => {
-            const result = (a - b) & 0xFF;
+        sub: (a: u8, b: u8): u8 => {
+            const result = ((a - b) & 0xFF) as u8;
             const zero = result === 0;
             const carry = a < b; // Borrow
             setFlags(zero, carry);
             return result;
         },
 
-        and: (a: number, b: number): number => {
-            const result = (a & b) & 0xFF;
+        and: (a: u8, b: u8): u8 => {
+            const result = ((a & b) & 0xFF) as u8;
             setFlags(result === 0, false);
             return result;
         },
 
-        or: (a: number, b: number): number => {
-            const result = (a | b) & 0xFF;
+        or: (a: u8, b: u8): u8 => {
+            const result = ((a | b) & 0xFF) as u8;
             setFlags(result === 0, false);
             return result;
         },
 
-        xor: (a: number, b: number): number => {
-            const result = (a ^ b) & 0xFF;
+        xor: (a: u8, b: u8): u8 => {
+            const result = ((a ^ b) & 0xFF) as u8;
             setFlags(result === 0, false);
             return result;
         },
 
-        inc: (value: number): number => {
-            const result = (value + 1) & 0xFF;
+        inc: (value: u8): u8 => {
+            const result = ((value + 1) & 0xFF) as u8;
             setFlags(result === 0, false);
             return result;
         },
 
-        dec: (value: number): number => {
-            const result = (value - 1) & 0xFF;
+        dec: (value: u8): u8 => {
+            const result = ((value - 1) & 0xFF) as u8;
             setFlags(result === 0, false);
             return result;
         },
@@ -83,18 +83,24 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
     // CPU METHODS
 
-    const getRegister = useCallback((reg: Register): number => {
-        return registers.get(reg) ?? 0;
-    }, [registers])
+    const getRegister = useCallback(<T extends Register>(reg: T): T extends Register16 ? u16 : u8 => {
+        const value = registers.get(reg) ?? 0;
+
+        if (reg === "PC" || reg === "SP") {
+            return value as T extends Register16 ? u16 : u8;
+        } else {
+            return value as T extends Register16 ? u16 : u8;
+        }
+    }, [registers]);
 
 
-    const setRegister = useCallback((reg: Register, value: number) => {
+    const setRegister = useCallback((reg: Register, value: u8 | u16) => {
         // PC et SP sont 16-bit, les autres 8-bit
         if (reg === "PC" || reg === "SP") {
-            registers.set(reg, value & 0xFFFF); // 16-bit
+            registers.set(reg, (value & 0xFFFF) as u16); // 16-bit
 
         } else {
-            registers.set(reg, value & 0xFF);   // 8-bit
+            registers.set(reg, (value & 0xFF) as u8);   // 8-bit
         }
     }, [registers])
 
@@ -106,7 +112,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
 
     const setFlags = useCallback((zero: boolean, carry: boolean) => {
-        registers.set("FLAGS", (zero ? 0b10 : 0) | (carry ? 0b01 : 0));
+        registers.set("FLAGS", ((zero ? 0b10 : 0) | (carry ? 0b01 : 0)) as u8);
     }, [registers])
 
 
@@ -116,7 +122,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
         for (const [key] of registers) {
             if (key !== "PC") {
-                setRegister(key as Register, 0);
+                setRegister(key as Register, 0 as u8 | u16);
             }
         }
 
@@ -173,12 +179,12 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
         // PUSH Flags
         memory.writeMemory(sp, flags);
-        setRegister("SP", sp - 1);
+        setRegister("SP", (sp - 1) as u16);
 
         // PUSH PC (little-endian)
-        memory.writeMemory(sp - 1, pc & 0xFF);      // Low byte
-        memory.writeMemory(sp - 2, (pc >> 8) & 0xFF); // High byte
-        setRegister("SP", sp - 3);
+        memory.writeMemory((sp - 1) as u16, (pc & 0xFF) as u8);      // Low byte
+        memory.writeMemory((sp - 2) as u16, ((pc >> 8) & 0xFF) as u8); // High byte
+        setRegister("SP", (sp - 3) as u16);
 
         // 3. Acquitter l'interruption
         ioHook.interrupt.acknowledgeInterrupt(irq);
@@ -187,7 +193,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         let handlerAddress = ioHook.interrupt.handlerAddr;
         if (handlerAddress === 0) {
             // Vecteur par défaut: 0x0040 + irq*4
-            handlerAddress = 0x0040 + (irq * 4);
+            handlerAddress = (0x0040 + (irq * 4)) as u16;
         }
 
         setRegister("PC", handlerAddress);
@@ -197,11 +203,11 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
 
     // Execute an instruction
-    const executeOpcode = useCallback((pc: number, instruction: number) => {
+    const executeOpcode = useCallback((pc: u16, instruction: u8) => {
         switch (instruction) {
             // ===== SYSTEM =====
             case Opcode.NOP:
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.SYSCALL:
@@ -214,265 +220,225 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
             // ===== REGISTERS INSTRUCTIONS =====
             case Opcode.R_LOAD_A:
-                setRegister("A", memory.readMemory(pc + 1));
-                setRegister("PC", pc + 2);
+                setRegister("A", memory.readMemory((pc + 1) as u16));
+                setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.R_LOAD_B:
-                setRegister("B", memory.readMemory(pc + 1));
-                setRegister("PC", pc + 2);
+                setRegister("B", memory.readMemory((pc + 1) as u16));
+                setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.R_LOAD_C:
-                setRegister("C", memory.readMemory(pc + 1));
-                setRegister("PC", pc + 2);
+                setRegister("C", memory.readMemory((pc + 1) as u16));
+                setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.R_LOAD_D:
-                setRegister("D", memory.readMemory(pc + 1));
-                setRegister("PC", pc + 2);
+                setRegister("D", memory.readMemory((pc + 1) as u16));
+                setRegister("PC", (pc + 2) as u16);
                 break;
 
             // ===== ALU INSTRUCTIONS =====
             case Opcode.ADD:
                 setRegister("A", ALU.add(getRegister("A"), getRegister("B")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.SUB:
                 setRegister("A", ALU.sub(getRegister("A"), getRegister("B")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.AND:
                 setRegister("A", ALU.and(getRegister("A"), getRegister("B")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.OR:
                 setRegister("A", ALU.or(getRegister("A"), getRegister("B")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.XOR:
                 setRegister("A", ALU.xor(getRegister("A"), getRegister("B")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.INC_A:
                 setRegister("A", ALU.inc(getRegister("A")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.DEC_A:
                 setRegister("A", ALU.dec(getRegister("A")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.INC_B:
                 setRegister("B", ALU.inc(getRegister("B")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
             case Opcode.DEC_B:
                 setRegister("B", ALU.dec(getRegister("B")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.INC_C:
                 setRegister("C", ALU.inc(getRegister("C")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.DEC_C:
                 setRegister("C", ALU.dec(getRegister("C")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.INC_D:
                 setRegister("D", ALU.inc(getRegister("D")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.DEC_D:
                 setRegister("D", ALU.dec(getRegister("D")));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             // ===== JUMP INSTRUCTIONS =====
             case Opcode.JMP:
-                const jmpLow = memory.readMemory(pc + 1);
-                const jmpHigh = memory.readMemory(pc + 2);
-                const jmpAddr = (jmpHigh << 8) | jmpLow;
-                setRegister("PC", jmpAddr);
+                setRegister("PC", readMem16(pc));
                 break;
 
             case Opcode.JZ:
                 if (getFlag('zero')) {
-                    const jzLow = memory.readMemory(pc + 1);
-                    const jzHigh = memory.readMemory(pc + 2);
-                    const jzAddr = (jzHigh << 8) | jzLow;
-                    setRegister("PC", jzAddr);
+                    setRegister("PC", readMem16(pc));
                 } else {
-                    setRegister("PC", pc + 3);
+                    setRegister("PC", (pc + 3) as u16);
                 }
                 break;
 
             case Opcode.JNZ:
                 if (!getFlag('zero')) {
-                    const jnzLow = memory.readMemory(pc + 1);
-                    const jnzHigh = memory.readMemory(pc + 2);
-                    const jnzAddr = (jnzHigh << 8) | jnzLow;
-                    setRegister("PC", jnzAddr);
+                    setRegister("PC", readMem16(pc));
                 } else {
-                    setRegister("PC", pc + 3);
+                    setRegister("PC", (pc + 3) as u16);
                 }
                 break;
 
             case Opcode.JC:
                 if (getFlag('carry')) {
-                    const jcLow = memory.readMemory(pc + 1);
-                    const jcHigh = memory.readMemory(pc + 2);
-                    const jcAddr = (jcHigh << 8) | jcLow;
-                    setRegister("PC", jcAddr);
+                    setRegister("PC", readMem16(pc));
                 } else {
-                    setRegister("PC", pc + 3);
+                    setRegister("PC", (pc + 3) as u16);
                 }
                 break;
 
             // ===== MEMORY STORE INSTRUCTIONS =====
             case Opcode.M_STORE_A:
                 // M_STORE_A addr16 : Memory[addr16] = A
-                const storeLow = memory.readMemory(pc + 1);
-                const storeHigh = memory.readMemory(pc + 2);
-                const storeAddr = (storeHigh << 8) | storeLow;
-                memory.writeMemory(storeAddr, getRegister("A"));
-                setRegister("PC", pc + 3);
+                memory.writeMemory(readMem16(pc), getRegister("A"));
+                setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.M_STORE_B:
                 // M_STORE_B addr16 : Memory[addr16] = B
-                const storeBLow = memory.readMemory(pc + 1);
-                const storeBHigh = memory.readMemory(pc + 2);
-                const storeBAddr = (storeBHigh << 8) | storeBLow;
-                memory.writeMemory(storeBAddr, getRegister("B"));
-                setRegister("PC", pc + 3);
+                memory.writeMemory(readMem16(pc), getRegister("B"));
+                setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.M_STORE_C:
                 // M_STORE_C addr16 : Memory[addr16] = C
-                const storeCLow = memory.readMemory(pc + 1);
-                const storeCHigh = memory.readMemory(pc + 2);
-                const storeCAddr = (storeCHigh << 8) | storeCLow;
-                memory.writeMemory(storeCAddr, getRegister("C"));
-                setRegister("PC", pc + 3);
+                memory.writeMemory(readMem16(pc), getRegister("C"));
+                setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.M_STORE_D:
                 // M_STORE_D addr16 : Memory[addr16] = D
-                const storeDLow = memory.readMemory(pc + 1);
-                const storeDHigh = memory.readMemory(pc + 2);
-                const storeDAddr = (storeDHigh << 8) | storeDLow;
-                memory.writeMemory(storeDAddr, getRegister("D"));
-                setRegister("PC", pc + 3);
+                memory.writeMemory(readMem16(pc), getRegister("D"));
+                setRegister("PC", (pc + 3) as u16);
                 break;
 
             // ===== MEMORY LOAD INSTRUCTIONS =====
             case Opcode.M_LOAD_A:
                 // M_LOAD_A addr16 : A = Memory[addr16]
-                const loadLow = memory.readMemory(pc + 1);
-                const loadHigh = memory.readMemory(pc + 2);
-                const loadAddr = (loadHigh << 8) | loadLow;
-                const value = memory.readMemory(loadAddr);
+                const value = memory.readMemory(readMem16(pc));
                 setRegister("A", value);
                 setFlags(value === 0, false);
-                setRegister("PC", pc + 3);
+                setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.M_LOAD_B:
                 // M_LOAD_B addr16 : B = Memory[addr16]
-                const loadBLow = memory.readMemory(pc + 1);
-                const loadBHigh = memory.readMemory(pc + 2);
-                const loadBAddr = (loadBHigh << 8) | loadBLow;
-                const valueB = memory.readMemory(loadBAddr);
+                const valueB = memory.readMemory(readMem16(pc));
                 setRegister("B", valueB);
                 setFlags(valueB === 0, false);
-                setRegister("PC", pc + 3);
+                setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.M_LOAD_C:
                 // M_LOAD_C addr16 : C = Memory[addr16]
-                const loadCLow = memory.readMemory(pc + 1);
-                const loadCHigh = memory.readMemory(pc + 2);
-                const loadCAddr = (loadCHigh << 8) | loadCLow;
-                const valueC = memory.readMemory(loadCAddr);
+                const valueC = memory.readMemory(readMem16(pc));
                 setRegister("C", valueC);
                 setFlags(valueC === 0, false);
-                setRegister("PC", pc + 3);
+                setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.M_LOAD_D:
                 // M_LOAD_D addr16 : D = Memory[addr16]
-                const loadDLow = memory.readMemory(pc + 1);
-                const loadDHigh = memory.readMemory(pc + 2);
-                const loadDAddr = (loadDHigh << 8) | loadDLow;
-                const valueD = memory.readMemory(loadDAddr);
+                const valueD = memory.readMemory(readMem16(pc));
                 setRegister("D", valueD);
                 setFlags(valueD === 0, false);
-                setRegister("PC", pc + 3);
+                setRegister("PC", (pc + 3) as u16);
                 break;
 
             // ===== PUSH =====
             case Opcode.PUSH_A: {
                 pushValue(getRegister("A"));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
             }
 
             case Opcode.PUSH_B:
                 pushValue(getRegister("B"));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.PUSH_C:
                 pushValue(getRegister("C"));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.PUSH_D:
                 pushValue(getRegister("D"));
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             // ===== POP =====
             case Opcode.POP_A:
                 setRegister("A", popValue());
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.POP_B:
                 setRegister("B", popValue());
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.POP_C:
                 setRegister("C", popValue());
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.POP_D:
                 setRegister("D", popValue());
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             // ===== STACK =====
             case Opcode.SET_SP:
                 // SET_SP imm16 : SP = valeur immédiate 16-bit
-                const spLow = memory.readMemory(pc + 1);
-                const spHigh = memory.readMemory(pc + 2);
-                const newSP = (spHigh << 8) | spLow;
-
-                setRegister("SP", newSP);
-                setRegister("PC", pc + 3);
+                setRegister("SP", readMem16(pc));
+                setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.CALL:
@@ -486,12 +452,12 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
             // ===== INTERRUPTS =====
             case Opcode.EI:  // Enable Interrupts
                 setInterruptsEnabled(true);
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.DI:  // Disable Interrupts
                 setInterruptsEnabled(false);
-                setRegister("PC", pc + 1);
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.IRET: // Return from Interrupt
@@ -505,25 +471,39 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
     }, [memory]);
 
 
+    const readMem8 = useCallback((pc: u16): u8 => {
+        const value = memory.readMemory((pc + 1) as u16);
+        return value;
+    }, [memory])
+
+
+    const readMem16 = useCallback((pc: u16): u16 => {
+        const low = memory.readMemory((pc + 1) as u16);
+        const high = memory.readMemory((pc + 2) as u16);
+        const value = ((high << 8) | low) as u16;
+        return value;
+    }, [memory])
+
+
     // Fonction pour push une valeur sur la pile
-    const pushValue = useCallback((value: number) => {
+    const pushValue = useCallback((value: u8) => {
         let sp = getRegister("SP");
 
         // Écrire la valeur à [SP]
         memory.writeMemory(sp, value);
 
         // Décrémenter SP (pile descend)
-        sp = (sp - 1) & 0xFFFF;
+        sp = ((sp - 1) & 0xFFFF) as u16;
         setRegister("SP", sp);
     }, [memory, getRegister, setRegister]);
 
 
     // Fonction pour pop une valeur de la pile
-    const popValue = useCallback((): number => {
+    const popValue = useCallback((): u8 => {
         let sp = getRegister("SP");
 
         // Incrémenter SP d'abord (pile remonte)
-        sp = (sp + 1) & 0xFFFF;
+        sp = ((sp + 1) & 0xFFFF) as u16;
 
         // Lire la valeur à [SP]
         const value = memory.readMemory(sp);
@@ -536,15 +516,15 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
 
     // Fonction pour CALL
-    const handleSyscall = useCallback((pc: number) => {
-        const syscallNum = memory.readMemory(pc + 1);
+    const handleSyscall = useCallback((pc: u16) => {
+        const syscallNum = memory.readMemory((pc + 1) as u16);
 
         switch (syscallNum) {
             case 0: // exit
                 console.log("📍 Program exit (syscall 0)");
                 // Clear program memory
                 for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
-                    memory.writeMemory(addr, 0);
+                    memory.writeMemory(addr, 0 as u8);
                     break; // TRES TRES LENT !!! => on ne vide que la 1ere adresse
                 }
 
@@ -554,30 +534,30 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
             case 1: // pause
                 // TODO: mettre en pause dans l'interface UI
-                setRegister("PC", pc + 2);
+                setRegister("PC", (pc + 2) as u16);
                 break;
 
             case 2: // print_char - afficher A comme caractère
                 console.log(`📝 print_char: ${String.fromCharCode(getRegister("A"))}`);
-                setRegister("PC", pc + 2);
+                setRegister("PC", (pc + 2) as u16);
                 break;
 
             case 3: // print_num - afficher A comme nombre
                 console.log(`📊 print_num: ${getRegister("A")}`);
-                setRegister("PC", pc + 2);
+                setRegister("PC", (pc + 2) as u16);
                 break;
 
             // Autres syscalls possibles : read, write, etc.
 
             default:
                 console.warn(`Unknown syscall: ${syscallNum}`);
-                setRegister("PC", pc + 2);
+                setRegister("PC", (pc + 2) as u16);
                 break;
         }
     }, [memory, getRegister, setRegister]);
 
 
-    const handleCall = useCallback((pc: number) => {
+    const handleCall = useCallback((pc: u16) => {
         // Adresse de retour = PC + 3 (opcode + 2 bytes d'adresse)
         const returnAddr = pc + 3;
 
@@ -585,19 +565,17 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         let sp = getRegister("SP");
 
         // PUSH high byte
-        memory.writeMemory(sp, (returnAddr >> 8) & 0xFF);
-        sp = (sp - 1) & 0xFFFF;
+        memory.writeMemory(sp, ((returnAddr >> 8) & 0xFF) as u8);
+        sp = ((sp - 1) & 0xFFFF) as u16;
 
         // PUSH low byte
-        memory.writeMemory(sp, returnAddr & 0xFF);
-        sp = (sp - 1) & 0xFFFF;
+        memory.writeMemory(sp, (returnAddr & 0xFF) as u8);
+        sp = ((sp - 1) & 0xFFFF) as u16;
 
         setRegister("SP", sp);
 
         // Lire l'adresse de destination
-        const addrLow = memory.readMemory(pc + 1);
-        const addrHigh = memory.readMemory(pc + 2);
-        const callAddr = (addrHigh << 8) | addrLow;
+        const callAddr = readMem16(pc);
 
         // Sauter
         setRegister("PC", callAddr);
@@ -609,14 +587,14 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         let sp = getRegister("SP");
 
         // POP low byte
-        sp = (sp + 1) & 0xFFFF;
+        sp = ((sp + 1) & 0xFFFF) as u16;
         const low = memory.readMemory(sp);
 
         // POP high byte
-        sp = (sp + 1) & 0xFFFF;
+        sp = ((sp + 1) & 0xFFFF) as u16;
         const high = memory.readMemory(sp);
 
-        const retAddr = (high << 8) | low;
+        const retAddr = ((high << 8) | low) as u16;
 
         // Mettre à jour SP
         setRegister("SP", sp);
@@ -631,15 +609,15 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         let sp = getRegister("SP");
 
         // POP PC
-        sp = (sp + 1) & 0xFFFF;
+        sp = ((sp + 1) & 0xFFFF) as u16;
         const pcLow = memory.readMemory(sp);
 
-        sp = (sp + 1) & 0xFFFF;
+        sp = ((sp + 1) & 0xFFFF) as u16;
         const pcHigh = memory.readMemory(sp);
-        const returnAddr = (pcHigh << 8) | pcLow;
+        const returnAddr = ((pcHigh << 8) | pcLow) as u16;
 
         // POP Flags
-        sp = (sp + 1) & 0xFFFF;
+        sp = ((sp + 1) & 0xFFFF) as u16;
         const flags = memory.readMemory(sp);
 
         // Mettre à jour registres
@@ -676,8 +654,8 @@ export type CpuHook = {
     registers: Map<string, number>,
     clockCycle: number;
     ALU: Record<string, (...args: any[]) => any>
-    getRegister: (reg: Register) => number,
-    setRegister: (reg: Register, value: number) => void,
+    getRegister: (reg: Register) => u8 | u16,
+    setRegister: (reg: Register, value: u8 | u16) => void,
     getFlag: (flag: "zero" | "carry") => boolean,
     setFlags: (zero: boolean, carry: boolean) => void,
     executeCycle: () => void,

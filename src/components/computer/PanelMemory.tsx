@@ -5,7 +5,8 @@ import { getOpcodeName, INSTRUCTIONS_WITH_OPERAND, INSTRUCTIONS_WITH_TWO_OPERAND
 import { isROM, isRAM, MEMORY_MAP, memoryToIOPort, isImportantIOAddress, isIO } from "@/lib/memory_map";
 
 import type { ComputerHook } from "@/hooks/useComputer";
-import type { Memory } from "@/types/cpu.types";
+import type { u16, u8 } from "@/types/cpu.types";
+import { U16 } from "@/lib/integers";
 
 
 export type PanelMemoryProps = {
@@ -30,12 +31,12 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
 
 
     // Combiner toute la mémoire (ROM + RAM + I/O)
-    const fullMemoryView = useCallback((): Memory => {
-        const view = new Map<number, number>();
+    const fullMemoryView = useCallback((): Map<u16, u8> => {
+        const view = new Map<u16, u8>();
 
         // ROM
         for (const [addr, value] of romHook.storage.entries()) {
-            view.set(addr, value);
+            view.set(U16(addr), value);
         }
 
         // RAM
@@ -44,7 +45,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
         }
 
         // I/O - Adresses de départ des devices
-        const ioStartAddresses = [
+        const ioStartAddresses: u16[] = [
             MEMORY_MAP.OS_DISK_DATA,
             MEMORY_MAP.PROGRAM_DISK_DATA,
             MEMORY_MAP.LEDS_OUTPUT,
@@ -174,7 +175,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
 
 
     // Déterminer la section d'une adresse
-    const getSection = (addr: number): string => {
+    const getSection = (addr: u16): string => {
         if (isROM(addr)) return "ROM";
 
         if (isIO(addr)) return "I/O";

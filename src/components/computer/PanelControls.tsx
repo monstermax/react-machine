@@ -7,37 +7,40 @@ import type { ComputerHook } from "@/hooks/useComputer";
 
 export type PanelControlsProps = {
     computerHook: ComputerHook;
-    currentProgram: string | null;
-    loadProgram: () => void;
+    loadProgram: (programName: string) => void;
     resetComputer: () => void;
-    setCurrentProgram: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 
-export const PanelControls: React.FC<PanelControlsProps> = (props) => {
-    const { computerHook, currentProgram } = props;
-    const { cpuHook } = computerHook;
-    const { loadProgram, setCurrentProgram, resetComputer } = props;
+// Fréquences disponibles
+const frequencies = [
+    { label: "0.1 Hz (très lent)", value: 0.1 },
+    { label: "0.5 Hz", value: 0.5 },
+    { label: "1 Hz", value: 1 },
+    { label: "2 Hz", value: 2 },
+    { label: "5 Hz", value: 5 },
+    { label: "10 Hz", value: 10 },
+    { label: "20 Hz", value: 20 },
+    { label: "50 Hz", value: 50 },
+    { label: "100 Hz (rapide)", value: 100 },
+];
 
-    const currentProgramInfo = currentProgram ? programs[currentProgram] : null;
+
+export const PanelControls: React.FC<PanelControlsProps> = (props) => {
+    const { computerHook } = props;
+    const { cpuHook } = computerHook;
+    const { loadProgram, resetComputer } = props;
+
+    const [currentProgram, setCurrentProgram] = useState<string | null>(null);
 
     // État Play/Pause
     const [isRunning, setIsRunning] = useState(false);
     const [frequency, setFrequency] = useState(1); // Hz (cycles par seconde)
     const intervalRef = useRef<number | null>(null);
 
-    // Fréquences disponibles
-    const frequencies = [
-        { label: "0.1 Hz (très lent)", value: 0.1 },
-        { label: "0.5 Hz", value: 0.5 },
-        { label: "1 Hz", value: 1 },
-        { label: "2 Hz", value: 2 },
-        { label: "5 Hz", value: 5 },
-        { label: "10 Hz", value: 10 },
-        { label: "20 Hz", value: 20 },
-        { label: "50 Hz", value: 50 },
-        { label: "100 Hz (rapide)", value: 100 },
-    ];
+
+    const currentProgramInfo = currentProgram ? programs[currentProgram] : null;
+
 
     // Gestion du timer
     useEffect(() => {
@@ -93,7 +96,7 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
 
                 <button
                     onClick={() => {
-                        loadProgram();
+                        loadProgram(currentProgram ?? '');
                         setCurrentProgram(null)
                     }}
                     disabled={!currentProgram}

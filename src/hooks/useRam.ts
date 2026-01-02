@@ -1,15 +1,13 @@
 
 import { useState } from "react";
 
-import { getMiniOSAbsolute } from "@/lib/mini_os";
-
-import type { Memory } from "@/types/cpu.types";
+import type { u16, u8 } from "@/types/cpu.types";
 
 
 export const useRam = (): RamHook => {
-    const [storage, setStorage] = useState<Memory>(new Map);
+    const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
 
-    //console.log('RAM:', storage)
+    console.log('RAM:', storage)
 
     const ramHook: RamHook = {
         storage,
@@ -21,7 +19,7 @@ export const useRam = (): RamHook => {
 
 
 export type RamHook = {
-    storage: Memory;
-    setStorage: React.Dispatch<React.SetStateAction<Memory>>;
+    storage: Map<u16, u8>;
+    setStorage: React.Dispatch<React.SetStateAction<Map<u16, u8>>>;
 };
 

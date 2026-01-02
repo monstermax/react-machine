@@ -3,12 +3,14 @@ import { useState } from "react";
 
 import { BOOTLOADER } from "@/lib/bootloader";
 
-import type { Memory } from "@/types/cpu.types";
+import type { u8 } from "@/types/cpu.types";
 
 
 export const useRom = (): RomHook => {
     // ROM est immuable, initialisée avec le bootloader
-    const [storage] = useState<Memory>(new Map(BOOTLOADER));
+    const [storage] = useState<Map<u8, u8>>(new Map(BOOTLOADER));
+
+    console.log('ROM:', storage)
 
     const romHook: RomHook = {
         storage,
@@ -19,5 +21,5 @@ export const useRom = (): RomHook => {
 
 
 export type RomHook = {
-    storage: Memory;
+    storage: Map<u8, u8>;
 };
