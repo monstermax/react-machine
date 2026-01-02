@@ -61,10 +61,55 @@ export const MEMORY_MAP = {
     INTERRUPT_PENDING: 0xFF41, // Interruptions en attente
     INTERRUPT_HANDLER: 0xFF42, // Adresse du handler
 
+    // Device 5: Keyboard
+    KEYBOARD_DATA: 0xFF50,    // Dernier caractère tapé (ASCII)
+    KEYBOARD_STATUS: 0xFF51,  // Bit 0: touche disponible
+
     // Device 6: Afficheur 7 Segments
     SEVEN_SEG_BASE: 0xFF60,
     SEVEN_SEG_DATA: 0xFF60,  // Chiffre à afficher (0-15 pour 0-F)
     SEVEN_SEG_RAW: 0xFF61,   // Contrôle direct des segments (bits)
+
+    // Console // Affichage de texte comme un terminal
+    CONSOLE_CHAR: 0xFF70,     // Écrire un caractère ASCII
+    CONSOLE_CLEAR: 0xFF71,    // Clear screen
+
+    // Buzzer // Génère des sons simples
+    BUZZER_FREQ: 0xFF80,      // Fréquence (0-255)
+    BUZZER_DURATION: 0xFF81,  // Durée en ms
+
+    // GPIO (8 pins digitaux) // Simuler des entrées/sorties comme Arduino
+    GPIO_OUTPUT: 0xFF90,      // 8 bits de sortie
+    GPIO_INPUT: 0xFF91,       // 8 bits d'entrée
+    GPIO_DIRECTION: 0xFF92,   // 0=input, 1=output
+
+    // LCD Display (16x2) // Écran LCD classique type Arduino
+    LCD_DATA: 0xFFA0,         // Caractère à écrire
+    LCD_COMMAND: 0xFFA1,      // Commandes (clear, home, etc)
+    LCD_CURSOR: 0xFFA2,       // Position curseur
+
+    // RNG // Random Number Generator
+    RNG_OUTPUT: 0xFFB0,       // Nombre aléatoire 0-255
+    RNG_SEED: 0xFFB1,         // Définir seed
+
+    // RTC // Real-Time Clock
+    RTC_SECONDS: 0xFFC0,
+    RTC_MINUTES: 0xFFC1,
+    RTC_HOURS: 0xFFC2,
+
+    // Pixel Display // Écran graphique 32x32 pixels monochrome
+    PIXEL_X: 0xFFD0,
+    PIXEL_Y: 0xFFD1,
+    PIXEL_COLOR: 0xFFD2,      // 0=noir, 1=blanc
+
+    // UART/Serial Port // Communication série simulée
+    UART_TX: 0xFFE0,          // Transmettre
+    UART_RX: 0xFFE1,          // Recevoir
+    UART_STATUS: 0xFFE2,      // Buffer status
+
+    // ADC (Analog-to-Digital) // Lecture de valeurs analogiques simulées
+    ADC_CHANNEL: 0xFFF0,      // Sélection canal 0-7
+    ADC_VALUE: 0xFFF1,        // Valeur lue (0-255)
 } as const;
 
 
