@@ -7,20 +7,20 @@ export enum Opcode {
     HALT = 0x0F,
 
     // Registers
-    R_LOAD_A = 0x10,     // LOAD A, immediate (8-bit)
-    R_LOAD_B = 0x11,     // LOAD B, immediate (8-bit)
-    R_LOAD_C = 0x12,     // LOAD C, immediate (8-bit)
-    R_LOAD_D = 0x13,     // LOAD D, immediate (8-bit)
+    R_LOAD_A = 0x10,     // R_LOAD A, immediate (8-bit)
+    R_LOAD_B = 0x11,     // R_LOAD B, immediate (8-bit)
+    R_LOAD_C = 0x12,     // R_LOAD C, immediate (8-bit)
+    R_LOAD_D = 0x13,     // R_LOAD D, immediate (8-bit)
 
     // Memory
-    M_STORE_A = 0x14,  // STORE_MEM_A addr16 (16-bit address)
-    M_LOAD_A = 0x15,   // LOAD_MEM_A addr16 (16-bit address)
-    M_STORE_B = 0x16,  // STORE_MEM_B addr16 (16-bit address)
-    M_LOAD_B = 0x17,   // LOAD_MEM_B addr16 (16-bit address)
-    M_STORE_C = 0x18,  // STORE_MEM_C addr16 (16-bit address)
-    M_LOAD_C = 0x19,   // LOAD_MEM_C addr16 (16-bit address)
-    M_STORE_D = 0x1A,  // STORE_MEM_D addr16 (16-bit address)
-    M_LOAD_D = 0x1B,   // LOAD_MEM_D addr16 (16-bit address)
+    M_STORE_A = 0x14,  // M_STORE A, addr16 (16-bit address)
+    M_STORE_B = 0x15,  // M_STORE B, addr16 (16-bit address)
+    M_STORE_C = 0x16,  // M_STORE C, addr16 (16-bit address)
+    M_STORE_D = 0x17,  // M_STORE D, addr16 (16-bit address)
+    M_LOAD_A = 0x18,   // M_LOAD A, addr16 (16-bit address)
+    M_LOAD_B = 0x19,   // M_LOAD B, addr16 (16-bit address)
+    M_LOAD_C = 0x1A,   // M_LOAD C, addr16 (16-bit address)
+    M_LOAD_D = 0x1B,   // M_LOAD D, addr16 (16-bit address)
 
     // ALU
     ADD = 0x20,
@@ -74,6 +74,8 @@ export enum Opcode {
 export const INSTRUCTIONS_WITH_OPERAND = [
     Opcode.R_LOAD_A,
     Opcode.R_LOAD_B,
+    Opcode.R_LOAD_C,
+    Opcode.R_LOAD_D,
     Opcode.SYSCALL,
 ];
 
@@ -85,7 +87,13 @@ export const INSTRUCTIONS_WITH_TWO_OPERANDS = [
     Opcode.JNZ,
     Opcode.JC,
     Opcode.M_STORE_A,
+    Opcode.M_STORE_B,
+    Opcode.M_STORE_C,
+    Opcode.M_STORE_D,
     Opcode.M_LOAD_A,
+    Opcode.M_LOAD_B,
+    Opcode.M_LOAD_C,
+    Opcode.M_LOAD_D,
     Opcode.SET_SP,
     Opcode.CALL,
 ];
@@ -105,6 +113,8 @@ export const getOpcodeName = (opcode: number): string => {
         case Opcode.NOP: return "NOP";
         case Opcode.R_LOAD_A: return "LOAD A";
         case Opcode.R_LOAD_B: return "LOAD B";
+        case Opcode.R_LOAD_C: return "LOAD C";
+        case Opcode.R_LOAD_D: return "LOAD D";
         case Opcode.ADD: return "ADD";
         case Opcode.SUB: return "SUB";
         case Opcode.AND: return "AND";
@@ -114,12 +124,22 @@ export const getOpcodeName = (opcode: number): string => {
         case Opcode.DEC_A: return "DEC A";
         case Opcode.INC_B: return "INC B";
         case Opcode.DEC_B: return "DEC B";
+        case Opcode.INC_C: return "INC C";
+        case Opcode.DEC_C: return "DEC C";
+        case Opcode.INC_D: return "INC D";
+        case Opcode.DEC_D: return "DEC D";
         case Opcode.JMP: return "JMP";
         case Opcode.JZ: return "JZ";
         case Opcode.JNZ: return "JNZ";
         case Opcode.JC: return "JC";
         case Opcode.M_STORE_A: return "STORE_MEM_A";
+        case Opcode.M_STORE_B: return "STORE_MEM_B";
+        case Opcode.M_STORE_C: return "STORE_MEM_C";
+        case Opcode.M_STORE_D: return "STORE_MEM_D";
         case Opcode.M_LOAD_A: return "LOAD_MEM_A";
+        case Opcode.M_LOAD_B: return "LOAD_MEM_B";
+        case Opcode.M_LOAD_C: return "LOAD_MEM_C";
+        case Opcode.M_LOAD_D: return "LOAD_MEM_D";
         case Opcode.SYSCALL: return "SYSCALL";
         case Opcode.PUSH_A: return "PUSH A";
         case Opcode.PUSH_B: return "PUSH B";
