@@ -4,7 +4,7 @@ import { MEMORY_MAP } from "@/lib/memory_map";
 import type { InterruptHook } from "@/hooks/useInterrupt";
 
 
-export const InterruptPanel: React.FC<{ interruptHook: InterruptHook }> = ({ interruptHook }) => {
+export const PanelInterrupt: React.FC<{ interruptHook: InterruptHook }> = ({ interruptHook }) => {
     const irqNames = [
         "Timer", "Keyboard", "Disk", "UART",
         "Button", "Reserved", "Reserved", "Reserved"
