@@ -25,7 +25,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
     const [halted, setHalted] = useState<boolean>(false);
 
-    const [clockCycle, setClockCycle] = useState<number>(0);
+    const [clockCycle, setClockCycle] = useState<u16>(0 as u16);
 
     const [interruptsEnabled, setInterruptsEnabled] = useState(false);
     const [inInterruptHandler, setInInterruptHandler] = useState(false);
@@ -127,12 +127,12 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         }
 
         setHalted(false);
-        setClockCycle(0);
+        setClockCycle(0 as u16);
     }, [registers])
 
 
     const tick = () => {
-        setClockCycle(c => c + 1)
+        setClockCycle(c => (c + 1) as u16)
     }
 
 
@@ -652,7 +652,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 export type CpuHook = {
     halted: boolean;
     registers: Map<string, number>,
-    clockCycle: number;
+    clockCycle: u16;
     ALU: Record<string, (...args: any[]) => any>
     getRegister: (reg: Register) => u8 | u16,
     setRegister: (reg: Register, value: u8 | u16) => void,

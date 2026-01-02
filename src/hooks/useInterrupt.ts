@@ -91,7 +91,7 @@ export const useInterrupt = () => {
 
 
     // Demander une interruption (appelé par les périphériques)
-    const requestInterrupt = useCallback((irq: number): void => {
+    const requestInterrupt = useCallback((irq: u8): void => {
         if (irq < 0 || irq > 7) return;
 
         setPending(prev => {
@@ -125,7 +125,7 @@ export const useInterrupt = () => {
 
 
     // Fonction pour le CPU pour acquitter
-    const acknowledgeInterrupt = useCallback((irq: number): void => {
+    const acknowledgeInterrupt = useCallback((irq: u8): void => {
         setPending(prev => (prev & ~(1 << irq)) as u8);
         updateRefs();
     }, [updateRefs]);

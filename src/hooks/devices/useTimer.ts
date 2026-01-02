@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { MEMORY_MAP } from "@/lib/memory_map";
 import type { InterruptHook } from "../useInterrupt";
+import { U8 } from "@/lib/integers";
+
 import type { u8 } from "@/types/cpu.types";
 
 
@@ -20,7 +22,7 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
             const newVal = (prev + 1) as u8;
             if (newVal >= period) {
                 // Déclencher interruption
-                interruptHook.requestInterrupt(MEMORY_MAP.IRQ_TIMER);
+                interruptHook.requestInterrupt(U8(MEMORY_MAP.IRQ_TIMER));
                 return 0 as u8;
             }
             return newVal;
@@ -45,7 +47,7 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
     }, [counter, period, enabled]);
 
 
-    const write = useCallback((address: number, value: number): void => {
+    const write = useCallback((address: u8, value: u8): void => {
         const port = address - MEMORY_MAP.TIMER_BASE;
 
         switch (port) {
@@ -79,8 +81,8 @@ export type TimerHook = {
     read: (address: u8) => u8;
     write: (address: u8, value: u8) => void;
     tick: () => void;
-    counter: number;
+    counter: u8;
     enabled: boolean;
-    period: number;
+    period: u8;
 };
 

@@ -27,7 +27,7 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
     }, [storage, currentAddress]);
 
 
-    const write = useCallback((port: number, value: u8) => {
+    const write = useCallback((port: u8, value: u8) => {
         switch (port) {
             case 2: // ADDRESS port - set read/write address
                 setCurrentAddress(U16(value));

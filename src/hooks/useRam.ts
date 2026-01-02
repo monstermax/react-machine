@@ -7,7 +7,7 @@ import type { u16, u8 } from "@/types/cpu.types";
 export const useRam = (): RamHook => {
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
 
-    console.log('RAM:', storage)
+    //console.log('RAM:', storage)
 
     const ramHook: RamHook = {
         storage,

@@ -1,3 +1,4 @@
+import type { u8 } from "@/types/cpu.types";
 
 // Instructions
 export enum Opcode {
@@ -108,7 +109,7 @@ export const INSTRUCTIONS_WITH_TWO_OPERANDS = [
 //];
 
 
-export const getOpcodeName = (opcode: number): string => {
+export const getOpcodeName = (opcode: u8): string => {
     switch (opcode) {
         case Opcode.NOP: return "NOP";
         case Opcode.R_LOAD_A: return "R_LOAD A";
@@ -162,7 +163,7 @@ export const getOpcodeName = (opcode: number): string => {
 };
 
 // Utile pour incrémenter PC correctement
-export const getInstructionLength = (opcode: number): number => {
+export const getInstructionLength = (opcode: u8): number => {
     if (INSTRUCTIONS_WITH_OPERAND.includes(opcode)) {
         return 2; // opcode + 1 byte
     }

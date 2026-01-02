@@ -69,7 +69,7 @@ export const useSevenSegment = (): SevenSegmentHook => {
     }
 
 
-    const getCurrentDigit = (): number => {
+    const getCurrentDigit = (): u8 => {
         return currentValue;
     }
 
