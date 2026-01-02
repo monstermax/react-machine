@@ -208,3 +208,26 @@ export const programs: Record<string, ProgramInfo> = {
 };
 
 
+
+/*
+
+// Programme: écho clavier
+LOOP:
+  LOAD_MEM [KEYBOARD_STATUS]  // Touche dispo ?
+  JZ LOOP
+  LOAD_MEM [KEYBOARD_DATA]    // Lire touche
+  STORE [CONSOLE_CHAR]        // Afficher
+  JMP LOOP
+
+
+// Jouer une mélodie
+FOR each note:
+  LOAD_A frequency
+  STORE [BUZZER_FREQ]
+  LOAD_A 100  // 100ms
+  STORE [BUZZER_DURATION]
+
+
+*/
+
+

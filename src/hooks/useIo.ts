@@ -2,12 +2,12 @@
 import { useState, useCallback, useMemo } from "react";
 
 import { MINI_OS } from "@/lib/mini_os";
-import { useDiskDevice, type DiskDevice } from "./useDiskDevice";
+import { useDiskDevice, type DiskDevice } from "./devices/useDiskDevice";
 
 import type { Device } from "@/types/cpu.types";
-import { useLeds, type LedsDevice } from "./useLeds";
+import { useLeds, type LedsDevice } from "./devices/useLeds";
 import { useInterrupt, type InterruptHook } from "./useInterrupt";
-import { useSevenSegment, type SevenSegmentHook } from "./useSevenSegment";
+import { useSevenSegment, type SevenSegmentHook } from "./devices/useSevenSegment";
 
 
 // Device Map: commence à 0xFF00, chaque device a 16 ports (0xFF00-0xFF0F, 0xFF10-0xFF1F, etc.)

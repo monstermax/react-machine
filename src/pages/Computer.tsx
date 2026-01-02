@@ -11,8 +11,8 @@ import { PanelControls } from "@/components/computer/PanelControls";
 import { PanelRegisters } from "@/components/computer/PanelRegisters";
 
 import type { ProgramInfo } from "@/types/cpu.types";
-import type { LedsDevice } from "@/hooks/useLeds";
-import type { SevenSegmentHook } from "@/hooks/useSevenSegment";
+import type { LedsDevice } from "@/hooks/devices/useLeds";
+import type { SevenSegmentHook } from "@/hooks/devices/useSevenSegment";
 
 
 export const ComputerPage: React.FC = () => {
@@ -79,15 +79,23 @@ export const ComputerPage: React.FC = () => {
                 {/* IOs Devices */}
 
                 <div className="flex gap-8 mb-8">
-                    {/* LEDs */}
-                    <LEDsDisplay device={computerHook.ioHook.leds} />
 
+                    {(true || currentProgram === 'blink_leds') && (
+                        <>
+                            {/* LEDs */}
+                            <LEDsDisplay device={computerHook.ioHook.leds} />
+                        </>
+                    )}
 
-                    {/* Seven Segment Display */}
-                    <SevenSegmentDisplay
-                        device={ioHook.sevenSegment}
-                        label="Display 1"
-                    />
+                    {(true || currentProgram === 'seven_segments') && (
+                        <>
+                            {/* Seven Segment Display */}
+                            <SevenSegmentDisplay
+                                device={ioHook.sevenSegment}
+                                label="Display 1"
+                            />
+                        </>
+                    )}
                 </div>
 
             </div>
