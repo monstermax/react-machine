@@ -1,6 +1,6 @@
 
-import { Opcode } from "./instructions";
-import { mapAddress8To16, MEMORY_MAP } from "./memory_map";
+import { Opcode } from "../lib/instructions";
+import { mapAddress8To16, MEMORY_MAP } from "../lib/memory_map";
 
 import type { u16, u8 } from "@/types/cpu.types";
 
@@ -30,11 +30,6 @@ export const MINI_OS: Map<u8, u8> = new Map([
     [0x0B, (MEMORY_MAP.OS_START >> 8) & 0xFF],      // High: 0x01
 ] as [u8, u8][]);
 
-
-export const getMiniOSAbsolute = (): Map<u16, u8> => {
-    const mapped: Map<u16, u8> = mapAddress8To16(MINI_OS, MEMORY_MAP.OS_START);
-    return mapped;
-}
 
 
 //console.log('MINI_OS:', MINI_OS)

@@ -1,8 +1,8 @@
 
 //import type { u8, u16 } from "@/types/cpu.types";
 import type { u16, u8 } from "@/types/cpu.types";
-import { Opcode } from "./instructions";
-import { MEMORY_MAP } from "./memory_map";
+import { Opcode } from "../lib/instructions";
+import { MEMORY_MAP } from "../lib/memory_map";
 
 
 // Bootloader ROM : Initialise le système et saute à l'OS

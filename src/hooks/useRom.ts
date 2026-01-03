@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 
-import { BOOTLOADER } from "@/lib/bootloader";
+import { BOOTLOADER } from "@/programs/bootloader";
 
 import type { u8 } from "@/types/cpu.types";
 

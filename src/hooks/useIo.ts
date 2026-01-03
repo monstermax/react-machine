@@ -1,7 +1,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 
-import { MINI_OS } from "@/lib/mini_os";
+import { MINI_OS } from "@/programs/mini_os";
 import { useDiskDevice, type DiskDevice } from "./devices/useDiskDevice";
 
 import type { Device, u16, u8 } from "@/types/cpu.types";

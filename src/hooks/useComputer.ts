@@ -6,11 +6,12 @@ import { useRom, type RomHook } from "@/hooks/useRom";
 import { useMemory, type MemoryHook } from "@/hooks/useMemory";
 import { useIo, type IOHook } from "@/hooks/useIo";
 import { useRam, type RamHook } from "@/hooks/useRam";
-import { getMiniOSAbsolute } from "@/lib/mini_os";
-import type { ProgramInfo, u8 } from "@/types/cpu.types";
+import { MINI_OS } from "@/programs/mini_os";
 import { programs } from "@/lib/programs";
-import { MEMORY_MAP } from "@/lib/memory_map";
+import { mapAddress8To16, MEMORY_MAP } from "@/lib/memory_map";
 import { U16 } from "@/lib/integers";
+
+import type { ProgramInfo, u8 } from "@/types/cpu.types";
 
 
 export const useComputer = (): ComputerHook => {
@@ -36,8 +37,10 @@ export const useComputer = (): ComputerHook => {
 
 
     const resetComputer = useCallback(() => {
+        // TODO: charger l'OS depuis un diskDrive (et le copier en RAM)
+
         // Load OS into RAM
-        const ramStorage = getMiniOSAbsolute()
+        const ramStorage = mapAddress8To16(MINI_OS, MEMORY_MAP.OS_START);
         ramHook.setStorage(ramStorage);
 
         setLoadedProgram(null);
