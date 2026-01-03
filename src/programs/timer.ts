@@ -85,7 +85,7 @@ export const programs: Record<string, ProgramInfo> = {
     },
 
     timer_02: {
-        name: "Interrupt Minimal (KO)",
+        name: "Interrupt Minimal",
         description: "Une seule interrupt timer, puis halt",
         code: new Map([
             // === SETUP ===
@@ -100,13 +100,13 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Timer period = 10
             [0x0D, Opcode.MOV_A_IMM], [0x0E, 10],
-            [0x0F, Opcode.MOV_MEM_A], 
-            [0x10, 0x22], [0x11, 0xFF], // TIMER_PRESCALER ✅
+            [0x0F, Opcode.MOV_MEM_A],
+            [0x10, 0x22], [0x11, 0xFF], // TIMER_PRESCALER
 
             // Timer enable
             [0x12, Opcode.MOV_A_IMM], [0x13, 0x01],
-            [0x14, Opcode.MOV_MEM_A], 
-            [0x15, 0x21], [0x16, 0xFF], // TIMER_CONTROL ✅
+            [0x14, Opcode.MOV_MEM_A],
+            [0x15, 0x21], [0x16, 0xFF], // TIMER_CONTROL
 
             // Enable IRQ 0
             [0x17, Opcode.MOV_A_IMM], [0x18, 0x01],
@@ -115,40 +115,45 @@ export const programs: Record<string, ProgramInfo> = {
             // EI
             [0x1C, Opcode.EI],
 
-            // === MAIN LOOP ===
+            // === ATTENDRE L'INTERRUPT ===
             [0x1D, Opcode.NOP],
-            [0x1E, Opcode.JMP],
-            [0x1F, 0x1D], [0x20, 0x02],
+            [0x1E, Opcode.NOP],
+            [0x1F, Opcode.NOP],
+            [0x20, Opcode.NOP],
+            [0x21, Opcode.NOP],
+            [0x22, Opcode.NOP],
+            [0x23, Opcode.NOP],
+            [0x24, Opcode.NOP],
+            [0x25, Opcode.NOP],
+            [0x26, Opcode.NOP],
+            [0x27, Opcode.NOP],
+            [0x28, Opcode.NOP],
+
+            // Après IRET, on arrive ici
+            [0x29, Opcode.HALT], // ← HALT après l'interrupt !
 
             // === HANDLER @ 0x50 ===
             [0x50, Opcode.PUSH_A],
-            [0x51, Opcode.PUSH_B],
 
-            // Charger compteur @ 0x8000
-            [0x52, Opcode.MOV_A_MEM],
-            [0x53, 0x00], [0x54, 0x80],
+            // Mettre 0xFF dans LEDs
+            [0x51, Opcode.MOV_A_IMM], [0x52, 0xFF],
+            [0x53, Opcode.MOV_MEM_A],
+            [0x54, 0x30], [0x55, 0xFF], // LEDS_OUTPUT
 
-            // Incrémenter
-            [0x55, Opcode.INC_A],
-
-            // Sauvegarder
-            [0x56, Opcode.MOV_MEM_A],
-            [0x57, 0x00], [0x58, 0x80],
-
-            // Afficher dans LEDs
-            [0x59, Opcode.MOV_MEM_A],
-            [0x5A, 0x30], [0x5B, 0xFF],
+            // Désactiver le timer pour éviter une 2ème interrupt
+            [0x56, Opcode.MOV_A_IMM], [0x57, 0x00], // Timer OFF
+            [0x58, Opcode.MOV_MEM_A],
+            [0x59, 0x21], [0x5A, 0xFF], // TIMER_CONTROL
 
             // ACK IRQ 0
-            [0x5C, Opcode.MOV_A_IMM], [0x5D, 0x00],
-            [0x5E, Opcode.MOV_MEM_A],
-            [0x5F, 0x42], [0x60, 0xFF],
+            [0x5B, Opcode.MOV_A_IMM], [0x5C, 0x00],
+            [0x5D, Opcode.MOV_MEM_A],
+            [0x5E, 0x42], [0x5F, 0xFF], // INTERRUPT_ACK
 
-            [0x61, Opcode.POP_B],
-            [0x62, Opcode.POP_A],
-            [0x63, Opcode.IRET],
+            [0x60, Opcode.POP_A],
+            [0x61, Opcode.IRET], // Retourne à 0x0229 (le HALT)
         ] as [u8, u8][]),
-        expectedResult: "LEDs comptent via timer interrupts"
+        expectedResult: "1 interrupt → LEDs=0xFF → HALT"
     },
 }
 

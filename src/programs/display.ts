@@ -423,96 +423,86 @@ export const programs: Record<string, ProgramInfo> = {
     },
 
     pixel_square: {
-        name: "Contour Carré 10x10 (KO)",
-        description: "Carré de 10x10 pixels",
+        name: "Contour Carré 10x10",
+        description: "Dessine uniquement le contour d'un carré 10x10",
         code: new Map([
             [0x00, Opcode.SET_SP], [0x01, 0xFF], [0x02, 0xFE],
 
-            // Dessiner ligne du haut (Y=5, X=5 à 14)
-            [0x03, Opcode.MOV_C_IMM], [0x04, 5],    // Y = 5
-            [0x05, Opcode.MOV_A_IMM], [0x06, 5],    // X start
+            // === LIGNE HAUT (Y=5, X=5 à 14) ===
+            [0x03, Opcode.MOV_A_IMM], [0x04, 5],  // X = 5
 
-            // LOOP_HAUT:
-            [0x07, Opcode.PUSH_A],
-            [0x08, Opcode.MOV_MEM_A], [0x09, 0xD0], [0x0A, 0xFF], // X
-            [0x0B, Opcode.MOV_CA],
-            [0x0C, Opcode.MOV_MEM_A], [0x0D, 0xD1], [0x0E, 0xFF], // Y=5
-            [0x0F, Opcode.MOV_A_IMM], [0x10, 1],
-            [0x11, Opcode.MOV_MEM_A], [0x12, 0xD2], [0x13, 0xFF], // Couleur
+            // LOOP_HAUT @ 0x05:
+            [0x05, Opcode.MOV_MEM_A], [0x06, 0xD0], [0x07, 0xFF], // PIXEL_X
+            [0x08, Opcode.MOV_B_IMM], [0x09, 5],   // Y = 5
+            [0x0A, Opcode.MOV_MEM_B], [0x0B, 0xD1], [0x0C, 0xFF], // PIXEL_Y
+            [0x0D, Opcode.MOV_B_IMM], [0x0E, 1],   // Couleur = 1
+            [0x0F, Opcode.MOV_MEM_B], [0x10, 0xD2], [0x11, 0xFF], // PIXEL_COLOR
 
-            [0x14, Opcode.POP_A],
-            [0x15, Opcode.INC_A],
+            [0x12, Opcode.INC_A],                  // X++
+            [0x13, Opcode.PUSH_A],                 // Sauver A
+            [0x14, Opcode.MOV_B_IMM], [0x15, 15],  // Comparer avec 15
+            [0x16, Opcode.SUB],                    // A = A - 15
+            [0x17, Opcode.POP_A],                  // Restaurer A
+            [0x18, Opcode.JNZ],
+            [0x19, 0x05], [0x1A, 0x02],            // Si A != 15, loop
 
-            [0x16, Opcode.MOV_B_IMM], [0x17, 15],
-            [0x18, Opcode.SUB],
-            [0x19, Opcode.JNZ],
-            [0x1A, 0x07], [0x1B, 0x02],            // Retour LOOP_HAUT
+            // === LIGNE BAS (Y=14, X=5 à 14) ===
+            [0x1B, Opcode.MOV_A_IMM], [0x1C, 5],  // X = 5
 
-            // Dessiner ligne du bas (Y=14, X=5 à 14)
-            [0x1C, Opcode.MOV_C_IMM], [0x1D, 14],   // Y = 14
-            [0x1E, Opcode.MOV_A_IMM], [0x1F, 5],    // X start
+            // LOOP_BAS @ 0x1D:
+            [0x1D, Opcode.MOV_MEM_A], [0x1E, 0xD0], [0x1F, 0xFF], // PIXEL_X
+            [0x20, Opcode.MOV_B_IMM], [0x21, 14],  // Y = 14
+            [0x22, Opcode.MOV_MEM_B], [0x23, 0xD1], [0x24, 0xFF], // PIXEL_Y
+            [0x25, Opcode.MOV_B_IMM], [0x26, 1],
+            [0x27, Opcode.MOV_MEM_B], [0x28, 0xD2], [0x29, 0xFF], // PIXEL_COLOR
 
-            // LOOP_BAS:
-            [0x20, Opcode.PUSH_A],
-            [0x21, Opcode.MOV_MEM_A], [0x22, 0xD0], [0x23, 0xFF],
-            [0x24, Opcode.MOV_CA],
-            [0x25, Opcode.MOV_MEM_A], [0x26, 0xD1], [0x27, 0xFF],
-            [0x28, Opcode.MOV_A_IMM], [0x29, 1],
-            [0x2A, Opcode.MOV_MEM_A], [0x2B, 0xD2], [0x2C, 0xFF],
+            [0x2A, Opcode.INC_A],
+            [0x2B, Opcode.PUSH_A],
+            [0x2C, Opcode.MOV_B_IMM], [0x2D, 15],
+            [0x2E, Opcode.SUB],
+            [0x2F, Opcode.POP_A],
+            [0x30, Opcode.JNZ],
+            [0x31, 0x1D], [0x32, 0x02],
 
-            [0x2D, Opcode.POP_A],
-            [0x2E, Opcode.INC_A],
+            // === CÔTÉ GAUCHE (X=5, Y=6 à 13) ===
+            [0x33, Opcode.MOV_A_IMM], [0x34, 6],  // Y = 6
 
-            [0x2F, Opcode.MOV_B_IMM], [0x30, 15],
-            [0x31, Opcode.SUB],
-            [0x32, Opcode.JNZ],
-            [0x33, 0x20], [0x34, 0x02],            // Retour LOOP_BAS
+            // LOOP_GAUCHE @ 0x35:
+            [0x35, Opcode.MOV_B_IMM], [0x36, 5],   // X = 5
+            [0x37, Opcode.MOV_MEM_B], [0x38, 0xD0], [0x39, 0xFF], // PIXEL_X
+            [0x3A, Opcode.MOV_MEM_A], [0x3B, 0xD1], [0x3C, 0xFF], // PIXEL_Y
+            [0x3D, Opcode.MOV_B_IMM], [0x3E, 1],
+            [0x3F, Opcode.MOV_MEM_B], [0x40, 0xD2], [0x41, 0xFF], // PIXEL_COLOR
 
-            // Dessiner côté gauche (X=5, Y=6 à 13)
-            [0x35, Opcode.MOV_A_IMM], [0x36, 5],    // X = 5
-            [0x37, Opcode.MOV_C_IMM], [0x38, 6],    // Y start = 6
+            [0x42, Opcode.INC_A],
+            [0x43, Opcode.PUSH_A],
+            [0x44, Opcode.MOV_B_IMM], [0x45, 14],
+            [0x46, Opcode.SUB],
+            [0x47, Opcode.POP_A],
+            [0x48, Opcode.JNZ],
+            [0x49, 0x35], [0x4A, 0x02],
 
-            // LOOP_GAUCHE:
-            [0x39, Opcode.PUSH_C],
-            [0x3A, Opcode.MOV_MEM_A], [0x3B, 0xD0], [0x3C, 0xFF], // X=5
-            [0x3D, Opcode.MOV_CA],
-            [0x3E, Opcode.MOV_MEM_A], [0x3F, 0xD1], [0x40, 0xFF], // Y
-            [0x41, Opcode.MOV_A_IMM], [0x42, 1],
-            [0x43, Opcode.MOV_MEM_A], [0x44, 0xD2], [0x45, 0xFF],
+            // === CÔTÉ DROIT (X=14, Y=6 à 13) ===
+            [0x4B, Opcode.MOV_A_IMM], [0x4C, 6],  // Y = 6
 
-            [0x46, Opcode.POP_C],
-            [0x47, Opcode.INC_C],
+            // LOOP_DROIT @ 0x4D:
+            [0x4D, Opcode.MOV_B_IMM], [0x4E, 14],  // X = 14
+            [0x4F, Opcode.MOV_MEM_B], [0x50, 0xD0], [0x51, 0xFF], // PIXEL_X
+            [0x52, Opcode.MOV_MEM_A], [0x53, 0xD1], [0x54, 0xFF], // PIXEL_Y
+            [0x55, Opcode.MOV_B_IMM], [0x56, 1],
+            [0x57, Opcode.MOV_MEM_B], [0x58, 0xD2], [0x59, 0xFF], // PIXEL_COLOR
 
-            [0x48, Opcode.MOV_CA],
-            [0x49, Opcode.MOV_B_IMM], [0x4A, 14],   // Y < 14
-            [0x4B, Opcode.SUB],
-            [0x4C, Opcode.JNZ],
-            [0x4D, 0x39], [0x4E, 0x02],            // Retour LOOP_GAUCHE
+            [0x5A, Opcode.INC_A],
+            [0x5B, Opcode.PUSH_A],
+            [0x5C, Opcode.MOV_B_IMM], [0x5D, 14],
+            [0x5E, Opcode.SUB],
+            [0x5F, Opcode.POP_A],
+            [0x60, Opcode.JNZ],
+            [0x61, 0x4D], [0x62, 0x02],
 
-            // Dessiner côté droit (X=14, Y=6 à 13)  
-            [0x4F, Opcode.MOV_A_IMM], [0x50, 14],   // X = 14
-            [0x51, Opcode.MOV_C_IMM], [0x52, 6],    // Y start = 6
-
-            // LOOP_DROIT:
-            [0x53, Opcode.PUSH_C],
-            [0x54, Opcode.MOV_MEM_A], [0x55, 0xD0], [0x56, 0xFF], // X=14
-            [0x57, Opcode.MOV_CA],
-            [0x58, Opcode.MOV_MEM_A], [0x59, 0xD1], [0x5A, 0xFF], // Y
-            [0x5B, Opcode.MOV_A_IMM], [0x5C, 1],
-            [0x5D, Opcode.MOV_MEM_A], [0x5E, 0xD2], [0x5F, 0xFF],
-
-            [0x60, Opcode.POP_C],
-            [0x61, Opcode.INC_C],
-
-            [0x62, Opcode.MOV_CA],
-            [0x63, Opcode.MOV_B_IMM], [0x64, 14],
-            [0x65, Opcode.SUB],
-            [0x66, Opcode.JNZ],
-            [0x67, 0x53], [0x68, 0x02],            // Retour LOOP_DROIT
-
-            [0x69, Opcode.HALT],
+            [0x63, Opcode.HALT],
         ] as [u8, u8][]),
-        expectedResult: "*un carré de 10x10 pixels"
+        expectedResult: "Carré 10x10 avec uniquement les contours"
     },
 
 }
