@@ -92,3 +92,4 @@ export const KeyboardDisplay: React.FC<{ device: KeyboardDevice }> = ({ device }
         </div>
     );
 };
+

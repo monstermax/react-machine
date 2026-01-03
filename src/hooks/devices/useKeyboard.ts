@@ -1,4 +1,3 @@
-
 import { useCallback, useState, useEffect } from "react";
 
 import type { Device, u8 } from "@/types/cpu.types";
@@ -10,12 +9,15 @@ import { U8 } from "@/lib/integers";
 export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
     const [lastChar, setLastChar] = useState<u8>(0 as u8);
     const [hasChar, setHasChar] = useState<boolean>(false);
-    //const [isEnable, setIsEnabled] = useState(true);
+    const [isEnable, setIsEnabled] = useState(true); // enable/disable handleKeyDown (but allow simulateKeyPress)
+    const [irqEnabled, setIrqEnabled] = useState<boolean>(false);
 
 
     // Écouter les touches du clavier
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
+            if (!isEnable) return;
+
             // Ignorer les touches spéciales (Ctrl, Alt, etc.)
             if (event.ctrlKey || event.altKey || event.metaKey) return;
 
@@ -30,10 +32,10 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
             setLastChar(charCode as u8);
             setHasChar(true);
 
-            //console.log(`⌨️  Key pressed: '${event.key}' (ASCII: ${charCode})`);
+            console.log(`⌨️  Key pressed: '${event.key}' (ASCII: ${charCode})`);
 
             // Déclencher interruption clavier (IRQ 1)
-            if (interruptHook) {
+            if (irqEnabled && interruptHook) {
                 interruptHook.requestInterrupt(U8(MEMORY_MAP.IRQ_KEYBOARD));
             }
         };
@@ -43,7 +45,7 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [interruptHook]);
+    }, [interruptHook, isEnable, irqEnabled]);
 
 
     // Device IO interface
@@ -53,7 +55,7 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
                 return lastChar;
 
             case 0x01: // KEYBOARD_STATUS
-                return (hasChar ? 0x01 : 0x00) as u8;
+                return ((hasChar ? 0x01 : 0x00) | (irqEnabled ? 0x02 : 0x00)) as u8;
 
             default:
                 return 0 as u8;
@@ -69,9 +71,12 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
                 break;
 
             case 0x01: // KEYBOARD_STATUS - peut être écrit pour clear le flag
-                if (value === 0) {
+                // Bit 0: clear le flag hasChar
+                if ((value & 0x01) === 0) {
                     setHasChar(false);
                 }
+                // Bit 1: enable/disable IRQ
+                setIrqEnabled((value & 0x02) !== 0);
                 break;
         }
     }, []);
@@ -80,6 +85,7 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
     const reset = useCallback(() => {
         setLastChar(0 as u8);
         setHasChar(false);
+        setIrqEnabled(false);
     }, []);
 
 
@@ -118,3 +124,4 @@ export type KeyboardDevice = Device & {
     lastChar: u8;
     hasChar: boolean;
 };
+

@@ -12,6 +12,8 @@ import { U8 } from "@/lib/integers";
 import { useTimer, type TimerHook } from "./devices/useTimer";
 import { useKeyboard, type KeyboardDevice } from "./devices/useKeyboard";
 import { useConsole, type ConsoleDevice } from "./devices/useConsole";
+import { useLCD, type LCDDevice } from "./devices/useLCD";
+import { usePixelDisplay, type PixelDisplayDevice } from "./devices/usepixeldisplay";
 
 
 // Device Map: commence à 0xFF00, chaque device a 16 ports (0xFF00-0xFF0F, 0xFF10-0xFF1F, etc.)
@@ -28,6 +30,8 @@ export const useIo = (): IOHook => {
     const keyboard = useKeyboard(interrupt); // Device 5
     const sevenSegment = useSevenSegment(); // Device 6: 0xFF60-0xFF6F
     const consoleDevice = useConsole(); // Device 7: 0xFF70-0xFF7F
+    const lcd = useLCD(); // Device 10 (0x0A): 0xFFA0-0xFFAF
+    const pixelDisplay = usePixelDisplay(); // Device 13 (0x0D): 0xFFD0-0xFFDF
 
 
     // Device registry
@@ -40,7 +44,9 @@ export const useIo = (): IOHook => {
         [0x05, keyboard],     // Keyboard (0xFF50-0xFF5F)
         [0x06, sevenSegment], // Seven Segment Display (0xFF60-0xFF6F)
         [0x07, consoleDevice],      // Console (0xFF70-0xFF7F)
-    ] as [any, Device][]), [osDisk, programDisk, timer, leds, interrupt, keyboard, sevenSegment, consoleDevice]);
+        [0x0A, lcd],          // LCD 16x2 (0xFFA0-0xFFAF)
+        [0x0D, pixelDisplay], // Pixel Display 32x32 (0xFFD0-0xFFDF)
+    ] as [any, Device][]), [osDisk, programDisk, timer, leds, interrupt, keyboard, sevenSegment, consoleDevice, lcd, pixelDisplay]);
 
 
     // I/O read: router vers le bon device
@@ -87,6 +93,8 @@ export const useIo = (): IOHook => {
         keyboard,
         sevenSegment,
         console: consoleDevice,
+        lcd,
+        pixelDisplay,
     };
 
     return ioHook
@@ -105,5 +113,7 @@ export type IOHook = {
     keyboard: KeyboardDevice;
     sevenSegment: SevenSegmentHook;
     console: ConsoleDevice;
+    lcd: LCDDevice;
+    pixelDisplay: PixelDisplayDevice;
 };
 

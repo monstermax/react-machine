@@ -57,6 +57,7 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
             intervalRef.current = setInterval(() => {
                 cpuHook.executeCycle();
             }, interval);
+
         } else {
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
@@ -70,6 +71,7 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
             }
         };
     }, [isRunning, frequency, cpuHook, cpuHook.halted]);
+
 
     // Arrêter automatiquement si le CPU halt
     useEffect(() => {
