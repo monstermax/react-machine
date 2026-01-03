@@ -84,7 +84,7 @@ export const useLcdDisplay = (): LCDDevice => {
                 setCursorCol(col);
                 break;
         }
-    }, [cursorRow, cursorCol]);
+    }, [cursorRow, cursorCol, setDisplay, setCursorRow, setCursorCol, setCursorVisible]);
 
 
     const reset = useCallback(() => {
@@ -92,7 +92,7 @@ export const useLcdDisplay = (): LCDDevice => {
         setCursorRow(0);
         setCursorCol(0);
         setCursorVisible(true);
-    }, []);
+    }, [setDisplay, setCursorRow, setCursorCol, setCursorVisible]);
 
 
     const getText = useCallback((): string[] => {

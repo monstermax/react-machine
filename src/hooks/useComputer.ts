@@ -6,12 +6,12 @@ import { useRom, type RomHook } from "@/hooks/useRom";
 import { useMemory, type MemoryHook } from "@/hooks/useMemory";
 import { useIo, type IOHook } from "@/hooks/useIo";
 import { useRam, type RamHook } from "@/hooks/useRam";
-import { MINI_OS, MINI_OS_V2 } from "@/programs/mini_os";
+import { MINI_OS, MINI_OS_V2, os_list } from "@/programs/mini_os";
 import { programs } from "@/lib/programs";
 import { mapAddress16, MEMORY_MAP } from "@/lib/memory_map";
 import { U16 } from "@/lib/integers";
 
-import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
+import type { OsInfo, ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 export const useComputer = (): ComputerHook => {
@@ -24,6 +24,8 @@ export const useComputer = (): ComputerHook => {
     const cpuHook = useCpu(memoryHook, ioHook);
 
     const [loadedProgram, setLoadedProgram] = useState<string | null>(null);
+    const [loadedOs, setLoadedOs] = useState<string | null>(null);
+    //const [currentOsCode, setCurrentOsCode] = useState<OsInfo | null>(MINI_OS);
 
 
     if (true) {
@@ -32,26 +34,35 @@ export const useComputer = (): ComputerHook => {
     }
 
 
-    // Load OS Code into OsDisk (at component mount, before reset)
-    useEffect(() => {
-        //ioHook.osDisk.setStorage(mapAddress16(MINI_OS, 0 as u16))
-        ioHook.osDisk.setStorage(mapAddress16(MINI_OS_V2, 0 as u16))
-    }, [])
-
-
     // Initialize/Reset CPU & RAM, when osDisk changes
+//    useEffect(() => {
+//        resetComputer();
+//    }, [ioHook.osDisk.storage])
+
+
+    // Load OSDisk into RAM, when loadedOs changes
     useEffect(() => {
-        resetComputer();
-    }, [ioHook.osDisk.storage])
+        const currentOs = loadedOs ? os_list[loadedOs] : null
+
+        if (currentOs) {
+            memoryHook.loadDiskInRAM(ioHook.osDisk.storage, MEMORY_MAP.OS_START)
+
+        } else {
+            memoryHook.writeMemory(MEMORY_MAP.OS_START, 0 as u8);
+        }
+
+    }, [memoryHook.loadDiskInRAM, ioHook.osDisk.storage, loadedOs])
 
 
-    // Load ProgramDisk into RAM
+    // Load ProgramDisk into RAM, when loadedProgram changes
     useEffect(() => {
         // Charger le programme en RAM à PROGRAM_START, quand l'osDisk ou loadedProgram change
 
-        if (!loadedProgram) return;
-
-        memoryHook.loadDiskInRAM(ioHook.programDisk.storage, MEMORY_MAP.PROGRAM_START)
+        if (loadedProgram) {
+            memoryHook.loadDiskInRAM(ioHook.programDisk.storage, MEMORY_MAP.PROGRAM_START)
+        } else {
+            memoryHook.writeMemory(MEMORY_MAP.PROGRAM_START, 0 as u8);
+        }
     }, [memoryHook.loadDiskInRAM, ioHook.programDisk.storage, loadedProgram])
 
 
@@ -66,6 +77,22 @@ export const useComputer = (): ComputerHook => {
         // Initialize CPU
         cpuHook.reset();
     }, [cpuHook.reset, ramHook.setStorage, ioHook.osDisk.storage, setLoadedProgram])
+
+
+    const loadOs = useCallback((osName: string) => {
+        const os: OsInfo | null = osName ? os_list[osName] : null;
+
+        if (!os) {
+            console.warn(`WARNING. OS not found`)
+            return;
+        }
+
+        // Charger le programme sur le disk (overwrite full disk)
+        const newDiskStorage = mapAddress16(os.code, 0 as u16);
+        ioHook.osDisk.setStorage(newDiskStorage)
+
+        setLoadedOs(osName);
+    }, [ioHook.osDisk.setStorage, setLoadedOs]);
 
 
     // Charger un programme utilisateur sur le program disk
@@ -83,6 +110,17 @@ export const useComputer = (): ComputerHook => {
 
         setLoadedProgram(programName);
     }, [ioHook.programDisk.setStorage, setLoadedProgram]);
+
+
+    const unloadOs = useCallback(() => {
+        // Vide le disk
+        ioHook.osDisk.setStorage(new Map);
+
+        // Vide la RAM
+        ramHook.setStorage(new Map);
+
+        setLoadedOs(null);
+    }, [ramHook.setStorage, ioHook.osDisk.setStorage, setLoadedOs]);
 
 
     const unloadProgram = useCallback(() => {
@@ -107,9 +145,12 @@ export const useComputer = (): ComputerHook => {
         ioHook,
         memoryHook,
         cpuHook,
+        loadedOs,
         loadedProgram,
         resetComputer,
+        loadOs,
         loadProgram,
+        unloadOs,
         unloadProgram,
         setLoadedProgram,
     };
@@ -124,9 +165,12 @@ export type ComputerHook = {
     ioHook: IOHook
     memoryHook: MemoryHook
     cpuHook: CpuHook
+    loadedOs: string | null
     loadedProgram: string | null
     resetComputer: () => void
+    loadOs: (osName: string) => void
     loadProgram: (programName: string) => void
+    unloadOs: () => void
     unloadProgram: () => void
     setLoadedProgram: React.Dispatch<React.SetStateAction<string | null>>
 };

@@ -47,7 +47,7 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
                 setCurrentAddress(prev => U16((prev & 0x00FF) | (value << 8)));
                 break;
         }
-    }, [currentAddress]);
+    }, [currentAddress, setCurrentAddress, setStorage]);
 
 
     const getSize = useCallback(() => storage.size, [storage]);

@@ -11,7 +11,7 @@ import { IosDevices } from "@/components/io/IosDevices";
 
 export const ComputerPage: React.FC = () => {
     const computerHook = useComputer();
-    const { resetComputer, loadProgram, unloadProgram } = computerHook;
+    const { resetComputer, loadOs, unloadOs, loadProgram, unloadProgram } = computerHook;
 
     return (
         <div className="min-h-screen bg-slate-950 text-white">
@@ -25,7 +25,9 @@ export const ComputerPage: React.FC = () => {
                     {/* Controls */}
                     <PanelControls
                         computerHook={computerHook}
+                        loadOs={loadOs}
                         loadProgram={loadProgram}
+                        unloadOs={unloadOs}
                         unloadProgram={unloadProgram}
                         resetComputer={resetComputer}
                     />

@@ -1,9 +1,11 @@
+
 import { useCallback, useState, useEffect } from "react";
 
-import type { Device, u8 } from "@/types/cpu.types";
 import type { InterruptHook } from "../useInterrupt";
 import { MEMORY_MAP } from "@/lib/memory_map";
 import { U8 } from "@/lib/integers";
+
+import type { Device, u8 } from "@/types/cpu.types";
 
 
 export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
@@ -35,7 +37,7 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
             console.log(`⌨️  Key pressed: '${event.key}' (ASCII: ${charCode})`);
 
             // Déclencher interruption clavier (IRQ 1)
-            if (irqEnabled && interruptHook) {
+            if (irqEnabled && interruptHook?.requestInterrupt) {
                 interruptHook.requestInterrupt(U8(MEMORY_MAP.IRQ_KEYBOARD));
             }
         };
@@ -45,7 +47,7 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [interruptHook, isEnable, irqEnabled]);
+    }, [interruptHook?.requestInterrupt, isEnable, irqEnabled, setLastChar, setHasChar]);
 
 
     // Device IO interface
@@ -79,14 +81,14 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
                 setIrqEnabled((value & 0x02) !== 0);
                 break;
         }
-    }, []);
+    }, [setLastChar, setHasChar, setIrqEnabled]);
 
 
     const reset = useCallback(() => {
         setLastChar(0 as u8);
         setHasChar(false);
         setIrqEnabled(false);
-    }, []);
+    }, [setLastChar, setHasChar, setIrqEnabled]);
 
 
     // Fonction pour simuler une touche (pour testing)
@@ -99,19 +101,21 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
         setLastChar(charCode as u8);
         setHasChar(true);
 
-        if (interruptHook) {
+        if (interruptHook?.requestInterrupt) {
             interruptHook.requestInterrupt(U8(MEMORY_MAP.IRQ_KEYBOARD));
         }
-    }, [interruptHook]);
+    }, [interruptHook?.requestInterrupt, setLastChar, setHasChar]);
 
 
     const hook: KeyboardDevice = {
-        read,
-        write,
-        reset,
-        simulateKeyPress,
+        isEnable,
         lastChar,
         hasChar,
+        read,
+        write,
+        simulateKeyPress,
+        setIsEnabled,
+        reset,
     };
 
     return hook;
@@ -119,9 +123,11 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
 
 
 export type KeyboardDevice = Device & {
-    reset: () => void;
-    simulateKeyPress: (char: string) => void;
+    isEnable: boolean
     lastChar: u8;
     hasChar: boolean;
+    setIsEnabled: React.Dispatch<React.SetStateAction<boolean>>
+    simulateKeyPress: (char: string) => void;
+    reset: () => void;
 };
 

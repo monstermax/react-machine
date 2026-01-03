@@ -26,19 +26,30 @@ import { U16, U8 } from "./integers";
 
 
 export const MEMORY_MAP = createMemoryMap({
-    // ROM
+
+    // ## ROM ## (0x0000-0x00FF) - 256 bytes
     ROM_START: 0x0000,
     ROM_END: 0x00FF,
 
-    // RAM
+
+    // ## RAM ## (0x8000-0xFEFF) - ~32KB (OS + PROGRAM + STACK)
+    RAM_START: 0x0100,
+    RAM_END: 0xFEFF,
+
+    // OS (0x0100-0x01FF) - 256 bytes
     OS_START: 0x0100,
     OS_END: 0x01FF,
+
+    // PROGRAM (0x0200-0xFDFF) - ~32KB
     PROGRAM_START: 0x0200,
     PROGRAM_END: 0xFDFF,
+
+    // STACK (0xFE00-0xFEFF) - 256 bytes
     STACK_START: 0xFE00,
     STACK_END: 0xFEFF,
 
-    // I/O Devices (0xFF00-0xFFFF)
+
+    // ## I/O Devices ## (0xFF00-0xFFFF)
     IO_START: 0xFF00,
     IO_END: 0xFFFF,
 
@@ -103,14 +114,16 @@ export const MEMORY_MAP = createMemoryMap({
     LCD_COMMAND: 0xFFA1,      // Commandes (clear, home, etc)
     LCD_CURSOR: 0xFFA2,       // Position curseur
 
-    // RNG // Random Number Generator
-    RNG_OUTPUT: 0xFFB0,       // Nombre aléatoire 0-255
-    RNG_SEED: 0xFFB1,         // Définir seed
+    // === RNG (0xFFB0-0xFFBF) ===
+    RNG_BASE: 0xFFB0 as u16,
+    RNG_OUTPUT: 0xFFB0 as u16,        // Nombre aléatoire 0-255
+    RNG_SEED: 0xFFB1 as u16,          // Définir seed
 
-    // RTC // Real-Time Clock
-    RTC_SECONDS: 0xFFC0,
-    RTC_MINUTES: 0xFFC1,
-    RTC_HOURS: 0xFFC2,
+    // === RTC (0xFFC0-0xFFCF) ===
+    RTC_BASE: 0xFFC0 as u16,
+    RTC_SECONDS: 0xFFC0 as u16,       // Secondes (0-59)
+    RTC_MINUTES: 0xFFC1 as u16,       // Minutes (0-59)
+    RTC_HOURS: 0xFFC2 as u16,         // Heures (0-23)
 
     // Pixel Display // Écran graphique 32x32 pixels monochrome
     PIXEL_DISPLAY_BASE: 0xFFD0,
@@ -127,6 +140,8 @@ export const MEMORY_MAP = createMemoryMap({
     ADC_CHANNEL: 0xFFF0,      // Sélection canal 0-7
     ADC_VALUE: 0xFFF1,        // Valeur lue (0-255)
 
+
+    // IRQ //
 
     // IRQ Sources (pour référence)
     IRQ_TIMER: 0,      // Bit 0 - Timer

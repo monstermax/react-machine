@@ -11,6 +11,8 @@ import { programs as stackPrograms } from "@/programs/stack";
 import { programs as keyboardPrograms } from "@/programs/keyboard";
 import { programs as displayPrograms } from "@/programs/display";
 import { programs as timerPrograms } from "@/programs/timer";
+import * as rtcPrograms from "@/programs/rtc";
+import * as rngPrograms from "@/programs/rng";
 
 import type { ProgramInfo, u8 } from "@/types/cpu.types";
 
@@ -26,6 +28,8 @@ export const programs: Record<string, ProgramInfo> = {
     ...timerPrograms,
     ...keyboardPrograms,
     ...displayPrograms,
+    ...rtcPrograms,
+    ...rngPrograms,
 };
 
 

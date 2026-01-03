@@ -14,6 +14,8 @@ import { useConsole, type ConsoleDevice } from "./devices/useConsole";
 import { useLcdDisplay, type LCDDevice } from "./devices/useLcdDisplay";
 import { usePixelDisplay, type PixelDisplayDevice } from "./devices/usePixelDisplay";
 import { mapAddress16 } from "@/lib/memory_map";
+import { useRtc, type RtcHook } from "./devices/useRtc";
+import { useRng, type RngHook } from "./devices/useRng";
 
 
 // Device Map: commence à 0xFF00, chaque device a 16 ports (0xFF00-0xFF0F, 0xFF10-0xFF1F, etc.)
@@ -32,6 +34,8 @@ export const useIo = (): IOHook => {
     const sevenSegment = useSevenSegmentDisplay(); // Device 6: 0xFF60-0xFF6F
     const lcd = useLcdDisplay(); // Device 10 (0x0A): 0xFFA0-0xFFAF
     const pixelDisplay = usePixelDisplay(); // Device 13 (0x0D): 0xFFD0-0xFFDF
+    const rng = useRng();
+    const rtc = useRtc();
 
 
     // Device registry
@@ -45,6 +49,8 @@ export const useIo = (): IOHook => {
         [0x06, sevenSegment],   // Seven Segment Display (0xFF60-0xFF6F)
         [0x07, consoleDevice],  // Console (0xFF70-0xFF7F)
         [0x0A, lcd],            // LCD 16x2 (0xFFA0-0xFFAF)
+        [0x0B, rng],            // Random Number Generator
+        [0x0C, rtc],            // Real-Time Clock
         [0x0D, pixelDisplay],   // Pixel Display 32x32 (0xFFD0-0xFFDF)
     ] as [any, Device][]), [osDisk, programDisk, timer, leds, interrupt, keyboard, sevenSegment, consoleDevice, lcd, pixelDisplay]);
 
@@ -95,6 +101,8 @@ export const useIo = (): IOHook => {
         console: consoleDevice,
         lcd,
         pixelDisplay,
+        rng,
+        rtc,
     };
 
     return ioHook
@@ -115,5 +123,7 @@ export type IOHook = {
     console: ConsoleDevice;
     lcd: LCDDevice;
     pixelDisplay: PixelDisplayDevice;
+    rng: RngHook;
+    rtc: RtcHook;
 };
 

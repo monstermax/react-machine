@@ -1,7 +1,9 @@
 
-import { MEMORY_MAP } from "@/lib/memory_map";
-import type { u8 } from "@/types/cpu.types";
 import { useCallback, useState } from "react";
+
+import { MEMORY_MAP } from "@/lib/memory_map";
+
+import type { u8 } from "@/types/cpu.types";
 
 
 // seven_seg.ts
@@ -44,7 +46,7 @@ export const useSevenSegmentDisplay = (): SevenSegmentHook => {
     }, [currentValue, rawSegments])
 
 
-    const write = (port: u8, value: u8): void => {
+    const write = useCallback((port: u8, value: u8): void => {
         switch (port) {
             case 0: // Port 0 = DATA (0xFF60)
                 const digit = (value & 0x0F) as u8;
@@ -56,22 +58,22 @@ export const useSevenSegmentDisplay = (): SevenSegmentHook => {
                 setRawSegments((value & 0x7F) as u8);
                 break;
         }
-    }
+    }, [setCurrentValue, setRawSegments])
 
 
     // Pour l'affichage UI
-    const getSegments = (): boolean[] => {
+    const getSegments = useCallback((): boolean[] => {
         const segments: boolean[] = [];
         for (let i = 0; i < 8; i++) {
             segments[i] = ((rawSegments >> i) & 1) === 1;
         }
         return segments;
-    }
+    }, [rawSegments])
 
 
-    const getCurrentDigit = (): u8 => {
+    const getCurrentDigit = useCallback((): u8 => {
         return currentValue;
-    }
+    }, [currentValue])
 
 
     const hook: SevenSegmentHook = {
@@ -90,7 +92,6 @@ export type SevenSegmentHook = {
     write: (port: u8, value: u8) => void,
     getSegments: () => boolean[],
     getCurrentDigit: () => number,
-
 }
 
 

@@ -46,6 +46,7 @@ export const usePixelDisplay = (): PixelDisplayDevice => {
             case 0x02: // PIXEL_COLOR - Écrire pixel à (currentX, currentY)
                 if (currentY < PIXEL_HEIGHT && currentX < PIXEL_WIDTH) {
                     const color = (value & 0x01) !== 0;
+
                     setPixels(prev => {
                         const newPixels = prev.map(row => [...row]);
                         newPixels[currentY][currentX] = color;
@@ -54,19 +55,19 @@ export const usePixelDisplay = (): PixelDisplayDevice => {
                 }
                 break;
         }
-    }, [currentX, currentY]);
+    }, [currentX, currentY, setCurrentX, setCurrentY, setPixels]);
 
 
     const reset = useCallback(() => {
         setPixels(Array(PIXEL_HEIGHT).fill(null).map(() => Array(PIXEL_WIDTH).fill(false)));
         setCurrentX(0 as u8);
         setCurrentY(0 as u8);
-    }, []);
+    }, [setCurrentX, setCurrentY, setPixels]);
 
 
     const clear = useCallback(() => {
         setPixels(Array(PIXEL_HEIGHT).fill(null).map(() => Array(PIXEL_WIDTH).fill(false)));
-    }, []);
+    }, [setPixels]);
 
 
     const getPixel = useCallback((x: number, y: number): boolean => {

@@ -4,12 +4,16 @@ import { useEffect, useState, useRef } from "react";
 import { programs } from "@/lib/programs";
 import type { ComputerHook } from "@/hooks/useComputer";
 import { MEMORY_MAP } from "@/lib/memory_map";
+import { MINI_OS, MINI_OS_V2, os_list } from "@/programs/mini_os";
+import type { OsInfo, u16, u8 } from "@/types/cpu.types";
 
 
 export type PanelControlsProps = {
     computerHook: ComputerHook;
+    loadOs: (osName: string) => void;
     loadProgram: (programName: string) => void;
     unloadProgram: () => void;
+    unloadOs: () => void;
     resetComputer: () => void;
 }
 
@@ -28,11 +32,13 @@ const frequencies = [
 ];
 
 
+
 export const PanelControls: React.FC<PanelControlsProps> = (props) => {
     const { computerHook } = props;
     const { cpuHook } = computerHook;
-    const { loadProgram, unloadProgram, resetComputer } = props;
+    const { loadOs, unloadOs, loadProgram, unloadProgram, resetComputer } = props;
 
+    const [selectedOs, setSelectedOs] = useState<string | null>(null);
     const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
 
     // État Play/Pause
@@ -70,7 +76,7 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
                 clearInterval(intervalRef.current);
             }
         };
-    }, [isRunning, frequency, cpuHook, cpuHook.halted]);
+    }, [isRunning, frequency, /* cpuHook.executeCycle, */ cpuHook.halted]);
 
 
     // Arrêter automatiquement si le CPU halt
@@ -84,6 +90,44 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
     return (
         <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 lg:col-span-2">
             <h2 className="text-xl font-semibold mb-2 text-green-400">Controls</h2>
+
+            {/* Sélection d'OS */}
+            <div className="mb-4 flex gap-4 items-center">
+                <label className="text-sm font-medium text-slate-300">Select OS:</label>
+
+                <select
+                    value={selectedOs ?? ''}
+                    onChange={(e) => setSelectedOs(e.target.value || null)}
+                    className="bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white w-96"
+                >
+                    <option key="none" value="">
+                        None
+                    </option>
+                    {Object.entries(os_list).map(([key, prog]) => (
+                        <option key={key} value={key}>
+                            {prog.name} - {prog.description}
+                        </option>
+                    ))}
+                </select>
+
+                <button
+                    onClick={() => {
+                        loadOs(selectedOs ?? '');
+                    }}
+                    disabled={!selectedOs}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
+                >
+                    Load
+                </button>
+
+                <button
+                    onClick={() => unloadOs()}
+                    disabled={!computerHook.loadedOs}
+                    className="bg-purple-800 hover:bg-purple-900 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
+                >
+                    Unload
+                </button>
+            </div>
 
             {/* Sélection de programme */}
             <div className="mb-4 flex gap-4 items-center">

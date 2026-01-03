@@ -57,7 +57,7 @@ export const useConsole = (): ConsoleDevice => {
                 console.log(`📟 Console: Screen cleared`);
                 break;
         }
-    }, [currentLine]);
+    }, [currentLine, setLines, setCurrentLine]);
 
 
     const reset = useCallback(() => {
