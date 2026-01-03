@@ -6,7 +6,7 @@ import { useRom, type RomHook } from "@/hooks/useRom";
 import { useMemory, type MemoryHook } from "@/hooks/useMemory";
 import { useIo, type IOHook } from "@/hooks/useIo";
 import { useRam, type RamHook } from "@/hooks/useRam";
-import { MINI_OS } from "@/programs/mini_os";
+import { MINI_OS, MINI_OS_V2 } from "@/programs/mini_os";
 import { programs } from "@/lib/programs";
 import { mapAddress16, MEMORY_MAP } from "@/lib/memory_map";
 import { U16 } from "@/lib/integers";
@@ -34,7 +34,8 @@ export const useComputer = (): ComputerHook => {
 
     // Load OS Code into OsDisk (at component mount, before reset)
     useEffect(() => {
-        ioHook.osDisk.setStorage(mapAddress16(MINI_OS, 0 as u16))
+        //ioHook.osDisk.setStorage(mapAddress16(MINI_OS, 0 as u16))
+        ioHook.osDisk.setStorage(mapAddress16(MINI_OS_V2, 0 as u16))
     }, [])
 
 
