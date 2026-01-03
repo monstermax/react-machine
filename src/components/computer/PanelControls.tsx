@@ -144,7 +144,7 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
                         value={frequency}
                         onChange={(e) => setFrequency(Number(e.target.value))}
                         className="bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white text-sm"
-                        disabled={isRunning}
+                        disabled={false}
                     >
                         {frequencies.map(({ label, value }) => (
                             <option key={value} value={value}>

@@ -175,10 +175,10 @@ export const isImportantIOAddress = (addr: u16): boolean => {
 };
 
 
-export const mapAddress8To16 = (memory8: Map<u8, u8>, offset: u16): Map<u16, u8> => {
+export const mapAddress16 = (memory: Map<u8, u8> | Map<u16, u8>, offset: u16): Map<u16, u8> => {
     const absolute = new Map<u16, u8>();
 
-    for (const [relAddr, value] of memory8.entries()) {
+    for (const [relAddr, value] of memory.entries()) {
         const absAddr = U16(offset + relAddr);
         absolute.set(absAddr, value);
     }

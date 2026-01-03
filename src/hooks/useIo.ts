@@ -14,6 +14,7 @@ import { useKeyboard, type KeyboardDevice } from "./devices/useKeyboard";
 import { useConsole, type ConsoleDevice } from "./devices/useConsole";
 import { useLCD, type LCDDevice } from "./devices/useLCD";
 import { usePixelDisplay, type PixelDisplayDevice } from "./devices/usepixeldisplay";
+import { mapAddress16 } from "@/lib/memory_map";
 
 
 // Device Map: commence à 0xFF00, chaque device a 16 ports (0xFF00-0xFF0F, 0xFF10-0xFF1F, etc.)
@@ -22,7 +23,7 @@ const DEVICE_PORT_SIZE = 0x10;
 
 export const useIo = (): IOHook => {
     // Devices
-    const osDisk = useDiskDevice(MINI_OS as unknown as Map<u16, u8>);      // Device 0: 0xFF00-0xFF0F
+    const osDisk = useDiskDevice(mapAddress16(MINI_OS, 0 as u16));      // Device 0: 0xFF00-0xFF0F
     const programDisk = useDiskDevice(new Map); // Device 1: 0xFF10-0xFF1F
     const leds = useLeds(); // Device 3: 0xFF20-0xFF2F
     const interrupt = useInterrupt(); // Device 4

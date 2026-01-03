@@ -1,6 +1,6 @@
 
 import { Opcode } from "../lib/instructions";
-import { mapAddress8To16, MEMORY_MAP } from "../lib/memory_map";
+import { mapAddress16, MEMORY_MAP } from "../lib/memory_map";
 
 import type { u16, u8 } from "@/types/cpu.types";
 

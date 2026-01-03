@@ -8,10 +8,10 @@ import { useIo, type IOHook } from "@/hooks/useIo";
 import { useRam, type RamHook } from "@/hooks/useRam";
 import { MINI_OS } from "@/programs/mini_os";
 import { programs } from "@/lib/programs";
-import { mapAddress8To16, MEMORY_MAP } from "@/lib/memory_map";
+import { mapAddress16, MEMORY_MAP } from "@/lib/memory_map";
 import { U16 } from "@/lib/integers";
 
-import type { ProgramInfo, u8 } from "@/types/cpu.types";
+import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 export const useComputer = (): ComputerHook => {
@@ -37,17 +37,16 @@ export const useComputer = (): ComputerHook => {
 
 
     const resetComputer = useCallback(() => {
-        // TODO: charger l'OS depuis un diskDrive (et le copier en RAM)
-
         // Load OS into RAM
-        const ramStorage = mapAddress8To16(MINI_OS, MEMORY_MAP.OS_START);
+        //const ramStorage = mapAddress16(MINI_OS, MEMORY_MAP.OS_START);
+        const ramStorage = mapAddress16(ioHook.osDisk.storage, MEMORY_MAP.OS_START);
         ramHook.setStorage(ramStorage);
 
         setLoadedProgram(null);
 
         // Initialize CPU
         cpuHook.reset();
-    }, [cpuHook, ramHook])
+    }, [cpuHook, ramHook, ioHook])
 
 
     // Charger un programme utilisateur sur le program disk

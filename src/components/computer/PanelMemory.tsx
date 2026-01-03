@@ -14,19 +14,21 @@ export type PanelMemoryProps = {
 }
 
 
-type MemorySection = "ROM" | "RAM" | "Stack" | "OS Disk" | "Program Disk";
+type TabType = "memory" | "os-disk" | "program-disk";
 
 
 export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     const { computerHook } = props;
     const { cpuHook, romHook, ramHook, ioHook } = computerHook;
 
+    const [activeTab, setActiveTab] = useState<TabType>("memory");
     const [followInstruction, setFollowInstruction] = useState(false);
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const addressRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
-    const sections: MemorySection[] = ["ROM", "RAM", "Stack", "OS Disk", "Program Disk"];
+    // Correction 1: Remplace "RAM" par "OS" et "Program"
+    const memorySections = ["ROM", "OS", "Program", "Stack", "I/O"];
     let lastSection = "";
 
 
@@ -99,20 +101,34 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     }, [romHook.storage, ramHook.storage, ioHook]);
 
 
-    //const currentMemory = fullMemoryView();
+    // Accès aux disks
+    const osDiskStorage = useMemo(() => {
+        // Récupère le stockage du OS Disk depuis le hook correspondant
+        return ioHook.osDisk?.storage || new Map<u16, u8>();
+    }, [ioHook]);
+
+    const programDiskStorage = useMemo(() => {
+        // Récupère le stockage du Program Disk
+        return ioHook.programDisk?.storage || new Map<u16, u8>();
+    }, [ioHook]);
+
     const currentPC = cpuHook.getRegister("PC");
     const sortedMemory = Array.from(currentMemory.entries()).sort(([a], [b]) => a - b);
+    const sortedOsDisk = Array.from(osDiskStorage.entries()).sort(([a], [b]) => a - b);
+    const sortedProgramDisk = Array.from(programDiskStorage.entries()).sort(([a], [b]) => a - b);
 
     const MEMORY_MAP_REVERSE = Object.fromEntries(
         Object.entries(MEMORY_MAP).map(e => [e[1], e[0]])
     );
 
 
-    const instructionMap = useMemo(() => {
+    // Correction 2: Fonction pour analyser les instructions dans les disks aussi
+    const analyzeInstructions = useCallback((data: Map<u16, u8> | [u16, u8][]) => {
+        const entries = Array.isArray(data) ? data : Array.from(data.entries());
+        const sorted = entries.sort(([a], [b]) => a - b);
+        
         const isInstruction = new Map<number, boolean>();
         const operandAddresses = new Set<number>();
-
-        const sorted = Array.from(currentMemory.entries()).sort(([a], [b]) => a - b);
 
         for (const [address, value] of sorted) {
             // Si déjà marqué comme opérande, ce n'est pas une instruction
@@ -139,7 +155,19 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
         }
 
         return isInstruction;
-    }, [currentMemory]);
+    }, []);
+
+    const memoryInstructionMap = useMemo(() => 
+        analyzeInstructions(currentMemory), 
+    [currentMemory, analyzeInstructions]);
+
+    const osDiskInstructionMap = useMemo(() => 
+        analyzeInstructions(osDiskStorage), 
+    [osDiskStorage, analyzeInstructions]);
+
+    const programDiskInstructionMap = useMemo(() => 
+        analyzeInstructions(programDiskStorage), 
+    [programDiskStorage, analyzeInstructions]);
 
 
     // Auto-scroll vers PC quand il change
@@ -151,26 +179,26 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     }, [currentPC, followInstruction]);
 
 
-    // Navigation vers une section
-    const scrollToSection = useCallback((section: MemorySection) => {
+    // Navigation vers une section mémoire - CORRECTION 1
+    const scrollToMemorySection = useCallback((section: string) => {
         let targetAddress = 0;
 
         switch (section) {
             case "ROM":
                 targetAddress = MEMORY_MAP.ROM_START;
                 break;
-            case "RAM":
+            case "OS":
                 targetAddress = MEMORY_MAP.OS_START;
+                break;
+            case "Program":
+                targetAddress = MEMORY_MAP.PROGRAM_START;
                 break;
             case "Stack":
                 targetAddress = MEMORY_MAP.STACK_START;
                 break;
-            case "OS Disk":
-                // Afficher le contenu du OS Disk (pas en mémoire, juste info)
-                return;
-            case "Program Disk":
-                // Afficher le contenu du Program Disk (pas en mémoire, juste info)
-                return;
+            case "I/O":
+                targetAddress = MEMORY_MAP.IO_START;
+                break;
         }
 
         const targetElement = addressRefs.current.get(targetAddress);
@@ -199,17 +227,29 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
         return "UNKNOWN";
     };
 
+    // Rendu du contenu selon l'onglet actif
+    const renderContent = () => {
+        switch (activeTab) {
+            case "memory":
+                return renderMemoryTab();
+            case "os-disk":
+                return renderDiskTab("OS Disk", sortedOsDisk, osDiskInstructionMap);
+            case "program-disk":
+                return renderDiskTab("Program Disk", sortedProgramDisk, programDiskInstructionMap);
+            default:
+                return renderMemoryTab();
+        }
+    };
 
-    return (
-        <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-            <h2 className="text-xl font-semibold mb-2 text-purple-400">Memory</h2>
-
-            {/* Navigation buttons */}
-            <div className="flex gap-2 mb-4 border-b border-slate-600 pb-2">
-                {sections.map(section => (
+    // Rendu de l'onglet mémoire
+    const renderMemoryTab = () => (
+        <>
+            {/* Boutons de navigation rapide pour la mémoire - CORRECTION 1 */}
+            <div className="flex flex-wrap gap-2 mb-4 border-b border-slate-600 pb-2">
+                {memorySections.map(section => (
                     <button
                         key={section}
-                        onClick={() => scrollToSection(section)}
+                        onClick={() => scrollToMemorySection(section)}
                         className="px-3 py-1 text-sm font-medium text-slate-300 hover:text-purple-400 hover:bg-slate-700/50 rounded transition-colors"
                     >
                         {section}
@@ -217,7 +257,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                 ))}
             </div>
 
-            {/* Memory Display */}
+            {/* Affichage mémoire */}
             <div
                 ref={scrollContainerRef}
                 className="font-mono text-sm space-y-1 max-h-[550px] overflow-y-auto"
@@ -229,8 +269,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                 {sortedMemory.map(([addr, val]) => {
                     const section = getSection(addr);
                     const isPC = addr === currentPC;
-                    //const isInstruction = isInstructionAddress(addr);
-                    const isInstruction = instructionMap.get(addr) ?? false;
+                    const isInstruction = memoryInstructionMap.get(addr) ?? false;
                     const inROM = isROM(addr);
 
                     // Afficher séparateur de section
@@ -276,13 +315,99 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                 )}
             </div>
 
-            <div>
-                <label className="flex gap-2">
-                    <input type="checkbox" checked={followInstruction} onChange={(event) => setFollowInstruction((event.target as any).checked)} />
-                    <div>Follow current Instruction</div>
+            <div className="mt-4">
+                <label className="flex items-center gap-2">
+                    <input 
+                        type="checkbox" 
+                        checked={followInstruction} 
+                        onChange={(e) => setFollowInstruction(e.target.checked)} 
+                        className="rounded"
+                    />
+                    <span className="text-slate-300">Follow current Instruction</span>
                 </label>
             </div>
+        </>
+    );
+
+    // Rendu d'un onglet de disque - CORRECTION 2
+    const renderDiskTab = (title: string, diskData: [u16, u8][], instructionMap: Map<number, boolean>) => (
+        <div className="font-mono text-sm space-y-1 max-h-[600px] overflow-y-auto">
+            <div className="text-xs text-slate-400 mb-2">
+                {title}: {diskData.length} bytes
+            </div>
+
+            {diskData.length > 0 ? (
+                diskData.map(([addr, val]) => {
+                    const isInstruction = instructionMap.get(addr) ?? false;
+                    
+                    return (
+                        <div
+                            key={addr}
+                            className="flex justify-between p-2 rounded bg-slate-900/50"
+                        >
+                            <span className="text-yellow-400">
+                                0x{addr.toString(16).padStart(4, "0")}:
+                            </span>
+                            <div className="flex flex-col items-end">
+                                <span className={`${isInstruction ? "text-pink-400" : "text-green-400"}`}>
+                                    0x{val.toString(16).padStart(2, "0")}
+                                    {isInstruction && ` (${getOpcodeName(val)})`}
+                                </span>
+                                {/* Afficher aussi le caractère ASCII si c'est un caractère imprimable */}
+                                {!isInstruction && val >= 32 && val <= 126 && (
+                                    <span className="text-xs text-slate-400 mt-1">
+                                        '{String.fromCharCode(val)}'
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })
+            ) : (
+                <div className="text-slate-500 italic text-center py-8">
+                    {title} is empty
+                </div>
+            )}
+        </div>
+    );
+
+    return (
+        <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+            <h2 className="text-xl font-semibold mb-2 text-purple-400">Memory & Storage</h2>
+
+            {/* Onglets principaux */}
+            <div className="flex border-b border-slate-600 mb-4">
+                <button
+                    onClick={() => setActiveTab("memory")}
+                    className={`px-4 py-2 font-medium transition-colors ${activeTab === "memory"
+                            ? "text-purple-400 border-b-2 border-purple-400"
+                            : "text-slate-400 hover:text-slate-300"
+                        }`}
+                >
+                    Memory
+                </button>
+                <button
+                    onClick={() => setActiveTab("os-disk")}
+                    className={`px-4 py-2 font-medium transition-colors ${activeTab === "os-disk"
+                            ? "text-purple-400 border-b-2 border-purple-400"
+                            : "text-slate-400 hover:text-slate-300"
+                        }`}
+                >
+                    OS Disk
+                </button>
+                <button
+                    onClick={() => setActiveTab("program-disk")}
+                    className={`px-4 py-2 font-medium transition-colors ${activeTab === "program-disk"
+                            ? "text-purple-400 border-b-2 border-purple-400"
+                            : "text-slate-400 hover:text-slate-300"
+                        }`}
+                >
+                    Program Disk
+                </button>
+            </div>
+
+            {/* Contenu de l'onglet actif */}
+            {renderContent()}
         </div>
     );
 }
-
