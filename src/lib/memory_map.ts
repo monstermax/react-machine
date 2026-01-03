@@ -121,9 +121,16 @@ export const MEMORY_MAP = createMemoryMap({
 
     // === RTC (0xFFC0-0xFFCF) ===
     RTC_BASE: 0xFFC0 as u16,
-    RTC_SECONDS: 0xFFC0 as u16,       // Secondes (0-59)
-    RTC_MINUTES: 0xFFC1 as u16,       // Minutes (0-59)
-    RTC_HOURS: 0xFFC2 as u16,         // Heures (0-23)
+    RTC_YEARS: 0xFFC1 as u16,         // Secondes (0-59)
+    RTC_MONTHS: 0xFFC2 as u16,        // Secondes (0-59)
+    RTC_DAYS: 0xFFC3 as u16,          // Secondes (0-59)
+    RTC_HOURS: 0xFFC4 as u16,         // Secondes (0-59)
+    RTC_MINUTES: 0xFFC5 as u16,       // Minutes (0-59)
+    RTC_SECONDS: 0xFFC6 as u16,       // Heures (0-23)
+    RTC_TIMESTAMP_0: 0xFFC7 as u16,   // Unix timestamp byte 0 (LSB)
+    RTC_TIMESTAMP_1: 0xFFC8 as u16,   // Unix timestamp byte 1
+    RTC_TIMESTAMP_2: 0xFFC9 as u16,   // Unix timestamp byte 2
+    RTC_TIMESTAMP_3: 0xFFCA as u16,   // Unix timestamp byte 3 (MSB)
 
     // Pixel Display // Écran graphique 32x32 pixels monochrome
     PIXEL_DISPLAY_BASE: 0xFFD0,

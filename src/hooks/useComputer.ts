@@ -68,11 +68,12 @@ export const useComputer = (): ComputerHook => {
 
     // Initialize/Reset CPU & RAM
     const resetComputer = useCallback(() => {
-        // Load OsDisk into RAM (overwrite full RAM)
-        const ramStorage = mapAddress16(ioHook.osDisk.storage, MEMORY_MAP.OS_START);
-        ramHook.setStorage(ramStorage);
-
         setLoadedProgram(null);
+        setLoadedOs(null);
+
+        // Load OsDisk into RAM (overwrite full RAM)
+        //const ramStorage = mapAddress16(ioHook.osDisk.storage, MEMORY_MAP.OS_START);
+        //ramHook.setStorage(ramStorage);
 
         // Initialize CPU
         cpuHook.reset();

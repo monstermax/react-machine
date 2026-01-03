@@ -40,19 +40,20 @@ export const useIo = (): IOHook => {
 
     // Device registry
     const devices = useMemo(() => new Map<u8, Device>([
-        [0x00, osDisk],         // OS disk
-        [0x01, programDisk],    // Program disk
-        [0x02, timer],          // Timer (0xFF20-0xFF2F)
-        [0x03, leds],           // LEDs
-        [0x04, interrupt],      // Interrupt
-        [0x05, keyboard],       // Keyboard (0xFF50-0xFF5F)
-        [0x06, sevenSegment],   // Seven Segment Display (0xFF60-0xFF6F)
-        [0x07, consoleDevice],  // Console (0xFF70-0xFF7F)
-        [0x0A, lcd],            // LCD 16x2 (0xFFA0-0xFFAF)
-        [0x0B, rng],            // Random Number Generator
-        [0x0C, rtc],            // Real-Time Clock
-        [0x0D, pixelDisplay],   // Pixel Display 32x32 (0xFFD0-0xFFDF)
-    ] as [any, Device][]), [osDisk, programDisk, timer, leds, interrupt, keyboard, sevenSegment, consoleDevice, lcd, pixelDisplay]);
+            [0x00, osDisk],         // OS disk
+            [0x01, programDisk],    // Program disk
+            [0x02, timer],          // Timer (0xFF20-0xFF2F)
+            [0x03, leds],           // LEDs
+            [0x04, interrupt],      // Interrupt
+            [0x05, keyboard],       // Keyboard (0xFF50-0xFF5F)
+            [0x06, sevenSegment],   // Seven Segment Display (0xFF60-0xFF6F)
+            [0x07, consoleDevice],  // Console (0xFF70-0xFF7F)
+            [0x0A, lcd],            // LCD 16x2 (0xFFA0-0xFFAF)
+            [0x0B, rng],            // Random Number Generator
+            [0x0C, rtc],            // Real-Time Clock
+            [0x0D, pixelDisplay],   // Pixel Display 32x32 (0xFFD0-0xFFDF)
+        ] as [any, Device][])
+    , [osDisk, programDisk, timer, leds, interrupt, keyboard, sevenSegment, consoleDevice, lcd, rng, rtc, pixelDisplay]);
 
 
     // I/O read: router vers le bon device

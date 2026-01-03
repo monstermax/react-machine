@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 import { programs } from "@/lib/programs";
 import type { ComputerHook } from "@/hooks/useComputer";
@@ -10,6 +10,7 @@ import type { OsInfo, u16, u8 } from "@/types/cpu.types";
 
 export type PanelControlsProps = {
     computerHook: ComputerHook;
+    breakpoints: Set<number>;
     loadOs: (osName: string) => void;
     loadProgram: (programName: string) => void;
     unloadProgram: () => void;
@@ -34,6 +35,8 @@ const frequencies = [
 
 
 export const PanelControls: React.FC<PanelControlsProps> = (props) => {
+    console.log('RENDER PanelControls');
+
     const { computerHook } = props;
     const { cpuHook } = computerHook;
     const { loadOs, unloadOs, loadProgram, unloadProgram, resetComputer } = props;
@@ -44,7 +47,7 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
     // État Play/Pause
     const [isRunning, setIsRunning] = useState(false);
     const [frequency, setFrequency] = useState(1); // Hz (cycles par seconde)
-    const intervalRef = useRef<number | null>(null);
+    const [currentBreakpoint, setCurrentBreakpoint] = useState<number | null>(null);
 
 
     const selectedProgramInfo = selectedProgram ? programs[selectedProgram] : null;
@@ -57,26 +60,35 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
 
     // Gestion du timer
     useEffect(() => {
+        let timer: number | null = null;
+
         if (isRunning && !cpuHook.halted) {
             const interval = 1000 / frequency; // Intervalle en ms
 
-            intervalRef.current = setInterval(() => {
+            timer = setInterval(() => {
+                const pc = cpuHook.getRegister("PC");
+
+                // Vérifier breakpoint
+                if (currentBreakpoint !== pc && props.breakpoints.has(pc)) {
+                    setIsRunning(false);
+                    setCurrentBreakpoint(pc);
+                    return;
+                }
+
+                if (currentBreakpoint) {
+                    setCurrentBreakpoint(null);
+                }
+
                 cpuHook.executeCycle();
             }, interval);
-
-        } else {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
         }
 
         return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
+            if (timer) {
+                clearInterval(timer);
             }
         };
-    }, [isRunning, frequency, /* cpuHook.executeCycle, */ cpuHook.halted]);
+    }, [isRunning, frequency, cpuHook.executeCycle, cpuHook.halted, props.breakpoints, currentBreakpoint, setIsRunning, setCurrentBreakpoint]);
 
 
     // Arrêter automatiquement si le CPU halt

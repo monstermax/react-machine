@@ -13,6 +13,8 @@ export const ComputerPage: React.FC = () => {
     const computerHook = useComputer();
     const { resetComputer, loadOs, unloadOs, loadProgram, unloadProgram } = computerHook;
 
+    const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set());
+
     return (
         <div className="min-h-screen bg-slate-950 text-white">
             <h1 className="text-3xl font-bold p-4">16-bit Computer</h1>
@@ -25,6 +27,7 @@ export const ComputerPage: React.FC = () => {
                     {/* Controls */}
                     <PanelControls
                         computerHook={computerHook}
+                        breakpoints={breakpoints}
                         loadOs={loadOs}
                         loadProgram={loadProgram}
                         unloadOs={unloadOs}
@@ -34,7 +37,11 @@ export const ComputerPage: React.FC = () => {
                 </div>
 
                 {/* Memory */}
-                <PanelMemory computerHook={computerHook} />
+                <PanelMemory
+                    breakpoints={breakpoints}
+                    computerHook={computerHook}
+                    setBreakpoints={setBreakpoints}
+                    />
 
 
                 {/* IOs Devices */}

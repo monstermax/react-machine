@@ -11,6 +11,8 @@ import { U16 } from "@/lib/integers";
 
 export type PanelMemoryProps = {
     computerHook: ComputerHook;
+    breakpoints: Set<number>
+    setBreakpoints: React.Dispatch<React.SetStateAction<Set<number>>>
 }
 
 
@@ -170,6 +172,16 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
         [programDiskStorage, analyzeInstructions]);
 
 
+    const toggleBreakpoint = useCallback((addr: number) => {
+        props.setBreakpoints(prev => {
+            const next = new Set(prev);
+            if (next.has(addr)) next.delete(addr);
+            else next.add(addr);
+            return next;
+        });
+    }, [props.setBreakpoints]);
+
+
     // Fonction utilitaire pour scroller dans le conteneur
     const scrollInContainer = useCallback((element: HTMLElement | null, offset = 0) => {
         const container = scrollContainerRef.current;
@@ -243,6 +255,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
         return "UNKNOWN";
     };
 
+
     // Rendu du contenu selon l'onglet actif
     const renderContent = () => {
         switch (activeTab) {
@@ -256,6 +269,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                 return renderMemoryTab();
         }
     };
+
 
     // Rendu de l'onglet mémoire
     const renderMemoryTab = () => (
@@ -311,10 +325,21 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                                     }`}
                                 title={MEMORY_MAP_REVERSE[addr] ?? ''}
                             >
-                                <span className="text-yellow-400">
-                                    {isPC && "→ "}
-                                    0x{addr.toString(16).padStart(4, "0")}:
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <div 
+                                        onClick={() => toggleBreakpoint(addr)}
+                                        className={`
+                                            w-3 h-3 rounded-full cursor-pointer transition-all
+                                            ${props.breakpoints.has(addr) ? 'bg-red-600' : 'bg-slate-700 hover:bg-red-500/40 border border-slate-600'}
+                                            ${isInstruction ? "" : "opacity-0"}
+                                        `}
+                                        title="Toggle breakpoint"
+                                    />
+                                    <span className="text-yellow-400">
+                                        {isPC && "→ "}
+                                        0x{addr.toString(16).padStart(4, "0")}:
+                                    </span>
+                                </div>
                                 <span className={isInstruction ? "text-pink-400" : "text-green-400"}>
                                     0x{val.toString(16).padStart(2, "0")}
                                     {isInstruction && ` (${getOpcodeName(val)})`}
@@ -345,7 +370,8 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
         </>
     );
 
-    // Rendu d'un onglet de disque - CORRECTION 2
+
+    // Rendu d'un onglet de disque
     const renderDiskTab = (title: string, diskData: [u16, u8][], instructionMap: Map<number, boolean>) => (
         <div className="font-mono text-sm space-y-1 max-h-[600px] overflow-y-auto">
             <div className="text-xs text-slate-400 mb-2">
@@ -386,6 +412,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
             )}
         </div>
     );
+
 
     return (
         <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
