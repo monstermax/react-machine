@@ -15,6 +15,8 @@ import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 export const useComputer = (): ComputerHook => {
+    //console.log('RENDER useComputer')
+
     const romHook = useRom();           // ROM avec bootloader
     const ramHook = useRam();
     const ioHook = useIo();             // I/O ports
@@ -30,20 +32,31 @@ export const useComputer = (): ComputerHook => {
     }
 
 
-    // Load OS into Disk (before reset)
+    // Load OS Code into OsDisk (at component mount, before reset)
     useEffect(() => {
         ioHook.osDisk.setStorage(mapAddress16(MINI_OS, 0 as u16))
     }, [])
 
 
-    // Initialize RAM & CPU at boot
+    // Initialize/Reset CPU & RAM, when osDisk changes
     useEffect(() => {
         resetComputer();
     }, [ioHook.osDisk.storage])
 
 
+    // Load ProgramDisk into RAM
+    useEffect(() => {
+        // Charger le programme en RAM à PROGRAM_START, quand l'osDisk ou loadedProgram change
+
+        if (!loadedProgram) return;
+
+        memoryHook.loadDiskInRAM(ioHook.programDisk.storage, MEMORY_MAP.PROGRAM_START)
+    }, [memoryHook.loadDiskInRAM, ioHook.programDisk.storage, loadedProgram])
+
+
+    // Initialize/Reset CPU & RAM
     const resetComputer = useCallback(() => {
-        // Load OS into RAM
+        // Load OsDisk into RAM (overwrite full RAM)
         const ramStorage = mapAddress16(ioHook.osDisk.storage, MEMORY_MAP.OS_START);
         ramHook.setStorage(ramStorage);
 
@@ -51,7 +64,7 @@ export const useComputer = (): ComputerHook => {
 
         // Initialize CPU
         cpuHook.reset();
-    }, [cpuHook, ramHook, ioHook])
+    }, [cpuHook.reset, ramHook.setStorage, ioHook.osDisk.storage, setLoadedProgram])
 
 
     // Charger un programme utilisateur sur le program disk
@@ -63,10 +76,12 @@ export const useComputer = (): ComputerHook => {
             return;
         }
 
-        // Charger le programme en RAM à PROGRAM_START
-        memoryHook.loadDiskInRAM(program.code, MEMORY_MAP.PROGRAM_START)
+        // Charger le programme sur le disk (overwrite full disk)
+        const newDiskStorage = mapAddress16(program.code, 0 as u16);
+        ioHook.programDisk.setStorage(newDiskStorage)
+
         setLoadedProgram(programName);
-    }, [memoryHook]);
+    }, [ioHook.programDisk.setStorage, setLoadedProgram]);
 
 
     const unloadProgram = useCallback(() => {
@@ -82,7 +97,7 @@ export const useComputer = (): ComputerHook => {
         });
 
         setLoadedProgram(null);
-    }, [ramHook]);
+    }, [ramHook.setStorage, setLoadedProgram]);
 
 
     const computerHook: ComputerHook = {

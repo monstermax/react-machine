@@ -33,7 +33,7 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
 
             return newVal;
         });
-    }, [enabled, period, interruptHook]);
+    }, [enabled, period, interruptHook.requestInterrupt, setCounter]);
 
 
     // Device IO interface
@@ -67,7 +67,7 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
                 setPeriod((value & 0xFF) as u8);
                 break;
         }
-    }, []);
+    }, [setEnabled, setCounter, setPeriod]);
 
 
     const hook: TimerHook = {

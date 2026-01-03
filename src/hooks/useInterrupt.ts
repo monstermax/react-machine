@@ -41,7 +41,7 @@ export const useInterrupt = () => {
             default:
                 return (0) as u8;
         }
-    }, [handlerAddr]);
+    }, [enabled, pending, mask, handlerAddr]);
 
 
     // Écriture vers les ports IO
@@ -74,7 +74,7 @@ export const useInterrupt = () => {
 
             // INTERRUPT_PENDING (0x01) est read-only
         }
-    }, []);
+    }, [setEnabled, setPending, setMask, setHandlerAddr]);
 
 
     // Demander une interruption (appelé par les périphériques)
@@ -92,7 +92,7 @@ export const useInterrupt = () => {
             console.log(`🔔 New pending: 0b${newPending.toString(2).padStart(8, '0')}`);
             return newPending;
         });
-    }, []);
+    }, [setPending]);
 
 
     // Vérifier si une interruption est prête
@@ -124,7 +124,7 @@ export const useInterrupt = () => {
             console.log(`✅ IRQ ${irq} acknowledged - Pending: 0b${newPending.toString(2).padStart(8, '0')}`);
             return newPending;
         });
-    }, []);
+    }, [setPending]);
 
 
     // Reset

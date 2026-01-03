@@ -114,16 +114,15 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
     }, [registers])
 
 
-    const getFlag = (flag: 'zero' | 'carry'): boolean => {
+    const getFlag = useCallback((flag: 'zero' | 'carry'): boolean => {
         const flags = getRegister("FLAGS");
         return flag === 'zero' ? !!(flags & 0b10) : !!(flags & 0b01);
-    }
+    }, [getRegister])
 
 
     const setFlags = useCallback((zero: boolean, carry: boolean) => {
-        //registers.set("FLAGS", ((zero ? 0b10 : 0) | (carry ? 0b01 : 0)) as u8);
         setRegister('FLAGS', ((zero ? 0b10 : 0) | (carry ? 0b01 : 0)) as u8)
-    }, [registers])
+    }, [setRegister])
 
 
     const reset = useCallback(() => {
@@ -143,83 +142,175 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         setClockCycle(0 as u16);
         setInterruptsEnabled(false);
         setInInterruptHandler(false);
-    }, [registers])
+    }, [setRegisters, setHalted, setClockCycle, setInterruptsEnabled, setInInterruptHandler])
 
 
-    const tick = () => {
+    const tick = useCallback(() => {
         setClockCycle(c => (c + 1) as u16)
 
         // Tick du timer à chaque cycle CPU
         ioHook.timer.tick();
-    }
+    }, [setClockCycle, ioHook.timer.tick])
 
 
-    // Execute a CPU cycle
-    const executeCycle = useCallback(() => {
-        if (halted) return;
+    const readMem8 = useCallback((pc: u16): u8 => {
+        const value = memory.readMemory((pc + 1) as u16);
+        return value;
+    }, [memory.readMemory])
 
-        // Increment clockCycle
-        tick();
 
-        // Vérifier les interruptions AVANT de fetch
-        if (interruptsEnabled && !inInterruptHandler && ioHook.interrupt.hasPendingInterrupt()) {
-            handleInterrupt();
-            return; // On saute l'exécution normale ce cycle
+    const readMem16 = useCallback((pc: u16): u16 => {
+        const low = memory.readMemory((pc + 1) as u16);
+        const high = memory.readMemory((pc + 2) as u16);
+        const value = ((high << 8) | low) as u16;
+        return value;
+    }, [memory.readMemory])
+
+
+    // Fonction pour push une valeur sur la pile
+    const pushValue = useCallback((value: u8) => {
+        let sp = getRegister("SP");
+
+        // Écrire la valeur à [SP]
+        memory.writeMemory(sp, value);
+
+        // Décrémenter SP (pile descend)
+        sp = ((sp - 1) & 0xFFFF) as u16;
+        setRegister("SP", sp);
+    }, [memory.writeMemory, getRegister, setRegister]);
+
+
+    // Fonction pour pop une valeur de la pile
+    const popValue = useCallback((): u8 => {
+        let sp = getRegister("SP");
+
+        // Incrémenter SP d'abord (pile remonte)
+        sp = ((sp + 1) & 0xFFFF) as u16;
+
+        // Lire la valeur à [SP]
+        const value = memory.readMemory(sp);
+
+        // Mettre à jour SP
+        setRegister("SP", sp);
+
+        return value;
+    }, [memory.readMemory, getRegister, setRegister]);
+
+
+    // Fonction pour CALL
+    const handleSyscall = useCallback((pc: u16) => {
+        const syscallNum = memory.readMemory((pc + 1) as u16);
+
+        switch (syscallNum) {
+            case 0: // exit
+                console.log("📍 Program exit (syscall 0)");
+                // Clear program memory
+                for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
+                    memory.writeMemory(addr, 0 as u8);
+                    break; // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
+                }
+
+                // Retour à l'OS
+                setRegister("PC", MEMORY_MAP.OS_START);
+                break;
+
+            case 1: // pause
+                // TODO: mettre en pause dans l'interface UI
+                setRegister("PC", (pc + 2) as u16);
+                break;
+
+            case 2: // print_char - afficher A comme caractère
+                console.log(`📝 print_char: ${String.fromCharCode(getRegister("A"))}`);
+                setRegister("PC", (pc + 2) as u16);
+                break;
+
+            case 3: // print_num - afficher A comme nombre
+                console.log(`📊 print_num: ${getRegister("A")}`);
+                setRegister("PC", (pc + 2) as u16);
+                break;
+
+            // Autres syscalls possibles : read, write, etc.
+
+            default:
+                console.warn(`Unknown syscall: ${syscallNum}`);
+                setRegister("PC", (pc + 2) as u16);
+                break;
         }
-
-        // Read current instruction
-        const pc = getRegister("PC");
-        const instruction = memory.readMemory(pc);
-
-        // Store current instruction into IR Register
-        setRegister("IR", instruction);
-
-        const opcode = getRegister("IR");
-
-        // Execute logical operations
-        executeOpcode(pc, opcode);
-
-    }, [halted, memory, interruptsEnabled, inInterruptHandler, ioHook]);
+    }, [memory.readMemory, memory.writeMemory, getRegister, setRegister]);
 
 
-    const handleInterrupt = useCallback(() => {
-        const irq = ioHook.interrupt.getPendingIRQ();
-        if (irq === null) return;
+    const handleCall = useCallback((pc: u16) => {
+        // Adresse de retour = PC + 3 (opcode + 2 bytes d'adresse)
+        const returnAddr = pc + 3;
 
-        console.log(`🎯 Handling IRQ ${irq}, handlerAddr = ${ioHook.interrupt.handlerAddr.toString(16)}`);
+        // PUSH l'adresse de retour sur la pile (16 bits)
+        let sp = getRegister("SP");
 
-        // 1. Désactiver interruptions
-        setInterruptsEnabled(false);
-        setInInterruptHandler(true);
+        // PUSH high byte
+        memory.writeMemory(sp, ((returnAddr >> 8) & 0xFF) as u8);
+        sp = ((sp - 1) & 0xFFFF) as u16;
 
-        // 2. Sauvegarder contexte sur la pile
-        const sp = getRegister("SP");
-        const pc = getRegister("PC");
-        const flags = getRegister("FLAGS");
+        // PUSH low byte
+        memory.writeMemory(sp, (returnAddr & 0xFF) as u8);
+        sp = ((sp - 1) & 0xFFFF) as u16;
 
-        // PUSH Flags
-        memory.writeMemory(sp, flags);
-        setRegister("SP", (sp - 1) as u16);
+        setRegister("SP", sp);
 
-        // PUSH PC (little-endian)
-        memory.writeMemory((sp - 1) as u16, (pc & 0xFF) as u8);      // Low byte
-        memory.writeMemory((sp - 2) as u16, ((pc >> 8) & 0xFF) as u8); // High byte
-        setRegister("SP", (sp - 3) as u16);
+        // Lire l'adresse de destination
+        const callAddr = readMem16(pc);
 
-        // 3. Acquitter l'interruption
-        ioHook.interrupt.acknowledgeInterrupt(irq);
+        // Sauter
+        setRegister("PC", callAddr);
+    }, [memory.writeMemory, getRegister, setRegister, readMem16]);
 
-        // 4. Sauter au handler
-        let handlerAddress = ioHook.interrupt.handlerAddr;
-        if (handlerAddress === 0) {
-            // Vecteur par défaut: 0x0040 + irq*4
-            handlerAddress = (0x0040 + (irq * 4)) as u16;
-        }
 
-        setRegister("PC", handlerAddress);
+    // Fonction pour RET
+    const handleRet = useCallback(() => {
+        let sp = getRegister("SP");
 
-        console.log(`🔄 Interruption IRQ${irq} -> Handler 0x${handlerAddress.toString(16)}`);
-    }, [ioHook.interrupt, memory]);
+        // POP low byte
+        sp = ((sp + 1) & 0xFFFF) as u16;
+        const low = memory.readMemory(sp);
+
+        // POP high byte
+        sp = ((sp + 1) & 0xFFFF) as u16;
+        const high = memory.readMemory(sp);
+
+        const retAddr = ((high << 8) | low) as u16;
+
+        // Mettre à jour SP
+        setRegister("SP", sp);
+
+        // Sauter à l'adresse retour
+        setRegister("PC", retAddr);
+    }, [memory.readMemory, getRegister, setRegister]);
+
+
+    // Fonction pour IRET (Return from Interrupt)
+    const handleIRet = useCallback(() => {
+        let sp = getRegister("SP");
+
+        // POP PC
+        sp = ((sp + 1) & 0xFFFF) as u16;
+        const pcLow = memory.readMemory(sp);
+
+        sp = ((sp + 1) & 0xFFFF) as u16;
+        const pcHigh = memory.readMemory(sp);
+        const returnAddr = ((pcHigh << 8) | pcLow) as u16;
+
+        // POP Flags
+        sp = ((sp + 1) & 0xFFFF) as u16;
+        const flags = memory.readMemory(sp);
+
+        // Mettre à jour registres
+        setRegister("SP", sp);
+        setRegister("PC", returnAddr);
+        setRegister("FLAGS", flags);
+
+        // Réactiver interruptions
+        setInterruptsEnabled(true);
+        setInInterruptHandler(false);
+    }, [memory.readMemory, getRegister, setRegister, setInterruptsEnabled, setInInterruptHandler]);
 
 
     // Execute an instruction
@@ -559,167 +650,75 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
                 console.error(`Unknown opcode at 0x${pc.toString(16)}: 0x${instruction.toString(16)}`);
                 setHalted(true);
         }
-    }, [memory, getRegister, setRegister]);
+    }, [memory.readMemory, memory.writeMemory, getRegister, setRegister, pushValue, popValue, setHalted, setFlags, readMem16, readMem8, handleSyscall, handleCall, handleRet, handleIRet]);
 
 
-    const readMem8 = useCallback((pc: u16): u8 => {
-        const value = memory.readMemory((pc + 1) as u16);
-        return value;
-    }, [memory])
+    const handleInterrupt = useCallback(() => {
+        const irq = ioHook.interrupt.getPendingIRQ();
+        if (irq === null) return;
 
+        console.log(`🎯 Handling IRQ ${irq}, handlerAddr = ${ioHook.interrupt.handlerAddr.toString(16)}`);
 
-    const readMem16 = useCallback((pc: u16): u16 => {
-        const low = memory.readMemory((pc + 1) as u16);
-        const high = memory.readMemory((pc + 2) as u16);
-        const value = ((high << 8) | low) as u16;
-        return value;
-    }, [memory])
+        // 1. Désactiver interruptions
+        setInterruptsEnabled(false);
+        setInInterruptHandler(true);
 
+        // 2. Sauvegarder contexte sur la pile
+        const sp = getRegister("SP");
+        const pc = getRegister("PC");
+        const flags = getRegister("FLAGS");
 
-    // Fonction pour push une valeur sur la pile
-    const pushValue = useCallback((value: u8) => {
-        let sp = getRegister("SP");
+        // PUSH Flags
+        memory.writeMemory(sp, flags);
+        setRegister("SP", (sp - 1) as u16);
 
-        // Écrire la valeur à [SP]
-        memory.writeMemory(sp, value);
+        // PUSH PC (little-endian)
+        memory.writeMemory((sp - 1) as u16, (pc & 0xFF) as u8);      // Low byte
+        memory.writeMemory((sp - 2) as u16, ((pc >> 8) & 0xFF) as u8); // High byte
+        setRegister("SP", (sp - 3) as u16);
 
-        // Décrémenter SP (pile descend)
-        sp = ((sp - 1) & 0xFFFF) as u16;
-        setRegister("SP", sp);
-    }, [memory, getRegister, setRegister]);
+        // 3. Acquitter l'interruption
+        ioHook.interrupt.acknowledgeInterrupt(irq);
 
-
-    // Fonction pour pop une valeur de la pile
-    const popValue = useCallback((): u8 => {
-        let sp = getRegister("SP");
-
-        // Incrémenter SP d'abord (pile remonte)
-        sp = ((sp + 1) & 0xFFFF) as u16;
-
-        // Lire la valeur à [SP]
-        const value = memory.readMemory(sp);
-
-        // Mettre à jour SP
-        setRegister("SP", sp);
-
-        return value;
-    }, [memory, getRegister, setRegister]);
-
-
-    // Fonction pour CALL
-    const handleSyscall = useCallback((pc: u16) => {
-        const syscallNum = memory.readMemory((pc + 1) as u16);
-
-        switch (syscallNum) {
-            case 0: // exit
-                console.log("📍 Program exit (syscall 0)");
-                // Clear program memory
-                for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
-                    memory.writeMemory(addr, 0 as u8);
-                    break; // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
-                }
-
-                // Retour à l'OS
-                setRegister("PC", MEMORY_MAP.OS_START);
-                break;
-
-            case 1: // pause
-                // TODO: mettre en pause dans l'interface UI
-                setRegister("PC", (pc + 2) as u16);
-                break;
-
-            case 2: // print_char - afficher A comme caractère
-                console.log(`📝 print_char: ${String.fromCharCode(getRegister("A"))}`);
-                setRegister("PC", (pc + 2) as u16);
-                break;
-
-            case 3: // print_num - afficher A comme nombre
-                console.log(`📊 print_num: ${getRegister("A")}`);
-                setRegister("PC", (pc + 2) as u16);
-                break;
-
-            // Autres syscalls possibles : read, write, etc.
-
-            default:
-                console.warn(`Unknown syscall: ${syscallNum}`);
-                setRegister("PC", (pc + 2) as u16);
-                break;
+        // 4. Sauter au handler
+        let handlerAddress = ioHook.interrupt.handlerAddr;
+        if (handlerAddress === 0) {
+            // Vecteur par défaut: 0x0040 + irq*4
+            handlerAddress = (0x0040 + (irq * 4)) as u16;
         }
-    }, [memory, getRegister, setRegister]);
+
+        setRegister("PC", handlerAddress);
+
+        console.log(`🔄 Interruption IRQ${irq} -> Handler 0x${handlerAddress.toString(16)}`);
+    }, [ioHook.interrupt.getPendingIRQ, ioHook.interrupt.handlerAddr, ioHook.interrupt.acknowledgeInterrupt, memory.writeMemory, setRegister, getRegister, setInterruptsEnabled, setInInterruptHandler]);
 
 
-    const handleCall = useCallback((pc: u16) => {
-        // Adresse de retour = PC + 3 (opcode + 2 bytes d'adresse)
-        const returnAddr = pc + 3;
+    // Execute a CPU cycle
+    const executeCycle = useCallback(() => {
+        if (halted) return;
 
-        // PUSH l'adresse de retour sur la pile (16 bits)
-        let sp = getRegister("SP");
+        // Increment clockCycle
+        tick();
 
-        // PUSH high byte
-        memory.writeMemory(sp, ((returnAddr >> 8) & 0xFF) as u8);
-        sp = ((sp - 1) & 0xFFFF) as u16;
+        // Vérifier les interruptions AVANT de fetch
+        if (interruptsEnabled && !inInterruptHandler && ioHook.interrupt.hasPendingInterrupt()) {
+            handleInterrupt();
+            return; // On saute l'exécution normale ce cycle
+        }
 
-        // PUSH low byte
-        memory.writeMemory(sp, (returnAddr & 0xFF) as u8);
-        sp = ((sp - 1) & 0xFFFF) as u16;
+        // Read current instruction
+        const pc = getRegister("PC");
+        const instruction = memory.readMemory(pc);
 
-        setRegister("SP", sp);
+        // Store current instruction into IR Register
+        setRegister("IR", instruction);
 
-        // Lire l'adresse de destination
-        const callAddr = readMem16(pc);
+        const opcode = getRegister("IR");
 
-        // Sauter
-        setRegister("PC", callAddr);
-    }, [memory, getRegister, setRegister]);
+        // Execute logical operations
+        executeOpcode(pc, opcode);
 
-
-    // Fonction pour RET
-    const handleRet = useCallback(() => {
-        let sp = getRegister("SP");
-
-        // POP low byte
-        sp = ((sp + 1) & 0xFFFF) as u16;
-        const low = memory.readMemory(sp);
-
-        // POP high byte
-        sp = ((sp + 1) & 0xFFFF) as u16;
-        const high = memory.readMemory(sp);
-
-        const retAddr = ((high << 8) | low) as u16;
-
-        // Mettre à jour SP
-        setRegister("SP", sp);
-
-        // Sauter à l'adresse retour
-        setRegister("PC", retAddr);
-    }, [memory, getRegister, setRegister]);
-
-
-    // Fonction pour IRET (Return from Interrupt)
-    const handleIRet = useCallback(() => {
-        let sp = getRegister("SP");
-
-        // POP PC
-        sp = ((sp + 1) & 0xFFFF) as u16;
-        const pcLow = memory.readMemory(sp);
-
-        sp = ((sp + 1) & 0xFFFF) as u16;
-        const pcHigh = memory.readMemory(sp);
-        const returnAddr = ((pcHigh << 8) | pcLow) as u16;
-
-        // POP Flags
-        sp = ((sp + 1) & 0xFFFF) as u16;
-        const flags = memory.readMemory(sp);
-
-        // Mettre à jour registres
-        setRegister("SP", sp);
-        setRegister("PC", returnAddr);
-        setRegister("FLAGS", flags);
-
-        // Réactiver interruptions
-        setInterruptsEnabled(true);
-        setInInterruptHandler(false);
-    }, [memory, getRegister, setRegister, setInterruptsEnabled, setInInterruptHandler]);
+    }, [halted, interruptsEnabled, inInterruptHandler, ioHook.interrupt.hasPendingInterrupt, memory.readMemory, tick, setRegister, getRegister, handleInterrupt, executeOpcode]);
 
 
     const cpuHook: CpuHook = {

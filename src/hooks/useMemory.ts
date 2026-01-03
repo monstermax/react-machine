@@ -10,6 +10,7 @@ import { U16, U8 } from "@/lib/integers";
 
 
 export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): MemoryHook => {
+    //console.log('RENDER useMemory')
 
     // Read from Memory
     const readMemory = useCallback((address: u16): u8 => {
@@ -52,7 +53,7 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
     }, [ioHook]);
 
 
-    const loadDiskInRAM = (data: Map<u8, u8> | Map<u16, u8>, offset: u16) => {
+    const loadDiskInRAM = useCallback((data: Map<u8, u8> | Map<u16, u8>, offset: u16) => {
         ramHook.setStorage(current => {
             const newRam = new Map(current);
 
@@ -62,7 +63,8 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
 
             return newRam;
         });
-    }
+    }, [ramHook.setStorage])
+
 
     const memoryHook: MemoryHook = {
         readMemory,
