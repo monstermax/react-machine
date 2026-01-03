@@ -6,7 +6,7 @@ import type { u8 } from "@/types/cpu.types";
 
 
 export const programs = {
-    interrupt_demo: {
+    timer_01: {
         name: "Interrupt Demo",
         description: "Timer avec interruption toutes les 10ms",
         code: new Map([
@@ -59,7 +59,7 @@ export const programs = {
         ] as [u8, u8][]),
         expectedResult: "Compteur incrémenté par interruption timer"
     },
-    timer_demo: {
+    timer_02: {
         name: "Timer Interrupt Test",
         description: "Test des interruptions timer - handler à 0x0240",
         code: new Map([
@@ -160,6 +160,134 @@ export const programs = {
             [0x53, Opcode.IRET],
         ] as [u8, u8][]),
         expectedResult: "LEDs comptent les interruptions timer"
+    },
+    timer_03: {
+        name: "Interrupt Debug",
+        description: "Test basique timer interrupt - compte dans LEDs",
+        code: new Map([
+            // Setup SP
+            [0x00, Opcode.SET_SP],
+            [0x01, 0xFF], [0x02, 0xFE],
+
+            // Handler @ 0x0240 (PROGRAM_START + 0x40)
+            [0x03, Opcode.R_LOAD_A], [0x04, 0x40],
+            [0x05, Opcode.M_STORE_A], [0x06, 0x44], [0x07, 0xFF],
+            [0x08, Opcode.R_LOAD_A], [0x09, 0x02],
+            [0x0A, Opcode.M_STORE_A], [0x0B, 0x45], [0x0C, 0xFF],
+
+            // Timer: period=10
+            [0x0D, Opcode.R_LOAD_A], [0x0E, 10],
+            [0x0F, Opcode.M_STORE_A], [0x10, 0x21], [0x11, 0xFF],
+
+            // Timer: enable
+            [0x12, Opcode.R_LOAD_A], [0x13, 0x01],
+            [0x14, Opcode.M_STORE_A], [0x15, 0x22], [0x16, 0xFF],
+
+            // Enable IRQ 0
+            [0x17, Opcode.R_LOAD_A], [0x18, 0x01],
+            [0x19, Opcode.M_STORE_A], [0x1A, 0x40], [0x1B, 0xFF],
+
+            // EI
+            [0x1C, Opcode.EI],
+
+            // Wait loop (attendre l'interrupt)
+            [0x1D, Opcode.NOP],
+            [0x1E, Opcode.NOP],
+            [0x1F, Opcode.NOP],
+            [0x20, Opcode.NOP],
+            [0x21, Opcode.NOP],
+            [0x22, Opcode.NOP],
+            [0x23, Opcode.NOP],
+            [0x24, Opcode.NOP],
+            [0x25, Opcode.NOP],
+            [0x26, Opcode.NOP],
+
+            // Après interrupt, on arrive ici
+            [0x27, Opcode.HALT],
+
+            // === HANDLER @ offset 0x40 (adresse absolue 0x0240) ===
+            [0x40, Opcode.PUSH_A],
+
+            // Mettre 0xFF dans LEDs
+            [0x41, Opcode.R_LOAD_A],
+            [0x42, 0xFF],
+            [0x43, Opcode.M_STORE_A],
+            [0x44, 0x30], [0x45, 0xFF], // LEDS_OUTPUT
+
+            // ACK IRQ 0
+            [0x46, Opcode.R_LOAD_A],
+            [0x47, 0x00], // IRQ 0
+            [0x48, Opcode.M_STORE_A],
+            [0x49, 0x42], [0x4A, 0xFF], // INTERRUPT_ACK
+
+            [0x4B, Opcode.POP_A],
+            [0x4C, Opcode.IRET],
+        ] as [u8, u8][]),
+        expectedResult: "LEDs comptent rapidement, logs montrent IRQ acknowledged"
+    },
+    timer_04: {
+        name: "Interrupt Minimal",
+        description: "Une seule interrupt timer, puis halt",
+        code: new Map([
+            // === SETUP ===
+            [0x00, Opcode.SET_SP],
+            [0x01, 0xFF], [0x02, 0xFE],
+
+            // Handler @ 0x0250
+            [0x03, Opcode.R_LOAD_A], [0x04, 0x50],
+            [0x05, Opcode.M_STORE_A], [0x06, 0x44], [0x07, 0xFF],
+            [0x08, Opcode.R_LOAD_A], [0x09, 0x02],
+            [0x0A, Opcode.M_STORE_A], [0x0B, 0x45], [0x0C, 0xFF],
+
+            // Timer period = 10
+            [0x0D, Opcode.R_LOAD_A], [0x0E, 10],
+            [0x0F, Opcode.M_STORE_A], [0x10, 0x21], [0x11, 0xFF],
+
+            // Timer enable
+            [0x12, Opcode.R_LOAD_A], [0x13, 0x01],
+            [0x14, Opcode.M_STORE_A], [0x15, 0x22], [0x16, 0xFF],
+
+            // Enable IRQ 0
+            [0x17, Opcode.R_LOAD_A], [0x18, 0x01],
+            [0x19, Opcode.M_STORE_A], [0x1A, 0x40], [0x1B, 0xFF],
+
+            // EI
+            [0x1C, Opcode.EI],
+
+            // === MAIN LOOP (boucle infinie) ===
+            [0x1D, Opcode.NOP],
+            [0x1E, Opcode.JMP],
+            [0x1F, 0x1D], [0x20, 0x02], // Loop à 0x021D
+
+            // === HANDLER @ offset 0x50 ===
+            [0x50, Opcode.PUSH_A],
+            [0x51, Opcode.PUSH_B],
+
+            // Charger compteur depuis 0x8000
+            [0x52, Opcode.M_LOAD_A],
+            [0x53, 0x00], [0x54, 0x80],
+
+            // Incrémenter
+            [0x55, Opcode.INC_A],
+
+            // Sauvegarder compteur
+            [0x56, Opcode.M_STORE_A],
+            [0x57, 0x00], [0x58, 0x80],
+
+            // Afficher dans LEDs
+            [0x59, Opcode.M_STORE_A],
+            [0x5A, 0x30], [0x5B, 0xFF],
+
+            // ACK IRQ 0
+            [0x5C, Opcode.R_LOAD_A], [0x5D, 0x00],
+            [0x5E, Opcode.M_STORE_A],
+            [0x5F, 0x42], [0x60, 0xFF],
+
+            [0x61, Opcode.POP_B],
+            [0x62, Opcode.POP_A],
+            [0x63, Opcode.IRET],
+        ] as [u8, u8][]),
+        expectedResult: "1 interrupt, LEDs = 0xFF, puis HALT"
     },
 }
 
