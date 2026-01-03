@@ -52,43 +52,38 @@ export const programs: Record<string, ProgramInfo> = {
     },
 
     keyboard_interrupt: {
-        name: "Keyboard Interrupt Demo (KO)",
-        description: "Utilise les interruptions clavier pour echo",
+        name: "Keyboard Interrupt Demo",
+        description: "Echo clavier via interruptions",
         code: new Map([
             // === SETUP ===
             [0x00, Opcode.SET_SP],
-            [0x01, 0xFF],
-            [0x02, 0xFE],
+            [0x01, 0xFF], [0x02, 0xFE],
 
-            // Configurer handler à 0x0240
-            [0x03, Opcode.MOV_A_IMM],
-            [0x04, 0x40],
-            [0x05, Opcode.MOV_MEM_A],
-            [0x06, 0x44], [0x07, 0xFF], // INTERRUPT_HANDLER low
+            // Handler @ 0x0240
+            [0x03, Opcode.MOV_A_IMM], [0x04, 0x40],
+            [0x05, Opcode.MOV_MEM_A], [0x06, 0x44], [0x07, 0xFF],
+            [0x08, Opcode.MOV_A_IMM], [0x09, 0x02],
+            [0x0A, Opcode.MOV_MEM_A], [0x0B, 0x45], [0x0C, 0xFF],
 
-            [0x08, Opcode.MOV_A_IMM],
-            [0x09, 0x02],
-            [0x0A, Opcode.MOV_MEM_A],
-            [0x0B, 0x45], [0x0C, 0xFF], // INTERRUPT_HANDLER high
+            // Activer IRQ keyboard (bit 1)
+            [0x0D, Opcode.MOV_A_IMM], [0x0E, 0x02],
+            [0x0F, Opcode.MOV_MEM_A], [0x10, 0x51], [0x11, 0xFF],
 
-            // Activer IRQ 1 (Keyboard)
-            [0x0D, Opcode.MOV_A_IMM],
-            [0x0E, 0b00000010], // IRQ 1
-            [0x0F, Opcode.MOV_MEM_A],
-            [0x10, 0x40], [0x11, 0xFF], // INTERRUPT_ENABLE
+            // Activer IRQ 1 dans interrupt controller
+            [0x12, Opcode.MOV_A_IMM], [0x13, 0b00000010],
+            [0x14, Opcode.MOV_MEM_A], [0x15, 0x40], [0x16, 0xFF],
 
-            // Activer interruptions globales
-            [0x12, Opcode.EI],
+            // EI
+            [0x17, Opcode.EI],
 
-            // === MAIN LOOP ===
-            [0x13, Opcode.NOP],
-            [0x14, Opcode.JMP],
-            [0x15, 0x13], [0x16, 0x02], // Boucle infinie
+            // Main loop
+            [0x18, Opcode.NOP],
+            [0x19, Opcode.JMP], [0x1A, 0x18], [0x1B, 0x02],
 
-            // === INTERRUPT HANDLER (0x40) ===
-            [0x40, Opcode.PUSH_A],
+            // === HANDLER @ 0x40 ===
+            [0x40, Opcode.PUSH_A], // Sauvegarder A seulement
 
-            // Lire caractère du clavier
+            // Lire caractère
             [0x41, Opcode.MOV_A_MEM],
             [0x42, 0x50], [0x43, 0xFF], // KEYBOARD_DATA
 
@@ -96,22 +91,20 @@ export const programs: Record<string, ProgramInfo> = {
             [0x44, Opcode.MOV_MEM_A],
             [0x45, 0x70], [0x46, 0xFF], // CONSOLE_CHAR
 
-            // Clear keyboard status
-            [0x47, Opcode.MOV_A_IMM],
-            [0x48, 0x00],
+            // Clear keyboard status, garder IRQ enabled
+            [0x47, Opcode.MOV_A_IMM], [0x48, 0x02],
             [0x49, Opcode.MOV_MEM_A],
             [0x4A, 0x51], [0x4B, 0xFF], // KEYBOARD_STATUS
 
-            // Acquitter IRQ 1
-            [0x4C, Opcode.MOV_A_IMM],
-            [0x4D, 0x01],
+            // ACK IRQ 1
+            [0x4C, Opcode.MOV_A_IMM], [0x4D, 0x01],
             [0x4E, Opcode.MOV_MEM_A],
             [0x4F, 0x42], [0x50, 0xFF], // INTERRUPT_ACK
 
-            [0x51, Opcode.POP_A],
+            [0x51, Opcode.POP_A], // Restaurer A seulement
             [0x52, Opcode.IRET],
         ] as [u8, u8][]),
-        expectedResult: "Echo clavier via interruptions"
+        expectedResult: "Echo clavier parfait avec IRET qui fonctionne"
     },
 };
 

@@ -102,15 +102,6 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         } else {
             registers.set(reg, (value & 0xFF) as u8);   // 8-bit
         }
-        //        setRegisters(prev => {
-        //            const newMap = new Map(prev);
-        //            if (reg === "PC" || reg === "SP") {
-        //                newMap.set(reg, (value & 0xFFFF) as u16); // 16-bit
-        //            } else {
-        //                newMap.set(reg, (value & 0xFF) as u8); // 8-bit
-        //            }
-        //            return newMap;
-        //        });
     }, [registers])
 
 
@@ -290,10 +281,11 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
     const handleIRet = useCallback(() => {
         let sp = getRegister("SP");
 
-        // POP PC
+        // POP PC - low
         sp = ((sp + 1) & 0xFFFF) as u16;
         const pcLow = memory.readMemory(sp);
 
+        // POP PC - high
         sp = ((sp + 1) & 0xFFFF) as u16;
         const pcHigh = memory.readMemory(sp);
         const returnAddr = ((pcHigh << 8) | pcLow) as u16;
@@ -673,8 +665,8 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         setRegister("SP", (sp - 1) as u16);
 
         // PUSH PC (little-endian)
-        memory.writeMemory((sp - 1) as u16, (pc & 0xFF) as u8);      // Low byte
-        memory.writeMemory((sp - 2) as u16, ((pc >> 8) & 0xFF) as u8); // High byte
+        memory.writeMemory((sp - 1) as u16, ((pc >> 8) & 0xFF) as u8); // High byte
+        memory.writeMemory((sp - 2) as u16, (pc & 0xFF) as u8);      // Low byte
         setRegister("SP", (sp - 3) as u16);
 
         // 3. Acquitter l'interruption
