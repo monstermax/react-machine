@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import type { PixelDisplayDevice } from "@/hooks/devices/usepixeldisplay";
 
 
-export const PixelDisplay: React.FC<{ device: PixelDisplayDevice }> = ({ device }) => {
+export const WidgetPixelDisplay: React.FC<{ device: PixelDisplayDevice }> = ({ device }) => {
     const handleClear = useCallback(() => {
         device.clear();
     }, [device]);

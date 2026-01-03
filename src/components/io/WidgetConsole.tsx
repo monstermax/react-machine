@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import type { ConsoleDevice } from "@/hooks/devices/useConsole";
 
 
-export const ConsoleDisplay: React.FC<{ device: ConsoleDevice }> = ({ device }) => {
+export const WidgetConsole: React.FC<{ device: ConsoleDevice }> = ({ device }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll vers le bas quand du nouveau texte arrive

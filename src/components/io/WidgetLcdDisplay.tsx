@@ -2,7 +2,7 @@
 import type { LCDDevice } from "@/hooks/devices/useLCD";
 
 
-export const LCDDisplay: React.FC<{ device: LCDDevice }> = ({ device }) => {
+export const WidgetLCDDisplay: React.FC<{ device: LCDDevice }> = ({ device }) => {
     return (
         <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
             <h2 className="text-xl font-semibold mb-3 text-blue-400">LCD 16x2</h2>

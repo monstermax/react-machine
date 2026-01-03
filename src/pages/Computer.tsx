@@ -7,12 +7,12 @@ import { PanelMemory } from "@/components/computer/PanelMemory";
 import { PanelControls } from "@/components/computer/PanelControls";
 import { PanelRegisters } from "@/components/computer/PanelRegisters";
 import { PanelInterrupt } from "@/components/computer/PanelInterrupt";
-import { SevenSegmentDisplay } from "@/components/io/SevenSegmentDisplay";
-import { LEDsDisplay } from "@/components/io/LEDsDisplay";
-import { KeyboardDisplay } from "@/components/io/Keyboarddisplay";
-import { ConsoleDisplay } from "@/components/io/Consoledisplay";
-import { PixelDisplay } from "@/components/io/Pixeldisplay";
-import { LCDDisplay } from "@/components/io/Lcddisplay";
+import { WidgetSevenSegmentDisplay } from "@/components/io/WidgetSevenSegmentDisplay";
+import { WidgetLEDsDisplay } from "@/components/io/WidgetLEDsDisplay";
+import { WidgetKeyboard } from "@/components/io/WidgetKeyboard";
+import { WidgetConsole } from "@/components/io/WidgetConsole";
+import { WidgetPixelDisplay } from "@/components/io/WidgetPixelDisplay";
+import { WidgetLCDDisplay } from "@/components/io/WidgetLcdDisplay";
 
 
 export const ComputerPage: React.FC = () => {
@@ -58,26 +58,26 @@ const IosDevices: React.FC<{ computerHook: ComputerHook }> = ({ computerHook }) 
         <div className="space-y-6">
             {/* Row 1: Small devices */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <LEDsDisplay device={computerHook.ioHook.leds} />
+                <WidgetLEDsDisplay device={computerHook.ioHook.leds} />
 
-                <SevenSegmentDisplay
+                <WidgetSevenSegmentDisplay
                     device={computerHook.ioHook.sevenSegment}
                     label="Display 1"
                 />
 
-                <KeyboardDisplay device={computerHook.ioHook.keyboard} />
+                <WidgetKeyboard device={computerHook.ioHook.keyboard} />
             </div>
 
             {/* Row 2: Medium devices */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <LCDDisplay device={computerHook.ioHook.lcd} />
+                <WidgetLCDDisplay device={computerHook.ioHook.lcd} />
 
-                <PixelDisplay device={computerHook.ioHook.pixelDisplay} />
+                <WidgetPixelDisplay device={computerHook.ioHook.pixelDisplay} />
             </div>
 
             {/* Row 3: Large devices */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ConsoleDisplay device={computerHook.ioHook.console} />
+                <WidgetConsole device={computerHook.ioHook.console} />
 
                 <PanelInterrupt interruptHook={computerHook.ioHook.interrupt} />
             </div>

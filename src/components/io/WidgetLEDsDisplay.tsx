@@ -2,7 +2,7 @@
 import type { LedsDevice } from "@/hooks/devices/useLeds";
 
 
-export const LEDsDisplay: React.FC<{ device: LedsDevice }> = ({ device }) => {
+export const WidgetLEDsDisplay: React.FC<{ device: LedsDevice }> = ({ device }) => {
     return (
         <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
             <h2 className="text-xl font-semibold mb-2 text-purple-400">LEDs</h2>

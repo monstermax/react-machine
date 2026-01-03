@@ -8,7 +8,7 @@ type SevenSegmentProps = {
 };
 
 
-export const SevenSegmentDisplay: React.FC<SevenSegmentProps> = ({
+export const WidgetSevenSegmentDisplay: React.FC<SevenSegmentProps> = ({
     device,
     label = "Display 1"
 }) => {

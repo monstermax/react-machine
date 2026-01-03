@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { KeyboardDevice } from "@/hooks/devices/useKeyboard";
 
 
-export const KeyboardDisplay: React.FC<{ device: KeyboardDevice }> = ({ device }) => {
+export const WidgetKeyboard: React.FC<{ device: KeyboardDevice }> = ({ device }) => {
     const [inputValue, setInputValue] = useState("");
 
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
