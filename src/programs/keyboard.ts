@@ -8,7 +8,7 @@ import type { ProgramInfo, u8 } from "@/types/cpu.types";
 export const programs: Record<string, ProgramInfo> = {
     keyboard_echo: {
         name: "Keyboard Echo",
-        description: "Echo clavier vers console - tape des caractères pour les voir !",
+        description: "Echo clavier vers console (sans interruption)",
         code: new Map([
             // === SETUP ===
             [0x00, Opcode.SET_SP],
@@ -50,8 +50,9 @@ export const programs: Record<string, ProgramInfo> = {
         ] as [u8, u8][]),
         expectedResult: "Les caractères tapés s'affichent dans la console"
     },
+
     keyboard_interrupt: {
-        name: "Keyboard Interrupt Demo",
+        name: "Keyboard Interrupt Demo (KO)",
         description: "Utilise les interruptions clavier pour echo",
         code: new Map([
             // === SETUP ===

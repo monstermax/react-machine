@@ -74,7 +74,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x03, 0x60], [0x04, 0xFF],  // 0xFF60
 
             [0x05, Opcode.MOV_B_IMM],
-            [0x06, 0x10],
+            [0x06, 0x05],
 
             // Délai
             [0x07, Opcode.DEC_B],
@@ -296,6 +296,132 @@ export const programs: Record<string, ProgramInfo> = {
         expectedResult: "LCD affiche 'Hello' et 'World!'"
     },
 
+    lcd_counter: {
+        name: "LCD Counter (KO)",
+        description: "Compte de 0 à 99 sur LCD",
+        code: new Map([
+            [0x00, Opcode.SET_SP],
+            [0x01, 0xFF], [0x02, 0xFE],
+
+            // Clear LCD
+            [0x03, Opcode.MOV_A_IMM], [0x04, 0x01],
+            [0x05, Opcode.MOV_MEM_A],
+            [0x06, 0xA1], [0x07, 0xFF],
+
+            // Counter = 0
+            [0x08, Opcode.MOV_A_IMM], [0x09, 0],
+
+            // LOOP:
+            // Position curseur (0,0)
+            [0x0A, Opcode.PUSH_A],
+            [0x0B, Opcode.MOV_A_IMM], [0x0C, 0],
+            [0x0D, Opcode.MOV_MEM_A],
+            [0x0E, 0xA2], [0x0F, 0xFF], // LCD_CURSOR
+            [0x10, Opcode.POP_A],
+
+            // Convertir A en ASCII dizaines
+            [0x11, Opcode.PUSH_A],
+            [0x12, Opcode.MOV_B_IMM], [0x13, 10],
+            // Division par 10 simplifiée (assume A < 100)
+            [0x14, Opcode.MOV_C_IMM], [0x15, 0], // Quotient
+            // DIV_LOOP:
+            [0x16, Opcode.SUB], // A = A - B
+            [0x17, Opcode.INC_C],
+            [0x18, Opcode.MOV_B_IMM], [0x19, 10],
+            [0x1A, Opcode.JC], // Si carry (A < 0), sortir
+            [0x1B, 0x1F], [0x1C, 0x02],
+            [0x1D, Opcode.JMP],
+            [0x1E, 0x16], [0x1F, 0x02], // DIV_LOOP
+
+            // Afficher dizaine
+            [0x20, Opcode.MOV_A_IMM], [0x21, 0x00],
+            [0x22, Opcode.ADD], // A = C
+            [0x23, Opcode.MOV_B_IMM], [0x24, 0x30], // '0'
+            [0x25, Opcode.ADD], // A = C + '0'
+            [0x26, Opcode.MOV_MEM_A],
+            [0x27, 0xA0], [0x28, 0xFF], // LCD_DATA
+            [0x29, Opcode.POP_A],
+
+            // Afficher unité (A % 10)
+            [0x2A, Opcode.PUSH_A],
+            // Modulo 10 simplifié
+            [0x2B, Opcode.AND], // Reset
+            [0x2C, Opcode.MOV_B_IMM], [0x2D, 10],
+            // MOD_LOOP:
+            [0x2E, Opcode.SUB],
+            [0x2F, Opcode.JC],
+            [0x30, 0x33], [0x31, 0x02],
+            [0x32, Opcode.JMP],
+            [0x33, 0x2E], [0x34, 0x02],
+
+            [0x35, Opcode.MOV_B_IMM], [0x36, 0x30],
+            [0x37, Opcode.ADD],
+            [0x38, Opcode.MOV_MEM_A],
+            [0x39, 0xA0], [0x3A, 0xFF],
+            [0x3B, Opcode.POP_A],
+
+            // Delay
+            [0x3C, Opcode.PUSH_A],
+            [0x3D, Opcode.MOV_B_IMM], [0x3E, 0xFF],
+            [0x3F, Opcode.DEC_B],
+            [0x40, Opcode.JNZ],
+            [0x41, 0x3F], [0x42, 0x02],
+            [0x43, Opcode.POP_A],
+
+            // Incrémenter
+            [0x44, Opcode.INC_A],
+
+            // Check < 100
+            [0x45, Opcode.MOV_B_IMM], [0x46, 100],
+            [0x47, Opcode.SUB],
+            [0x48, Opcode.JNZ],
+            [0x49, 0x0A], [0x4A, 0x02],
+
+            [0x4B, Opcode.HALT],
+        ] as [u8, u8][]),
+        expectedResult: "LCD compte de 00 à 99"
+    },
+
+    pixel_line: {
+        name: "Pixel Line",
+        description: "Dessine une ligne diagonale",
+        code: new Map([
+            [0x00, Opcode.SET_SP],
+            [0x01, 0xFF], [0x02, 0xFE],
+
+            // Compteur 0-31
+            [0x03, Opcode.MOV_A_IMM], [0x04, 0],
+            [0x05, Opcode.MOV_B_IMM], [0x06, 32],
+
+            // LOOP:
+            // Set X = A
+            [0x07, Opcode.MOV_MEM_A],
+            [0x08, 0xD0], [0x09, 0xFF], // PIXEL_X
+
+            // Set Y = A
+            [0x0A, Opcode.MOV_MEM_A],
+            [0x0B, 0xD1], [0x0C, 0xFF], // PIXEL_Y
+
+            // Set COLOR = 1
+            [0x0D, Opcode.PUSH_A],
+            [0x0E, Opcode.MOV_A_IMM], [0x0F, 0x01],
+            [0x10, Opcode.MOV_MEM_A],
+            [0x11, 0xD2], [0x12, 0xFF], // PIXEL_COLOR
+            [0x13, Opcode.POP_A],
+
+            // A++
+            [0x14, Opcode.INC_A],
+
+            // B--
+            [0x15, Opcode.DEC_B],
+            [0x16, Opcode.JNZ],
+            [0x17, 0x07], [0x18, 0x02], // LOOP
+
+            [0x19, Opcode.HALT],
+        ] as [u8, u8][]),
+        expectedResult: "Ligne diagonale de (0,0) à (31,31)"
+    },
+
     pixel_square: {
         name: "Contour Carré 10x10 (KO)",
         description: "Carré de 10x10 pixels",
@@ -389,131 +515,6 @@ export const programs: Record<string, ProgramInfo> = {
         expectedResult: "*un carré de 10x10 pixels"
     },
 
-    pixel_line: {
-        name: "Pixel Line",
-        description: "Dessine une ligne diagonale",
-        code: new Map([
-            [0x00, Opcode.SET_SP],
-            [0x01, 0xFF], [0x02, 0xFE],
-
-            // Compteur 0-31
-            [0x03, Opcode.MOV_A_IMM], [0x04, 0],
-            [0x05, Opcode.MOV_B_IMM], [0x06, 32],
-
-            // LOOP:
-            // Set X = A
-            [0x07, Opcode.MOV_MEM_A],
-            [0x08, 0xD0], [0x09, 0xFF], // PIXEL_X
-
-            // Set Y = A
-            [0x0A, Opcode.MOV_MEM_A],
-            [0x0B, 0xD1], [0x0C, 0xFF], // PIXEL_Y
-
-            // Set COLOR = 1
-            [0x0D, Opcode.PUSH_A],
-            [0x0E, Opcode.MOV_A_IMM], [0x0F, 0x01],
-            [0x10, Opcode.MOV_MEM_A],
-            [0x11, 0xD2], [0x12, 0xFF], // PIXEL_COLOR
-            [0x13, Opcode.POP_A],
-
-            // A++
-            [0x14, Opcode.INC_A],
-
-            // B--
-            [0x15, Opcode.DEC_B],
-            [0x16, Opcode.JNZ],
-            [0x17, 0x07], [0x18, 0x02], // LOOP
-
-            [0x19, Opcode.HALT],
-        ] as [u8, u8][]),
-        expectedResult: "Ligne diagonale de (0,0) à (31,31)"
-    },
-
-    lcd_counter: {
-        name: "LCD Counter",
-        description: "Compte de 0 à 99 sur LCD",
-        code: new Map([
-            [0x00, Opcode.SET_SP],
-            [0x01, 0xFF], [0x02, 0xFE],
-
-            // Clear LCD
-            [0x03, Opcode.MOV_A_IMM], [0x04, 0x01],
-            [0x05, Opcode.MOV_MEM_A],
-            [0x06, 0xA1], [0x07, 0xFF],
-
-            // Counter = 0
-            [0x08, Opcode.MOV_A_IMM], [0x09, 0],
-
-            // LOOP:
-            // Position curseur (0,0)
-            [0x0A, Opcode.PUSH_A],
-            [0x0B, Opcode.MOV_A_IMM], [0x0C, 0],
-            [0x0D, Opcode.MOV_MEM_A],
-            [0x0E, 0xA2], [0x0F, 0xFF], // LCD_CURSOR
-            [0x10, Opcode.POP_A],
-
-            // Convertir A en ASCII dizaines
-            [0x11, Opcode.PUSH_A],
-            [0x12, Opcode.MOV_B_IMM], [0x13, 10],
-            // Division par 10 simplifiée (assume A < 100)
-            [0x14, Opcode.MOV_C_IMM], [0x15, 0], // Quotient
-            // DIV_LOOP:
-            [0x16, Opcode.SUB], // A = A - B
-            [0x17, Opcode.INC_C],
-            [0x18, Opcode.MOV_B_IMM], [0x19, 10],
-            [0x1A, Opcode.JC], // Si carry (A < 0), sortir
-            [0x1B, 0x1F], [0x1C, 0x02],
-            [0x1D, Opcode.JMP],
-            [0x1E, 0x16], [0x1F, 0x02], // DIV_LOOP
-
-            // Afficher dizaine
-            [0x20, Opcode.MOV_A_IMM], [0x21, 0x00],
-            [0x22, Opcode.ADD], // A = C
-            [0x23, Opcode.MOV_B_IMM], [0x24, 0x30], // '0'
-            [0x25, Opcode.ADD], // A = C + '0'
-            [0x26, Opcode.MOV_MEM_A],
-            [0x27, 0xA0], [0x28, 0xFF], // LCD_DATA
-            [0x29, Opcode.POP_A],
-
-            // Afficher unité (A % 10)
-            [0x2A, Opcode.PUSH_A],
-            // Modulo 10 simplifié
-            [0x2B, Opcode.AND], // Reset
-            [0x2C, Opcode.MOV_B_IMM], [0x2D, 10],
-            // MOD_LOOP:
-            [0x2E, Opcode.SUB],
-            [0x2F, Opcode.JC],
-            [0x30, 0x33], [0x31, 0x02],
-            [0x32, Opcode.JMP],
-            [0x33, 0x2E], [0x34, 0x02],
-
-            [0x35, Opcode.MOV_B_IMM], [0x36, 0x30],
-            [0x37, Opcode.ADD],
-            [0x38, Opcode.MOV_MEM_A],
-            [0x39, 0xA0], [0x3A, 0xFF],
-            [0x3B, Opcode.POP_A],
-
-            // Delay
-            [0x3C, Opcode.PUSH_A],
-            [0x3D, Opcode.MOV_B_IMM], [0x3E, 0xFF],
-            [0x3F, Opcode.DEC_B],
-            [0x40, Opcode.JNZ],
-            [0x41, 0x3F], [0x42, 0x02],
-            [0x43, Opcode.POP_A],
-
-            // Incrémenter
-            [0x44, Opcode.INC_A],
-
-            // Check < 100
-            [0x45, Opcode.MOV_B_IMM], [0x46, 100],
-            [0x47, Opcode.SUB],
-            [0x48, Opcode.JNZ],
-            [0x49, 0x0A], [0x4A, 0x02],
-
-            [0x4B, Opcode.HALT],
-        ] as [u8, u8][]),
-        expectedResult: "LCD compte de 00 à 99"
-    },
 }
 
 
