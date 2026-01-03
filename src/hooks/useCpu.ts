@@ -17,9 +17,9 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         ["B", 0 as u8],      // Register B
         ["C", 0 as u8],      // Register C
         ["D", 0 as u8],      // Register D
-        ["PC", 0 as u16],     // Program Counter
+        ["PC", 0 as u16],    // Program Counter
         ["IR", 0 as u8],     // Instruction Register
-        ["SP", 0 as u16],     // Stack Pointer
+        ["SP", 0 as u16],    // Stack Pointer
         ["FLAGS", 0 as u8],  // Bit 0: Carry, Bit 1: Zero
     ] as [string, u8 | u16][]));
 
@@ -102,15 +102,15 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         } else {
             registers.set(reg, (value & 0xFF) as u8);   // 8-bit
         }
-//        setRegisters(prev => {
-//            const newMap = new Map(prev);
-//            if (reg === "PC" || reg === "SP") {
-//                newMap.set(reg, (value & 0xFFFF) as u16); // 16-bit
-//            } else {
-//                newMap.set(reg, (value & 0xFF) as u8); // 8-bit
-//            }
-//            return newMap;
-//        });
+        //        setRegisters(prev => {
+        //            const newMap = new Map(prev);
+        //            if (reg === "PC" || reg === "SP") {
+        //                newMap.set(reg, (value & 0xFFFF) as u16); // 16-bit
+        //            } else {
+        //                newMap.set(reg, (value & 0xFF) as u8); // 8-bit
+        //            }
+        //            return newMap;
+        //        });
     }, [registers])
 
 
@@ -239,25 +239,25 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
                 break;
 
             // ===== REGISTERS INSTRUCTIONS =====
-            case Opcode.R_LOAD_A:
-                setRegister("A", memory.readMemory((pc + 1) as u16));
-                setRegister("PC", (pc + 2) as u16);
-                break;
-
-            case Opcode.R_LOAD_B:
-                setRegister("B", memory.readMemory((pc + 1) as u16));
-                setRegister("PC", (pc + 2) as u16);
-                break;
-
-            case Opcode.R_LOAD_C:
-                setRegister("C", memory.readMemory((pc + 1) as u16));
-                setRegister("PC", (pc + 2) as u16);
-                break;
-
-            case Opcode.R_LOAD_D:
-                setRegister("D", memory.readMemory((pc + 1) as u16));
-                setRegister("PC", (pc + 2) as u16);
-                break;
+//            case Opcode.R_LOAD_A:
+//                setRegister("A", memory.readMemory((pc + 1) as u16));
+//                setRegister("PC", (pc + 2) as u16);
+//                break;
+//
+//            case Opcode.R_LOAD_B:
+//                setRegister("B", memory.readMemory((pc + 1) as u16));
+//                setRegister("PC", (pc + 2) as u16);
+//                break;
+//
+//            case Opcode.R_LOAD_C:
+//                setRegister("C", memory.readMemory((pc + 1) as u16));
+//                setRegister("PC", (pc + 2) as u16);
+//                break;
+//
+//            case Opcode.R_LOAD_D:
+//                setRegister("D", memory.readMemory((pc + 1) as u16));
+//                setRegister("PC", (pc + 2) as u16);
+//                break;
 
             // ===== ALU INSTRUCTIONS =====
             case Opcode.ADD:
@@ -354,62 +354,62 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
                 break;
 
             // ===== MEMORY STORE INSTRUCTIONS =====
-            case Opcode.M_STORE_A:
-                // M_STORE_A addr16 : Memory[addr16] = A
-                memory.writeMemory(readMem16(pc), getRegister("A"));
-                setRegister("PC", (pc + 3) as u16);
-                break;
-
-            case Opcode.M_STORE_B:
-                // M_STORE_B addr16 : Memory[addr16] = B
-                memory.writeMemory(readMem16(pc), getRegister("B"));
-                setRegister("PC", (pc + 3) as u16);
-                break;
-
-            case Opcode.M_STORE_C:
-                // M_STORE_C addr16 : Memory[addr16] = C
-                memory.writeMemory(readMem16(pc), getRegister("C"));
-                setRegister("PC", (pc + 3) as u16);
-                break;
-
-            case Opcode.M_STORE_D:
-                // M_STORE_D addr16 : Memory[addr16] = D
-                memory.writeMemory(readMem16(pc), getRegister("D"));
-                setRegister("PC", (pc + 3) as u16);
-                break;
-
-            // ===== MEMORY LOAD INSTRUCTIONS =====
-            case Opcode.M_LOAD_A:
-                // M_LOAD_A addr16 : A = Memory[addr16]
-                const value = memory.readMemory(readMem16(pc));
-                setRegister("A", value);
-                setFlags(value === 0, false);
-                setRegister("PC", (pc + 3) as u16);
-                break;
-
-            case Opcode.M_LOAD_B:
-                // M_LOAD_B addr16 : B = Memory[addr16]
-                const valueB = memory.readMemory(readMem16(pc));
-                setRegister("B", valueB);
-                setFlags(valueB === 0, false);
-                setRegister("PC", (pc + 3) as u16);
-                break;
-
-            case Opcode.M_LOAD_C:
-                // M_LOAD_C addr16 : C = Memory[addr16]
-                const valueC = memory.readMemory(readMem16(pc));
-                setRegister("C", valueC);
-                setFlags(valueC === 0, false);
-                setRegister("PC", (pc + 3) as u16);
-                break;
-
-            case Opcode.M_LOAD_D:
-                // M_LOAD_D addr16 : D = Memory[addr16]
-                const valueD = memory.readMemory(readMem16(pc));
-                setRegister("D", valueD);
-                setFlags(valueD === 0, false);
-                setRegister("PC", (pc + 3) as u16);
-                break;
+//            case Opcode.M_STORE_A:
+//                // M_STORE_A addr16 : Memory[addr16] = A
+//                memory.writeMemory(readMem16(pc), getRegister("A"));
+//                setRegister("PC", (pc + 3) as u16);
+//                break;
+//
+//            case Opcode.M_STORE_B:
+//                // M_STORE_B addr16 : Memory[addr16] = B
+//                memory.writeMemory(readMem16(pc), getRegister("B"));
+//                setRegister("PC", (pc + 3) as u16);
+//                break;
+//
+//            case Opcode.M_STORE_C:
+//                // M_STORE_C addr16 : Memory[addr16] = C
+//                memory.writeMemory(readMem16(pc), getRegister("C"));
+//                setRegister("PC", (pc + 3) as u16);
+//                break;
+//
+//            case Opcode.M_STORE_D:
+//                // M_STORE_D addr16 : Memory[addr16] = D
+//                memory.writeMemory(readMem16(pc), getRegister("D"));
+//                setRegister("PC", (pc + 3) as u16);
+//                break;
+//
+//            // ===== MEMORY LOAD INSTRUCTIONS =====
+//            case Opcode.M_LOAD_A:
+//                // M_LOAD_A addr16 : A = Memory[addr16]
+//                const value = memory.readMemory(readMem16(pc));
+//                setRegister("A", value);
+//                setFlags(value === 0, false);
+//                setRegister("PC", (pc + 3) as u16);
+//                break;
+//
+//            case Opcode.M_LOAD_B:
+//                // M_LOAD_B addr16 : B = Memory[addr16]
+//                const valueB = memory.readMemory(readMem16(pc));
+//                setRegister("B", valueB);
+//                setFlags(valueB === 0, false);
+//                setRegister("PC", (pc + 3) as u16);
+//                break;
+//
+//            case Opcode.M_LOAD_C:
+//                // M_LOAD_C addr16 : C = Memory[addr16]
+//                const valueC = memory.readMemory(readMem16(pc));
+//                setRegister("C", valueC);
+//                setFlags(valueC === 0, false);
+//                setRegister("PC", (pc + 3) as u16);
+//                break;
+//
+//            case Opcode.M_LOAD_D:
+//                // M_LOAD_D addr16 : D = Memory[addr16]
+//                const valueD = memory.readMemory(readMem16(pc));
+//                setRegister("D", valueD);
+//                setFlags(valueD === 0, false);
+//                setRegister("PC", (pc + 3) as u16);
+//                break;
 
             // ===== PUSH =====
             case Opcode.PUSH_A: {
@@ -482,6 +482,138 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
             case Opcode.IRET: // Return from Interrupt
                 handleIRet();
+                break;
+
+            // ===== MOV =====
+            case Opcode.MOV_AB:  // A → B
+                setRegister("B", getRegister("A"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_AC:  // A → C
+                setRegister("C", getRegister("A"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_AD:  // A → D
+                setRegister("D", getRegister("A"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_BA:  // B → A
+                setRegister("A", getRegister("B"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_BC:  // B → C
+                setRegister("C", getRegister("B"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_BD:  // B → D
+                setRegister("D", getRegister("B"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_CA:  // C → A
+                setRegister("A", getRegister("C"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_CB:  // C → B
+                setRegister("B", getRegister("C"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_CD:  // C → D
+                setRegister("D", getRegister("C"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_DA:  // D → A
+                setRegister("A", getRegister("D"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_DB:  // D → B
+                setRegister("B", getRegister("D"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_DC:  // D → C
+                setRegister("C", getRegister("D"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            // MOV with Immediate
+            case Opcode.MOV_A_IMM:  // MOV A, imm8
+                setRegister("A", memory.readMemory((pc + 1) as u16));
+                setRegister("PC", (pc + 2) as u16);
+                break;
+
+            case Opcode.MOV_B_IMM:  // MOV B, imm8
+                setRegister("B", memory.readMemory((pc + 1) as u16));
+                setRegister("PC", (pc + 2) as u16);
+                break;
+
+            case Opcode.MOV_C_IMM:  // MOV C, imm8
+                setRegister("C", memory.readMemory((pc + 1) as u16));
+                setRegister("PC", (pc + 2) as u16);
+                break;
+
+            case Opcode.MOV_D_IMM:  // MOV D, imm8
+                setRegister("D", memory.readMemory((pc + 1) as u16));
+                setRegister("PC", (pc + 2) as u16);
+                break;
+
+            // MOV Memory to Register
+            case Opcode.MOV_A_MEM:  // MOV A, [addr16]
+                const addrA = readMem16(pc);
+                setRegister("A", memory.readMemory(addrA));
+                setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_B_MEM:  // MOV B, [addr16]
+                const addrB = readMem16(pc);
+                setRegister("B", memory.readMemory(addrB));
+                setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_C_MEM:  // MOV C, [addr16]
+                const addrC = readMem16(pc);
+                setRegister("C", memory.readMemory(addrC));
+                setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_D_MEM:  // MOV D, [addr16]
+                const addrD = readMem16(pc);
+                setRegister("D", memory.readMemory(addrD));
+                setRegister("PC", (pc + 3) as u16);
+                break;
+
+            // MOV Register to Memory
+            case Opcode.MOV_MEM_A:  // MOV [addr16], A
+                const addrMemA = readMem16(pc);
+                memory.writeMemory(addrMemA, getRegister("A"));
+                setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_MEM_B:  // MOV [addr16], B
+                const addrMemB = readMem16(pc);
+                memory.writeMemory(addrMemB, getRegister("B"));
+                setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_MEM_C:  // MOV [addr16], C
+                const addrMemC = readMem16(pc);
+                memory.writeMemory(addrMemC, getRegister("C"));
+                setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_MEM_D:  // MOV [addr16], D
+                const addrMemD = readMem16(pc);
+                memory.writeMemory(addrMemD, getRegister("D"));
+                setRegister("PC", (pc + 3) as u16);
                 break;
 
             default:

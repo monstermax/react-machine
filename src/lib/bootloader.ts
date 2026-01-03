@@ -15,7 +15,7 @@ export const BOOTLOADER: Map<u8, u8> = new Map([
 
     // === WAIT_FOR_OS (0x00) ===
     // Vérifier si un OS est chargé à OS_START
-    [0x03, Opcode.M_LOAD_A],
+    [0x03, Opcode.MOV_A_MEM],
     [0x04, MEMORY_MAP.OS_START & 0xFF],        // Low byte
     [0x05, (MEMORY_MAP.OS_START >> 8) & 0xFF], // High byte
 

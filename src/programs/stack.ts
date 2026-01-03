@@ -2,10 +2,10 @@
 import { Opcode } from "@/lib/instructions";
 import { MEMORY_MAP } from "@/lib/memory_map";
 
-import type { u8 } from "@/types/cpu.types";
+import type { ProgramInfo, u8 } from "@/types/cpu.types";
 
 
-export const programs = {
+export const programs: Record<string, ProgramInfo> = {
     stack_demo: {
         name: "Stack Demo",
         description: "Démontre CALL/RET avec pile",
@@ -29,7 +29,7 @@ export const programs = {
             [0x10, Opcode.PUSH_A],
 
             // Faire un calcul
-            [0x11, Opcode.R_LOAD_A],
+            [0x11, Opcode.MOV_A_IMM],
             [0x12, 0x42],
 
             // Restaurer A depuis la pile

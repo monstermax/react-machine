@@ -8,20 +8,20 @@ export enum Opcode {
     HALT = 0x0F,
 
     // Registers
-    R_LOAD_A = 0x10,     // R_LOAD A, immediate (8-bit)
-    R_LOAD_B = 0x11,     // R_LOAD B, immediate (8-bit)
-    R_LOAD_C = 0x12,     // R_LOAD C, immediate (8-bit)
-    R_LOAD_D = 0x13,     // R_LOAD D, immediate (8-bit)
+    //R_LOAD_A = 0x10,     // R_LOAD A, immediate (8-bit) => remplacé par MOV_A_IMM
+    //R_LOAD_B = 0x11,     // R_LOAD B, immediate (8-bit) => remplacé par MOV_B_IMM
+    //R_LOAD_C = 0x12,     // R_LOAD C, immediate (8-bit) => remplacé par MOV_C_IMM
+    //R_LOAD_D = 0x13,     // R_LOAD D, immediate (8-bit) => remplacé par MOV_D_IMM
 
     // Memory
-    M_STORE_A = 0x14,  // M_STORE A, addr16 (16-bit address)
-    M_STORE_B = 0x15,  // M_STORE B, addr16 (16-bit address)
-    M_STORE_C = 0x16,  // M_STORE C, addr16 (16-bit address)
-    M_STORE_D = 0x17,  // M_STORE D, addr16 (16-bit address)
-    M_LOAD_A = 0x18,   // M_LOAD A, addr16 (16-bit address)
-    M_LOAD_B = 0x19,   // M_LOAD B, addr16 (16-bit address)
-    M_LOAD_C = 0x1A,   // M_LOAD C, addr16 (16-bit address)
-    M_LOAD_D = 0x1B,   // M_LOAD D, addr16 (16-bit address)
+    //M_STORE_A = 0x14,  // M_STORE A, addr16 (16-bit address) => remplacé par MOV_MEM_A
+    //M_STORE_B = 0x15,  // M_STORE B, addr16 (16-bit address) => remplacé par MOV_MEM_B
+    //M_STORE_C = 0x16,  // M_STORE C, addr16 (16-bit address) => remplacé par MOV_MEM_C
+    //M_STORE_D = 0x17,  // M_STORE D, addr16 (16-bit address) => remplacé par MOV_MEM_D
+    //M_LOAD_A = 0x18,   // M_LOAD A, addr16 (16-bit address) => remplacé par MOV_A_MEM
+    //M_LOAD_B = 0x19,   // M_LOAD B, addr16 (16-bit address) => remplacé par MOV_B_MEM
+    //M_LOAD_C = 0x1A,   // M_LOAD C, addr16 (16-bit address) => remplacé par MOV_C_MEM
+    //M_LOAD_D = 0x1B,   // M_LOAD D, addr16 (16-bit address) => remplacé par MOV_D_MEM
 
     // ALU
     ADD = 0x20,
@@ -68,15 +68,51 @@ export enum Opcode {
 
     //XCHG_A_B = 0x50,  // Échange A et B
 
+    // MOV Instructions (Register to Register)
+    MOV_AB = 0x90,  // Move A to B
+    MOV_AC = 0x91,  // Move A to C  
+    MOV_AD = 0x92,  // Move A to D
+    MOV_BA = 0x93,  // Move B to A
+    MOV_BC = 0x94,  // Move B to C
+    MOV_BD = 0x95,  // Move B to D
+    MOV_CA = 0x96,  // Move C to A
+    MOV_CB = 0x97,  // Move C to B
+    MOV_CD = 0x98,  // Move C to D
+    MOV_DA = 0x99,  // Move D to A
+    MOV_DB = 0x9A,  // Move D to B
+    MOV_DC = 0x9B,  // Move D to C
+
+    // MOV with Immediate (8-bit)
+    MOV_A_IMM = 0x9C,  // MOV A, imm8
+    MOV_B_IMM = 0x9D,  // MOV B, imm8
+    MOV_C_IMM = 0x9E,  // MOV C, imm8
+    MOV_D_IMM = 0x9F,  // MOV D, imm8
+
+    // MOV Memory to Register
+    MOV_A_MEM = 0xA0,  // MOV A, [addr16]
+    MOV_B_MEM = 0xA1,  // MOV B, [addr16]
+    MOV_C_MEM = 0xA2,  // MOV C, [addr16]
+    MOV_D_MEM = 0xA3,  // MOV D, [addr16]
+
+    // MOV Register to Memory
+    MOV_MEM_A = 0xA4,  // MOV [addr16], A
+    MOV_MEM_B = 0xA5,  // MOV [addr16], B
+    MOV_MEM_C = 0xA6,  // MOV [addr16], C
+    MOV_MEM_D = 0xA7,  // MOV [addr16], D
+
 }
 
 
 // Instructions avec 1 opérande 8-bit
 export const INSTRUCTIONS_WITH_OPERAND = [
-    Opcode.R_LOAD_A,
-    Opcode.R_LOAD_B,
-    Opcode.R_LOAD_C,
-    Opcode.R_LOAD_D,
+    //Opcode.R_LOAD_A,
+    //Opcode.R_LOAD_B,
+    //Opcode.R_LOAD_C,
+    //Opcode.R_LOAD_D,
+    Opcode.MOV_A_IMM,
+    Opcode.MOV_B_IMM,
+    Opcode.MOV_C_IMM,
+    Opcode.MOV_D_IMM,
     Opcode.SYSCALL,
 ];
 
@@ -87,26 +123,41 @@ export const INSTRUCTIONS_WITH_TWO_OPERANDS = [
     Opcode.JZ,
     Opcode.JNZ,
     Opcode.JC,
-    Opcode.M_STORE_A,
-    Opcode.M_STORE_B,
-    Opcode.M_STORE_C,
-    Opcode.M_STORE_D,
-    Opcode.M_LOAD_A,
-    Opcode.M_LOAD_B,
-    Opcode.M_LOAD_C,
-    Opcode.M_LOAD_D,
+    //Opcode.M_STORE_A,
+    //Opcode.M_STORE_B,
+    //Opcode.M_STORE_C,
+    //Opcode.M_STORE_D,
+    //Opcode.M_LOAD_A,
+    //Opcode.M_LOAD_B,
+    //Opcode.M_LOAD_C,
+    //Opcode.M_LOAD_D,
     Opcode.SET_SP,
     Opcode.CALL,
+    Opcode.MOV_A_MEM,
+    Opcode.MOV_B_MEM,
+    Opcode.MOV_C_MEM,
+    Opcode.MOV_D_MEM,
+    Opcode.MOV_MEM_A,
+    Opcode.MOV_MEM_B,
+    Opcode.MOV_MEM_C,
+    Opcode.MOV_MEM_D,
 ];
 
 
 export const getOpcodeName = (opcode: u8): string => {
     switch (opcode) {
+        // Contrôle
         case Opcode.NOP: return "NOP";
-        case Opcode.R_LOAD_A: return "R_LOAD A";
-        case Opcode.R_LOAD_B: return "R_LOAD B";
-        case Opcode.R_LOAD_C: return "R_LOAD C";
-        case Opcode.R_LOAD_D: return "R_LOAD D";
+        case Opcode.SYSCALL: return "SYSCALL";
+        case Opcode.HALT: return "HALT";
+
+        // Anciens Registers (remplacé par MOV)
+        //case Opcode.R_LOAD_A: return "R_LOAD A";
+        //case Opcode.R_LOAD_B: return "R_LOAD B";
+        //case Opcode.R_LOAD_C: return "R_LOAD C";
+        //case Opcode.R_LOAD_D: return "R_LOAD D";
+
+        // ALU
         case Opcode.ADD: return "ADD";
         case Opcode.SUB: return "SUB";
         case Opcode.AND: return "AND";
@@ -120,19 +171,24 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.DEC_C: return "DEC C";
         case Opcode.INC_D: return "INC D";
         case Opcode.DEC_D: return "DEC D";
+
+        // Sauts
         case Opcode.JMP: return "JMP";
         case Opcode.JZ: return "JZ";
         case Opcode.JNZ: return "JNZ";
         case Opcode.JC: return "JC";
-        case Opcode.M_STORE_A: return "M_STORE A";
-        case Opcode.M_STORE_B: return "M_STORE B";
-        case Opcode.M_STORE_C: return "M_STORE C";
-        case Opcode.M_STORE_D: return "M_STORE D";
-        case Opcode.M_LOAD_A: return "M_LOAD A";
-        case Opcode.M_LOAD_B: return "M_LOAD B";
-        case Opcode.M_LOAD_C: return "M_LOAD C";
-        case Opcode.M_LOAD_D: return "M_LOAD D";
-        case Opcode.SYSCALL: return "SYSCALL";
+
+        // Memory (remplacé par MOV)
+        //case Opcode.M_STORE_A: return "M_STORE A";
+        //case Opcode.M_STORE_B: return "M_STORE B";
+        //case Opcode.M_STORE_C: return "M_STORE C";
+        //case Opcode.M_STORE_D: return "M_STORE D";
+        //case Opcode.M_LOAD_A: return "M_LOAD A";
+        //case Opcode.M_LOAD_B: return "M_LOAD B";
+        //case Opcode.M_LOAD_C: return "M_LOAD C";
+        //case Opcode.M_LOAD_D: return "M_LOAD D";
+
+        // Stack
         case Opcode.PUSH_A: return "PUSH A";
         case Opcode.PUSH_B: return "PUSH B";
         case Opcode.PUSH_C: return "PUSH C";
@@ -141,13 +197,49 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.POP_B: return "POP B";
         case Opcode.POP_C: return "POP C";
         case Opcode.POP_D: return "POP D";
+
+        // Contrôle Stack
         case Opcode.SET_SP: return "SET SP";
         case Opcode.CALL: return "CALL";
         case Opcode.RET: return "RET";
+
+        // Interrupts
         case Opcode.EI: return "EI";
         case Opcode.DI: return "DI";
         case Opcode.IRET: return "IRET";
-        case Opcode.HALT: return "HALT";
+
+        // MOV Register to Register
+        case Opcode.MOV_AB: return "MOV A,B";
+        case Opcode.MOV_AC: return "MOV A,C";
+        case Opcode.MOV_AD: return "MOV A,D";
+        case Opcode.MOV_BA: return "MOV B,A";
+        case Opcode.MOV_BC: return "MOV B,C";
+        case Opcode.MOV_BD: return "MOV B,D";
+        case Opcode.MOV_CA: return "MOV C,A";
+        case Opcode.MOV_CB: return "MOV C,B";
+        case Opcode.MOV_CD: return "MOV C,D";
+        case Opcode.MOV_DA: return "MOV D,A";
+        case Opcode.MOV_DB: return "MOV D,B";
+        case Opcode.MOV_DC: return "MOV D,C";
+
+        // MOV avec Immediate
+        case Opcode.MOV_A_IMM: return "MOV A,#";
+        case Opcode.MOV_B_IMM: return "MOV B,#";
+        case Opcode.MOV_C_IMM: return "MOV C,#";
+        case Opcode.MOV_D_IMM: return "MOV D,#";
+
+        // MOV Memory to Register
+        case Opcode.MOV_A_MEM: return "MOV A,[";
+        case Opcode.MOV_B_MEM: return "MOV B,[";
+        case Opcode.MOV_C_MEM: return "MOV C,[";
+        case Opcode.MOV_D_MEM: return "MOV D,[";
+
+        // MOV Register to Memory
+        case Opcode.MOV_MEM_A: return "MOV [,A";
+        case Opcode.MOV_MEM_B: return "MOV [,B";
+        case Opcode.MOV_MEM_C: return "MOV [,C";
+        case Opcode.MOV_MEM_D: return "MOV [,D";
+
         default: return "???";
     }
 

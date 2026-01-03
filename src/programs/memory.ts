@@ -2,22 +2,22 @@
 import { Opcode } from "@/lib/instructions";
 import { MEMORY_MAP } from "@/lib/memory_map";
 
-import type { u8 } from "@/types/cpu.types";
+import type { ProgramInfo, u8 } from "@/types/cpu.types";
 
 
-export const programs = {
+export const programs: Record<string, ProgramInfo> = {
     memory_ops: {
         name: "Opérations Mémoire",
         description: "Store 42 at address 0x80, then load it",
         code: new Map([
-            [0x00, Opcode.R_LOAD_A],
+            [0x00, Opcode.MOV_A_IMM],
             [0x01, 42],
-            [0x02, Opcode.M_STORE_A],
+            [0x02, Opcode.MOV_MEM_A],
             [0x03, 0x80],       // Low byte
             [0x04, 0x00],       // High byte (0x0080)
-            [0x05, Opcode.R_LOAD_A],
+            [0x05, Opcode.MOV_A_IMM],
             [0x06, 0],
-            [0x07, Opcode.M_LOAD_A],
+            [0x07, Opcode.MOV_A_MEM],
             [0x08, 0x80],       // Low byte
             [0x09, 0x00],       // High byte (0x0080)
             [0x0A, Opcode.SYSCALL],

@@ -1,25 +1,25 @@
 
 import { Opcode } from "@/lib/instructions";
 
-import type { u8 } from "@/types/cpu.types";
+import type { ProgramInfo, u8 } from "@/types/cpu.types";
 
 
-export const programs = {
+export const programs: Record<string, ProgramInfo> = {
     four_registers: {
         name: "4 Registers Demo",
         description: "Utilise les 4 registres A, B, C, D avec instructions valides",
         code: new Map([
             // ===== PHASE 1: Initialiser les 4 registres =====
-            [0x00, Opcode.R_LOAD_A],
+            [0x00, Opcode.MOV_A_IMM],
             [0x01, 0x01], // A = 1
 
-            [0x02, Opcode.R_LOAD_B],
+            [0x02, Opcode.MOV_B_IMM],
             [0x03, 0x02], // B = 2
 
-            [0x04, Opcode.R_LOAD_C],
+            [0x04, Opcode.MOV_C_IMM],
             [0x05, 0x03], // C = 3
 
-            [0x06, Opcode.R_LOAD_D],
+            [0x06, Opcode.MOV_D_IMM],
             [0x07, 0x04], // D = 4
 
             // ===== PHASE 2: Calcul A = A + B + C + D =====
@@ -48,7 +48,7 @@ export const programs = {
 
             // ===== PHASE 3: Sauvegarder résultat =====
             // Sauvegarder A en mémoire à l'adresse 0x8000
-            [0x0F, Opcode.M_STORE_A],
+            [0x0F, Opcode.MOV_MEM_A],
             [0x10, 0x00], [0x11, 0x80], // Adresse 0x8000
 
             [0x12, Opcode.HALT],
