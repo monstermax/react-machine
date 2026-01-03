@@ -187,7 +187,7 @@ export const programs: Record<string, ProgramInfo> = {
     },
 
     console_counter: {
-        name: "Counter Console (KO)",
+        name: "Counter Console",
         description: "Compte de 0 à 9 dans la console",
         code: new Map([
             // === SETUP ===
@@ -200,36 +200,39 @@ export const programs: Record<string, ProgramInfo> = {
 
             // === LOOP START ===
             // Convertir C en ASCII
-            [0x05, Opcode.MOV_A_IMM],
-            [0x06, 0x30],               // '0'
-            [0x07, Opcode.ADD],         // A = 0x30 + C
+            // Copier C dans A d'abord
+            [0x05, Opcode.MOV_CA],          // A = C
+            [0x06, Opcode.MOV_B_IMM],       // B = '0' (0x30)
+            [0x07, 0x30],
+            [0x08, Opcode.ADD],             // A = A + B = C + 0x30
 
             // Afficher chiffre
-            [0x08, Opcode.MOV_MEM_A],
-            [0x09, 0x70], [0x0A, 0xFF], // CONSOLE_CHAR
+            [0x09, Opcode.MOV_MEM_A],
+            [0x0A, 0x70], [0x0B, 0xFF],     // CONSOLE_CHAR
 
             // Afficher newline
-            [0x0B, Opcode.PUSH_A],
-            [0x0C, Opcode.MOV_A_IMM],
-            [0x0D, 0x0A],               // '\n'
-            [0x0E, Opcode.MOV_MEM_A],
-            [0x0F, 0x70], [0x10, 0xFF],
-            [0x11, Opcode.POP_A],
+            [0x0C, Opcode.PUSH_A],           // Sauvegarder A (le chiffre)
+            [0x0D, Opcode.MOV_A_IMM],
+            [0x0E, 0x0A],                   // '\n'
+            [0x0F, Opcode.MOV_MEM_A],
+            [0x10, 0x70], [0x11, 0xFF],     // CONSOLE_CHAR
+            [0x12, Opcode.POP_A],           // Restaurer A
 
             // Incrémenter C
-            [0x12, Opcode.INC_C],
+            [0x13, Opcode.INC_C],
 
             // Comparer C avec 10
-            [0x13, Opcode.MOV_A_IMM],
-            [0x14, 0x0A],               // 10
-            [0x15, Opcode.SUB],         // A = 10 - C
+            [0x14, Opcode.MOV_CA],          // A = C
+            [0x15, Opcode.MOV_B_IMM],       // B = 10
+            [0x16, 0x0A],
+            [0x17, Opcode.SUB],             // A = A - B = C - 10
 
-            // Si C != 10, continuer (A != 0)
-            [0x16, Opcode.JNZ],
-            [0x17, 0x05], [0x18, 0x02], // Retour à 0x0205
+            // Si C != 10, continuer (A != 0 car zero flag = false)
+            [0x18, Opcode.JNZ],
+            [0x19, 0x05], [0x1A, 0x02],     // Retour à 0x0205
 
             // Fini
-            [0x19, Opcode.HALT],
+            [0x1B, Opcode.HALT],
         ] as [u8, u8][]),
         expectedResult: "Console affiche 0-9 avec newlines"
     },
@@ -294,78 +297,96 @@ export const programs: Record<string, ProgramInfo> = {
     },
 
     pixel_square: {
-        name: "Pixel Square (ERROR)",
-        description: "Dessine un carré 10x10 avec nouvelles instructions MOV",
+        name: "Contour Carré 10x10 (KO)",
+        description: "Carré de 10x10 pixels",
         code: new Map([
-            // === SETUP ===
-            [0x00, Opcode.SET_SP],
-            [0x01, 0xFF], [0x02, 0xFE],
+            [0x00, Opcode.SET_SP], [0x01, 0xFF], [0x02, 0xFE],
 
-            // Y = 10 à 19
-            [0x03, Opcode.MOV_C_IMM],
-            [0x04, 10],              // C = Y start
+            // Dessiner ligne du haut (Y=5, X=5 à 14)
+            [0x03, Opcode.MOV_C_IMM], [0x04, 5],    // Y = 5
+            [0x05, Opcode.MOV_A_IMM], [0x06, 5],    // X start
 
-            // === BOUCLE Y ===
-            // LOOP_Y:
-            [0x05, Opcode.MOV_A_IMM],
-            [0x06, 10],              // A = X start = 10
+            // LOOP_HAUT:
+            [0x07, Opcode.PUSH_A],
+            [0x08, Opcode.MOV_MEM_A], [0x09, 0xD0], [0x0A, 0xFF], // X
+            [0x0B, Opcode.MOV_CA],
+            [0x0C, Opcode.MOV_MEM_A], [0x0D, 0xD1], [0x0E, 0xFF], // Y=5
+            [0x0F, Opcode.MOV_A_IMM], [0x10, 1],
+            [0x11, Opcode.MOV_MEM_A], [0x12, 0xD2], [0x13, 0xFF], // Couleur
 
-            // === BOUCLE X ===
-            // LOOP_X:
-            // 1. Écrire X
-            [0x07, Opcode.PUSH_A],   // Sauvegarder X
-            [0x08, Opcode.MOV_MEM_A],
-            [0x09, 0xD0], [0x0A, 0xFF], // PIXEL_X
+            [0x14, Opcode.POP_A],
+            [0x15, Opcode.INC_A],
 
-            // 2. Écrire Y (depuis C)
-            [0x0B, Opcode.PUSH_C],   // Sauvegarder C
-            [0x0C, Opcode.POP_A],    // Y dans A
-            [0x0D, Opcode.MOV_MEM_A],
-            [0x0E, 0xD1], [0x0F, 0xFF], // PIXEL_Y
-            [0x10, Opcode.POP_C],    // Restaurer C (annule le push)
+            [0x16, Opcode.MOV_B_IMM], [0x17, 15],
+            [0x18, Opcode.SUB],
+            [0x19, Opcode.JNZ],
+            [0x1A, 0x07], [0x1B, 0x02],            // Retour LOOP_HAUT
 
-            // 3. Écrire couleur
-            [0x11, Opcode.PUSH_A],
-            [0x12, Opcode.MOV_A_IMM],
-            [0x13, 0x01],           // Couleur = 1 (blanc)
-            [0x14, Opcode.MOV_MEM_A],
-            [0x15, 0xD2], [0x16, 0xFF], // PIXEL_COLOR
-            [0x17, Opcode.POP_A],
+            // Dessiner ligne du bas (Y=14, X=5 à 14)
+            [0x1C, Opcode.MOV_C_IMM], [0x1D, 14],   // Y = 14
+            [0x1E, Opcode.MOV_A_IMM], [0x1F, 5],    // X start
 
-            // 4. Incrémenter X et vérifier
-            [0x18, Opcode.POP_A],    // Restaurer X
-            [0x19, Opcode.INC_A],    // X++
+            // LOOP_BAS:
+            [0x20, Opcode.PUSH_A],
+            [0x21, Opcode.MOV_MEM_A], [0x22, 0xD0], [0x23, 0xFF],
+            [0x24, Opcode.MOV_CA],
+            [0x25, Opcode.MOV_MEM_A], [0x26, 0xD1], [0x27, 0xFF],
+            [0x28, Opcode.MOV_A_IMM], [0x29, 1],
+            [0x2A, Opcode.MOV_MEM_A], [0x2B, 0xD2], [0x2C, 0xFF],
 
-            // Si X < 20, continuer boucle X
-            [0x1A, Opcode.PUSH_A],   // Sauvegarder X
-            [0x1B, Opcode.MOV_B_IMM],
-            [0x1C, 20],              // X limit
-            [0x1D, Opcode.SUB],      // A = X - 20
-            [0x1E, Opcode.JNZ],      // Si X != 20
-            [0x1F, 0x07], [0x20, 0x02], // Retour LOOP_X
+            [0x2D, Opcode.POP_A],
+            [0x2E, Opcode.INC_A],
 
-            // 5. Fin de ligne - incrémenter Y
-            [0x21, Opcode.POP_A],    // Nettoyer X
-            [0x22, Opcode.INC_C],    // Y++
+            [0x2F, Opcode.MOV_B_IMM], [0x30, 15],
+            [0x31, Opcode.SUB],
+            [0x32, Opcode.JNZ],
+            [0x33, 0x20], [0x34, 0x02],            // Retour LOOP_BAS
 
-            // Si Y < 20, continuer boucle Y
-            [0x23, Opcode.PUSH_C],   // Sauvegarder Y
-            [0x24, Opcode.MOV_A_IMM],
-            [0x25, 20],              // Y limit
-            [0x26, Opcode.SUB],      // A = Y - 20
-            // Mais Y est dans C, besoin de swap
-            [0x23, Opcode.PUSH_C],   // Sauvegarder Y
-            [0x24, Opcode.POP_A],    // Y dans A
-            [0x25, Opcode.MOV_B_IMM],
-            [0x26, 20],              // Limite
-            [0x27, Opcode.SUB],      // A = Y - 20
-            [0x28, Opcode.JNZ],      // Si Y != 20
-            [0x29, 0x05], [0x2A, 0x02], // Retour LOOP_Y
+            // Dessiner côté gauche (X=5, Y=6 à 13)
+            [0x35, Opcode.MOV_A_IMM], [0x36, 5],    // X = 5
+            [0x37, Opcode.MOV_C_IMM], [0x38, 6],    // Y start = 6
 
-            // Fin
-            [0x2B, Opcode.HALT],
+            // LOOP_GAUCHE:
+            [0x39, Opcode.PUSH_C],
+            [0x3A, Opcode.MOV_MEM_A], [0x3B, 0xD0], [0x3C, 0xFF], // X=5
+            [0x3D, Opcode.MOV_CA],
+            [0x3E, Opcode.MOV_MEM_A], [0x3F, 0xD1], [0x40, 0xFF], // Y
+            [0x41, Opcode.MOV_A_IMM], [0x42, 1],
+            [0x43, Opcode.MOV_MEM_A], [0x44, 0xD2], [0x45, 0xFF],
+
+            [0x46, Opcode.POP_C],
+            [0x47, Opcode.INC_C],
+
+            [0x48, Opcode.MOV_CA],
+            [0x49, Opcode.MOV_B_IMM], [0x4A, 14],   // Y < 14
+            [0x4B, Opcode.SUB],
+            [0x4C, Opcode.JNZ],
+            [0x4D, 0x39], [0x4E, 0x02],            // Retour LOOP_GAUCHE
+
+            // Dessiner côté droit (X=14, Y=6 à 13)  
+            [0x4F, Opcode.MOV_A_IMM], [0x50, 14],   // X = 14
+            [0x51, Opcode.MOV_C_IMM], [0x52, 6],    // Y start = 6
+
+            // LOOP_DROIT:
+            [0x53, Opcode.PUSH_C],
+            [0x54, Opcode.MOV_MEM_A], [0x55, 0xD0], [0x56, 0xFF], // X=14
+            [0x57, Opcode.MOV_CA],
+            [0x58, Opcode.MOV_MEM_A], [0x59, 0xD1], [0x5A, 0xFF], // Y
+            [0x5B, Opcode.MOV_A_IMM], [0x5C, 1],
+            [0x5D, Opcode.MOV_MEM_A], [0x5E, 0xD2], [0x5F, 0xFF],
+
+            [0x60, Opcode.POP_C],
+            [0x61, Opcode.INC_C],
+
+            [0x62, Opcode.MOV_CA],
+            [0x63, Opcode.MOV_B_IMM], [0x64, 14],
+            [0x65, Opcode.SUB],
+            [0x66, Opcode.JNZ],
+            [0x67, 0x53], [0x68, 0x02],            // Retour LOOP_DROIT
+
+            [0x69, Opcode.HALT],
         ] as [u8, u8][]),
-        expectedResult: "Carré 10x10 pixels à position (10,10)"
+        expectedResult: "*un carré de 10x10 pixels"
     },
 
     pixel_line: {
