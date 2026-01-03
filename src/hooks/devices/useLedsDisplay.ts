@@ -3,7 +3,7 @@ import type { u8 } from "@/types/cpu.types";
 import { useCallback, useState } from "react";
 
 
-export const useLeds = (): LedsDevice => {
+export const useLedsDisplay = (): LedsDevice => {
     const [leds, setLeds] = useState(0 as u8); // 8 bits
 
 

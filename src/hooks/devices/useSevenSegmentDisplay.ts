@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 
 
 // seven_seg.ts
-export const useSevenSegment = (): SevenSegmentHook => {
+export const useSevenSegmentDisplay = (): SevenSegmentHook => {
     const [currentValue, setCurrentValue] = useState<u8>(0 as u8);
     const [rawSegments, setRawSegments] = useState<u8>(0 as u8);
 

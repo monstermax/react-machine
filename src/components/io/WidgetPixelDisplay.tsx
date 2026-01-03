@@ -1,7 +1,7 @@
 
 import { useCallback } from "react";
 
-import type { PixelDisplayDevice } from "@/hooks/devices/usepixeldisplay";
+import type { PixelDisplayDevice } from "@/hooks/devices/usePixelDisplay";
 
 
 export const WidgetPixelDisplay: React.FC<{ device: PixelDisplayDevice }> = ({ device }) => {

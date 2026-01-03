@@ -1,5 +1,5 @@
 
-import type { LedsDevice } from "@/hooks/devices/useLeds";
+import type { LedsDevice } from "@/hooks/devices/useLedsDisplay";
 
 
 export const WidgetLEDsDisplay: React.FC<{ device: LedsDevice }> = ({ device }) => {

@@ -1,5 +1,5 @@
 
-import type { SevenSegmentHook } from "@/hooks/devices/useSevenSegment";
+import type { SevenSegmentHook } from "@/hooks/devices/useSevenSegmentDisplay";
 
 
 type SevenSegmentProps = {

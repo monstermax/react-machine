@@ -8,7 +8,7 @@ const LCD_ROWS = 2;
 const LCD_COLS = 16;
 
 
-export const useLCD = (): LCDDevice => {
+export const useLcdDisplay = (): LCDDevice => {
     const [display, setDisplay] = useState<string[][]>(() =>
         Array(LCD_ROWS).fill(null).map(() => Array(LCD_COLS).fill(' '))
     );

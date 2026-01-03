@@ -1,5 +1,5 @@
 
-import type { LCDDevice } from "@/hooks/devices/useLCD";
+import type { LCDDevice } from "@/hooks/devices/useLcdDisplay";
 
 
 export const WidgetLCDDisplay: React.FC<{ device: LCDDevice }> = ({ device }) => {
