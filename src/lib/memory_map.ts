@@ -70,7 +70,8 @@ export const MEMORY_MAP = createMemoryMap({
     INTERRUPT_PENDING: 0xFF41,    // R   - IRQs en attente (read-only pour CPU)
     INTERRUPT_ACK: 0xFF42,        // W   - Acquitter une IRQ (write-only)
     INTERRUPT_MASK: 0xFF43,       // R/W - Masquer des IRQs temporairement
-    INTERRUPT_HANDLER: 0xFF44,    // R/W - Adresse du handler (optionnel)
+    INTERRUPT_HANDLER_LOW: 0xFF44,  // R/W - Adresse handler (low byte)
+    INTERRUPT_HANDLER_HIGH: 0xFF45, // R/W - Adresse handler (high byte)
 
     // Device 5: Keyboard
     KEYBOARD_BASE: 0xFF50,

@@ -7,57 +7,81 @@ import type { ProgramInfo, u8 } from "@/types/cpu.types";
 
 export const programs: Record<string, ProgramInfo> = {
     timer_01: {
-        name: "Interrupt Demo (ERROR)",
-        description: "Timer avec interruption toutes les 10ms",
+        name: "Timer Interrupt",
+        description: "Timer avec interruption - compte dans LEDs",
         code: new Map([
-            // Setup
+            // === SETUP ===
             [0x00, Opcode.SET_SP],
             [0x01, 0xFF], [0x02, 0xFE], // SP = 0xFEFF
 
-            // Configurer handler d'interruption
+            // === Configurer INTERRUPT_HANDLER @ 0x0240 ===
+            // Low byte (0x40)
             [0x03, Opcode.MOV_A_IMM],
-            [0x04, 0x50], // Handler à 0x0050
+            [0x04, 0x40],
             [0x05, Opcode.MOV_MEM_A],
-            [0x06, MEMORY_MAP.INTERRUPT_HANDLER & 0xFF],
-            [0x07, (MEMORY_MAP.INTERRUPT_HANDLER >> 8) & 0xFF],
+            [0x06, 0x44], [0x07, 0xFF], // INTERRUPT_HANDLER_LOW (0xFF44)
 
-            // Activer IRQ 0 (Timer)
+            // High byte (0x02)
             [0x08, Opcode.MOV_A_IMM],
-            [0x09, 0b00000001], // Activer IRQ 0 seulement
+            [0x09, 0x02],
             [0x0A, Opcode.MOV_MEM_A],
-            [0x0B, MEMORY_MAP.INTERRUPT_ENABLE & 0xFF],
-            [0x0C, (MEMORY_MAP.INTERRUPT_ENABLE >> 8) & 0xFF],
+            [0x0B, 0x45], [0x0C, 0xFF], // INTERRUPT_HANDLER_HIGH (0xFF45)
 
-            // Activer interruptions globales
-            [0x0D, Opcode.EI],
+            // === Configurer TIMER ===
+            // Period = 10 → TIMER_PRESCALER (0xFF22)
+            [0x0D, Opcode.MOV_A_IMM],
+            [0x0E, 10],
+            [0x0F, Opcode.MOV_MEM_A],
+            [0x10, 0x22], [0x11, 0xFF], // TIMER_PRESCALER (0xFF22) ← CORRIGÉ !
 
-            // Boucle principale
-            [0x0E, Opcode.MOV_A_IMM],
-            [0x0F, 0x00],
-            [0x10, Opcode.INC_A],
-            [0x11, Opcode.JMP],
-            [0x12, 0x0E], [0x13, 0x00], // Boucle infinie
+            // === Activer IRQ 0 (Timer) ===
+            [0x12, Opcode.MOV_A_IMM],
+            [0x13, 0b00000001], // IRQ 0
+            [0x14, Opcode.MOV_MEM_A],
+            [0x15, 0x40], [0x16, 0xFF], // INTERRUPT_ENABLE (0xFF40)
 
-            // ===== HANDLER D'INTERRUPTION (0x0050) =====
-            // Sauvegarder A
-            [0x50, Opcode.PUSH_A],
+            // Enable timer → TIMER_CONTROL (0xFF21)
+            [0x17, Opcode.MOV_A_IMM],
+            [0x18, 0x03], // Enable + reset
+            [0x19, Opcode.MOV_MEM_A],
+            [0x1A, 0x21], [0x1B, 0xFF], // TIMER_CONTROL (0xFF21)
 
-            // Faire quelque chose (ex: incrémenter un compteur)
-            [0x51, Opcode.MOV_A_IMM],
-            [0x52, 0x80], // Adresse compteur
-            [0x53, Opcode.MOV_A_MEM],
-            [0x54, 0x80], [0x55, 0x00],
-            [0x56, Opcode.INC_A],
-            [0x57, Opcode.MOV_MEM_A],
-            [0x58, 0x80], [0x59, 0x00],
+            // === Enable Interrupts ===
+            [0x1C, Opcode.EI],
 
-            // Restaurer A
-            [0x5A, Opcode.POP_A],
+            // === Main loop ===
+            [0x1D, Opcode.NOP],
+            [0x1E, Opcode.JMP],
+            [0x1F, 0x1D], [0x20, 0x02], // Loop à 0x021D
 
-            // Retour d'interruption
-            [0x5B, Opcode.IRET],
+            // === HANDLER @ offset 0x40 (adresse 0x0240) ===
+            [0x40, Opcode.PUSH_A],
+
+            // Lire compteur @ 0x8000
+            [0x41, Opcode.MOV_A_MEM],
+            [0x42, 0x00], [0x43, 0x80],
+
+            // Incrémenter
+            [0x44, Opcode.INC_A],
+
+            // Sauvegarder compteur
+            [0x45, Opcode.MOV_MEM_A],
+            [0x46, 0x00], [0x47, 0x80],
+
+            // Afficher dans LEDs
+            [0x48, Opcode.MOV_MEM_A],
+            [0x49, 0x30], [0x4A, 0xFF], // LEDS_OUTPUT (0xFF30)
+
+            // ACK IRQ 0
+            [0x4B, Opcode.MOV_A_IMM],
+            [0x4C, 0x00], // IRQ 0
+            [0x4D, Opcode.MOV_MEM_A],
+            [0x4E, 0x42], [0x4F, 0xFF], // INTERRUPT_ACK (0xFF42)
+
+            [0x50, Opcode.POP_A],
+            [0x51, Opcode.IRET],
         ] as [u8, u8][]),
-        expectedResult: "Compteur incrémenté par interruption timer"
+        expectedResult: "LEDs comptent toutes les 10 cycles, IRQ acknowledged"
     },
 
     timer_02: {

@@ -37,8 +37,8 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
 
 
     // Device IO interface
-    const read = useCallback((address: u8): u8 => {
-        const port = address - MEMORY_MAP.TIMER_BASE;
+    const read = useCallback((port: u8): u8 => {
+        //const address = port - MEMORY_MAP.TIMER_BASE;
 
         switch (port) {
             case 0x00: // TIMER_COUNTER (0xFF20)
@@ -53,16 +53,18 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
     }, [counter, period, enabled]);
 
 
-    const write = useCallback((address: u8, value: u8): void => {
-        const port = address - MEMORY_MAP.TIMER_BASE;
+    const write = useCallback((port: u8, value: u8): void => {
+        //const port = address - MEMORY_MAP.TIMER_BASE;
 
         switch (port) {
             case 0x01: // TIMER_CONTROL (0xFF21)
                 setEnabled((value & 0x01) !== 0);
+
                 if ((value & 0x02) !== 0) { // Reset bit
                     setCounter(0 as u8);
                 }
                 break;
+
             case 0x02: // TIMER_PRESCALER/PERIOD (0xFF22)
                 setPeriod((value & 0xFF) as u8);
                 break;

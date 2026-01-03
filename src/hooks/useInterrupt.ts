@@ -33,9 +33,10 @@ export const useInterrupt = () => {
             case 0x03: // INTERRUPT_MASK
                 return mask;
 
-            case 0x04: // INTERRUPT_HANDLER low byte
+            case 0x04: // INTERRUPT_HANDLER_LOW
                 return (handlerAddr & 0xFF) as u8;
-            case 0x05: // INTERRUPT_HANDLER high byte
+
+            case 0x05: // INTERRUPT_HANDLER_HIGH
                 return ((handlerAddr >> 8) & 0xFF) as u8;
 
             default:
@@ -65,10 +66,10 @@ export const useInterrupt = () => {
                 setMask((value & 0xFF) as u8);
                 break;
 
-            case 0x04: // INTERRUPT_HANDLER low byte
+            case 0x04: // INTERRUPT_HANDLER_LOW
                 setHandlerAddr(prev => ((prev & 0xFF00) | (value & 0xFF)) as u16);
                 break;
-            case 0x05: // INTERRUPT_HANDLER high byte
+            case 0x05: // INTERRUPT_HANDLER_HIGH
                 setHandlerAddr(prev => ((prev & 0x00FF) | ((value & 0xFF) << 8)) as u16);
                 break;
 
