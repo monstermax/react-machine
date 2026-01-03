@@ -57,45 +57,49 @@ export const programs = {
     },
 
     console_counter: {
-        name: "Counter Console",
+        name: "Counter Console (KO)",
         description: "Compte de 0 à 9 dans la console",
         code: new Map([
             // === SETUP ===
             [0x00, Opcode.SET_SP],
-            [0x01, 0xFF],
-            [0x02, 0xFE],
+            [0x01, 0xFF], [0x02, 0xFE],
 
-            // Initialiser compteur
-            [0x03, Opcode.R_LOAD_A],
-            [0x04, 0x30], // '0' ASCII
+            // Initialiser compteur C = 0
+            [0x03, Opcode.R_LOAD_C],
+            [0x04, 0x00],
 
-            // === LOOP ===
-            // Afficher le chiffre
-            [0x05, Opcode.M_STORE_A],
-            [0x06, 0x70], [0x07, 0xFF], // CONSOLE_CHAR
+            // === LOOP START ===
+            // Convertir C en ASCII
+            [0x05, Opcode.R_LOAD_A],
+            [0x06, 0x30],               // '0'
+            [0x07, Opcode.ADD],         // A = 0x30 + C
 
-            // Ajouter newline
-            [0x08, Opcode.PUSH_A],
-            [0x09, Opcode.R_LOAD_A],
-            [0x0A, 0x0A], // '\n'
-            [0x0B, Opcode.M_STORE_A],
-            [0x0C, 0x70], [0x0D, 0xFF],
-            [0x0E, Opcode.POP_A],
+            // Afficher chiffre
+            [0x08, Opcode.M_STORE_A],
+            [0x09, 0x70], [0x0A, 0xFF], // CONSOLE_CHAR
 
-            // Incrémenter
-            [0x0F, Opcode.INC_A],
+            // Afficher newline
+            [0x0B, Opcode.PUSH_A],
+            [0x0C, Opcode.R_LOAD_A],
+            [0x0D, 0x0A],               // '\n'
+            [0x0E, Opcode.M_STORE_A],
+            [0x0F, 0x70], [0x10, 0xFF],
+            [0x11, Opcode.POP_A],
 
-            // Comparer avec '9' + 1
-            [0x10, Opcode.R_LOAD_B],
-            [0x11, 0x3A], // ':' (après '9')
-            [0x12, Opcode.SUB],
+            // Incrémenter C
+            [0x12, Opcode.INC_C],
 
-            // Si pas égal, continuer
-            [0x13, Opcode.JNZ],
-            [0x14, 0x03], [0x15, 0x02],
+            // Comparer C avec 10
+            [0x13, Opcode.R_LOAD_A],
+            [0x14, 0x0A],               // 10
+            [0x15, Opcode.SUB],         // A = 10 - C
 
-            // Fini - HALT
-            [0x16, Opcode.HALT],
+            // Si C != 10, continuer (A != 0)
+            [0x16, Opcode.JNZ],
+            [0x17, 0x05], [0x18, 0x02], // Retour à 0x0205
+
+            // Fini
+            [0x19, Opcode.HALT],
         ] as [u8, u8][]),
         expectedResult: "Console affiche 0-9 avec newlines"
     },
@@ -163,56 +167,75 @@ export const programs = {
         name: "Pixel Square",
         description: "Dessine un carré de 10x10 pixels",
         code: new Map([
+            // === SETUP ===
             [0x00, Opcode.SET_SP],
             [0x01, 0xFF], [0x02, 0xFE],
 
-            // Initialiser compteurs
-            [0x03, Opcode.R_LOAD_C], [0x04, 10], // Y start
-            [0x05, Opcode.R_LOAD_D], [0x06, 10], // Y counter
+            // Y = 10 à 19
+            [0x03, Opcode.R_LOAD_C],
+            [0x04, 10],              // C = Y start
 
+            // === BOUCLE Y ===
             // LOOP_Y:
-            [0x07, Opcode.R_LOAD_A], [0x08, 10], // X start
-            [0x09, Opcode.R_LOAD_B], [0x0A, 10], // X counter
+            [0x05, Opcode.R_LOAD_A],
+            [0x06, 10],              // A = X start = 10
 
+            // === BOUCLE X ===
             // LOOP_X:
-            // Set X
-            [0x0B, Opcode.M_STORE_A],
-            [0x0C, 0xD0], [0x0D, 0xFF], // PIXEL_X
+            // 1. Écrire X
+            [0x07, Opcode.PUSH_A],   // Sauvegarder X
+            [0x08, Opcode.M_STORE_A],
+            [0x09, 0xD0], [0x0A, 0xFF], // PIXEL_X
 
-            // Set Y
-            [0x0E, Opcode.PUSH_A],
-            [0x0F, Opcode.R_LOAD_A], [0x10, 0x00],
-            [0x11, Opcode.ADD], // A = C (Y)
-            [0x12, Opcode.M_STORE_A],
-            [0x13, 0xD1], [0x14, 0xFF], // PIXEL_Y
-            [0x15, Opcode.POP_A],
+            // 2. Écrire Y (depuis C)
+            [0x0B, Opcode.PUSH_C],   // Sauvegarder C
+            [0x0C, Opcode.POP_A],    // Y dans A
+            [0x0D, Opcode.M_STORE_A],
+            [0x0E, 0xD1], [0x0F, 0xFF], // PIXEL_Y
+            [0x10, Opcode.POP_C],    // Restaurer C (annule le push)
 
-            // Set COLOR = 1
-            [0x16, Opcode.PUSH_A],
-            [0x17, Opcode.R_LOAD_A], [0x18, 0x01],
-            [0x19, Opcode.M_STORE_A],
-            [0x1A, 0xD2], [0x1B, 0xFF], // PIXEL_COLOR
-            [0x1C, Opcode.POP_A],
+            // 3. Écrire couleur
+            [0x11, Opcode.PUSH_A],
+            [0x12, Opcode.R_LOAD_A],
+            [0x13, 0x01],           // Couleur = 1 (blanc)
+            [0x14, Opcode.M_STORE_A],
+            [0x15, 0xD2], [0x16, 0xFF], // PIXEL_COLOR
+            [0x17, Opcode.POP_A],
 
-            // X++
-            [0x1D, Opcode.INC_A],
+            // 4. Incrémenter X et vérifier
+            [0x18, Opcode.POP_A],    // Restaurer X
+            [0x19, Opcode.INC_A],    // X++
 
-            // X counter--
-            [0x1E, Opcode.DEC_B],
-            [0x1F, Opcode.JNZ],
-            [0x20, 0x0B], [0x21, 0x02], // LOOP_X
+            // Si X < 20, continuer boucle X
+            [0x1A, Opcode.PUSH_A],   // Sauvegarder X
+            [0x1B, Opcode.R_LOAD_B],
+            [0x1C, 20],              // X limit
+            [0x1D, Opcode.SUB],      // A = X - 20
+            [0x1E, Opcode.JNZ],      // Si X != 20
+            [0x1F, 0x07], [0x20, 0x02], // Retour LOOP_X
 
-            // Y++
-            [0x22, Opcode.INC_C],
+            // 5. Fin de ligne - incrémenter Y
+            [0x21, Opcode.POP_A],    // Nettoyer X
+            [0x22, Opcode.INC_C],    // Y++
 
-            // Y counter--
-            [0x23, Opcode.DEC_D],
-            [0x24, Opcode.JNZ],
-            [0x25, 0x07], [0x26, 0x02], // LOOP_Y
+            // Si Y < 20, continuer boucle Y
+            [0x23, Opcode.PUSH_C],   // Sauvegarder Y
+            [0x24, Opcode.R_LOAD_A],
+            [0x25, 20],              // Y limit
+            [0x26, Opcode.SUB],      // A = Y - 20
+            // Mais Y est dans C, besoin de swap
+            [0x23, Opcode.PUSH_C],   // Sauvegarder Y
+            [0x24, Opcode.POP_A],    // Y dans A
+            [0x25, Opcode.R_LOAD_B],
+            [0x26, 20],              // Limite
+            [0x27, Opcode.SUB],      // A = Y - 20
+            [0x28, Opcode.JNZ],      // Si Y != 20
+            [0x29, 0x05], [0x2A, 0x02], // Retour LOOP_Y
 
-            [0x27, Opcode.HALT],
+            // Fin
+            [0x2B, Opcode.HALT],
         ] as [u8, u8][]),
-        expectedResult: "Carré 10x10 pixels à position (10,10)"
+        expectedResult: "Carré 10x10 pixels"
     },
 
     pixel_line: {

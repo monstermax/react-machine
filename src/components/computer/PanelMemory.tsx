@@ -21,7 +21,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     const { computerHook } = props;
     const { cpuHook, romHook, ramHook, ioHook } = computerHook;
 
-    const [followInstruction, setFollowInstruction] = useState(true);
+    const [followInstruction, setFollowInstruction] = useState(false);
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const addressRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -46,10 +46,16 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
 
         // I/O - Adresses de départ des devices
         const ioStartAddresses: u16[] = [
-            MEMORY_MAP.OS_DISK_DATA,
-            MEMORY_MAP.PROGRAM_DISK_DATA,
-            MEMORY_MAP.LEDS_OUTPUT,
-            MEMORY_MAP.SEVEN_SEG_DATA,
+            MEMORY_MAP.OS_DISK_BASE,
+            MEMORY_MAP.PROGRAM_DISK_BASE,
+            MEMORY_MAP.TIMER_BASE,
+            MEMORY_MAP.LEDS_BASE,
+            MEMORY_MAP.INTERRUPT_BASE,
+            MEMORY_MAP.KEYBOARD_BASE,
+            MEMORY_MAP.SEVEN_SEG_BASE,
+            MEMORY_MAP.CONSOLE_BASE,
+            MEMORY_MAP.LCD_BASE,
+            MEMORY_MAP.PIXEL_DISPLAY_BASE,
         ].sort((a, b) => a - b);
 
         // Pour chaque device, lire jusqu'à trouver des zéros ou atteindre le prochain device

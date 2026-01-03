@@ -23,6 +23,12 @@ export const useComputer = (): ComputerHook => {
     const [loadedProgram, setLoadedProgram] = useState<string | null>(null);
 
 
+    if (true) {
+        // DEBUG
+        (window as any).ioHook = ioHook;
+    }
+
+
     // Initialize RAM & CPU at boot
     useEffect(() => {
         resetComputer();

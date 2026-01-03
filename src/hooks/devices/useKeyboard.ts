@@ -60,7 +60,7 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
             default:
                 return 0 as u8;
         }
-    }, [lastChar, hasChar]);
+    }, [lastChar, hasChar, irqEnabled]);
 
 
     const write = useCallback((port: u8, value: u8): void => {

@@ -186,6 +186,8 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         const irq = ioHook.interrupt.getPendingIRQ();
         if (irq === null) return;
 
+        console.log(`🎯 Handling IRQ ${irq}, handlerAddr = ${ioHook.interrupt.handlerAddr.toString(16)}`);
+
         // 1. Désactiver interruptions
         setInterruptsEnabled(false);
         setInInterruptHandler(true);

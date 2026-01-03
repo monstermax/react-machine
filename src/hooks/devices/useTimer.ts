@@ -16,15 +16,21 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
 
     // Tick appelé à chaque cycle CPU ou à intervalle fixe
     const tick = useCallback(() => {
+        console.log(`⏰ Timer tick: enabled=${enabled}, counter=${counter}, period=${period}`);
         if (!enabled) return;
 
         setCounter(prev => {
             const newVal = (prev + 1) as u8;
+            console.log(`⏰ Counter: ${prev} -> ${newVal}`);
+
             if (newVal >= period) {
                 // Déclencher interruption
+                console.log('⏰ TIMER INTERRUPT! Requesting IRQ 0');
                 interruptHook.requestInterrupt(U8(MEMORY_MAP.IRQ_TIMER));
+                console.log('TIMER')
                 return 0 as u8;
             }
+
             return newVal;
         });
     }, [enabled, period, interruptHook]);
@@ -35,12 +41,12 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
         const port = address - MEMORY_MAP.TIMER_BASE;
 
         switch (port) {
-            case 0x00: // TIMER_COUNTER
+            case 0x00: // TIMER_COUNTER (0xFF20)
                 return counter;
-            case 0x01: // TIMER_PERIOD
-                return period;
-            case 0x02: // TIMER_CONTROL
+            case 0x01: // TIMER_CONTROL (0xFF21)
                 return (enabled ? 1 : 0) as u8;
+            case 0x02: // TIMER_PRESCALER (0xFF22)
+                return period;
             default:
                 return 0 as u8;
         }
@@ -51,14 +57,14 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
         const port = address - MEMORY_MAP.TIMER_BASE;
 
         switch (port) {
-            case 0x01: // TIMER_PERIOD
-                setPeriod((value & 0xFF) as u8);
-                break;
-            case 0x02: // TIMER_CONTROL
+            case 0x01: // TIMER_CONTROL (0xFF21)
                 setEnabled((value & 0x01) !== 0);
                 if ((value & 0x02) !== 0) { // Reset bit
                     setCounter(0 as u8);
                 }
+                break;
+            case 0x02: // TIMER_PRESCALER/PERIOD (0xFF22)
+                setPeriod((value & 0xFF) as u8);
                 break;
         }
     }, []);
