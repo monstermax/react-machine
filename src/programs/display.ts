@@ -258,36 +258,76 @@ export const programs: Record<string, ProgramInfo> = {
     },
 
     pixel_square: {
-        name: "Pixel Square - AVEC MOV",
+        name: "Pixel Square (KO)",
         description: "Dessine un carré 10x10 avec nouvelles instructions MOV",
         code: new Map([
-            // SETUP
-            [0x00, Opcode.SET_SP], [0x01, 0xFF], [0x02, 0xFE],
+            // === SETUP ===
+            [0x00, Opcode.SET_SP],
+            [0x01, 0xFF], [0x02, 0xFE],
 
-            // Y = 10
-            [0x03, Opcode.MOV_C_IMM], [0x04, 10],
+            // Y = 10 à 19
+            [0x03, Opcode.MOV_C_IMM],
+            [0x04, 10],              // C = Y start
 
+            // === BOUCLE Y ===
             // LOOP_Y:
-            [0x05, Opcode.MOV_A_IMM], [0x06, 10],  // X = 10
+            [0x05, Opcode.MOV_A_IMM],
+            [0x06, 10],              // A = X start = 10
 
+            // === BOUCLE X ===
             // LOOP_X:
-            // Écrire X
-            [0x07, Opcode.MOV_MEM_A],
-            [0x08, 0xD0], [0x09, 0xFF], // PIXEL_X
+            // 1. Écrire X
+            [0x07, Opcode.PUSH_A],   // Sauvegarder X
+            [0x08, Opcode.MOV_MEM_A],
+            [0x09, 0xD0], [0x0A, 0xFF], // PIXEL_X
 
-            // Écrire Y (copier C dans A d'abord)
-            [0x0A, Opcode.MOV_CA],      // A = C (Y)
-            [0x0B, Opcode.MOV_MEM_A],
-            [0x0C, 0xD1], [0x0D, 0xFF], // PIXEL_Y
+            // 2. Écrire Y (depuis C)
+            [0x0B, Opcode.PUSH_C],   // Sauvegarder C
+            [0x0C, Opcode.POP_A],    // Y dans A
+            [0x0D, Opcode.MOV_MEM_A],
+            [0x0E, 0xD1], [0x0F, 0xFF], // PIXEL_Y
+            [0x10, Opcode.POP_C],    // Restaurer C (annule le push)
 
-            // Écrire couleur
-            [0x0E, Opcode.MOV_A_IMM], [0x0F, 0x01],
-            [0x10, Opcode.MOV_MEM_A],
-            [0x11, 0xD2], [0x12, 0xFF], // PIXEL_COLOR
+            // 3. Écrire couleur
+            [0x11, Opcode.PUSH_A],
+            [0x12, Opcode.MOV_A_IMM],
+            [0x13, 0x01],           // Couleur = 1 (blanc)
+            [0x14, Opcode.MOV_MEM_A],
+            [0x15, 0xD2], [0x16, 0xFF], // PIXEL_COLOR
+            [0x17, Opcode.POP_A],
 
-            // Restaurer X et incrémenter
-            [0x13, Opcode.MOV_A_IMM], [0x14, 10], // Recharger X? Non, on l'a perdu...
-            // Mieux: sauvegarder X dans D
+            // 4. Incrémenter X et vérifier
+            [0x18, Opcode.POP_A],    // Restaurer X
+            [0x19, Opcode.INC_A],    // X++
+
+            // Si X < 20, continuer boucle X
+            [0x1A, Opcode.PUSH_A],   // Sauvegarder X
+            [0x1B, Opcode.MOV_B_IMM],
+            [0x1C, 20],              // X limit
+            [0x1D, Opcode.SUB],      // A = X - 20
+            [0x1E, Opcode.JNZ],      // Si X != 20
+            [0x1F, 0x07], [0x20, 0x02], // Retour LOOP_X
+
+            // 5. Fin de ligne - incrémenter Y
+            [0x21, Opcode.POP_A],    // Nettoyer X
+            [0x22, Opcode.INC_C],    // Y++
+
+            // Si Y < 20, continuer boucle Y
+            [0x23, Opcode.PUSH_C],   // Sauvegarder Y
+            [0x24, Opcode.MOV_A_IMM],
+            [0x25, 20],              // Y limit
+            [0x26, Opcode.SUB],      // A = Y - 20
+            // Mais Y est dans C, besoin de swap
+            [0x23, Opcode.PUSH_C],   // Sauvegarder Y
+            [0x24, Opcode.POP_A],    // Y dans A
+            [0x25, Opcode.MOV_B_IMM],
+            [0x26, 20],              // Limite
+            [0x27, Opcode.SUB],      // A = Y - 20
+            [0x28, Opcode.JNZ],      // Si Y != 20
+            [0x29, 0x05], [0x2A, 0x02], // Retour LOOP_Y
+
+            // Fin
+            [0x2B, Opcode.HALT],
         ] as [u8, u8][]),
         expectedResult: "Carré 10x10 pixels à position (10,10)"
     },

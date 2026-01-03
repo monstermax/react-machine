@@ -22,7 +22,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     const { cpuHook, romHook, ramHook, ioHook } = computerHook;
 
     const [activeTab, setActiveTab] = useState<TabType>("memory");
-    const [followInstruction, setFollowInstruction] = useState(false);
+    const [followInstruction, setFollowInstruction] = useState(true);
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const addressRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -126,7 +126,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     const analyzeInstructions = useCallback((data: Map<u16, u8> | [u16, u8][]) => {
         const entries = Array.isArray(data) ? data : Array.from(data.entries());
         const sorted = entries.sort(([a], [b]) => a - b);
-        
+
         const isInstruction = new Map<number, boolean>();
         const operandAddresses = new Set<number>();
 
@@ -157,29 +157,39 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
         return isInstruction;
     }, []);
 
-    const memoryInstructionMap = useMemo(() => 
-        analyzeInstructions(currentMemory), 
-    [currentMemory, analyzeInstructions]);
+    const memoryInstructionMap = useMemo(() =>
+        analyzeInstructions(currentMemory),
+        [currentMemory, analyzeInstructions]);
 
-    const osDiskInstructionMap = useMemo(() => 
-        analyzeInstructions(osDiskStorage), 
-    [osDiskStorage, analyzeInstructions]);
+    const osDiskInstructionMap = useMemo(() =>
+        analyzeInstructions(osDiskStorage),
+        [osDiskStorage, analyzeInstructions]);
 
-    const programDiskInstructionMap = useMemo(() => 
-        analyzeInstructions(programDiskStorage), 
-    [programDiskStorage, analyzeInstructions]);
-
-
-    // Auto-scroll vers PC quand il change
-    useEffect(() => {
-        const pcElement = addressRefs.current.get(currentPC);
-        if (followInstruction && pcElement && scrollContainerRef.current) {
-            pcElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    }, [currentPC, followInstruction]);
+    const programDiskInstructionMap = useMemo(() =>
+        analyzeInstructions(programDiskStorage),
+        [programDiskStorage, analyzeInstructions]);
 
 
-    // Navigation vers une section mémoire - CORRECTION 1
+    // Fonction utilitaire pour scroller dans le conteneur
+    const scrollInContainer = useCallback((element: HTMLElement | null, offset = 0) => {
+        const container = scrollContainerRef.current;
+        if (!element || !container) return;
+
+        const elementTop = element.offsetTop;
+        const containerHeight = container.clientHeight;
+
+        const targetScroll = elementTop - (containerHeight / 2) + offset;
+        const maxScroll = container.scrollHeight - containerHeight;
+        const clampedScroll = Math.max(0, Math.min(targetScroll, maxScroll));
+
+        container.scrollTo({
+            top: clampedScroll,
+            behavior: 'smooth'
+        });
+    }, []);
+
+
+    // Navigation vers une section mémoire
     const scrollToMemorySection = useCallback((section: string) => {
         let targetAddress = 0;
 
@@ -202,13 +212,19 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
         }
 
         const targetElement = addressRefs.current.get(targetAddress);
-        if (targetElement && scrollContainerRef.current) {
-            targetElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
+        if (targetElement) {
+            scrollInContainer(targetElement, -150); // Offset pour laisser voir l'en-tête
         }
-    }, []);
+    }, [scrollInContainer]);
+
+
+    // Auto-scroll vers PC quand il change
+    useEffect(() => {
+        const pcElement = addressRefs.current.get(currentPC);
+        if (followInstruction && pcElement) {
+            scrollInContainer(pcElement, -200);
+        }
+    }, [currentPC, followInstruction, scrollInContainer]);
 
 
     // Déterminer la section d'une adresse
@@ -244,7 +260,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     // Rendu de l'onglet mémoire
     const renderMemoryTab = () => (
         <>
-            {/* Boutons de navigation rapide pour la mémoire - CORRECTION 1 */}
+            {/* Boutons de navigation rapide pour la mémoire */}
             <div className="flex flex-wrap gap-2 mb-4 border-b border-slate-600 pb-2">
                 {memorySections.map(section => (
                     <button
@@ -317,10 +333,10 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
 
             <div className="mt-4">
                 <label className="flex items-center gap-2">
-                    <input 
-                        type="checkbox" 
-                        checked={followInstruction} 
-                        onChange={(e) => setFollowInstruction(e.target.checked)} 
+                    <input
+                        type="checkbox"
+                        checked={followInstruction}
+                        onChange={(e) => setFollowInstruction(e.target.checked)}
                         className="rounded"
                     />
                     <span className="text-slate-300">Follow current Instruction</span>
@@ -339,7 +355,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
             {diskData.length > 0 ? (
                 diskData.map(([addr, val]) => {
                     const isInstruction = instructionMap.get(addr) ?? false;
-                    
+
                     return (
                         <div
                             key={addr}
@@ -380,8 +396,8 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                 <button
                     onClick={() => setActiveTab("memory")}
                     className={`px-4 py-2 font-medium transition-colors ${activeTab === "memory"
-                            ? "text-purple-400 border-b-2 border-purple-400"
-                            : "text-slate-400 hover:text-slate-300"
+                        ? "text-purple-400 border-b-2 border-purple-400"
+                        : "text-slate-400 hover:text-slate-300"
                         }`}
                 >
                     Memory
@@ -389,8 +405,8 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                 <button
                     onClick={() => setActiveTab("os-disk")}
                     className={`px-4 py-2 font-medium transition-colors ${activeTab === "os-disk"
-                            ? "text-purple-400 border-b-2 border-purple-400"
-                            : "text-slate-400 hover:text-slate-300"
+                        ? "text-purple-400 border-b-2 border-purple-400"
+                        : "text-slate-400 hover:text-slate-300"
                         }`}
                 >
                     OS Disk
@@ -398,8 +414,8 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                 <button
                     onClick={() => setActiveTab("program-disk")}
                     className={`px-4 py-2 font-medium transition-colors ${activeTab === "program-disk"
-                            ? "text-purple-400 border-b-2 border-purple-400"
-                            : "text-slate-400 hover:text-slate-300"
+                        ? "text-purple-400 border-b-2 border-purple-400"
+                        : "text-slate-400 hover:text-slate-300"
                         }`}
                 >
                     Program Disk
