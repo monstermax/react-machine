@@ -211,16 +211,34 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
                 break;
 
             case 2: // print_char - afficher A comme caractère
-                console.log(`📝 print_char: ${String.fromCharCode(getRegister("A"))}`);
+                //console.log(`📝 print_char: ${String.fromCharCode(getRegister("A"))}`);
                 setRegister("PC", (pc + 2) as u16);
                 break;
 
             case 3: // print_num - afficher A comme nombre
-                console.log(`📊 print_num: ${getRegister("A")}`);
+                //console.log(`📊 print_num: ${getRegister("A")}`);
                 setRegister("PC", (pc + 2) as u16);
                 break;
 
-            // Autres syscalls possibles : read, write, etc.
+            case 4: // print_string - afficher string pointée par C:D
+                {
+                    let addr = ((getRegister("D") << 8) | getRegister("C")) as u16;
+
+                    // Lire caractères jusqu'à '\0'
+                    while (true) {
+                        const char = memory.readMemory(addr);
+
+                        if (char === 0) break; // '\0' trouvé
+
+                        // Écrire dans console
+                        ioHook.console.write(0x00 as u8, char); // CONSOLE_CHAR
+
+                        addr = ((addr + 1) & 0xFFFF) as u16;
+                    }
+
+                    setRegister("PC", (pc + 2) as u16);
+                }
+                break;
 
             default:
                 console.warn(`Unknown syscall: ${syscallNum}`);
@@ -616,10 +634,10 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
             // MOV Register to Memory - NE PAS modifier les flags
             case Opcode.MOV_MEM_A:  // MOV [addr16], A
                 const addrMemA = readMem16(pc);
-                //console.log(`MOV_MEM_A @ 0x${pc.toString(16)}: writing A=${getRegister("A")} to addr=0x${addrMemA.toString(16)}`);
+                console.log(`MOV_MEM_A @ 0x${pc.toString(16)}: writing A=${getRegister("A")} to addr=0x${addrMemA.toString(16)}`);
                 memory.writeMemory(addrMemA, getRegister("A"));
                 setRegister("PC", (pc + 3) as u16);
-                //console.log(`Next PC = 0x${getRegister("PC").toString(16)}`);
+                console.log(`Next PC = 0x${getRegister("PC").toString(16)}`);
                 break;
 
             case Opcode.MOV_MEM_B:  // MOV [addr16], B
@@ -638,6 +656,34 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
                 const addrMemD = readMem16(pc);
                 memory.writeMemory(addrMemD, getRegister("D"));
                 setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_A_PTR_CD:  // MOV A, *[C:D]
+                const ptrCD_LoadA = ((getRegister("D") << 8) | getRegister("C")) as u16;
+                const valuePtr_A = memory.readMemory(ptrCD_LoadA);
+                setRegister("A", valuePtr_A);
+                setFlags(valuePtr_A === 0, false);  // Set zero flag
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_B_PTR_CD:  // MOV B, *[C:D]
+                const ptrCD_LoadB = ((getRegister("D") << 8) | getRegister("C")) as u16;
+                const valuePtr_B = memory.readMemory(ptrCD_LoadB);
+                setRegister("B", valuePtr_B);
+                setFlags(valuePtr_B === 0, false);  // Set zero flag
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_PTR_CD_A:  // MOV *[C:D], A
+                const ptrCD_StoreA = ((getRegister("D") << 8) | getRegister("C")) as u16;
+                memory.writeMemory(ptrCD_StoreA, getRegister("A"));
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_PTR_CD_B:  // MOV *[C:D], B
+                const ptrCD_StoreB = ((getRegister("D") << 8) | getRegister("C")) as u16;
+                memory.writeMemory(ptrCD_StoreB, getRegister("B"));
+                setRegister("PC", (pc + 1) as u16);
                 break;
 
             default:

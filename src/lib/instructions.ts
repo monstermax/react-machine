@@ -24,11 +24,11 @@ export enum Opcode {
     //M_LOAD_D = 0x1B,   // M_LOAD D, addr16 (16-bit address) => remplacé par MOV_D_MEM
 
     // ALU
-    ADD = 0x20,
-    SUB = 0x21,
-    AND = 0x22,
-    OR = 0x23,
-    XOR = 0x24,
+    ADD = 0x20,        // A = A + B
+    SUB = 0x21,        // A = A - B
+    AND = 0x22,        // A = A & B
+    OR = 0x23,         // A = A | B
+    XOR = 0x24,        // A = A ^ B
     INC_A = 0x25,
     DEC_A = 0x26,
     INC_B = 0x27,
@@ -100,6 +100,13 @@ export enum Opcode {
     MOV_MEM_C = 0xA6,  // MOV [addr16], C
     MOV_MEM_D = 0xA7,  // MOV [addr16], D
 
+    // MOV Memory to Register (indirect via C:D)
+    MOV_A_PTR_CD = 0xA8,  // A = [[C:D]]
+    MOV_B_PTR_CD = 0xA9,  // B = [[C:D]]
+
+    // MOV Register to Memory (indirect via C:D)
+    MOV_PTR_CD_A = 0xAA,  // [C:D] = A
+    MOV_PTR_CD_B = 0xAB,  // [C:D] = B
 }
 
 
@@ -201,16 +208,24 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.MOV_D_IMM: return "MOV D,#";
 
         // MOV Memory to Register
-        case Opcode.MOV_A_MEM: return "MOV A,[";
-        case Opcode.MOV_B_MEM: return "MOV B,[";
-        case Opcode.MOV_C_MEM: return "MOV C,[";
-        case Opcode.MOV_D_MEM: return "MOV D,[";
+        case Opcode.MOV_A_MEM: return "MOV A,M";
+        case Opcode.MOV_B_MEM: return "MOV B,M";
+        case Opcode.MOV_C_MEM: return "MOV C,M";
+        case Opcode.MOV_D_MEM: return "MOV D,M";
 
         // MOV Register to Memory
-        case Opcode.MOV_MEM_A: return "MOV [,A";
-        case Opcode.MOV_MEM_B: return "MOV [,B";
-        case Opcode.MOV_MEM_C: return "MOV [,C";
-        case Opcode.MOV_MEM_D: return "MOV [,D";
+        case Opcode.MOV_MEM_A: return "MOV M,A";
+        case Opcode.MOV_MEM_B: return "MOV M,B";
+        case Opcode.MOV_MEM_C: return "MOV M,C";
+        case Opcode.MOV_MEM_D: return "MOV M,D";
+
+        // MOV Memory to Register (indirect via C:D)
+        case Opcode.MOV_A_PTR_CD: return "MOV A,[CD]";
+        case Opcode.MOV_B_PTR_CD: return "MOV B,[CD]";
+
+        // MOV Register to Memory (indirect via C:D)
+        case Opcode.MOV_PTR_CD_A: return "MOV [CD],A";
+        case Opcode.MOV_PTR_CD_B: return "MOV [CD],B";
 
         default: return "???";
     }
