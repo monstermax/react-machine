@@ -6,7 +6,7 @@ import type { RomHook } from "./useRom";
 
 import type { u16, u8 } from "@/types/cpu.types";
 import type { RamHook } from "./useRam";
-import { U8 } from "@/lib/integers";
+import { U16, U8 } from "@/lib/integers";
 
 
 export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): MemoryHook => {
@@ -52,9 +52,22 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
     }, [ioHook]);
 
 
+    const loadDiskInRAM = (data: Map<u8, u8> | Map<u16, u8>, offset: u16) => {
+        ramHook.setStorage(current => {
+            const newRam = new Map(current);
+
+            for (const [addr, value] of data.entries()) {
+                newRam.set(U16(offset + addr), value);
+            }
+
+            return newRam;
+        });
+    }
+
     const memoryHook: MemoryHook = {
         readMemory,
         writeMemory,
+        loadDiskInRAM,
     };
 
     return memoryHook;
@@ -64,5 +77,6 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
 export type MemoryHook = {
     readMemory: (address: u16) => u8;
     writeMemory: (address: u16, value: u8) => void;
+    loadDiskInRAM: (data: Map<u8, u8> | Map<u16, u8>, offset: u16) => void,
 };
 

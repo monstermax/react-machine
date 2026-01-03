@@ -23,7 +23,7 @@ const DEVICE_PORT_SIZE = 0x10;
 
 export const useIo = (): IOHook => {
     // Devices
-    const osDisk = useDiskDevice(mapAddress16(MINI_OS, 0 as u16));      // Device 0: 0xFF00-0xFF0F
+    const osDisk = useDiskDevice(mapAddress16(new Map, 0 as u16));      // Device 0: 0xFF00-0xFF0F
     const programDisk = useDiskDevice(new Map); // Device 1: 0xFF10-0xFF1F
     const leds = useLeds(); // Device 3: 0xFF20-0xFF2F
     const interrupt = useInterrupt(); // Device 4

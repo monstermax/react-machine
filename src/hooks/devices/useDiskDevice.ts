@@ -54,10 +54,11 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
 
 
     const diskDeviceHook: DiskDevice = {
+        storage,
         read,
         write,
         getSize,
-        storage,
+        setStorage,
     };
 
     return diskDeviceHook;
@@ -66,5 +67,6 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
 
 export type DiskDevice = Device & {
     storage: Map<u16, u8>;
+    setStorage: React.Dispatch<React.SetStateAction<Map<u16, u8>>>;
 };
 

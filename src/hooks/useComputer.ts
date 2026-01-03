@@ -30,15 +30,20 @@ export const useComputer = (): ComputerHook => {
     }
 
 
+    // Load OS into Disk (before reset)
+    useEffect(() => {
+        ioHook.osDisk.setStorage(mapAddress16(MINI_OS, 0 as u16))
+    }, [])
+
+
     // Initialize RAM & CPU at boot
     useEffect(() => {
         resetComputer();
-    }, [])
+    }, [ioHook.osDisk.storage])
 
 
     const resetComputer = useCallback(() => {
         // Load OS into RAM
-        //const ramStorage = mapAddress16(MINI_OS, MEMORY_MAP.OS_START);
         const ramStorage = mapAddress16(ioHook.osDisk.storage, MEMORY_MAP.OS_START);
         ramHook.setStorage(ramStorage);
 
@@ -58,21 +63,10 @@ export const useComputer = (): ComputerHook => {
             return;
         }
 
-        const ADDRESS_START = MEMORY_MAP.PROGRAM_START;
-
-        // Charger le programme DIRECTEMENT en RAM à PROGRAM_START
-        ramHook.setStorage(current => {
-            const newRam = new Map(current); // Garder l'OS
-
-            for (const [relAddr, value] of program.code.entries()) {
-                newRam.set(U16(ADDRESS_START + relAddr), value);
-            }
-
-            return newRam;
-        });
-
+        // Charger le programme en RAM à PROGRAM_START
+        memoryHook.loadDiskInRAM(program.code, MEMORY_MAP.PROGRAM_START)
         setLoadedProgram(programName);
-    }, [ramHook]);
+    }, [memoryHook]);
 
 
     const unloadProgram = useCallback(() => {
