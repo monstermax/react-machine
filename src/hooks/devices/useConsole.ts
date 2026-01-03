@@ -36,12 +36,15 @@ export const useConsole = (): ConsoleDevice => {
                     });
                     setCurrentLine("");
                     console.log(`📟 Console: "${currentLine}"`);
+
                 } else if (value === 0x08) {
                     // Backspace
                     setCurrentLine(prev => prev.slice(0, -1));
+
                 } else if (value >= 0x20 && value <= 0x7E) {
                     // Caractères imprimables ASCII
                     setCurrentLine(prev => prev + char);
+
                 } else {
                     // Autres caractères de contrôle - ignorer
                     console.warn(`📟 Console: Unprintable character 0x${value.toString(16)}`);

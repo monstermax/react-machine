@@ -14,7 +14,7 @@ export type PanelMemoryProps = {
 }
 
 
-type MemorySection = "ROM" | "RAM" | "OS Disk" | "Program Disk";
+type MemorySection = "ROM" | "RAM" | "Stack" | "OS Disk" | "Program Disk";
 
 
 export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
@@ -26,7 +26,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const addressRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
-    const sections: MemorySection[] = ["ROM", "RAM", "OS Disk", "Program Disk"];
+    const sections: MemorySection[] = ["ROM", "RAM", "Stack", "OS Disk", "Program Disk"];
     let lastSection = "";
 
 
@@ -161,6 +161,9 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
                 break;
             case "RAM":
                 targetAddress = MEMORY_MAP.OS_START;
+                break;
+            case "Stack":
+                targetAddress = MEMORY_MAP.STACK_START;
                 break;
             case "OS Disk":
                 // Afficher le contenu du OS Disk (pas en mémoire, juste info)

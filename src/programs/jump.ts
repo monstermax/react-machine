@@ -10,17 +10,26 @@ export const programs: Record<string, ProgramInfo> = {
         name: "Saut Conditionnel",
         description: "If A == 0, skip increment",
         code: new Map([
+            // Setup
             [0x00, Opcode.MOV_A_IMM],
-            [0x01, 0],          // A = 0
-            [0x02, Opcode.JZ],      // If zero, jump
-            [0x03, 0x06],       // Jump to LOAD_A 100
-            [0x04, Opcode.INC_A],   // This will be skipped
-            [0x05, Opcode.HALT],
-            [0x06, Opcode.MOV_A_IMM],
-            [0x07, 100],        // A = 100
-            [0x08, Opcode.SYSCALL],
-            [0x09, 0],               // ← Syscall 0 = exit
+            [0x01, 0],          // A = 0 (donc Z flag = true)
+
+            // Test: if A == 0, jump to SKIP
+            [0x02, Opcode.JZ],
+            [0x03, 0x08],       // Low byte of jump address
+            [0x04, 0x02],       // High byte of jump address (0x0208)
+
+            // This will be skipped (because A == 0)
+            [0x05, Opcode.INC_A],
+            [0x06, Opcode.HALT], // Should not reach here
+
+            // SKIP: (address 0x0008)
+            [0x08, Opcode.MOV_A_IMM],
+            [0x09, 100],        // A = 100
+
+            [0x0A, Opcode.HALT], // Or SYSCALL 0
         ] as [u8, u8][]),
-        expectedResult: "A = 100"
+        expectedResult: "A = 100 (INC_A skipped)"
     },
 }
+

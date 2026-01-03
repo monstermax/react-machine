@@ -56,6 +56,100 @@ export const programs: Record<string, ProgramInfo> = {
         expectedResult: "Compteur 0→F qui boucle"
     },
 
+    hello_world: {
+        name: "Hello World",
+        description: "Affiche 'Hello World!' dans la console",
+        code: new Map([
+            // === SETUP ===
+            [0x00, Opcode.SET_SP],
+            [0x01, 0xFF],
+            [0x02, 0xFE],
+
+            // === PRINT "Hello World!\n" ===
+            // H
+            [0x03, Opcode.MOV_A_IMM],
+            [0x04, 0x48], // 'H'
+            [0x05, Opcode.MOV_MEM_A],
+            [0x06, 0x70], [0x07, 0xFF],
+
+            // e
+            [0x08, Opcode.MOV_A_IMM],
+            [0x09, 0x65], // 'e'
+            [0x0A, Opcode.MOV_MEM_A],
+            [0x0B, 0x70], [0x0C, 0xFF],
+
+            // l
+            [0x0D, Opcode.MOV_A_IMM],
+            [0x0E, 0x6C], // 'l'
+            [0x0F, Opcode.MOV_MEM_A],
+            [0x10, 0x70], [0x11, 0xFF],
+
+            // l
+            [0x12, Opcode.MOV_A_IMM],
+            [0x13, 0x6C], // 'l'
+            [0x14, Opcode.MOV_MEM_A],
+            [0x15, 0x70], [0x16, 0xFF],
+
+            // o
+            [0x17, Opcode.MOV_A_IMM],
+            [0x18, 0x6F], // 'o'
+            [0x19, Opcode.MOV_MEM_A],
+            [0x1A, 0x70], [0x1B, 0xFF],
+
+            // (space)
+            [0x1C, Opcode.MOV_A_IMM],
+            [0x1D, 0x20], // ' '
+            [0x1E, Opcode.MOV_MEM_A],
+            [0x1F, 0x70], [0x20, 0xFF],
+
+            // W
+            [0x21, Opcode.MOV_A_IMM],
+            [0x22, 0x57], // 'W'
+            [0x23, Opcode.MOV_MEM_A],
+            [0x24, 0x70], [0x25, 0xFF],
+
+            // o
+            [0x26, Opcode.MOV_A_IMM],
+            [0x27, 0x6F], // 'o'
+            [0x28, Opcode.MOV_MEM_A],
+            [0x29, 0x70], [0x2A, 0xFF],
+
+            // r
+            [0x2B, Opcode.MOV_A_IMM],
+            [0x2C, 0x72], // 'r'
+            [0x2D, Opcode.MOV_MEM_A],
+            [0x2E, 0x70], [0x2F, 0xFF],
+
+            // l
+            [0x30, Opcode.MOV_A_IMM],
+            [0x31, 0x6C], // 'l'
+            [0x32, Opcode.MOV_MEM_A],
+            [0x33, 0x70], [0x34, 0xFF],
+
+            // d
+            [0x35, Opcode.MOV_A_IMM],
+            [0x36, 0x64], // 'd'
+            [0x37, Opcode.MOV_MEM_A],
+            [0x38, 0x70], [0x39, 0xFF],
+
+            // !
+            [0x3A, Opcode.MOV_A_IMM],
+            [0x3B, 0x21], // '!'
+            [0x3C, Opcode.MOV_MEM_A],
+            [0x3D, 0x70], [0x3E, 0xFF],
+
+            // Newline
+            [0x3F, Opcode.MOV_A_IMM],
+            [0x40, 0x0A], // '\n'
+            [0x41, Opcode.MOV_MEM_A],
+            [0x42, 0x70], [0x43, 0xFF],
+
+            // HALT
+            [0x44, Opcode.HALT],
+        ] as [u8, u8][]),
+        expectedResult: "Console affiche 'Hello World!'"
+    },
+
     console_counter: {
         name: "Counter Console (KO)",
         description: "Compte de 0 à 9 dans la console",

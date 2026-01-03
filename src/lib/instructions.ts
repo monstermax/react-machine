@@ -105,10 +105,6 @@ export enum Opcode {
 
 // Instructions avec 1 opérande 8-bit
 export const INSTRUCTIONS_WITH_OPERAND = [
-    //Opcode.R_LOAD_A,
-    //Opcode.R_LOAD_B,
-    //Opcode.R_LOAD_C,
-    //Opcode.R_LOAD_D,
     Opcode.MOV_A_IMM,
     Opcode.MOV_B_IMM,
     Opcode.MOV_C_IMM,
@@ -123,14 +119,6 @@ export const INSTRUCTIONS_WITH_TWO_OPERANDS = [
     Opcode.JZ,
     Opcode.JNZ,
     Opcode.JC,
-    //Opcode.M_STORE_A,
-    //Opcode.M_STORE_B,
-    //Opcode.M_STORE_C,
-    //Opcode.M_STORE_D,
-    //Opcode.M_LOAD_A,
-    //Opcode.M_LOAD_B,
-    //Opcode.M_LOAD_C,
-    //Opcode.M_LOAD_D,
     Opcode.SET_SP,
     Opcode.CALL,
     Opcode.MOV_A_MEM,
@@ -150,12 +138,6 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.NOP: return "NOP";
         case Opcode.SYSCALL: return "SYSCALL";
         case Opcode.HALT: return "HALT";
-
-        // Anciens Registers (remplacé par MOV)
-        //case Opcode.R_LOAD_A: return "R_LOAD A";
-        //case Opcode.R_LOAD_B: return "R_LOAD B";
-        //case Opcode.R_LOAD_C: return "R_LOAD C";
-        //case Opcode.R_LOAD_D: return "R_LOAD D";
 
         // ALU
         case Opcode.ADD: return "ADD";
@@ -177,16 +159,6 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.JZ: return "JZ";
         case Opcode.JNZ: return "JNZ";
         case Opcode.JC: return "JC";
-
-        // Memory (remplacé par MOV)
-        //case Opcode.M_STORE_A: return "M_STORE A";
-        //case Opcode.M_STORE_B: return "M_STORE B";
-        //case Opcode.M_STORE_C: return "M_STORE C";
-        //case Opcode.M_STORE_D: return "M_STORE D";
-        //case Opcode.M_LOAD_A: return "M_LOAD A";
-        //case Opcode.M_LOAD_B: return "M_LOAD B";
-        //case Opcode.M_LOAD_C: return "M_LOAD C";
-        //case Opcode.M_LOAD_D: return "M_LOAD D";
 
         // Stack
         case Opcode.PUSH_A: return "PUSH A";
