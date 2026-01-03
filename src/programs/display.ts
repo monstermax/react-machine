@@ -6,7 +6,43 @@ import type { ProgramInfo, u8 } from "@/types/cpu.types";
 
 
 export const programs: Record<string, ProgramInfo> = {
-    blink_leds: {
+    leds_on: {
+        name: "LED ON",
+        description: "Allume les LEDs",
+        code: new Map([
+            [0x00, Opcode.MOV_A_IMM],
+            [0x01, 0xff],
+
+            // Loop
+            [0x02, Opcode.MOV_MEM_A],
+            [0x03, 0x30],  // Low byte
+            [0x04, 0xFF],  // High byte (0xFF30)
+
+            [0x05, Opcode.SYSCALL],
+            [0x06, 0],               // ← Syscall 0 = exit
+        ] as [u8, u8][]),
+        expectedResult: "LEDs qui comptent en binaire de 0 à 255"
+    },
+
+    leds_off: {
+        name: "LED OFF",
+        description: "Eteint les LEDs",
+        code: new Map([
+            [0x00, Opcode.MOV_A_IMM],
+            [0x01, 0x00],
+
+            // Loop
+            [0x02, Opcode.MOV_MEM_A],
+            [0x03, 0x30],  // Low byte
+            [0x04, 0xFF],  // High byte (0xFF30)
+
+            [0x05, Opcode.SYSCALL],
+            [0x06, 0],               // ← Syscall 0 = exit
+        ] as [u8, u8][]),
+        expectedResult: "LEDs qui comptent en binaire de 0 à 255"
+    },
+
+    leds_blink: {
         name: "LED Blinker",
         description: "Fait clignoter les LEDs en compteur binaire",
         code: new Map([
@@ -258,7 +294,7 @@ export const programs: Record<string, ProgramInfo> = {
     },
 
     pixel_square: {
-        name: "Pixel Square (KO)",
+        name: "Pixel Square (ERROR)",
         description: "Dessine un carré 10x10 avec nouvelles instructions MOV",
         code: new Map([
             // === SETUP ===

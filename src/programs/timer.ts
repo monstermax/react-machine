@@ -7,7 +7,7 @@ import type { ProgramInfo, u8 } from "@/types/cpu.types";
 
 export const programs: Record<string, ProgramInfo> = {
     timer_01: {
-        name: "Interrupt Demo",
+        name: "Interrupt Demo (ERROR)",
         description: "Timer avec interruption toutes les 10ms",
         code: new Map([
             // Setup
@@ -59,8 +59,9 @@ export const programs: Record<string, ProgramInfo> = {
         ] as [u8, u8][]),
         expectedResult: "Compteur incrémenté par interruption timer"
     },
+
     timer_02: {
-        name: "Timer Interrupt Test",
+        name: "Timer Interrupt Test (KO)",
         description: "Test des interruptions timer - handler à 0x0240",
         code: new Map([
             // === SETUP (0x00-0x02) ===
@@ -161,8 +162,9 @@ export const programs: Record<string, ProgramInfo> = {
         ] as [u8, u8][]),
         expectedResult: "LEDs comptent les interruptions timer"
     },
+
     timer_03: {
-        name: "Interrupt Debug",
+        name: "Interrupt Debug (KO)",
         description: "Test basique timer interrupt - compte dans LEDs",
         code: new Map([
             // Setup SP
@@ -225,8 +227,9 @@ export const programs: Record<string, ProgramInfo> = {
         ] as [u8, u8][]),
         expectedResult: "LEDs comptent rapidement, logs montrent IRQ acknowledged"
     },
+
     timer_04: {
-        name: "Interrupt Minimal",
+        name: "Interrupt Minimal (KO)",
         description: "Une seule interrupt timer, puis halt",
         code: new Map([
             // === SETUP ===
