@@ -6,7 +6,7 @@ import { useRom, type RomHook } from "@/hooks/useRom";
 import { useMemory, type MemoryHook } from "@/hooks/useMemory";
 import { useIo, type IOHook } from "@/hooks/useIo";
 import { useRam, type RamHook } from "@/hooks/useRam";
-import { MINI_OS, MINI_OS_V2, os_list } from "@/programs/mini_os";
+import { os_list } from "@/programs/mini_os";
 import { programs } from "@/lib/programs";
 import { mapAddress16, MEMORY_MAP } from "@/lib/memory_map";
 import { U16 } from "@/lib/integers";
@@ -25,19 +25,12 @@ export const useComputer = (): ComputerHook => {
 
     const [loadedProgram, setLoadedProgram] = useState<string | null>(null);
     const [loadedOs, setLoadedOs] = useState<string | null>(null);
-    //const [currentOsCode, setCurrentOsCode] = useState<OsInfo | null>(MINI_OS);
 
 
     if (true) {
         // DEBUG
         (window as any).ioHook = ioHook;
     }
-
-
-    // Initialize/Reset CPU & RAM, when osDisk changes
-//    useEffect(() => {
-//        resetComputer();
-//    }, [ioHook.osDisk.storage])
 
 
     // Load OSDisk into RAM, when loadedOs changes
@@ -51,6 +44,12 @@ export const useComputer = (): ComputerHook => {
             memoryHook.writeMemory(MEMORY_MAP.OS_START, 0 as u8);
         }
 
+        const pc = cpuHook.getRegister('PC');
+
+        if (pc >= MEMORY_MAP.OS_START) {
+            cpuHook.setRegister('PC', MEMORY_MAP.ROM_START);
+        }
+
     }, [memoryHook.loadDiskInRAM, ioHook.osDisk.storage, loadedOs])
 
 
@@ -60,9 +59,17 @@ export const useComputer = (): ComputerHook => {
 
         if (loadedProgram) {
             memoryHook.loadDiskInRAM(ioHook.programDisk.storage, MEMORY_MAP.PROGRAM_START)
+
         } else {
             memoryHook.writeMemory(MEMORY_MAP.PROGRAM_START, 0 as u8);
         }
+
+        const pc = cpuHook.getRegister('PC');
+
+        if (pc >= MEMORY_MAP.PROGRAM_START) {
+            cpuHook.setRegister('PC', MEMORY_MAP.OS_START);
+        }
+
     }, [memoryHook.loadDiskInRAM, ioHook.programDisk.storage, loadedProgram])
 
 
@@ -117,16 +124,30 @@ export const useComputer = (): ComputerHook => {
         // Vide le disk
         ioHook.osDisk.setStorage(new Map);
 
-        // Vide la RAM
-        ramHook.setStorage(new Map);
+        // Vide la RAM (entière)
+        //ramHook.setStorage(new Map);
+
+        ramHook.setStorage(current => {
+            const newRam = new Map(current); // Garder l'existant
+
+            for (let addr = MEMORY_MAP.OS_START; addr <= MEMORY_MAP.OS_END; addr++) {
+                newRam.set(U16(addr), 0x00 as u8);
+                break; // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
+            }
+
+            return newRam;
+        });
 
         setLoadedOs(null);
     }, [ramHook.setStorage, ioHook.osDisk.setStorage, setLoadedOs]);
 
 
     const unloadProgram = useCallback(() => {
+        // Vide le disk
+        ioHook.programDisk.setStorage(new Map);
+
         ramHook.setStorage(current => {
-            const newRam = new Map(current); // Garder l'OS
+            const newRam = new Map(current); // Garder l'existant
 
             for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
                 newRam.set(U16(addr), 0x00 as u8);
@@ -137,7 +158,7 @@ export const useComputer = (): ComputerHook => {
         });
 
         setLoadedProgram(null);
-    }, [ramHook.setStorage, setLoadedProgram]);
+    }, [ramHook.setStorage, ioHook.programDisk.setStorage, setLoadedProgram]);
 
 
     const computerHook: ComputerHook = {

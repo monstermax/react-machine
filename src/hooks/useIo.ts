@@ -3,7 +3,6 @@ import { useState, useCallback, useMemo } from "react";
 
 import { useDiskDevice, type DiskDevice } from "./devices/useDiskDevice";
 
-import type { Device, u16, u8 } from "@/types/cpu.types";
 import { useLedsDisplay, type LedsDevice } from "./devices/useLedsDisplay";
 import { useInterrupt, type InterruptHook } from "./useInterrupt";
 import { useSevenSegmentDisplay, type SevenSegmentHook } from "./devices/useSevenSegmentDisplay";
@@ -16,6 +15,9 @@ import { usePixelDisplay, type PixelDisplayDevice } from "./devices/usePixelDisp
 import { mapAddress16 } from "@/lib/memory_map";
 import { useRtc, type RtcHook } from "./devices/useRtc";
 import { useRng, type RngHook } from "./devices/useRng";
+import { useBuzzer, type BuzzerHook } from "./useBuzzer";
+
+import type { Device, u16, u8 } from "@/types/cpu.types";
 
 
 // Device Map: commence à 0xFF00, chaque device a 16 ports (0xFF00-0xFF0F, 0xFF10-0xFF1F, etc.)
@@ -33,6 +35,7 @@ export const useIo = (): IOHook => {
     const leds = useLedsDisplay(); // Device 3: 0xFF20-0xFF2F
     const sevenSegment = useSevenSegmentDisplay(); // Device 6: 0xFF60-0xFF6F
     const lcd = useLcdDisplay(); // Device 10 (0x0A): 0xFFA0-0xFFAF
+    const buzzer = useBuzzer();
     const pixelDisplay = usePixelDisplay(); // Device 13 (0x0D): 0xFFD0-0xFFDF
     const rng = useRng();
     const rtc = useRtc();
@@ -48,12 +51,13 @@ export const useIo = (): IOHook => {
             [0x05, keyboard],       // Keyboard (0xFF50-0xFF5F)
             [0x06, sevenSegment],   // Seven Segment Display (0xFF60-0xFF6F)
             [0x07, consoleDevice],  // Console (0xFF70-0xFF7F)
+            [0x08, buzzer],         // Buzzer (0xFF80-0xFF8F)
             [0x0A, lcd],            // LCD 16x2 (0xFFA0-0xFFAF)
             [0x0B, rng],            // Random Number Generator
             [0x0C, rtc],            // Real-Time Clock
             [0x0D, pixelDisplay],   // Pixel Display 32x32 (0xFFD0-0xFFDF)
         ] as [any, Device][])
-    , [osDisk, programDisk, timer, leds, interrupt, keyboard, sevenSegment, consoleDevice, lcd, rng, rtc, pixelDisplay]);
+    , [osDisk, programDisk, timer, leds, interrupt, keyboard, sevenSegment, consoleDevice, buzzer, lcd, rng, rtc, pixelDisplay]);
 
 
     // I/O read: router vers le bon device
@@ -101,6 +105,7 @@ export const useIo = (): IOHook => {
         sevenSegment,
         console: consoleDevice,
         lcd,
+        buzzer,
         pixelDisplay,
         rng,
         rtc,
@@ -123,6 +128,7 @@ export type IOHook = {
     sevenSegment: SevenSegmentHook;
     console: ConsoleDevice;
     lcd: LCDDevice;
+    buzzer: BuzzerHook;
     pixelDisplay: PixelDisplayDevice;
     rng: RngHook;
     rtc: RtcHook;

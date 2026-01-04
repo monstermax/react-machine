@@ -13,6 +13,7 @@ import { programs as displayPrograms } from "@/programs/display";
 import { programs as timerPrograms } from "@/programs/timer";
 import * as rtcPrograms from "@/programs/rtc";
 import * as rngPrograms from "@/programs/rng";
+import * as buzzerPrograms from "@/programs/buzzer";
 
 import type { ProgramInfo, u8 } from "@/types/cpu.types";
 
@@ -30,6 +31,7 @@ export const programs: Record<string, ProgramInfo> = {
     ...displayPrograms,
     ...rtcPrograms,
     ...rngPrograms,
+    ...buzzerPrograms,
 };
 
 
