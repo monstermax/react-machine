@@ -50,46 +50,74 @@ export const MINI_OS_V2: OsInfo = {
     code: new Map([
         // === INIT (0x100-0x107) ===
         [0x00, Opcode.SET_SP],
-        [0x01, 0xFF], [0x02, 0xFE],
+        [0x01, MEMORY_MAP.STACK_END & 0xFF],        // STACK_END - low
+        [0x02, (MEMORY_MAP.STACK_END >> 8) & 0xFF], // STACK_END - high
 
         // Clear console
-        [0x03, Opcode.MOV_A_IMM], [0x04, 0x01],
-        [0x05, Opcode.MOV_MEM_A], [0x06, 0x71], [0x07, 0xFF],
+        [0x03, Opcode.MOV_A_IMM],
+        [0x04, 0x01],
+        [0x05, Opcode.MOV_MEM_A],
+        [0x06, MEMORY_MAP.CONSOLE_CLEAR & 0xFF],        // CONSOLE_CLEAR - low
+        [0x07, (MEMORY_MAP.CONSOLE_CLEAR >> 8) & 0xFF], // CONSOLE_CLEAR - high
 
         // === MENU (0x108-0x10C) ===
-        [0x08, Opcode.CALL], [0x09, 0x40], [0x0A, 0x01],
+        [0x08, Opcode.CALL],
+        [0x09, (MEMORY_MAP.OS_START + 0x40) & 0xFF],        // $MENU - low
+        [0x0A, ((MEMORY_MAP.OS_START + 0x40) >> 8) & 0xFF], // $MENU - high
 
         // === WAIT KEY (0x10D-0x119) ===
-        [0x0B, Opcode.MOV_A_MEM], [0x0C, 0x51], [0x0D, 0xFF],
-        [0x0E, Opcode.JZ], [0x0F, 0x0B], [0x10, 0x01],
-        [0x11, Opcode.MOV_A_MEM], [0x12, 0x50], [0x13, 0xFF],
-        [0x14, Opcode.MOV_B_IMM], [0x15, 0x00],
-        [0x16, Opcode.MOV_MEM_B], [0x17, 0x51], [0x18, 0xFF],
+        [0x0B, Opcode.MOV_A_MEM],
+        [0x0C, MEMORY_MAP.KEYBOARD_STATUS & 0xFF], // read KEYBOARD_STATUS - low
+        [0x0D, (MEMORY_MAP.KEYBOARD_STATUS >> 8) & 0xFF], // read KEYBOARD_STATUS - high
+        [0x0E, Opcode.JZ],
+        [0x0F, (MEMORY_MAP.OS_START + 0x0B) & 0xFF],        // loop to WAIT KEY - low
+        [0x10, ((MEMORY_MAP.OS_START + 0x0B) >> 8) & 0xFF], // loop to WAIT KEY - high
+        [0x11, Opcode.MOV_A_MEM],
+        [0x12, MEMORY_MAP.KEYBOARD_DATA & 0xFF], // read KEYBOARD_DATA - low
+        [0x13, (MEMORY_MAP.KEYBOARD_DATA >> 8) & 0xFF], // read KEYBOARD_DATA - high
+        [0x14, Opcode.MOV_B_IMM],
+        [0x15, 0x00],
+        [0x16, Opcode.MOV_MEM_B],
+        [0x17, MEMORY_MAP.KEYBOARD_STATUS & 0xFF], // write KEYBOARD_STATUS - low
+        [0x18, (MEMORY_MAP.KEYBOARD_STATUS >> 8) & 0xFF], // write KEYBOARD_STATUS - high
 
         // === DISPATCH (0x11A-0x12F) ===
         [0x19, Opcode.PUSH_A],
-        [0x1A, Opcode.MOV_B_IMM], [0x1B, 0x31],
+        [0x1A, Opcode.MOV_B_IMM],
+        [0x1B, 0x31],
         [0x1C, Opcode.SUB],
-        [0x1D, Opcode.JZ], [0x1E, 0x34], [0x1F, 0x01], // Go to Run Program
+        [0x1D, Opcode.JZ], // Go to Run Program
+        [0x1E, (MEMORY_MAP.OS_START + 0x34) & 0xFF],        // $Run - low
+        [0x1F, ((MEMORY_MAP.OS_START + 0x34) >> 8) & 0xFF], // $Run - high
 
-        [0x20, Opcode.POP_A], [0x21, Opcode.PUSH_A],
-        [0x22, Opcode.MOV_B_IMM], [0x23, 0x32],
+        [0x20, Opcode.POP_A],
+        [0x21, Opcode.PUSH_A],
+        [0x22, Opcode.MOV_B_IMM],
+        [0x23, 0x32],
         [0x24, Opcode.SUB],
-        [0x25, Opcode.JZ], [0x26, 0xE0], [0x27, 0x01], // Go to Info
+        [0x25, Opcode.JZ], // Go to Info
+        [0x26, (MEMORY_MAP.OS_START + 0xE0) & 0xFF],        // $Info - low
+        [0x27, ((MEMORY_MAP.OS_START + 0xE0) >> 8) & 0xFF], // $Info - high
 
-        [0x28, Opcode.POP_A], [0x29, Opcode.PUSH_A],
-        [0x2A, Opcode.MOV_B_IMM], [0x2B, 0x33],
+        [0x28, Opcode.POP_A],
+        [0x29, Opcode.PUSH_A],
+        [0x2A, Opcode.MOV_B_IMM],
+        [0x2B, 0x33],
         [0x2C, Opcode.SUB],
-        [0x2D, Opcode.JZ], [0x2E, 0x03], [0x2F, 0x01], // Go to Clear Console
+        [0x2D, Opcode.JZ], // Go to Clear Console
+        [0x2E, (MEMORY_MAP.OS_START + 0x03) & 0xFF],        // $ClearConsole - low
+        [0x2F, ((MEMORY_MAP.OS_START + 0x03) >> 8) & 0xFF], // $ClearConsole - high
 
         [0x30, Opcode.POP_A],
-        [0x31, Opcode.JMP], [0x32, 0x08], [0x33, 0x01],
+        [0x31, Opcode.JMP], // Go to Menu
+        [0x32, (MEMORY_MAP.OS_START + 0x08) & 0xFF],        // MENU - low
+        [0x33, ((MEMORY_MAP.OS_START + 0x08) >> 8) & 0xFF], // MENU - high
 
         // === OPT 1: RUN (0x131-0x138) ===
         [0x34, Opcode.POP_A],
         [0x35, Opcode.JMP],
-        [0x36, MEMORY_MAP.PROGRAM_START & 0xFF],
-        [0x37, (MEMORY_MAP.PROGRAM_START >> 8) & 0xFF],
+        [0x36, MEMORY_MAP.PROGRAM_START & 0xFF],            // low
+        [0x37, (MEMORY_MAP.PROGRAM_START >> 8) & 0xFF],     // high
 
         // === PRINT MENU (0x140-0x1DF) "OS v2\n1-Run 2-Info 3-Clr\n> " ===
         [0x40, Opcode.MOV_A_IMM], [0x41, 0x4F], [0x42, Opcode.MOV_MEM_A], [0x43, 0x70], [0x44, 0xFF], // O
@@ -130,7 +158,10 @@ export const MINI_OS_V2: OsInfo = {
         [0xE1, Opcode.MOV_A_IMM], [0xE2, 0x4F], [0xE3, Opcode.MOV_MEM_A], [0xE4, 0x70], [0xE5, 0xFF], // O
         [0xE6, Opcode.MOV_A_IMM], [0xE7, 0x4B], [0xE8, Opcode.MOV_MEM_A], [0xE9, 0x70], [0xEA, 0xFF], // K
         [0xEB, Opcode.MOV_A_IMM], [0xEC, 0x0A], [0xED, Opcode.MOV_MEM_A], [0xEE, 0x70], [0xEF, 0xFF], // \n
-        [0xF0, Opcode.JMP], [0xF1, 0x0B], [0xF2, 0x01],
+
+        [0xF0, Opcode.JMP], // Go to WAIT KEY
+        [0xF1, (MEMORY_MAP.OS_START + 0x0B) & 0xFF],        // $WAIT_KEY - low
+        [0xF2, ((MEMORY_MAP.OS_START + 0x0B) >> 8) & 0xFF], // $WAIT_KEY - high
 
     ] as [u8, u8][]),
 };

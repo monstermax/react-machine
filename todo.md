@@ -3,12 +3,15 @@
 
 
 ## FEATURES
-- accès disk depuis le CPU
-- gestion multiples disks (hotplug)
+- gestion multiples disks (io hotplug)
 - gestion file system
 - debugger (interrupt keyboard dans l'OS. detection touche "d")
 - multitask (2 programmes én parallele)
 - créer Device (IO) IDE React (pour charger du code assembleur directement en memoire)
+- Multi-Threads
+
+
+## PROGRAMMES
 - exemple programme: quizz => question sur la console + reponse au clavier (chaque les questions/reponses en RAM, depuis le disk)
 - exemple programme: snake/tetris/pong => jeu snake sur display 32x32 + controle clavier
 
