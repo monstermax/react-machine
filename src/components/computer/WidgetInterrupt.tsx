@@ -2,7 +2,9 @@
 import type { InterruptHook } from "@/hooks/useInterrupt";
 
 
-export const PanelInterrupt: React.FC<{ interruptHook: InterruptHook }> = ({ interruptHook }) => {
+export const WidgetInterrupt: React.FC<{ interruptHook: InterruptHook }> = ({ interruptHook }) => {
+    //console.log('RENDER ComputerPage.IosDevices.WidgetInterrupt')
+
     const irqNames = [
         "Timer", "Keyboard", "Disk", "UART",
         "Button", "Reserved", "Reserved", "Reserved"

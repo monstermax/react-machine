@@ -25,6 +25,8 @@ const DEVICE_PORT_SIZE = 0x10;
 
 
 export const useIo = (): IOHook => {
+    //console.log('RENDER ComputerPage.useComputer.useIo')
+
     // Devices
     const osDisk = useDiskDevice(mapAddress16(new Map, 0 as u16));      // Device 0: 0xFF00-0xFF0F
     const programDisk = useDiskDevice(new Map); // Device 1: 0xFF10-0xFF1F
@@ -92,9 +94,7 @@ export const useIo = (): IOHook => {
     }, [devices]);
 
 
-    const ioHook: IOHook = {
-        read,
-        write,
+    const ioHook: IOHook = useMemo(() => ({
         devices,
         osDisk,
         programDisk,
@@ -109,7 +109,24 @@ export const useIo = (): IOHook => {
         pixelDisplay,
         rng,
         rtc,
-    };
+        read,
+        write,
+    }), [
+        devices,
+        osDisk,
+        programDisk,
+        timer,
+        leds,
+        interrupt,
+        keyboard,
+        sevenSegment,
+        consoleDevice,
+        lcd,
+        buzzer,
+        pixelDisplay,
+        rng,
+        rtc,
+    ]);
 
     return ioHook
 };

@@ -1,5 +1,5 @@
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import { Opcode } from "@/lib/instructions";
 import { MEMORY_MAP } from "@/lib/memory_map";
@@ -10,6 +10,8 @@ import type { IOHook } from "./useIo";
 
 
 export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
+    //console.log('RENDER ComputerPage.useComputer.useCpu')
+
 
     // CPU STATES
     const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map([
@@ -26,6 +28,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
     const [halted, setHalted] = useState<boolean>(false);
 
     const [clockCycle, setClockCycle] = useState<u16>(0 as u16);
+    //const clockCycleRef = useRef<u16>(0 as u16);
 
     const [interruptsEnabled, setInterruptsEnabled] = useState(false);
     const [inInterruptHandler, setInInterruptHandler] = useState(false);
@@ -131,17 +134,20 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         setRegisters(resetRegisters);
         setHalted(false);
         setClockCycle(0 as u16);
+        //clockCycleRef.current = 0 as u16;
         setInterruptsEnabled(false);
         setInInterruptHandler(false);
-    }, [setRegisters, setHalted, setClockCycle, setInterruptsEnabled, setInInterruptHandler])
+    }, [setRegisters, setHalted, setInterruptsEnabled, setInInterruptHandler])
 
 
     const tick = useCallback(() => {
         setClockCycle(c => (c + 1) as u16)
+        //clockCycleRef.current = (clockCycleRef.current + 1) as u16;
+        //console.log('tick:', clockCycleRef.current)
 
         // Tick du timer à chaque cycle CPU
         ioHook.timer.tick();
-    }, [setClockCycle, ioHook.timer.tick])
+    }, [ioHook.timer.tick]);
 
 
     const readMem8 = useCallback((pc: u16): u8 => {
@@ -754,15 +760,17 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         const opcode = getRegister("IR");
 
         // Execute logical operations
+        //console.log('executeOpcode', pc, opcode) // DEBUG
         executeOpcode(pc, opcode);
 
     }, [halted, interruptsEnabled, inInterruptHandler, ioHook.interrupt.hasPendingInterrupt, memory.readMemory, tick, setRegister, getRegister, handleInterrupt, executeOpcode]);
 
 
-    const cpuHook: CpuHook = {
+    const cpuHook: CpuHook = useMemo(() => ({
         halted,
         registers,
         clockCycle,
+        //clockCycle: clockCycleRef,
         ALU,
         getRegister,
         setRegister,
@@ -771,7 +779,12 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         tick,
         executeCycle,
         reset,
-    }
+    }), [
+        halted,
+        registers,
+        clockCycle,
+        ALU,
+    ])
 
     return cpuHook
 }
@@ -781,6 +794,7 @@ export type CpuHook = {
     halted: boolean;
     registers: Map<string, number>,
     clockCycle: u16;
+    //clockCycle: React.RefObject<u16>;
     ALU: Record<string, (...args: any[]) => any>
     getRegister: (reg: Register) => u8 | u16,
     setRegister: (reg: Register, value: u8 | u16) => void,

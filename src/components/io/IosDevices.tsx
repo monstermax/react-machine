@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { type ComputerHook } from "@/hooks/useComputer";
 
-import { PanelInterrupt } from "@/components/computer/PanelInterrupt";
+import { WidgetInterrupt } from "@/components/computer/WidgetInterrupt";
 import { WidgetSevenSegmentDisplay } from "@/components/io/WidgetSevenSegmentDisplay";
 import { WidgetLEDsDisplay } from "@/components/io/WidgetLEDsDisplay";
 import { WidgetKeyboard } from "@/components/io/WidgetKeyboard";
@@ -13,6 +13,8 @@ import { WidgetLCDDisplay } from "@/components/io/WidgetLcdDisplay";
 
 
 export const IosDevices: React.FC<{ computerHook: ComputerHook }> = ({ computerHook }) => {
+    //console.log('RENDER ComputerPage.IosDevices')
+
     return (
         <div className="space-y-6">
             {/* Row 1: Small devices */}
@@ -38,7 +40,7 @@ export const IosDevices: React.FC<{ computerHook: ComputerHook }> = ({ computerH
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <WidgetConsole device={computerHook.ioHook.console} />
 
-                <PanelInterrupt interruptHook={computerHook.ioHook.interrupt} />
+                <WidgetInterrupt interruptHook={computerHook.ioHook.interrupt} />
             </div>
         </div>
     );

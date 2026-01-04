@@ -12,6 +12,8 @@ export const WidgetSevenSegmentDisplay: React.FC<SevenSegmentProps> = ({
     device,
     label = "Display 1"
 }) => {
+    //console.log('RENDER ComputerPage.IosDevices.WidgetSevenSegmentDisplay')
+
     const segments = device.getSegments();
     const digit = device.getCurrentDigit();
 

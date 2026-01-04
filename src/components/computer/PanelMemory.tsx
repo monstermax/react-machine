@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { getOpcodeName, INSTRUCTIONS_WITH_OPERAND, INSTRUCTIONS_WITH_TWO_OPERANDS, Opcode } from "@/lib/instructions";
 import { isROM, isRAM, MEMORY_MAP, memoryToIOPort, isIO } from "@/lib/memory_map";
@@ -19,7 +19,9 @@ export type PanelMemoryProps = {
 type TabType = "memory" | "os-disk" | "program-disk";
 
 
-export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
+export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
+    //console.log('RENDER ComputerPage.PanelMemory')
+
     const { computerHook } = props;
     const { cpuHook, romHook, ramHook, ioHook } = computerHook;
 
@@ -454,4 +456,4 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
             {renderContent()}
         </div>
     );
-}
+})

@@ -5,6 +5,8 @@ import type { ConsoleDevice } from "@/hooks/devices/useConsole";
 
 
 export const WidgetConsole: React.FC<{ device: ConsoleDevice }> = ({ device }) => {
+    //console.log('RENDER ComputerPage.IosDevices.WidgetConsole')
+
     const scrollRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll vers le bas quand du nouveau texte arrive

@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 
 import { high16, low16, U16, U8 } from "@/lib/integers";
 import { useFileSystem, type FsHook } from "../useFileSystem";
@@ -20,6 +20,8 @@ import type { Device, u16, u8 } from "@/types/cpu.types";
 
 
 export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
+    //console.log('RENDER ComputerPage.useComputer.useIo.useDiskDevice')
+
     const [storage, setStorage] = useState<Map<u16, u8>>(data);
     const [currentAddress, setCurrentAddress] = useState<u16>(0 as u16);
 
@@ -106,14 +108,17 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
 
     const getSize = useCallback(() => storage.size, [storage]);
 
-    const diskDeviceHook: DiskDevice = {
+    const diskDeviceHook: DiskDevice = useMemo(() => ({
         storage,
         fsHook,
         read,
         write,
         getSize,
         setStorage,
-    };
+    }), [
+        storage,
+        fsHook,
+    ]);
 
     return diskDeviceHook;
 };

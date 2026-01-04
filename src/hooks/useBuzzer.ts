@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 
 import type { u8 } from "@/types/cpu.types";
 
@@ -22,6 +22,8 @@ const PORTS = {
 
 
 export const useBuzzer = (): BuzzerHook => {
+    //console.log('RENDER ComputerPage.useComputer.useIo.useBuzzer')
+
     const [frequency, setFrequency] = useState<number>(440); // Hz
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
@@ -157,7 +159,7 @@ export const useBuzzer = (): BuzzerHook => {
     }, [stopSound]);
 
 
-    return {
+    const buzzerHook: BuzzerHook = useMemo(() => ({
         read,
         write,
         reset,
@@ -165,7 +167,12 @@ export const useBuzzer = (): BuzzerHook => {
             frequency,
             isPlaying,
         },
-    };
+    }), [
+        frequency,
+        isPlaying,
+    ]);
+
+    return buzzerHook;
 };
 
 

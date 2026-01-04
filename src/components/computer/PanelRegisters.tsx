@@ -1,5 +1,5 @@
 
-import { useCallback, useState } from "react";
+import { memo, useCallback, useState } from "react";
 
 import type { ComputerHook } from "@/hooks/useComputer";
 
@@ -9,7 +9,9 @@ export type CpuStateProps = {
 }
 
 
-export const PanelRegisters: React.FC<CpuStateProps> = (props) => {
+export const PanelRegisters: React.FC<CpuStateProps> = memo((props) => {
+    //console.log('RENDER ComputerPage.PanelRegisters')
+
     const { computerHook } = props;
     const { cpuHook } = computerHook;
 
@@ -49,5 +51,5 @@ export const PanelRegisters: React.FC<CpuStateProps> = (props) => {
             </div>
         </div>
     );
-}
+})
 

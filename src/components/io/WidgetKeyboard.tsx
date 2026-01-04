@@ -5,6 +5,8 @@ import type { KeyboardDevice } from "@/hooks/devices/useKeyboard";
 
 
 export const WidgetKeyboard: React.FC<{ device: KeyboardDevice }> = ({ device }) => {
+    //console.log('RENDER ComputerPage.IosDevices.WidgetKeyboard')
+
     const [inputValue, setInputValue] = useState("");
 
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {

@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, memo } from "react";
 
 import { programs } from "@/lib/programs";
 import type { ComputerHook } from "@/hooks/useComputer";
@@ -34,8 +34,8 @@ const frequencies = [
 
 
 
-export const PanelControls: React.FC<PanelControlsProps> = (props) => {
-    //console.log('RENDER PanelControls');
+export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
+    //console.log('RENDER ComputerPage.PanelControls')
 
     const { computerHook } = props;
     const { cpuHook } = computerHook;
@@ -57,15 +57,48 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
 
     const isUnloaded = loadedProgramInfo ? (computerHook.memoryHook.readMemory(MEMORY_MAP.PROGRAM_START) === 0x00) : false;
 
+    const [triggerFrequencyRefresh, setTriggerFrequencyRefresh] = useState(0)
+    const [frequencyReal, setFrequencyReal] = useState(0)
+    const [lastFrequencyStat, setLastFrequencyStat] = useState<{ timestamp: number, cycles: number } | null>(null)
+
+
+    useEffect(() => {
+        const updateFrequencyStat = () => {
+            const timestamp = Date.now() / 1000;
+            const cyclesNew = cpuHook.clockCycle;
+
+            if (lastFrequencyStat) {
+                const duration = timestamp - lastFrequencyStat.timestamp;
+                if (duration < 1) return
+
+                const cyclesOld = lastFrequencyStat.cycles;
+                const countDiff = cyclesNew - cyclesOld;
+                const freq = duration ? (countDiff / duration) : 0;
+                //console.log({ duration, countDiff, freq })
+                setFrequencyReal(freq);
+
+            } else {
+                setFrequencyReal(0);
+            }
+
+            setLastFrequencyStat({ timestamp, cycles: cyclesNew })
+        }
+
+        updateFrequencyStat()
+    }, [triggerFrequencyRefresh])
+
 
     // Gestion du timer
     useEffect(() => {
-        let timer: number | null = null;
+        let timerExec: number | null = null;
+        //console.log('CLOCK TIMER UP')
+
+        const timerCtrl = setInterval(() => setTriggerFrequencyRefresh(x => x + 1), 100);
 
         if (isRunning && !cpuHook.halted) {
             const interval = 1000 / frequency; // Intervalle en ms
 
-            timer = setInterval(() => {
+            timerExec = setInterval(() => {
                 const pc = cpuHook.getRegister("PC");
 
                 // Vérifier breakpoint
@@ -84,9 +117,11 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
         }
 
         return () => {
-            if (timer) {
-                clearInterval(timer);
+            //console.log('CLOCK TIMER DOWN')
+            if (timerExec) {
+                clearInterval(timerExec);
             }
+            clearInterval(timerCtrl)
         };
     }, [isRunning, frequency, cpuHook.executeCycle, cpuHook.halted, props.breakpoints, currentBreakpoint, setIsRunning, setCurrentBreakpoint]);
 
@@ -208,6 +243,7 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
                             </option>
                         ))}
                     </select>
+                    {frequencyReal.toFixed(1)}
                 </div>
 
                 <div className="ms-auto flex items-center gap-6">
@@ -257,5 +293,5 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
             }
         </div >
     );
-}
+})
 

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { MEMORY_MAP, isROM, isIO, memoryToIOPort } from "@/lib/memory_map";
 import type { IOHook } from "./useIo";
@@ -10,7 +10,7 @@ import { U16, U8 } from "@/lib/integers";
 
 
 export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): MemoryHook => {
-    //console.log('RENDER useMemory')
+    //console.log('RENDER ComputerPage.useComputer.useMemory')
 
     // Read from Memory
     const readMemory = useCallback((address: u16): u8 => {
@@ -61,11 +61,11 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
     }, [ramHook.setStorage])
 
 
-    const memoryHook: MemoryHook = {
+    const memoryHook: MemoryHook = useMemo(() => ({
         readMemory,
         writeMemory,
         loadDiskInRAM,
-    };
+    }), []);
 
     return memoryHook;
 };

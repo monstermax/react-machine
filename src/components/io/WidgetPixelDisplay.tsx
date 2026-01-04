@@ -5,6 +5,8 @@ import type { PixelDisplayDevice } from "@/hooks/devices/usePixelDisplay";
 
 
 export const WidgetPixelDisplay: React.FC<{ device: PixelDisplayDevice }> = ({ device }) => {
+    //console.log('RENDER ComputerPage.IosDevices.WidgetPixelDisplay')
+
     const handleClear = useCallback(() => {
         device.clear();
     }, [device]);

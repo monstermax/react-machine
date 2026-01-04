@@ -10,6 +10,8 @@ import { IosDevices } from "@/components/io/IosDevices";
 
 
 export const ComputerPage: React.FC = () => {
+    //console.log('RENDER ComputerPage')
+
     const computerHook = useComputer();
     const { resetComputer, loadOs, unloadOs, loadProgram, unloadProgram } = computerHook;
 

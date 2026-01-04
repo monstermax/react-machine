@@ -1,11 +1,13 @@
 
-import { useCallback, useState, useRef, useEffect } from "react";
+import { useCallback, useState, useRef, useEffect, useMemo } from "react";
 
 import { MEMORY_MAP } from "@/lib/memory_map";
 import type { u16, u8 } from "@/types/cpu.types";
 
 
 export const useInterrupt = () => {
+    //console.log('RENDER ComputerPage.useComputer.useIo.useInterrupt')
+
     const [enabled, setEnabled] = useState(0 as u8);      // IRQs activées
     const [pending, setPending] = useState(0 as u8);      // IRQs en attente
     const [mask, setMask] = useState(0 as u8);            // IRQs masquées
@@ -137,7 +139,13 @@ export const useInterrupt = () => {
     }, []);
 
 
-    const hook: InterruptHook = {
+    const hook: InterruptHook = useMemo(() => ({
+        // État (pour UI/debug)
+        enabled,
+        pending,
+        mask,
+        handlerAddr,
+
         // Fonctions Device
         read,
         write,
@@ -148,13 +156,12 @@ export const useInterrupt = () => {
         hasPendingInterrupt,
         getPendingIRQ,
         reset,
-
-        // État (pour UI/debug)
+    }), [
         enabled,
         pending,
         mask,
         handlerAddr,
-    };
+    ]);
 
     return hook;
 };

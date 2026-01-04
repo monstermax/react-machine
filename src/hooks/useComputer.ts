@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useCpu, type CpuHook } from "@/hooks/useCpu";
 import { useRom, type RomHook } from "@/hooks/useRom";
@@ -15,7 +15,7 @@ import type { OsInfo, ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 export const useComputer = (): ComputerHook => {
-    //console.log('RENDER useComputer')
+    //console.log('RENDER ComputerPage.useComputer')
 
     const romHook = useRom();           // ROM avec bootloader
     const ramHook = useRam();
@@ -161,7 +161,7 @@ export const useComputer = (): ComputerHook => {
     }, [ramHook.setStorage, ioHook.programDisk.setStorage, setLoadedProgram]);
 
 
-    const computerHook: ComputerHook = {
+    const computerHook: ComputerHook = useMemo(() => ({
         romHook,
         ramHook,
         ioHook,
@@ -175,7 +175,15 @@ export const useComputer = (): ComputerHook => {
         unloadOs,
         unloadProgram,
         setLoadedProgram,
-    };
+    }), [
+        romHook,
+        ramHook,
+        ioHook,
+        memoryHook,
+        cpuHook,
+        loadedOs,
+        loadedProgram,
+    ]);
 
     return computerHook;
 };

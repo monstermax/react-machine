@@ -1,5 +1,5 @@
 
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import type { u16, u8 } from "@/types/cpu.types"
 import { U16, U8 } from "@/lib/integers";
@@ -30,6 +30,8 @@ interface Inode {
 
 
 export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<React.SetStateAction<Map<u16, u8>>>): FsHook => {
+    //console.log('RENDER ComputerPage.useComputer.useIo.useDiskDevice')
+
     const [currentSector, setCurrentSector] = useState<u8>(U8(0));
     const [currentFileHandle, setCurrentFileHandle] = useState<u16>(U16(0));
     const [lastCommandResult, setLastCommandResult] = useState<u8>(U8(0));
@@ -325,7 +327,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
     }, [filenameIndex]);
 
 
-    const fsHook: FsHook = {
+    const fsHook: FsHook = useMemo(() => ({
         currentSector,
         currentFileHandle,
         lastCommandResult,
@@ -339,7 +341,11 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         writeData,
         executeCommand,
         writeFilenameChar,
-    }
+    }), [
+        currentSector,
+        currentFileHandle,
+        lastCommandResult,
+    ])
 
     return fsHook;
 }

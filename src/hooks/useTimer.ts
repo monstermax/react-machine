@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { MEMORY_MAP } from "@/lib/memory_map";
 import type { InterruptHook } from "./useInterrupt";
@@ -9,6 +9,8 @@ import type { u8 } from "@/types/cpu.types";
 
 
 export const useTimer = (interruptHook: InterruptHook): TimerHook => {
+    //console.log('RENDER ComputerPage.useComputer.useIo.useTimer')
+
     const [counter, setCounter] = useState(0 as u8);
     const [period, setPeriod] = useState(10 as u8); // Interrupt toutes les 10 "ticks"
     const [enabled, setEnabled] = useState(false);
@@ -71,14 +73,19 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
     }, [setEnabled, setCounter, setPeriod]);
 
 
-    const hook: TimerHook = {
-        read,
-        write,
-        tick,
+    const hook: TimerHook = useMemo(() => ({
         counter,
         enabled,
         period,
-    };
+        read,
+        write,
+        tick,
+    }
+    ), [
+        counter,
+        enabled,
+        period,
+    ]);
 
     return hook;
 };
