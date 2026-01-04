@@ -73,19 +73,14 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
     }, [setEnabled, setCounter, setPeriod]);
 
 
-    const hook: TimerHook = useMemo(() => ({
+    const hook: TimerHook = {
         counter,
         enabled,
         period,
         read,
         write,
         tick,
-    }
-    ), [
-        counter,
-        enabled,
-        period,
-    ]);
+    };
 
     return hook;
 };

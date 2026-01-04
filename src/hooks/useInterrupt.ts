@@ -139,7 +139,7 @@ export const useInterrupt = () => {
     }, []);
 
 
-    const hook: InterruptHook = useMemo(() => ({
+    const hook: InterruptHook = {
         // État (pour UI/debug)
         enabled,
         pending,
@@ -156,12 +156,7 @@ export const useInterrupt = () => {
         hasPendingInterrupt,
         getPendingIRQ,
         reset,
-    }), [
-        enabled,
-        pending,
-        mask,
-        handlerAddr,
-    ]);
+    };
 
     return hook;
 };

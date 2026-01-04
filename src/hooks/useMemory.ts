@@ -17,6 +17,7 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
         // ROM read
         if (isROM(address)) {
             return romHook.storage.get(U8(address)) ?? 0 as u8;
+            //return romHook.read(address) ?? 0 as u8;
         }
 
         // I/O read - déléguer au gestionnaire I/O
@@ -25,7 +26,9 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
         }
 
         // RAM read
+//if (address === 0x500) debugger;
         return ramHook.storage.get(address) ?? 0 as u8;
+        //return ramHook.read(address) ?? 0 as u8;
     }, [ramHook.storage, ioHook, romHook.storage]);
 
 
@@ -44,8 +47,10 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
         }
 
         // RAM write
+//if (address === 0x500) debugger;
         ramHook.storage.set(address, (value & 0xFF) as u8);
-    }, [ioHook]);
+        //ramHook.setStorage(oldMap => new Map(oldMap).set(address, value))
+    }, [ioHook, ramHook.setStorage]);
 
 
     const loadDiskInRAM = useCallback((data: Map<u8, u8> | Map<u16, u8>, offset: u16) => {
@@ -61,11 +66,11 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
     }, [ramHook.setStorage])
 
 
-    const memoryHook: MemoryHook = useMemo(() => ({
+    const memoryHook: MemoryHook = {
         readMemory,
         writeMemory,
         loadDiskInRAM,
-    }), []);
+    };
 
     return memoryHook;
 };

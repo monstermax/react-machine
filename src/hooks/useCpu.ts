@@ -766,7 +766,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
     }, [halted, interruptsEnabled, inInterruptHandler, ioHook.interrupt.hasPendingInterrupt, memory.readMemory, tick, setRegister, getRegister, handleInterrupt, executeOpcode]);
 
 
-    const cpuHook: CpuHook = useMemo(() => ({
+    const cpuHook: CpuHook = {
         halted,
         registers,
         clockCycle,
@@ -779,12 +779,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         tick,
         executeCycle,
         reset,
-    }), [
-        halted,
-        registers,
-        clockCycle,
-        ALU,
-    ])
+    };
 
     return cpuHook
 }

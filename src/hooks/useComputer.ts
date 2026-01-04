@@ -161,7 +161,7 @@ export const useComputer = (): ComputerHook => {
     }, [ramHook.setStorage, ioHook.programDisk.setStorage, setLoadedProgram]);
 
 
-    const computerHook: ComputerHook = useMemo(() => ({
+    const computerHook: ComputerHook = {
         romHook,
         ramHook,
         ioHook,
@@ -175,15 +175,7 @@ export const useComputer = (): ComputerHook => {
         unloadOs,
         unloadProgram,
         setLoadedProgram,
-    }), [
-        romHook,
-        ramHook,
-        ioHook,
-        memoryHook,
-        cpuHook,
-        loadedOs,
-        loadedProgram,
-    ]);
+    };
 
     return computerHook;
 };

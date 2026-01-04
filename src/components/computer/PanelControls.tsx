@@ -21,21 +21,21 @@ export type PanelControlsProps = {
 
 // Fréquences disponibles
 const frequencies = [
-    { label: "0.1 Hz (très lent)", value: 0.1 },
+    { label: "0.1 Hz (slow)", value: 0.1 },
     { label: "0.5 Hz", value: 0.5 },
-    { label: "1 Hz", value: 1 },
+    { label: "1 Hz (default)", value: 1 },
     { label: "2 Hz", value: 2 },
     { label: "5 Hz", value: 5 },
     { label: "10 Hz", value: 10 },
     { label: "20 Hz", value: 20 },
     { label: "50 Hz", value: 50 },
-    { label: "100 Hz (rapide)", value: 100 },
+    { label: "60 Hz (max)", value: 100 },
 ];
 
 
 
 export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
-    //console.log('RENDER ComputerPage.PanelControls')
+    console.log('RENDER ComputerPage.PanelControls')
 
     const { computerHook } = props;
     const { cpuHook } = computerHook;
@@ -48,6 +48,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     const [isRunning, setIsRunning] = useState(false);
     const [frequency, setFrequency] = useState(1); // Hz (cycles par seconde)
     const [currentBreakpoint, setCurrentBreakpoint] = useState<number | null>(null);
+    const lastCycleTsRef = useRef(0);
 
 
     const selectedProgramInfo = selectedProgram ? programs[selectedProgram] : null;
@@ -60,8 +61,10 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     const [triggerFrequencyRefresh, setTriggerFrequencyRefresh] = useState(0)
     const [frequencyReal, setFrequencyReal] = useState(0)
     const [lastFrequencyStat, setLastFrequencyStat] = useState<{ timestamp: number, cycles: number } | null>(null)
+    const [triggerCycle, setTriggerCycle] = useState(0)
 
 
+    // Calculer la frequence reelle
     useEffect(() => {
         const updateFrequencyStat = () => {
             const timestamp = Date.now() / 1000;
@@ -88,42 +91,21 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     }, [triggerFrequencyRefresh])
 
 
-    // Gestion du timer
-    useEffect(() => {
-        let timerExec: number | null = null;
-        //console.log('CLOCK TIMER UP')
+    useAnimationFrame((time) => {
+        //console.log('CLOCK TIMER FRAME', (1000/time).toFixed(), 'FPS')
 
-        const timerCtrl = setInterval(() => setTriggerFrequencyRefresh(x => x + 1), 100);
+        const interval = 1000 / frequency; // Intervalle en ms
+        const now = Date.now();
+        const age = now - lastCycleTsRef.current
 
-        if (isRunning && !cpuHook.halted) {
-            const interval = 1000 / frequency; // Intervalle en ms
-
-            timerExec = setInterval(() => {
-                const pc = cpuHook.getRegister("PC");
-
-                // Vérifier breakpoint
-                if (currentBreakpoint !== pc && props.breakpoints.has(pc)) {
-                    setIsRunning(false);
-                    setCurrentBreakpoint(pc);
-                    return;
-                }
-
-                if (currentBreakpoint) {
-                    setCurrentBreakpoint(null);
-                }
-
-                cpuHook.executeCycle();
-            }, interval);
-        }
-
-        return () => {
-            //console.log('CLOCK TIMER DOWN')
-            if (timerExec) {
-                clearInterval(timerExec);
+        if (isRunning) {
+            if (age > interval) {
+                lastCycleTsRef.current = now
+                setTriggerCycle(c => c + 1);
             }
-            clearInterval(timerCtrl)
-        };
-    }, [isRunning, frequency, cpuHook.executeCycle, cpuHook.halted, props.breakpoints, currentBreakpoint, setIsRunning, setCurrentBreakpoint]);
+        }
+    }, [frequency, isRunning, setTriggerCycle])
+
 
 
     // Arrêter automatiquement si le CPU halt
@@ -132,6 +114,33 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
             setIsRunning(false);
         }
     }, [cpuHook.halted, isRunning]);
+
+
+    const execCycle = useCallback(() => {
+        if (!isRunning) return;
+
+        const pc = cpuHook.getRegister("PC");
+
+        // Vérifier breakpoint
+        if (currentBreakpoint !== pc && props.breakpoints.has(pc)) {
+            setIsRunning(false);
+            setCurrentBreakpoint(pc);
+            return;
+        }
+
+        if (currentBreakpoint) {
+            setCurrentBreakpoint(null);
+        }
+
+        cpuHook.executeCycle();
+    }, [isRunning, currentBreakpoint, props.breakpoints, cpuHook.executeCycle])
+
+
+    useEffect(() => {
+        if (triggerCycle > 0) {
+            execCycle()
+        }
+    }, [triggerCycle])
 
 
     return (
@@ -243,7 +252,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
                             </option>
                         ))}
                     </select>
-                    {frequencyReal.toFixed(1)}
+                    {frequencyReal.toFixed(1)} Hz
                 </div>
 
                 <div className="ms-auto flex items-center gap-6">
@@ -294,4 +303,31 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
         </div >
     );
 })
+
+
+
+const useAnimationFrame = (callback: (time: number) => void, dependencies: any[]) => {
+    const requestRef = useRef<number>(null);
+    const previousTimeRef = useRef<number>(null);
+
+    const animate = (time: number) => {
+        if (previousTimeRef.current != undefined) {
+            const deltaTime = time - previousTimeRef.current;
+            callback(deltaTime)
+        }
+
+        previousTimeRef.current = time;
+        requestRef.current = requestAnimationFrame(animate);
+    }
+
+    useEffect(() => {
+        requestRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (requestRef.current) {
+                cancelAnimationFrame(requestRef.current);
+            }
+        }
+    }, dependencies); // Make sure the effect runs only once
+}
 

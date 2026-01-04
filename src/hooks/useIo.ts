@@ -15,7 +15,7 @@ import { usePixelDisplay, type PixelDisplayDevice } from "./devices/usePixelDisp
 import { mapAddress16 } from "@/lib/memory_map";
 import { useRtc, type RtcHook } from "./devices/useRtc";
 import { useRng, type RngHook } from "./devices/useRng";
-import { useBuzzer, type BuzzerHook } from "./useBuzzer";
+import { useBuzzer, type BuzzerHook } from "./devices/useBuzzer";
 
 import type { Device, u16, u8 } from "@/types/cpu.types";
 
@@ -94,7 +94,7 @@ export const useIo = (): IOHook => {
     }, [devices]);
 
 
-    const ioHook: IOHook = useMemo(() => ({
+    const ioHook: IOHook = {
         devices,
         osDisk,
         programDisk,
@@ -111,22 +111,7 @@ export const useIo = (): IOHook => {
         rtc,
         read,
         write,
-    }), [
-        devices,
-        osDisk,
-        programDisk,
-        timer,
-        leds,
-        interrupt,
-        keyboard,
-        sevenSegment,
-        consoleDevice,
-        lcd,
-        buzzer,
-        pixelDisplay,
-        rng,
-        rtc,
-    ]);
+    };
 
     return ioHook
 };

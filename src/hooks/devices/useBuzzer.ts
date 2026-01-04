@@ -159,7 +159,7 @@ export const useBuzzer = (): BuzzerHook => {
     }, [stopSound]);
 
 
-    const buzzerHook: BuzzerHook = useMemo(() => ({
+    const buzzerHook: BuzzerHook = {
         read,
         write,
         reset,
@@ -167,10 +167,7 @@ export const useBuzzer = (): BuzzerHook => {
             frequency,
             isPlaying,
         },
-    }), [
-        frequency,
-        isPlaying,
-    ]);
+    };
 
     return buzzerHook;
 };

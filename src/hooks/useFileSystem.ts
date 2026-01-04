@@ -327,7 +327,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
     }, [filenameIndex]);
 
 
-    const fsHook: FsHook = useMemo(() => ({
+    const fsHook: FsHook = {
         currentSector,
         currentFileHandle,
         lastCommandResult,
@@ -341,11 +341,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         writeData,
         executeCommand,
         writeFilenameChar,
-    }), [
-        currentSector,
-        currentFileHandle,
-        lastCommandResult,
-    ])
+    };
 
     return fsHook;
 }

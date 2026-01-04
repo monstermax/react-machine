@@ -12,11 +12,9 @@ export const useRom = (): RomHook => {
     // ROM est immuable, initialisée avec le bootloader
     const [storage] = useState<Map<u8, u8>>(new Map(BOOTLOADER));
 
-    const romHook: RomHook = useMemo(() => ({
+    const romHook: RomHook = {
         storage,
-    }), [
-        storage
-    ]);
+    };
 
     return romHook;
 };

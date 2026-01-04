@@ -11,12 +11,10 @@ export const useRam = (): RamHook => {
 
     //console.log('RAM:', storage)
 
-    const ramHook: RamHook = useMemo(() => ({
+    const ramHook: RamHook = {
         storage,
         setStorage,
-    }), [
-        storage,
-    ]);
+    };
 
     return ramHook;
 };
