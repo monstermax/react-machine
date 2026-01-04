@@ -221,7 +221,7 @@ export const PanelControls: React.FC<PanelControlsProps> = (props) => {
 
                     <button
                         onClick={() => {
-                            setIsRunning(false);
+                            //setIsRunning(false);
                             resetComputer();
                         }}
                         className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded cursor-pointer disabled:cursor-not-allowed transition-colors"
