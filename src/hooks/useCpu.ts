@@ -137,6 +137,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         //clockCycleRef.current = 0 as u16;
         setInterruptsEnabled(false);
         setInInterruptHandler(false);
+
     }, [setRegisters, setHalted, setInterruptsEnabled, setInInterruptHandler])
 
 

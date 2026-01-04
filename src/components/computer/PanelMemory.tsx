@@ -16,7 +16,7 @@ export type PanelMemoryProps = {
 }
 
 
-type TabType = "memory" | "os-disk" | "program-disk";
+type TabType = "memory" | "os-disk" | "program-disk" | "data-disk";
 
 
 export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
@@ -27,6 +27,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
 
     const [activeTab, setActiveTab] = useState<TabType>("memory");
     const [followInstruction, setFollowInstruction] = useState(true);
+    const [decodeInstructions, setDecodeInstructions] = useState(true);
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const addressRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -50,55 +51,57 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
             view.set(addr, value);
         }
 
-        // I/O - Adresses de départ des devices
-        const ioStartAddresses: u16[] = [
-            MEMORY_MAP.OS_DISK_BASE,
-            MEMORY_MAP.PROGRAM_DISK_BASE,
-            MEMORY_MAP.TIMER_BASE,
-            MEMORY_MAP.LEDS_BASE,
-            MEMORY_MAP.INTERRUPT_BASE,
-            MEMORY_MAP.KEYBOARD_BASE,
-            MEMORY_MAP.SEVEN_SEG_BASE,
-            MEMORY_MAP.CONSOLE_BASE,
-            MEMORY_MAP.LCD_BASE,
-            MEMORY_MAP.PIXEL_DISPLAY_BASE,
-        ].sort((a, b) => a - b);
+        if (false) {
+            // I/O - Adresses de départ des devices
+            const ioStartAddresses: u16[] = [
+                MEMORY_MAP.OS_DISK_BASE,
+                MEMORY_MAP.PROGRAM_DISK_BASE,
+                MEMORY_MAP.TIMER_BASE,
+                MEMORY_MAP.LEDS_BASE,
+                MEMORY_MAP.INTERRUPT_BASE,
+                MEMORY_MAP.KEYBOARD_BASE,
+                MEMORY_MAP.SEVEN_SEG_BASE,
+                MEMORY_MAP.CONSOLE_BASE,
+                MEMORY_MAP.LCD_BASE,
+                MEMORY_MAP.PIXEL_DISPLAY_BASE,
+            ].sort((a, b) => a - b);
 
-        // Pour chaque device, lire jusqu'à trouver des zéros ou atteindre le prochain device
-        for (let i = 0; i < ioStartAddresses.length; i++) {
-            const startAddr = ioStartAddresses[i];
-            const nextAddr = ioStartAddresses[i + 1] ?? MEMORY_MAP.IO_END + 1;
+            // Pour chaque device, lire jusqu'à trouver des zéros ou atteindre le prochain device
+            for (let i = 0; i < ioStartAddresses.length; i++) {
+                const startAddr = ioStartAddresses[i];
+                const nextAddr = ioStartAddresses[i + 1] ?? MEMORY_MAP.IO_END + 1;
 
-            let currentAddr = startAddr;
-            let consecutiveZeros = 0;
+                let currentAddr = startAddr;
+                let consecutiveZeros = 0;
 
-            while (currentAddr < nextAddr) {
-                //const ioPort = memoryToIOPort(currentAddr);
-                //const value = ioHook.read(ioPort); // BUG: trigger each device at each cycle
-                const value = U8(0); // TODO
+                while (currentAddr < nextAddr) {
+                    //const ioPort = memoryToIOPort(currentAddr);
+                    //const value = ioHook.read(ioPort); // BUG: trigger each device at each cycle
+                    const value = U8(0); // TODO
 
-                // Toujours afficher la première adresse du device
-                if (currentAddr === startAddr) {
-                    view.set(currentAddr, value);
-                    currentAddr++;
-                    continue;
-                }
-
-                // Si on trouve des données non-nulles, continuer
-                if (value !== 0) {
-                    view.set(currentAddr, value);
-                    consecutiveZeros = 0;
-
-                } else {
-                    consecutiveZeros++;
-                    // Arrêter après 3 zéros consécutifs (pour ne pas tout afficher)
-                    if (consecutiveZeros >= 3) {
-                        break;
+                    // Toujours afficher la première adresse du device
+                    if (currentAddr === startAddr) {
+                        view.set(currentAddr, value);
+                        currentAddr++;
+                        continue;
                     }
-                    view.set(currentAddr, value);
-                }
 
-                currentAddr++;
+                    // Si on trouve des données non-nulles, continuer
+                    if (value !== 0) {
+                        view.set(currentAddr, value);
+                        consecutiveZeros = 0;
+
+                    } else {
+                        consecutiveZeros++;
+                        // Arrêter après 3 zéros consécutifs (pour ne pas tout afficher)
+                        if (consecutiveZeros >= 3) {
+                            break;
+                        }
+                        view.set(currentAddr, value);
+                    }
+
+                    currentAddr++;
+                }
             }
         }
 
@@ -117,10 +120,16 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
         return ioHook.programDisk?.storage || new Map<u16, u8>();
     }, [ioHook]);
 
+    const dataDiskStorage = useMemo(() => {
+        // Récupère le stockage du Program Disk
+        return ioHook.dataDisk?.storage || new Map<u16, u8>();
+    }, [ioHook]);
+
     const currentPC = cpuHook.getRegister("PC");
     const sortedMemory = Array.from(currentMemory.entries()).sort(([a], [b]) => a - b);
     const sortedOsDisk = Array.from(osDiskStorage.entries()).sort(([a], [b]) => a - b);
     const sortedProgramDisk = Array.from(programDiskStorage.entries()).sort(([a], [b]) => a - b);
+    const sorteddataDisk = Array.from(dataDiskStorage.entries()).sort(([a], [b]) => a - b);
 
     const MEMORY_MAP_REVERSE = Object.fromEntries(
         Object.entries(MEMORY_MAP).map(e => [e[1], e[0]])
@@ -173,6 +182,10 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
     const programDiskInstructionMap = useMemo(() =>
         analyzeInstructions(programDiskStorage),
         [programDiskStorage, analyzeInstructions]);
+
+    const dataDiskInstructionMap = useMemo(() =>
+        analyzeInstructions(dataDiskStorage),
+        [dataDiskStorage, analyzeInstructions]);
 
 
     const toggleBreakpoint = useCallback((addr: number) => {
@@ -268,6 +281,8 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
                 return renderDiskTab("OS Disk", sortedOsDisk, osDiskInstructionMap);
             case "program-disk":
                 return renderDiskTab("Program Disk", sortedProgramDisk, programDiskInstructionMap);
+            case "data-disk":
+                return renderDiskTab("Data Disk", sorteddataDisk, dataDiskInstructionMap);
             default:
                 return renderMemoryTab();
         }
@@ -329,7 +344,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
                                 title={MEMORY_MAP_REVERSE[addr] ?? ''}
                             >
                                 <div className="flex items-center gap-2">
-                                    <div 
+                                    <div
                                         onClick={() => toggleBreakpoint(addr)}
                                         className={`
                                             w-3 h-3 rounded-full cursor-pointer transition-all
@@ -376,44 +391,57 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
 
     // Rendu d'un onglet de disque
     const renderDiskTab = (title: string, diskData: [u16, u8][], instructionMap: Map<number, boolean>) => (
-        <div className="font-mono text-sm space-y-1 max-h-[600px] overflow-y-auto">
-            <div className="text-xs text-slate-400 mb-2">
-                {title}: {diskData.length} bytes
+        <>
+            <div className="font-mono text-sm space-y-1 max-h-[600px] overflow-y-auto">
+                <div className="text-xs text-slate-400 mb-2">
+                    {title}: {diskData.length} bytes
+                </div>
+
+                {diskData.length > 0 ? (
+                    diskData.map(([addr, val]) => {
+                        const isInstruction = (decodeInstructions && instructionMap.get(addr)) ?? false;
+
+                        return (
+                            <div
+                                key={addr}
+                                className="flex justify-between p-2 rounded bg-slate-900/50"
+                            >
+                                <span className="text-yellow-400">
+                                    0x{addr.toString(16).padStart(4, "0")}:
+                                </span>
+                                <div className="flex gap-4">
+                                    {/* Afficher aussi le caractère ASCII si c'est un caractère imprimable */}
+                                    {!isInstruction && val >= 32 && val <= 126 && (
+                                        <span className="text-xs text-slate-400 mt-1">
+                                            '{String.fromCharCode(val)}'
+                                        </span>
+                                    )}
+
+                                    <span className={`${isInstruction ? "text-pink-400" : "text-green-400"}`}>
+                                        0x{val.toString(16).padStart(2, "0")}
+                                        {isInstruction && ` (${getOpcodeName(val)})`}
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })
+                ) : (
+                    <div className="text-slate-500 italic text-center py-8">
+                        {title} is empty
+                    </div>
+                )}
             </div>
 
-            {diskData.length > 0 ? (
-                diskData.map(([addr, val]) => {
-                    const isInstruction = instructionMap.get(addr) ?? false;
-
-                    return (
-                        <div
-                            key={addr}
-                            className="flex justify-between p-2 rounded bg-slate-900/50"
-                        >
-                            <span className="text-yellow-400">
-                                0x{addr.toString(16).padStart(4, "0")}:
-                            </span>
-                            <div className="flex flex-col items-end">
-                                <span className={`${isInstruction ? "text-pink-400" : "text-green-400"}`}>
-                                    0x{val.toString(16).padStart(2, "0")}
-                                    {isInstruction && ` (${getOpcodeName(val)})`}
-                                </span>
-                                {/* Afficher aussi le caractère ASCII si c'est un caractère imprimable */}
-                                {!isInstruction && val >= 32 && val <= 126 && (
-                                    <span className="text-xs text-slate-400 mt-1">
-                                        '{String.fromCharCode(val)}'
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })
-            ) : (
-                <div className="text-slate-500 italic text-center py-8">
-                    {title} is empty
-                </div>
-            )}
-        </div>
+            <div className="mt-2">
+                <button
+                    onClick={() => setDecodeInstructions(b => !b)}
+                    className="flex gap-2 cursor-pointer"
+                >
+                    <div>{decodeInstructions ? "✅" : "❌"}</div>
+                    <div>Decode Instructions</div>
+                </button>
+            </div>
+        </>
     );
 
 
@@ -449,6 +477,15 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
                         }`}
                 >
                     Program Disk
+                </button>
+                <button
+                    onClick={() => setActiveTab("data-disk")}
+                    className={`px-4 py-2 font-medium transition-colors ${activeTab === "data-disk"
+                        ? "text-purple-400 border-b-2 border-purple-400"
+                        : "text-slate-400 hover:text-slate-300"
+                        }`}
+                >
+                    Data Disk
                 </button>
             </div>
 

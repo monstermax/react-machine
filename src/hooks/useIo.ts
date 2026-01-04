@@ -30,6 +30,7 @@ export const useIo = (): IOHook => {
     // Devices
     const osDisk = useDiskDevice(mapAddress16(new Map, 0 as u16));      // Device 0: 0xFF00-0xFF0F
     const programDisk = useDiskDevice(new Map); // Device 1: 0xFF10-0xFF1F
+    const dataDisk = useDiskDevice(new Map); // Device 1: 0xFFF0-0xFFFF
     const interrupt = useInterrupt(); // Device 4
     const timer = useTimer(interrupt); // Device 2
     const keyboard = useKeyboard(interrupt); // Device 5
@@ -58,8 +59,9 @@ export const useIo = (): IOHook => {
             [0x0B, rng],            // Random Number Generator
             [0x0C, rtc],            // Real-Time Clock
             [0x0D, pixelDisplay],   // Pixel Display 32x32 (0xFFD0-0xFFDF)
+            [0x0F, dataDisk],       // Data disk
         ] as [any, Device][])
-    , [osDisk, programDisk, timer, leds, interrupt, keyboard, sevenSegment, consoleDevice, buzzer, lcd, rng, rtc, pixelDisplay]);
+    , [osDisk, programDisk, timer, leds, interrupt, keyboard, sevenSegment, consoleDevice, buzzer, lcd, rng, rtc, pixelDisplay, dataDisk]);
 
 
     // I/O read: router vers le bon device
@@ -94,6 +96,15 @@ export const useIo = (): IOHook => {
     }, [devices]);
 
 
+    const reset = useCallback(() => {
+        devices.forEach(device => {
+            if (device.reset) {
+                device.reset();
+            }
+        })
+    }, [devices])
+
+
     const ioHook: IOHook = {
         devices,
         osDisk,
@@ -109,8 +120,10 @@ export const useIo = (): IOHook => {
         pixelDisplay,
         rng,
         rtc,
+        dataDisk,
         read,
         write,
+        reset,
     };
 
     return ioHook
@@ -118,8 +131,6 @@ export const useIo = (): IOHook => {
 
 
 export type IOHook = {
-    read: (ioPort: u8) => u8;
-    write: (ioPort: u8, value: u8) => void;
     devices: Map<u8, Device>;
     osDisk: DiskDevice;
     programDisk: DiskDevice;
@@ -132,7 +143,11 @@ export type IOHook = {
     lcd: LCDDevice;
     buzzer: BuzzerHook;
     pixelDisplay: PixelDisplayDevice;
+    dataDisk: DiskDevice;
     rng: RngHook;
     rtc: RtcHook;
+    read: (ioPort: u8) => u8;
+    write: (ioPort: u8, value: u8) => void;
+    reset: () => void;
 };
 

@@ -17,7 +17,7 @@ export const PanelRegisters: React.FC<CpuStateProps> = memo((props) => {
 
     return (
         <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-            <h2 className="text-xl font-semibold mb-2 text-blue-400">Registers</h2>
+            <h2 className="text-xl font-semibold mb-2 text-blue-400">CPU Registers</h2>
 
             <div className="grid grid-cols-2 space-x-2 space-y-2 font-mono text-sm">
                 {Array.from(cpuHook.registers.entries()).map(([reg, value]) => (

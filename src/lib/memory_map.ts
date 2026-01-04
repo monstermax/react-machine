@@ -50,6 +50,7 @@ export const MEMORY_MAP = createMemoryMap({
 
 
     // ## I/O Devices ## (0xFF00-0xFFFF) - 256 ports
+
     IO_START: 0xFF00,
     IO_END: 0xFFFF,
 
@@ -157,9 +158,18 @@ export const MEMORY_MAP = createMemoryMap({
     UART_RX: 0xFFE1,          // Recevoir
     UART_STATUS: 0xFFE2,      // Buffer status
 
-    // ADC (Analog-to-Digital) // Lecture de valeurs analogiques simulées
-    ADC_CHANNEL: 0xFFF0,      // Sélection canal 0-7
-    ADC_VALUE: 0xFFF1,        // Valeur lue (0-255)
+    // Device 15: Data Disk (0xFFF0-0xFFFF)
+    DATA_DISK_BASE: 0xFFF0,
+    DATA_DISK_DATA: 0xFFF0,
+    DATA_DISK_SIZE: 0xFFF1,
+    DATA_DISK_ADDR_LOW: 0xFFF2,
+    DATA_DISK_ADDR_HIGH: 0xFFF3,
+    DATA_DISK_FS_STATUS: 0xFFF4,
+    DATA_DISK_FS_COMMAND: 0xFFF5,
+    DATA_DISK_FS_DATA: 0xFFF6,
+    DATA_DISK_FS_FILENAME: 0xFFF7,
+    DATA_DISK_FS_HANDLE_LOW: 0xFFF8,
+    DATA_DISK_FS_HANDLE_HIGH: 0xFFF9,
 
 
     // IRQ //

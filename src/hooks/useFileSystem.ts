@@ -1,5 +1,5 @@
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 
 import type { u16, u8 } from "@/types/cpu.types"
 import { U16, U8 } from "@/lib/integers";
@@ -32,11 +32,11 @@ interface Inode {
 export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<React.SetStateAction<Map<u16, u8>>>): FsHook => {
     //console.log('RENDER ComputerPage.useComputer.useIo.useDiskDevice')
 
-    const [currentSector, setCurrentSector] = useState<u8>(U8(0));
-    const [currentFileHandle, setCurrentFileHandle] = useState<u16>(U16(0));
+    const [currentSector, setCurrentSector] = useState<u8>(U8(0)); // TODO: useRef
+    const [currentFileHandle, setCurrentFileHandle] = useState<u16>(U16(0)); // TODO: useRef
     const [lastCommandResult, setLastCommandResult] = useState<u8>(U8(0));
 
-    const [filePointer, setFilePointer] = useState<u16>(U16(0));  // Position dans le fichier courant
+    const filePointerRef = useRef<u16>(U16(0));  // Position dans le fichier courant
     const [filenameBuffer, setFilenameBuffer] = useState<string>("");
     const [filenameIndex, setFilenameIndex] = useState<number>(0);
 
@@ -193,7 +193,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
             if (inode && inode.flags === 1 && inode.name.trim() === name.trim()) {
                 console.log('openFile:', inode)
                 setCurrentFileHandle(U16(i));
-                setFilePointer(U16(0)); // Réinitialiser pointeur
+                filePointerRef.current = U16(0)
                 return U16(i);
             }
         }
@@ -211,23 +211,23 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         if (!inode || inode.flags !== 1) return U8(0);
 
         // Vérifier si on dépasse la taille
-        if (filePointer >= inode.size) return U8(0);
+        if (filePointerRef.current >= inode.size) return U8(0);
 
         // Calculer adresse
-        const sectorOffset = Math.floor(filePointer / SECTOR_SIZE) as u16;
-        const byteInSector = filePointer % SECTOR_SIZE as u16;
+        const sectorOffset = Math.floor(filePointerRef.current / SECTOR_SIZE) as u16;
+        const byteInSector = filePointerRef.current % SECTOR_SIZE as u16;
         const sector = inode.startSector + sectorOffset as u16;
 
         const address = sectorToAddress(U8(sector), byteInSector);
         const value = readByte(address);
 
         // Avancer le pointeur
-        setFilePointer(prev => U16(prev + 1));
+        filePointerRef.current = U16(filePointerRef.current + 1)
 
-        console.log('readData:', inode)
+        //console.log('readData:', inode)
 
         return value;
-    }, [currentFileHandle, filePointer, sectorToAddress, readByte, readInode]);
+    }, [currentFileHandle, sectorToAddress, readByte, readInode]);
 
 
     const writeData = useCallback((value: u8) => {
@@ -237,8 +237,8 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         if (!inode || inode.flags !== 1) return;
 
         // Calculer adresse
-        const sectorOffset = Math.floor(filePointer / SECTOR_SIZE);
-        const byteInSector = filePointer % SECTOR_SIZE;
+        const sectorOffset = Math.floor(filePointerRef.current / SECTOR_SIZE);
+        const byteInSector = filePointerRef.current % SECTOR_SIZE;
         const sector = inode.startSector + sectorOffset;
 
         // Vérifier si on a besoin d'un nouveau secteur
@@ -253,17 +253,17 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         writeByte(address, value);
 
         // Mettre à jour taille si nécessaire
-        if (filePointer >= inode.size) {
+        if (filePointerRef.current >= inode.size) {
             // Mettre à jour l'inode avec nouvelle taille
-            const newInode = { ...inode, size: U16(filePointer + 1) };
+            const newInode = { ...inode, size: U16(filePointerRef.current + 1) };
             writeInode(currentFileHandle, newInode);
         }
 
-        console.log('writeData:', inode)
+        //console.log('writeData:', inode)
 
         // Avancer le pointeur
-        setFilePointer(prev => U16(prev + 1));
-    }, [currentFileHandle, filePointer, sectorToAddress, writeByte, readInode, writeInode]);
+        filePointerRef.current = U16(filePointerRef.current + 1);
+    }, [currentFileHandle, sectorToAddress, writeByte, readInode, writeInode]);
 
 
     const executeCommand = useCallback((cmd: u8) => {
@@ -294,7 +294,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
 
             case 0x93: // CLOSE - ferme fichier courant
                 setCurrentFileHandle(U16(0xFFFF));
-                setFilePointer(U16(0));
+                filePointerRef.current = U16(0)
                 result = U8(1);
                 break;
 
@@ -319,6 +319,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
 
     // Fonction pour ajouter un caractère au nom de fichier
     const writeFilenameChar = useCallback((charCode: u8) => {
+        // TODO: a remplacer par une commande
         if (filenameIndex < FILENAME_LENGTH) {
             const char = String.fromCharCode(charCode);
             setFilenameBuffer(prev => prev + char);
@@ -327,20 +328,32 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
     }, [filenameIndex]);
 
 
+    const reset = useCallback(() => {
+        setCurrentSector(U8(0));
+        setCurrentFileHandle(U16(0));
+        setLastCommandResult(U8(0));
+
+        filePointerRef.current = U16(0)
+        setFilenameBuffer("");
+        setFilenameIndex(0);
+    }, [])
+
+
     const fsHook: FsHook = {
         currentSector,
         currentFileHandle,
         lastCommandResult,
         setCurrentSector,
         setCurrentFileHandle,
-        setFilePointer,
         listFiles,
         createFile,
+        openFile,
         //readFile,
         readData,
         writeData,
         executeCommand,
         writeFilenameChar,
+        reset,
     };
 
     return fsHook;
@@ -353,14 +366,15 @@ export type FsHook = {
     lastCommandResult: u8;
     setCurrentSector: React.Dispatch<React.SetStateAction<u8>>;
     setCurrentFileHandle: React.Dispatch<React.SetStateAction<u16>>;
-    setFilePointer: React.Dispatch<React.SetStateAction<u16>>;
     listFiles: () => string[];
     createFile: (name: string) => boolean;
     //readFile: (name: string) => void;
+    openFile: (name: string) => u16
     readData: () => u8;
     writeData: (value: u8) => void;
     executeCommand: (cmd: u8) => void;
     writeFilenameChar: (charCode: u8) => void;
+    reset: () => void;
 }
 
 

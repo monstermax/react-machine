@@ -25,6 +25,7 @@ export interface Device {
     read(address: u8): u8;
     write(address: u8, value: u8): void;
     getSize?(): number;
+    reset?(): void;
 }
 
 

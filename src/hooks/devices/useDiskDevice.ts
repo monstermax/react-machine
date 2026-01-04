@@ -28,6 +28,7 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
     // File System Hook (utilise le même storage)
     const fsHook = useFileSystem(storage, setStorage);
 
+
     const read = useCallback((port: u8): u8 => {
         switch (port) {
             // ===== MODE RAW =====
@@ -66,15 +67,12 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
         }
     }, [storage, currentAddress, fsHook]);
 
+
     const write = useCallback((port: u8, value: u8) => {
         switch (port) {
             // ===== MODE RAW =====
             case 0: // DISK_DATA - écrire byte à l'adresse courante
-                setStorage(s => {
-                    const newStorage = new Map(s);
-                    newStorage.set(currentAddress, value);
-                    return newStorage;
-                });
+                setStorage(s => new Map(s).set(currentAddress, value));
                 // Auto-increment
                 setCurrentAddress(addr => U16(addr + 1));
                 break;
@@ -106,19 +104,27 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
         }
     }, [currentAddress, fsHook]);
 
+
     const getSize = useCallback(() => storage.size, [storage]);
 
-    const diskDeviceHook: DiskDevice = useMemo(() => ({
+
+    const reset = useCallback(() => {
+        setStorage(data);
+        setCurrentAddress(0 as u16);
+
+        fsHook.reset()
+    }, [data])
+
+
+    const diskDeviceHook: DiskDevice = {
         storage,
         fsHook,
         read,
         write,
         getSize,
         setStorage,
-    }), [
-        storage,
-        fsHook,
-    ]);
+        reset,
+    };
 
     return diskDeviceHook;
 };
@@ -128,5 +134,6 @@ export type DiskDevice = Device & {
     storage: Map<u16, u8>;
     fsHook: FsHook;
     setStorage: React.Dispatch<React.SetStateAction<Map<u16, u8>>>;
+    reset: () => void;
 };
 

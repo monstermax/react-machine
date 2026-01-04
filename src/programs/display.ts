@@ -101,8 +101,8 @@ export const programs: Record<string, ProgramInfo> = {
         code: new Map([
             // === SETUP ===
             [0x00, Opcode.SET_SP],
-            [0x01, 0xFF],
-            [0x02, 0xFE],
+            [0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
+            [0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
 
             // === PRINT "Hello World!\n" ===
             // H
@@ -195,7 +195,8 @@ export const programs: Record<string, ProgramInfo> = {
         code: new Map([
             // === SETUP ===
             [0x00, Opcode.SET_SP],
-            [0x01, 0xFF], [0x02, 0xFE],
+            [0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
+            [0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
 
             // Initialiser compteur C = 0
             [0x03, Opcode.MOV_C_IMM],
@@ -245,7 +246,8 @@ export const programs: Record<string, ProgramInfo> = {
         description: "Affiche 'Hello' sur ligne 1 et 'World!' sur ligne 2",
         code: new Map([
             [0x00, Opcode.SET_SP],
-            [0x01, 0xFF], [0x02, 0xFE],
+            [0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
+            [0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
 
             // Clear LCD
             [0x03, Opcode.MOV_A_IMM],
@@ -304,81 +306,104 @@ export const programs: Record<string, ProgramInfo> = {
         description: "Compte de 0 à 99 sur LCD",
         code: new Map([
             [0x00, Opcode.SET_SP],
-            [0x01, 0xFF], [0x02, 0xFE],
+            [0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
+            [0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
 
             // Clear LCD
-            [0x03, Opcode.MOV_A_IMM], [0x04, 0x01],
+            [0x03, Opcode.MOV_A_IMM],
+            [0x04, 0x01],
             [0x05, Opcode.MOV_MEM_A],
-            [0x06, 0xA1], [0x07, 0xFF],
+            [0x06, 0xA1],
+            [0x07, 0xFF],
 
             // Counter = 0
-            [0x08, Opcode.MOV_A_IMM], [0x09, 0],
+            [0x08, Opcode.MOV_A_IMM],
+            [0x09, 0],
 
             // LOOP:
             // Position curseur (0,0)
             [0x0A, Opcode.PUSH_A],
-            [0x0B, Opcode.MOV_A_IMM], [0x0C, 0],
+            [0x0B, Opcode.MOV_A_IMM],
+            [0x0C, 0],
             [0x0D, Opcode.MOV_MEM_A],
-            [0x0E, 0xA2], [0x0F, 0xFF], // LCD_CURSOR
+            [0x0E, 0xA2],
+            [0x0F, 0xFF], // LCD_CURSOR
             [0x10, Opcode.POP_A],
 
             // Convertir A en ASCII dizaines
             [0x11, Opcode.PUSH_A],
-            [0x12, Opcode.MOV_B_IMM], [0x13, 10],
+            [0x12, Opcode.MOV_B_IMM],
+            [0x13, 10],
             // Division par 10 simplifiée (assume A < 100)
-            [0x14, Opcode.MOV_C_IMM], [0x15, 0], // Quotient
+            [0x14, Opcode.MOV_C_IMM],
+            [0x15, 0], // Quotient
             // DIV_LOOP:
             [0x16, Opcode.SUB], // A = A - B
             [0x17, Opcode.INC_C],
-            [0x18, Opcode.MOV_B_IMM], [0x19, 10],
+            [0x18, Opcode.MOV_B_IMM],
+            [0x19, 10],
             [0x1A, Opcode.JC], // Si carry (A < 0), sortir
-            [0x1B, 0x1F], [0x1C, 0x02],
-            [0x1D, Opcode.JMP],
-            [0x1E, 0x16], [0x1F, 0x02], // DIV_LOOP
+            [0x1B, 0x1F],
+            [0x1C, 0x02],
+            [0x1D, Opcode.JMP], // DIV_LOOP
+            [0x1E, low16 (MEMORY_MAP.PROGRAM_START + 0x16 as u16)],
+            [0x1F, high16(MEMORY_MAP.PROGRAM_START + 0x16 as u16)],
 
             // Afficher dizaine
-            [0x20, Opcode.MOV_A_IMM], [0x21, 0x00],
+            [0x20, Opcode.MOV_A_IMM],
+            [0x21, 0x00],
             [0x22, Opcode.ADD], // A = C
-            [0x23, Opcode.MOV_B_IMM], [0x24, 0x30], // '0'
+            [0x23, Opcode.MOV_B_IMM],
+            [0x24, 0x30], // '0'
             [0x25, Opcode.ADD], // A = C + '0'
             [0x26, Opcode.MOV_MEM_A],
-            [0x27, 0xA0], [0x28, 0xFF], // LCD_DATA
+            [0x27, 0xA0],
+            [0x28, 0xFF], // LCD_DATA
             [0x29, Opcode.POP_A],
 
             // Afficher unité (A % 10)
             [0x2A, Opcode.PUSH_A],
             // Modulo 10 simplifié
             [0x2B, Opcode.AND], // Reset
-            [0x2C, Opcode.MOV_B_IMM], [0x2D, 10],
+            [0x2C, Opcode.MOV_B_IMM],
+            [0x2D, 10],
             // MOD_LOOP:
             [0x2E, Opcode.SUB],
             [0x2F, Opcode.JC],
-            [0x30, 0x33], [0x31, 0x02],
+            [0x30, 0x33],
+            [0x31, 0x02],
             [0x32, Opcode.JMP],
-            [0x33, 0x2E], [0x34, 0x02],
+            [0x33, low16 (MEMORY_MAP.PROGRAM_START + 0x2E as u16)],
+            [0x34, high16(MEMORY_MAP.PROGRAM_START + 0x2E as u16)],
 
-            [0x35, Opcode.MOV_B_IMM], [0x36, 0x30],
+            [0x35, Opcode.MOV_B_IMM],
+            [0x36, 0x30],
             [0x37, Opcode.ADD],
             [0x38, Opcode.MOV_MEM_A],
-            [0x39, 0xA0], [0x3A, 0xFF],
+            [0x39, 0xA0],
+            [0x3A, 0xFF],
             [0x3B, Opcode.POP_A],
 
             // Delay
             [0x3C, Opcode.PUSH_A],
-            [0x3D, Opcode.MOV_B_IMM], [0x3E, 0xFF],
+            [0x3D, Opcode.MOV_B_IMM],
+            [0x3E, 0xFF],
             [0x3F, Opcode.DEC_B],
             [0x40, Opcode.JNZ],
-            [0x41, 0x3F], [0x42, 0x02],
+            [0x41, low16 (MEMORY_MAP.PROGRAM_START + 0x3F as u16)],
+            [0x42, high16(MEMORY_MAP.PROGRAM_START + 0x3F as u16)],
             [0x43, Opcode.POP_A],
 
             // Incrémenter
             [0x44, Opcode.INC_A],
 
             // Check < 100
-            [0x45, Opcode.MOV_B_IMM], [0x46, 100],
+            [0x45, Opcode.MOV_B_IMM],
+            [0x46, 100],
             [0x47, Opcode.SUB],
             [0x48, Opcode.JNZ],
-            [0x49, 0x0A], [0x4A, 0x02],
+            [0x49, low16 (MEMORY_MAP.PROGRAM_START + 0x0A as u16)],
+            [0x4A, high16(MEMORY_MAP.PROGRAM_START + 0x0A as u16)],
 
             [0x4B, Opcode.HALT],
         ] as [u8, u8][]),
@@ -429,10 +454,13 @@ export const programs: Record<string, ProgramInfo> = {
         name: "Contour Carré 10x10",
         description: "Dessine uniquement le contour d'un carré 10x10",
         code: new Map([
-            [0x00, Opcode.SET_SP], [0x01, 0xFF], [0x02, 0xFE],
+            [0x00, Opcode.SET_SP],
+            [0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
+            [0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
 
             // === LIGNE HAUT (Y=5, X=5 à 14) ===
-            [0x03, Opcode.MOV_A_IMM], [0x04, 5],  // X = 5
+            [0x03, Opcode.MOV_A_IMM],
+            [0x04, 5],  // X = 5
 
             // LOOP_HAUT @ 0x05:
             [0x05, Opcode.MOV_MEM_A], [0x06, 0xD0], [0x07, 0xFF], // PIXEL_X
@@ -447,43 +475,63 @@ export const programs: Record<string, ProgramInfo> = {
             [0x16, Opcode.SUB],                    // A = A - 15
             [0x17, Opcode.POP_A],                  // Restaurer A
             [0x18, Opcode.JNZ],
-            [0x19, 0x05], [0x1A, 0x02],            // Si A != 15, loop
+            [0x19, low16 (MEMORY_MAP.PROGRAM_START + 0x05 as u16)],
+            [0x1A, high16(MEMORY_MAP.PROGRAM_START + 0x05 as u16)],            // Si A != 15, loop
 
             // === LIGNE BAS (Y=14, X=5 à 14) ===
-            [0x1B, Opcode.MOV_A_IMM], [0x1C, 5],  // X = 5
+            [0x1B, Opcode.MOV_A_IMM],
+            [0x1C, 5],  // X = 5
 
             // LOOP_BAS @ 0x1D:
-            [0x1D, Opcode.MOV_MEM_A], [0x1E, 0xD0], [0x1F, 0xFF], // PIXEL_X
-            [0x20, Opcode.MOV_B_IMM], [0x21, 14],  // Y = 14
-            [0x22, Opcode.MOV_MEM_B], [0x23, 0xD1], [0x24, 0xFF], // PIXEL_Y
-            [0x25, Opcode.MOV_B_IMM], [0x26, 1],
-            [0x27, Opcode.MOV_MEM_B], [0x28, 0xD2], [0x29, 0xFF], // PIXEL_COLOR
+            [0x1D, Opcode.MOV_MEM_A],
+            [0x1E, 0xD0], [0x1F, 0xFF], // PIXEL_X
+            [0x20, Opcode.MOV_B_IMM],
+            [0x21, 14],  // Y = 14
+            [0x22, Opcode.MOV_MEM_B],
+            [0x23, 0xD1], [0x24, 0xFF], // PIXEL_Y
+            [0x25, Opcode.MOV_B_IMM],
+            [0x26, 1],
+            [0x27, Opcode.MOV_MEM_B],
+            [0x28, 0xD2], [0x29, 0xFF], // PIXEL_COLOR
 
             [0x2A, Opcode.INC_A],
             [0x2B, Opcode.PUSH_A],
-            [0x2C, Opcode.MOV_B_IMM], [0x2D, 15],
+            [0x2C, Opcode.MOV_B_IMM],
+            [0x2D, 15],
             [0x2E, Opcode.SUB],
             [0x2F, Opcode.POP_A],
             [0x30, Opcode.JNZ],
-            [0x31, 0x1D], [0x32, 0x02],
+            [0x31, low16 (MEMORY_MAP.PROGRAM_START + 0x1D as u16)],
+            [0x32, high16(MEMORY_MAP.PROGRAM_START + 0x1D as u16)],
 
             // === CÔTÉ GAUCHE (X=5, Y=6 à 13) ===
-            [0x33, Opcode.MOV_A_IMM], [0x34, 6],  // Y = 6
+            [0x33, Opcode.MOV_A_IMM],
+            [0x34, 6],  // Y = 6
 
             // LOOP_GAUCHE @ 0x35:
-            [0x35, Opcode.MOV_B_IMM], [0x36, 5],   // X = 5
-            [0x37, Opcode.MOV_MEM_B], [0x38, 0xD0], [0x39, 0xFF], // PIXEL_X
-            [0x3A, Opcode.MOV_MEM_A], [0x3B, 0xD1], [0x3C, 0xFF], // PIXEL_Y
-            [0x3D, Opcode.MOV_B_IMM], [0x3E, 1],
-            [0x3F, Opcode.MOV_MEM_B], [0x40, 0xD2], [0x41, 0xFF], // PIXEL_COLOR
+            [0x35, Opcode.MOV_B_IMM],
+            [0x36, 5],   // X = 5
+            [0x37, Opcode.MOV_MEM_B],
+            [0x38, 0xD0],
+            [0x39, 0xFF], // PIXEL_X
+            [0x3A, Opcode.MOV_MEM_A],
+            [0x3B, 0xD1],
+            [0x3C, 0xFF], // PIXEL_Y
+            [0x3D, Opcode.MOV_B_IMM],
+            [0x3E, 1],
+            [0x3F, Opcode.MOV_MEM_B],
+            [0x40, 0xD2],
+            [0x41, 0xFF], // PIXEL_COLOR
 
             [0x42, Opcode.INC_A],
             [0x43, Opcode.PUSH_A],
-            [0x44, Opcode.MOV_B_IMM], [0x45, 14],
+            [0x44, Opcode.MOV_B_IMM],
+            [0x45, 14],
             [0x46, Opcode.SUB],
             [0x47, Opcode.POP_A],
             [0x48, Opcode.JNZ],
-            [0x49, 0x35], [0x4A, 0x02],
+            [0x49, low16 (MEMORY_MAP.PROGRAM_START + 0x35 as u16)],
+            [0x4A, high16(MEMORY_MAP.PROGRAM_START + 0x35 as u16)],
 
             // === CÔTÉ DROIT (X=14, Y=6 à 13) ===
             [0x4B, Opcode.MOV_A_IMM], [0x4C, 6],  // Y = 6
@@ -497,11 +545,13 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x5A, Opcode.INC_A],
             [0x5B, Opcode.PUSH_A],
-            [0x5C, Opcode.MOV_B_IMM], [0x5D, 14],
+            [0x5C, Opcode.MOV_B_IMM],
+            [0x5D, 14],
             [0x5E, Opcode.SUB],
             [0x5F, Opcode.POP_A],
             [0x60, Opcode.JNZ],
-            [0x61, 0x4D], [0x62, 0x02],
+            [0x61, low16 (MEMORY_MAP.PROGRAM_START + 0x4D as u16)],
+            [0x62, high16(MEMORY_MAP.PROGRAM_START + 0x4D as u16)],
 
             [0x63, Opcode.HALT],
         ] as [u8, u8][]),

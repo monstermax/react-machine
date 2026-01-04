@@ -76,11 +76,18 @@ export const useSevenSegmentDisplay = (): SevenSegmentHook => {
     }, [currentValue])
 
 
+    const reset = useCallback(() => {
+        setCurrentValue(0 as u8);
+        setRawSegments(0 as u8);
+    }, []);
+
+
     const hook: SevenSegmentHook = {
         read,
         write,
         getSegments,
         getCurrentDigit,
+        reset,
     }
 
     return hook
@@ -92,6 +99,7 @@ export type SevenSegmentHook = {
     write: (port: u8, value: u8) => void,
     getSegments: () => boolean[],
     getCurrentDigit: () => number,
+    reset: () => void,
 }
 
 

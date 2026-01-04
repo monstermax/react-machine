@@ -33,10 +33,16 @@ export const useLedsDisplay = (): LedsDevice => {
     }, [leds])
 
 
+    const reset = useCallback(() => {
+        setLeds(0 as u8);
+    }, []);
+
+
     const romHook: LedsDevice = {
         read,
         write,
         getLeds,
+        reset,
     };
 
     return romHook;
@@ -46,5 +52,6 @@ export const useLedsDisplay = (): LedsDevice => {
 export type LedsDevice = {
     read: (address: u8) => u8
     write: (address: u8, value: u8) => void
-    getLeds: () => u8[]
+    getLeds: () => u8[];
+    reset: () => void;
 };

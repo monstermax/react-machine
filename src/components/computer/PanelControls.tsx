@@ -35,7 +35,7 @@ const frequencies = [
 
 
 export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
-    console.log('RENDER ComputerPage.PanelControls')
+    //console.log('RENDER ComputerPage.PanelControls')
 
     const { computerHook } = props;
     const { cpuHook } = computerHook;
@@ -63,7 +63,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     const [frequencyReal, setFrequencyReal] = useState(0)
     const [lastFrequencyStat, setLastFrequencyStat] = useState<{ timestamp: number, cycles: number } | null>(null)
     const [triggerCycle, setTriggerCycle] = useState(0)
-    const [boost, setBoost] = useState(false)
+    const [boost, setBoost] = useState(false) // 2 cycles per interval if enabled. 1 cycle if disabled
 
 
     // Calculer la frequence reelle
@@ -140,7 +140,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
 
     // Gestion du timer de control
     useEffect(() => {
-        console.log('CTRL TIMER UP')
+        //console.log('CTRL TIMER UP')
         const timerCtrl = setInterval(() => setTriggerFrequencyRefresh(x => x + 1), 100);
 
         return () => {
@@ -163,7 +163,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
 
     return (
         <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 lg:col-span-2">
-            <h2 className="text-xl font-semibold mb-2 text-green-400">Controls</h2>
+            <h2 className="text-xl font-semibold mb-2 text-green-400">Execution Controls</h2>
 
             {/* Sélection d'OS */}
             <div className="mb-4 flex gap-4 items-center">
@@ -191,7 +191,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
                     disabled={!selectedOs}
                     className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
                 >
-                    Load
+                    {(computerHook.loadedOs && computerHook.loadedOs === selectedOs && !isOsUnloaded) ? "Reload" : "Load"}
                 </button>
 
                 <button
@@ -230,7 +230,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
                     disabled={!selectedProgram}
                     className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
                 >
-                    Load
+                    {(computerHook.loadedProgram && computerHook.loadedProgram === selectedProgram && !isProgramUnloaded) ? "Reload" : "Load"}
                 </button>
 
                 <button

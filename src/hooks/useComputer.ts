@@ -30,6 +30,7 @@ export const useComputer = (): ComputerHook => {
     if (true) {
         // DEBUG
         (window as any).ioHook = ioHook;
+        (window as any).fs = ioHook.programDisk.fsHook;
     }
 
 
@@ -75,16 +76,26 @@ export const useComputer = (): ComputerHook => {
 
     // Initialize/Reset CPU & RAM
     const resetComputer = useCallback(() => {
+        const _loadedOs = loadedOs;
         setLoadedProgram(null);
         setLoadedOs(null);
 
         // Load OsDisk into RAM (overwrite full RAM)
         //const ramStorage = mapAddress16(ioHook.osDisk.storage, MEMORY_MAP.OS_START);
         //ramHook.setStorage(ramStorage);
+        ramHook.setStorage(new Map);
 
         // Initialize CPU
         cpuHook.reset();
-    }, [cpuHook.reset, ioHook.osDisk.storage, setLoadedProgram])
+
+        // Initialize io
+        ioHook.reset()
+
+        if (_loadedOs) {
+            loadOs(_loadedOs)
+        }
+
+    }, [loadedOs, ioHook.reset, cpuHook.reset, ioHook.osDisk.storage, setLoadedProgram])
 
 
     const loadOs = useCallback((osName: string) => {

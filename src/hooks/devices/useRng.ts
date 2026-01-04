@@ -80,7 +80,7 @@ export const useRng = (): RngHook => {
 
     const reset = useCallback(() => {
         setSeed(Date.now());
-        console.log("🎲 RNG: Reset");
+        //console.log("🎲 RNG: Reset");
     }, [setSeed]);
 
 

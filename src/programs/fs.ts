@@ -23,62 +23,62 @@ export const FS_CREATE_FILE: ProgramInfo = {
         // 'T'
         [0x03, Opcode.MOV_A_IMM], [0x04, 0x54],
         [0x05, Opcode.MOV_MEM_A],
-        [0x06, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x07, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x06, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x07, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         // 'E'
         [0x08, Opcode.MOV_A_IMM], [0x09, 0x45],
         [0x0A, Opcode.MOV_MEM_A],
-        [0x0B, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x0C, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x0B, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x0C, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         // 'S'
         [0x0D, Opcode.MOV_A_IMM], [0x0E, 0x53],
         [0x0F, Opcode.MOV_MEM_A],
-        [0x10, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x11, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x10, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x11, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         // 'T'
         [0x12, Opcode.MOV_A_IMM], [0x13, 0x54],
         [0x14, Opcode.MOV_MEM_A],
-        [0x15, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x16, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x15, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x16, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         // '.'
         [0x17, Opcode.MOV_A_IMM], [0x18, 0x2E],
         [0x19, Opcode.MOV_MEM_A],
-        [0x1A, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x1B, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x1A, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x1B, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         // 'T'
         [0x1C, Opcode.MOV_A_IMM], [0x1D, 0x54],
         [0x1E, Opcode.MOV_MEM_A],
-        [0x1F, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x20, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x1F, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x20, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         // 'X'
         [0x21, Opcode.MOV_A_IMM], [0x22, 0x58],
         [0x23, Opcode.MOV_MEM_A],
-        [0x24, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x25, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x24, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x25, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         // 'T'
         [0x26, Opcode.MOV_A_IMM], [0x27, 0x54],
         [0x28, Opcode.MOV_MEM_A],
-        [0x29, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x2A, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x29, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x2A, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         // === Commande CREATE (0x91) ===
         [0x2B, Opcode.MOV_A_IMM],
         [0x2C, 0x91],
         [0x2D, Opcode.MOV_MEM_A],
-        [0x2E, low16(MEMORY_MAP.PROGRAM_DISK_FS_COMMAND)],
-        [0x2F, high16(MEMORY_MAP.PROGRAM_DISK_FS_COMMAND)],
+        [0x2E, low16(MEMORY_MAP.DATA_DISK_FS_COMMAND)],
+        [0x2F, high16(MEMORY_MAP.DATA_DISK_FS_COMMAND)],
 
         // Vérifier résultat
         [0x30, Opcode.MOV_A_MEM],
-        [0x31, low16(MEMORY_MAP.PROGRAM_DISK_FS_COMMAND)],
-        [0x32, high16(MEMORY_MAP.PROGRAM_DISK_FS_COMMAND)],
+        [0x31, low16(MEMORY_MAP.DATA_DISK_FS_COMMAND)],
+        [0x32, high16(MEMORY_MAP.DATA_DISK_FS_COMMAND)],
 
         [0x33, Opcode.JZ], // Si échec, halt
         [0x34, low16(MEMORY_MAP.PROGRAM_START + 0x90 as u16)],
@@ -88,93 +88,93 @@ export const FS_CREATE_FILE: ProgramInfo = {
         // Réécrire le nom (car buffer effacé après CREATE)
         [0x36, Opcode.MOV_A_IMM], [0x37, 0x54], // 'T'
         [0x38, Opcode.MOV_MEM_A],
-        [0x39, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x3A, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x39, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x3A, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x3B, Opcode.MOV_A_IMM], [0x3C, 0x45], // 'E'
         [0x3D, Opcode.MOV_MEM_A],
-        [0x3E, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x3F, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x3E, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x3F, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x40, Opcode.MOV_A_IMM], [0x41, 0x53], // 'S'
         [0x42, Opcode.MOV_MEM_A],
-        [0x43, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x44, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x43, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x44, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x45, Opcode.MOV_A_IMM], [0x46, 0x54], // 'T'
         [0x47, Opcode.MOV_MEM_A],
-        [0x48, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x49, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x48, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x49, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x4A, Opcode.MOV_A_IMM], [0x4B, 0x2E], // '.'
         [0x4C, Opcode.MOV_MEM_A],
-        [0x4D, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x4E, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x4D, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x4E, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x4F, Opcode.MOV_A_IMM], [0x50, 0x54], // 'T'
         [0x51, Opcode.MOV_MEM_A],
-        [0x52, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x53, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x52, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x53, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x54, Opcode.MOV_A_IMM], [0x55, 0x58], // 'X'
         [0x56, Opcode.MOV_MEM_A],
-        [0x57, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x58, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x57, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x58, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x59, Opcode.MOV_A_IMM], [0x5A, 0x54], // 'T'
         [0x5B, Opcode.MOV_MEM_A],
-        [0x5C, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x5D, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x5C, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x5D, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         // Commande OPEN (0x92)
         [0x5E, Opcode.MOV_A_IMM], [0x5F, 0x92],
         [0x60, Opcode.MOV_MEM_A],
-        [0x61, low16(MEMORY_MAP.PROGRAM_DISK_FS_COMMAND)],
-        [0x62, high16(MEMORY_MAP.PROGRAM_DISK_FS_COMMAND)],
+        [0x61, low16(MEMORY_MAP.DATA_DISK_FS_COMMAND)],
+        [0x62, high16(MEMORY_MAP.DATA_DISK_FS_COMMAND)],
 
         // === Écrire "Hello\n" dans le fichier ===
         // 'H'
         [0x63, Opcode.MOV_A_IMM], [0x64, 0x48],
         [0x65, Opcode.MOV_MEM_A],
-        [0x66, low16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
-        [0x67, high16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
+        [0x66, low16(MEMORY_MAP.DATA_DISK_FS_DATA)],
+        [0x67, high16(MEMORY_MAP.DATA_DISK_FS_DATA)],
 
         // 'e'
         [0x68, Opcode.MOV_A_IMM], [0x69, 0x65],
         [0x6A, Opcode.MOV_MEM_A],
-        [0x6B, low16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
-        [0x6C, high16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
+        [0x6B, low16(MEMORY_MAP.DATA_DISK_FS_DATA)],
+        [0x6C, high16(MEMORY_MAP.DATA_DISK_FS_DATA)],
 
         // 'l'
         [0x6D, Opcode.MOV_A_IMM], [0x6E, 0x6C],
         [0x6F, Opcode.MOV_MEM_A],
-        [0x70, low16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
-        [0x71, high16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
+        [0x70, low16(MEMORY_MAP.DATA_DISK_FS_DATA)],
+        [0x71, high16(MEMORY_MAP.DATA_DISK_FS_DATA)],
 
         // 'l'
         [0x72, Opcode.MOV_A_IMM], [0x73, 0x6C],
         [0x74, Opcode.MOV_MEM_A],
-        [0x75, low16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
-        [0x76, high16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
+        [0x75, low16(MEMORY_MAP.DATA_DISK_FS_DATA)],
+        [0x76, high16(MEMORY_MAP.DATA_DISK_FS_DATA)],
 
         // 'o'
         [0x77, Opcode.MOV_A_IMM], [0x78, 0x6F],
         [0x79, Opcode.MOV_MEM_A],
-        [0x7A, low16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
-        [0x7B, high16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
+        [0x7A, low16(MEMORY_MAP.DATA_DISK_FS_DATA)],
+        [0x7B, high16(MEMORY_MAP.DATA_DISK_FS_DATA)],
 
         // '\n'
         [0x7C, Opcode.MOV_A_IMM], [0x7D, 0x0A],
         [0x7E, Opcode.MOV_MEM_A],
-        [0x7F, low16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
-        [0x80, high16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
+        [0x7F, low16(MEMORY_MAP.DATA_DISK_FS_DATA)],
+        [0x80, high16(MEMORY_MAP.DATA_DISK_FS_DATA)],
 
         // === Fermer le fichier ===
         [0x81, Opcode.MOV_A_IMM],
         [0x82, 0x93], // CLOSE
         [0x83, Opcode.MOV_MEM_A],
-        [0x84, low16(MEMORY_MAP.PROGRAM_DISK_FS_COMMAND)],
-        [0x85, high16(MEMORY_MAP.PROGRAM_DISK_FS_COMMAND)],
+        [0x84, low16(MEMORY_MAP.DATA_DISK_FS_COMMAND)],
+        [0x85, high16(MEMORY_MAP.DATA_DISK_FS_COMMAND)],
 
         // Fréquence = 440 Hz → valeur ≈ (440-100)/7.45 ≈ 45
         [0x86, Opcode.MOV_A_IMM],
@@ -212,55 +212,55 @@ export const FS_READ_FILE: ProgramInfo = {
         // Écrire nom "TEST.TXT"
         [0x03, Opcode.MOV_A_IMM], [0x04, 0x54], // 'T'
         [0x05, Opcode.MOV_MEM_A],
-        [0x06, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x07, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x06, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x07, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x08, Opcode.MOV_A_IMM], [0x09, 0x45], // 'E'
         [0x0A, Opcode.MOV_MEM_A],
-        [0x0B, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x0C, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x0B, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x0C, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x0D, Opcode.MOV_A_IMM], [0x0E, 0x53], // 'S'
         [0x0F, Opcode.MOV_MEM_A],
-        [0x10, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x11, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x10, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x11, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x12, Opcode.MOV_A_IMM], [0x13, 0x54], // 'T'
         [0x14, Opcode.MOV_MEM_A],
-        [0x15, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x16, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x15, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x16, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x17, Opcode.MOV_A_IMM], [0x18, 0x2E], // '.'
         [0x19, Opcode.MOV_MEM_A],
-        [0x1A, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x1B, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x1A, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x1B, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x1C, Opcode.MOV_A_IMM], [0x1D, 0x54], // 'T'
         [0x1E, Opcode.MOV_MEM_A],
-        [0x1F, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x20, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x1F, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x20, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x21, Opcode.MOV_A_IMM], [0x22, 0x58], // 'X'
         [0x23, Opcode.MOV_MEM_A],
-        [0x24, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x25, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x24, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x25, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         [0x26, Opcode.MOV_A_IMM], [0x27, 0x54], // 'T'
         [0x28, Opcode.MOV_MEM_A],
-        [0x29, low16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
-        [0x2A, high16(MEMORY_MAP.PROGRAM_DISK_FS_FILENAME)],
+        [0x29, low16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
+        [0x2A, high16(MEMORY_MAP.DATA_DISK_FS_FILENAME)],
 
         // OPEN (0x92)
         [0x2B, Opcode.MOV_A_IMM], [0x2C, 0x92],
         [0x2D, Opcode.MOV_MEM_A],
-        [0x2E, low16(MEMORY_MAP.PROGRAM_DISK_FS_COMMAND)],
-        [0x2F, high16(MEMORY_MAP.PROGRAM_DISK_FS_COMMAND)],
+        [0x2E, low16(MEMORY_MAP.DATA_DISK_FS_COMMAND)],
+        [0x2F, high16(MEMORY_MAP.DATA_DISK_FS_COMMAND)],
 
         // LOOP: Lire et afficher
         // Lire byte
         [0x30, Opcode.MOV_A_MEM],
-        [0x31, low16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
-        [0x32, high16(MEMORY_MAP.PROGRAM_DISK_FS_DATA)],
+        [0x31, low16(MEMORY_MAP.DATA_DISK_FS_DATA)],
+        [0x32, high16(MEMORY_MAP.DATA_DISK_FS_DATA)],
 
         // Si 0, fin de fichier
         [0x33, Opcode.JZ],
@@ -280,8 +280,8 @@ export const FS_READ_FILE: ProgramInfo = {
         // END: Fermer
         [0x3C, Opcode.MOV_A_IMM], [0x3D, 0x93], // CLOSE
         [0x3E, Opcode.MOV_MEM_A],
-        [0x3F, low16(MEMORY_MAP.PROGRAM_DISK_FS_COMMAND)],
-        [0x40, high16(MEMORY_MAP.PROGRAM_DISK_FS_COMMAND)],
+        [0x3F, low16(MEMORY_MAP.DATA_DISK_FS_COMMAND)],
+        [0x40, high16(MEMORY_MAP.DATA_DISK_FS_COMMAND)],
 
         [0x41, Opcode.SYSCALL],
         [0x42, 0],               // ← Syscall 0 = exit
@@ -304,8 +304,8 @@ export const FS_LIST_FILES: ProgramInfo = {
 
         // Lire FS_STATUS (nombre de fichiers)
         [0x03, Opcode.MOV_A_MEM],
-        [0x04, low16(MEMORY_MAP.PROGRAM_DISK_FS_STATUS)],
-        [0x05, high16(MEMORY_MAP.PROGRAM_DISK_FS_STATUS)],
+        [0x04, low16(MEMORY_MAP.DATA_DISK_FS_STATUS)],
+        [0x05, high16(MEMORY_MAP.DATA_DISK_FS_STATUS)],
 
         // Afficher dans LEDs
         [0x06, Opcode.MOV_MEM_A],
