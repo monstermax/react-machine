@@ -3,11 +3,10 @@
 
 
 ## FEATURES
+- gestion file system
 - bootloader avec selecteur d'OS (si console, afficher. si keyboard, prompt, sinon booter l'OS par defaut)
 - gérer un language de code pseudo assembleur (en texte brute)
 - gestion multiples disks (io hotplug)
-- gestion file system
-- debugger (interrupt keyboard dans l'OS. detection touche "d")
 - multitask (2 programmes én parallele)
 - créer Device (IO) IDE React (pour charger du code assembleur directement en memoire)
 - Multi-Threads

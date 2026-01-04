@@ -21,16 +21,15 @@ const DATA_SECTORS_START = 18;   // Secteurs 18-255: données utilisateur
 // Structure Inode (16 bytes)
 interface Inode {
     name: string;           // 8 bytes
-    size: number;           // 2 bytes (taille en bytes, max 65535)
-    startSector: number;    // 1 byte (secteur de départ)
-    flags: number;          // 1 byte (0=libre, 1=occupé, 2=verrouillé)
+    size: u16;           // 2 bytes (taille en bytes, max 65535)
+    startSector: u8;    // 1 byte (secteur de départ)
+    flags: u8;          // 1 byte (0=libre, 1=occupé, 2=verrouillé)
     // 4 bytes réservés pour extensions
 }
 
 
 
 export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<React.SetStateAction<Map<u16, u8>>>): FsHook => {
-
     const [currentSector, setCurrentSector] = useState<u8>(U8(0));
     const [currentFileHandle, setCurrentFileHandle] = useState<u16>(U16(0));
     const [lastCommandResult, setLastCommandResult] = useState<u8>(U8(0));
@@ -69,6 +68,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
             const flags = readByte(inodeAddr + 12 as u16); // Byte 12 = flags
             if (flags === 0) return i; // Libre
         }
+
         return -1; // Plus de place
     }, [sectorToAddress, readByte]);
 
@@ -90,7 +90,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         // Lire taille (2 bytes)
         const sizeLow = readByte(U16(baseAddr + 8));
         const sizeHigh = readByte(U16(baseAddr + 9));
-        const size = (sizeHigh << 8) | sizeLow;
+        const size = U16((sizeHigh << 8) | sizeLow);
 
         // Lire secteur de départ
         const startSector = readByte(U16(baseAddr + 10));
@@ -137,6 +137,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
 
         for (let i = 0; i < MAX_FILES; i++) {
             const inode = readInode(i);
+
             if (inode && inode.flags === 1) { // Fichier actif
                 files.push(inode.name);
             }
@@ -161,14 +162,14 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         // Chercher secteurs libres (simplifié: 1 secteur par fichier pour commencer)
         // TODO: Implémenter bitmap d'allocation
 
-        const startSector = DATA_SECTORS_START; // Simplifié
+        const startSector = DATA_SECTORS_START as u8; // Simplifié
 
         // Créer inode
         const inode: Inode = {
             name: name.padEnd(FILENAME_LENGTH, ' ').substring(0, FILENAME_LENGTH),
-            size: 0,
+            size: 0 as u16,
             startSector,
-            flags: 1, // Occupé
+            flags: 1 as u8, // Occupé
         };
 
         writeInode(inodeIndex, inode);
@@ -179,12 +180,14 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
     const openFile = useCallback((name: string): u16 => {
         for (let i = 0; i < MAX_FILES; i++) {
             const inode = readInode(i);
+
             if (inode && inode.flags === 1 && inode.name.trim() === name.trim()) {
                 setCurrentFileHandle(U16(i));
                 setFilePointer(U16(0)); // Réinitialiser pointeur
                 return U16(i);
             }
         }
+
         return U16(0xFFFF); // Not found
     }, [readInode]);
 
@@ -199,11 +202,11 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         if (filePointer >= inode.size) return U8(0);
 
         // Calculer adresse
-        const sectorOffset = Math.floor(filePointer / SECTOR_SIZE);
-        const byteInSector = filePointer % SECTOR_SIZE;
-        const sector = inode.startSector + sectorOffset;
+        const sectorOffset = Math.floor(filePointer / SECTOR_SIZE) as u16;
+        const byteInSector = filePointer % SECTOR_SIZE as u16;
+        const sector = inode.startSector + sectorOffset as u16;
 
-        const address = sectorToAddress(U8(sector), U16(byteInSector));
+        const address = sectorToAddress(U8(sector), byteInSector);
         const value = readByte(address);
 
         // Avancer le pointeur
@@ -237,7 +240,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         // Mettre à jour taille si nécessaire
         if (filePointer >= inode.size) {
             // Mettre à jour l'inode avec nouvelle taille
-            const newInode = { ...inode, size: filePointer + 1 };
+            const newInode = { ...inode, size: U16(filePointer + 1) };
             writeInode(currentFileHandle, newInode);
         }
 
@@ -284,8 +287,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
                 break;
 
             case 0x95: // SEEK - positionne pointeur
-                // La valeur à seek est dans un registre CPU
-                // À implémenter avec une autre commande
+                // TODO: Implémenter
                 break;
 
             default:
@@ -345,21 +347,6 @@ export type FsHook = {
 
 
 /*
-
-Secteur 0 : Superbloc (métadonnées FS)
-Secteur 1 : Table d'allocation (bitmap)
-Secteurs 2-31 : Inodes (64 fichiers max)
-Secteurs 32-255 : Données utilisateur
-
-
-
-interface Inode {
-    name: string[8];      // Nom court (8 chars)
-    size: number;        // Taille en bytes (max 255)
-    startSector: number; // Premier secteur de données
-    flags: number;       // 0=libre, 1=occupé
-}
-
 
 0x01 : LIST - Lister les fichiers
 0x02 : CREATE - Créer fichier
