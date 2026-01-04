@@ -1,8 +1,9 @@
 
+import { high16, low16 } from "@/lib/integers";
 import { Opcode } from "../lib/instructions";
 import { MEMORY_MAP } from "../lib/memory_map";
 
-import type { ProgramInfo, u8 } from "@/types/cpu.types";
+import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 /**
@@ -279,11 +280,16 @@ export const LCD_LIVE_CLOCK: ProgramInfo = {
         [0x2F, Opcode.MOV_MEM_A], [0x30, 0xA0], [0x31, 0xFF],
 
         // Délai
-        [0x32, Opcode.MOV_C_IMM], [0x33, 0xFF],
+        [0x32, Opcode.MOV_C_IMM],
+        [0x33, 0xFF],
         [0x34, Opcode.DEC_C],
-        [0x35, Opcode.JNZ], [0x36, 0x34], [0x37, 0x02],
+        [0x35, Opcode.JNZ],
+        [0x36, low16(MEMORY_MAP.PROGRAM_START + 0x34 as u16)],   // PROGRAM_START + 0x34 - Low
+        [0x37, high16(MEMORY_MAP.PROGRAM_START + 0x34 as u16)],  // PROGRAM_START + 0x34 - High
 
-        [0x38, Opcode.JMP], [0x39, 0x08], [0x3A, 0x02],
+        [0x38, Opcode.JMP],
+        [0x39, low16(MEMORY_MAP.OS_START + 0x02 as u16)],   // OS_START + 0x02 - Low
+        [0x3A, high16(MEMORY_MAP.OS_START + 0x02 as u16)],  // OS_START + 0x02 - High
     ] as [u8, u8][]),
     expectedResult: "LCD affiche l'heure qui se met à jour"
 };

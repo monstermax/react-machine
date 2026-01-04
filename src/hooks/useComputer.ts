@@ -84,7 +84,7 @@ export const useComputer = (): ComputerHook => {
 
         // Initialize CPU
         cpuHook.reset();
-    }, [cpuHook.reset, ramHook.setStorage, ioHook.osDisk.storage, setLoadedProgram])
+    }, [cpuHook.reset, ioHook.osDisk.storage, setLoadedProgram])
 
 
     const loadOs = useCallback((osName: string) => {

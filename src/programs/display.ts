@@ -1,8 +1,9 @@
 
 import { Opcode } from "@/lib/instructions";
+import { high16, low16 } from "@/lib/integers";
 import { MEMORY_MAP } from "@/lib/memory_map";
 
-import type { ProgramInfo, u8 } from "@/types/cpu.types";
+import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 export const programs: Record<string, ProgramInfo> = {
@@ -15,8 +16,8 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Loop
             [0x02, Opcode.MOV_MEM_A],
-            [0x03, 0x30],  // Low byte
-            [0x04, 0xFF],  // High byte (0xFF30)
+            [0x03, low16(MEMORY_MAP.LEDS_BASE)],   // LEDS_BASE - Low byte
+            [0x04, high16(MEMORY_MAP.LEDS_BASE)],  // LEDS_BASE - High byte (0xFF30)
 
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
@@ -33,8 +34,8 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Loop
             [0x02, Opcode.MOV_MEM_A],
-            [0x03, 0x30],  // Low byte
-            [0x04, 0xFF],  // High byte (0xFF30)
+            [0x03, low16(MEMORY_MAP.LEDS_BASE)],   // LEDS_BASE - Low byte
+            [0x04, high16(MEMORY_MAP.LEDS_BASE)],  // LEDS_BASE - High byte (0xFF30)
 
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
@@ -51,13 +52,13 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Loop
             [0x02, Opcode.MOV_MEM_A],
-            [0x03, 0x30],  // Low byte
-            [0x04, 0xFF],  // High byte (0xFF30)
+            [0x03, low16(MEMORY_MAP.LEDS_BASE)],  // LEDS_BASE - Low byte
+            [0x04, high16(MEMORY_MAP.LEDS_BASE)],  // LEDS_BASE - High byte (0xFF30)
 
             [0x05, Opcode.INC_A],
             [0x06, Opcode.JMP],
-            [0x07, 0x02],  // Low
-            [0x08, 0x02],  // High (0x0202 = PROGRAM_START + 0x02)
+            [0x07, low16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],   // PROGRAM_START + 0x02 - Low
+            [0x08, high16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],  // PROGRAM_START + 0x02 - High
         ] as [u8, u8][]),
         expectedResult: "LEDs qui comptent en binaire de 0 à 255"
     },
@@ -71,7 +72,8 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Boucle principale
             [0x02, Opcode.MOV_MEM_A],
-            [0x03, 0x60], [0x04, 0xFF],  // 0xFF60
+            [0x03, low16(MEMORY_MAP.SEVEN_SEG_BASE)],  // SEVEN_SEG_BASE - low
+            [0x04, high16(MEMORY_MAP.SEVEN_SEG_BASE)],  // SEVEN_SEG_BASE - high
 
             [0x05, Opcode.MOV_B_IMM],
             [0x06, 0x05],
@@ -79,15 +81,16 @@ export const programs: Record<string, ProgramInfo> = {
             // Délai
             [0x07, Opcode.DEC_B],
             [0x08, Opcode.JNZ],
-            [0x09, 0x07], [0x0A, 0x02],  // 0x0207
+            [0x10, low16(MEMORY_MAP.PROGRAM_START + 0x07 as u16)],   // PROGRAM_START + 0x07 - Low
+            [0x11, high16(MEMORY_MAP.PROGRAM_START + 0x07 as u16)],  // PROGRAM_START + 0x07 - High
 
             [0x0B, Opcode.INC_A],
             [0x0C, Opcode.MOV_B_IMM],
             [0x0D, 0x0F],
             [0x0E, Opcode.AND],          // A = A & 0x0F
             [0x0F, Opcode.JMP],
-            [0x10, 0x02],  // Low
-            [0x11, 0x02],  // High (0x0202 = PROGRAM_START + 0x02)
+            [0x10, low16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],   // PROGRAM_START + 0x02 - Low
+            [0x11, high16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],  // PROGRAM_START + 0x02 - High
         ] as [u8, u8][]),
         expectedResult: "Compteur 0→F qui boucle"
     },

@@ -32,7 +32,7 @@ export const MINI_OS: OsInfo = {
         [0x09, Opcode.JMP],
         [0x0A, low16(MEMORY_MAP.OS_START)],       // Low: 0x00
         [0x0B, high16(MEMORY_MAP.OS_START)],      // High: 0x01
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };
 
 
@@ -50,9 +50,13 @@ export const MINI_OS_V2: OsInfo = {
     description: "Menu avec console et choix au clavier",
     code: new Map([
         // === INIT (0x100-0x107) ===
-        [0x00, Opcode.SET_SP],
-        [0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
-        [0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
+        //[0x00, Opcode.SET_SP],
+        //[0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
+        //[0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
+
+        [0x00, Opcode.ADD],
+        [0x01, Opcode.NOP],
+        [0x02, Opcode.NOP],
 
         // Clear console
         [0x03, Opcode.MOV_A_IMM],

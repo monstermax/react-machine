@@ -29,7 +29,7 @@ const frequencies = [
     { label: "10 Hz", value: 10 },
     { label: "20 Hz", value: 20 },
     { label: "50 Hz", value: 50 },
-    { label: "60 Hz (max)", value: 100 },
+    { label: "100 Hz", value: 100 },
 ];
 
 
@@ -50,18 +50,20 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     const [currentBreakpoint, setCurrentBreakpoint] = useState<number | null>(null);
     const lastCycleTsRef = useRef(0);
 
+    const loadedOsInfo = computerHook.loadedOs ? os_list[computerHook.loadedOs] : null;
+    const osInfo = loadedOsInfo;
+    const isOsUnloaded = loadedOsInfo ? (computerHook.memoryHook.readMemory(MEMORY_MAP.OS_START) === 0x00) : false;
 
     const selectedProgramInfo = selectedProgram ? programs[selectedProgram] : null;
     const loadedProgramInfo = computerHook.loadedProgram ? programs[computerHook.loadedProgram] : null;
-
     const programInfo = selectedProgramInfo ?? loadedProgramInfo;
-
-    const isUnloaded = loadedProgramInfo ? (computerHook.memoryHook.readMemory(MEMORY_MAP.PROGRAM_START) === 0x00) : false;
+    const isProgramUnloaded = loadedProgramInfo ? (computerHook.memoryHook.readMemory(MEMORY_MAP.PROGRAM_START) === 0x00) : false;
 
     const [triggerFrequencyRefresh, setTriggerFrequencyRefresh] = useState(0)
     const [frequencyReal, setFrequencyReal] = useState(0)
     const [lastFrequencyStat, setLastFrequencyStat] = useState<{ timestamp: number, cycles: number } | null>(null)
     const [triggerCycle, setTriggerCycle] = useState(0)
+    const [boost, setBoost] = useState(false)
 
 
     // Calculer la frequence reelle
@@ -136,11 +138,27 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     }, [isRunning, currentBreakpoint, props.breakpoints, cpuHook.executeCycle])
 
 
+    // Gestion du timer de control
+    useEffect(() => {
+        console.log('CTRL TIMER UP')
+        const timerCtrl = setInterval(() => setTriggerFrequencyRefresh(x => x + 1), 100);
+
+        return () => {
+            //console.log('CTRL TIMER DOWN')
+            clearInterval(timerCtrl)
+        };
+    }, []);
+
+
     useEffect(() => {
         if (triggerCycle > 0) {
             execCycle()
+
+            if (boost) {
+                setTimeout(execCycle, (1000 / frequency) / 2)
+            }
         }
-    }, [triggerCycle])
+    }, [triggerCycle, boost])
 
 
     return (
@@ -178,7 +196,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
 
                 <button
                     onClick={() => unloadOs()}
-                    disabled={!computerHook.loadedOs}
+                    disabled={!computerHook.loadedOs || isOsUnloaded}
                     className="bg-purple-800 hover:bg-purple-900 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
                 >
                     Unload
@@ -217,7 +235,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
 
                 <button
                     onClick={() => unloadProgram()}
-                    disabled={!computerHook.loadedProgram}
+                    disabled={!computerHook.loadedProgram || isProgramUnloaded}
                     className="bg-purple-800 hover:bg-purple-900 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
                 >
                     Unload
@@ -286,8 +304,8 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
                             <strong className="text-blue-400 me-2">Program:</strong> {programInfo.name}
 
                             {(loadedProgramInfo && (!selectedProgram || loadedProgramInfo.name === selectedProgramInfo?.name)) && (
-                                <div className={`ms-auto px-6 py-2 rounded ${isUnloaded ? "bg-orange-600 hover:bg-orange-700" : "bg-green-600 hover:bg-green-700"}`}>
-                                    <>[{isUnloaded ? "UNLOADED" : "LOADED"}]</>
+                                <div className={`ms-auto px-6 py-2 rounded ${isProgramUnloaded ? "bg-orange-600 hover:bg-orange-700" : "bg-green-600 hover:bg-green-700"}`}>
+                                    <>[{isProgramUnloaded ? "UNLOADED" : "LOADED"}]</>
                                 </div>
                             )}
                         </div>

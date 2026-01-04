@@ -32,7 +32,7 @@ export interface Device {
 export type OsInfo = {
     name: string,
     description: string,
-    code: Map<u8, u8>,
+    code: Map<u8, u8> | Map<u16, u8>,
 }
 
 

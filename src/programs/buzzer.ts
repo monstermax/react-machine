@@ -1,8 +1,9 @@
 
+import { high16, low16 } from "@/lib/integers";
 import { Opcode } from "../lib/instructions";
 import { MEMORY_MAP } from "../lib/memory_map";
 
-import type { ProgramInfo, u8 } from "@/types/cpu.types";
+import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 /**
@@ -225,31 +226,41 @@ export const RANDOM_NOTES: ProgramInfo = {
         [0x07, 0xB1], [0x08, 0xFF], // RNG_SEED
 
         // Compteur
-        [0x09, Opcode.MOV_B_IMM], [0x0A, 20],
+        [0x09, Opcode.MOV_B_IMM],
+        [0x0A, 20], // notes count
 
         // LOOP:
         [0x0B, Opcode.MOV_A_MEM],
-        [0x0C, 0xB0], [0x0D, 0xFF], // RNG_OUTPUT
+        [0x0C, 0xB0],
+        [0x0D, 0xFF], // RNG_OUTPUT
 
         // Utiliser comme fréquence
         [0x0E, Opcode.MOV_MEM_A],
-        [0x0F, 0x80], [0x10, 0xFF], // BUZZER_FREQ
+        [0x0F, 0x80],
+        [0x10, 0xFF], // BUZZER_FREQ
 
         // Durée 150ms
-        [0x11, Opcode.MOV_A_IMM], [0x12, 15],
+        [0x11, Opcode.MOV_A_IMM],
+        [0x12, 15],
         [0x13, Opcode.MOV_MEM_A],
-        [0x14, 0x81], [0x15, 0xFF],
+        [0x14, 0x81],
+        [0x15, 0xFF],
 
         // Attendre
-        [0x16, Opcode.MOV_C_IMM], [0x17, 0xFF],
+        [0x16, Opcode.MOV_C_IMM],
+        [0x17, 0x0F], // delay between notes
         [0x18, Opcode.DEC_C],
-        [0x19, Opcode.JNZ], [0x1A, 0x18], [0x1B, 0x02],
+        [0x19, Opcode.JNZ],
+        [0x1A, low16(MEMORY_MAP.PROGRAM_START + 0x18 as u16)],   // 0x18 - Low
+        [0x1B, high16(MEMORY_MAP.PROGRAM_START + 0x18 as u16)],  // 0x18 - High
 
         [0x1C, Opcode.DEC_B],
         [0x1D, Opcode.JNZ],
-        [0x1E, 0x0B], [0x1F, 0x02],
+        [0x1E, low16(MEMORY_MAP.PROGRAM_START + 0x0B as u16)],   // 0x0B - Low
+        [0x1F, high16(MEMORY_MAP.PROGRAM_START + 0x0B as u16)],  // 0x0B - High
 
-        [0x20, Opcode.HALT],
+        [0x20, Opcode.SYSCALL],
+        [0x21, 0],
     ] as [u8, u8][]),
     expectedResult: "20 notes aléatoires"
 };

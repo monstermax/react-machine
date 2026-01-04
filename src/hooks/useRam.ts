@@ -11,8 +11,18 @@ export const useRam = (): RamHook => {
 
     //console.log('RAM:', storage)
 
+    const read = (address: u16): u8 => {
+        return storage.get(address) ?? 0 as u8;
+    }
+
+    const write = (address: u16, value: u8) => {
+        setStorage(oldMap => new Map(oldMap).set(address, value))
+    }
+
     const ramHook: RamHook = {
         storage,
+        read,
+        write,
         setStorage,
     };
 
@@ -22,6 +32,8 @@ export const useRam = (): RamHook => {
 
 export type RamHook = {
     storage: Map<u16, u8>;
+    read: (address: u16) => u8;
+    write: (address: u16, value: u8) => void;
     setStorage: React.Dispatch<React.SetStateAction<Map<u16, u8>>>;
 };
 
