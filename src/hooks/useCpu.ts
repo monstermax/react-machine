@@ -634,10 +634,8 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
             // MOV Register to Memory - NE PAS modifier les flags
             case Opcode.MOV_MEM_A:  // MOV [addr16], A
                 const addrMemA = readMem16(pc);
-                console.log(`MOV_MEM_A @ 0x${pc.toString(16)}: writing A=${getRegister("A")} to addr=0x${addrMemA.toString(16)}`);
                 memory.writeMemory(addrMemA, getRegister("A"));
                 setRegister("PC", (pc + 3) as u16);
-                console.log(`Next PC = 0x${getRegister("PC").toString(16)}`);
                 break;
 
             case Opcode.MOV_MEM_B:  // MOV [addr16], B

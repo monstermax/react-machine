@@ -2,11 +2,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { getOpcodeName, INSTRUCTIONS_WITH_OPERAND, INSTRUCTIONS_WITH_TWO_OPERANDS, Opcode } from "@/lib/instructions";
-import { isROM, isRAM, MEMORY_MAP, memoryToIOPort, isImportantIOAddress, isIO } from "@/lib/memory_map";
+import { isROM, isRAM, MEMORY_MAP, memoryToIOPort, isIO } from "@/lib/memory_map";
 
 import type { ComputerHook } from "@/hooks/useComputer";
 import type { u16, u8 } from "@/types/cpu.types";
-import { U16 } from "@/lib/integers";
+import { U16, U8 } from "@/lib/integers";
 
 
 export type PanelMemoryProps = {
@@ -71,8 +71,9 @@ export const PanelMemory: React.FC<PanelMemoryProps> = (props) => {
             let consecutiveZeros = 0;
 
             while (currentAddr < nextAddr) {
-                const ioPort = memoryToIOPort(currentAddr);
-                const value = ioHook.read(ioPort);
+                //const ioPort = memoryToIOPort(currentAddr);
+                //const value = ioHook.read(ioPort); // BUG: trigger each device at each cycle
+                const value = U8(0); // TODO
 
                 // Toujours afficher la première adresse du device
                 if (currentAddr === startAddr) {

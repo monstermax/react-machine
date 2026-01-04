@@ -6,106 +6,105 @@ import { useFileSystem, type FsHook } from "../useFileSystem";
 
 import type { Device, u16, u8 } from "@/types/cpu.types";
 
+/**
+ * Disk Device avec support RAW et FS simultané
+ * 
+ * MODE RAW (ports 0-3):
+ * - Accès direct aux bytes
+ * - Adressage manuel
+ * 
+ * MODE FS (ports 4-7):
+ * - File system avec inodes
+ * - Opérations fichiers
+ */
+
 
 export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
     const [storage, setStorage] = useState<Map<u16, u8>>(data);
     const [currentAddress, setCurrentAddress] = useState<u16>(0 as u16);
 
+    // File System Hook (utilise le même storage)
     const fsHook = useFileSystem(storage, setStorage);
-
 
     const read = useCallback((port: u8): u8 => {
         switch (port) {
-
             // ===== MODE RAW =====
-
-            case 0: // OS_DISK_DATA - accès direct - read byte at current address
+            case 0: // DISK_DATA - lecture byte à l'adresse courante
                 return storage.get(currentAddress) ?? 0 as u8;
 
-            case 1: // OS_DISK_SIZE - taille disque - get disk size
-                return U8(storage.size);
+            case 1: // DISK_SIZE - taille disque
+                return U8(storage.size); // Low byte
 
-            case 2: // OS_DISK_ADDR - get current address - low
+            case 2: // DISK_ADDR_LOW - adresse courante (low)
                 return low16(currentAddress);
 
-            case 3: // OS_DISK_ADDR - get current address - high
+            case 3: // DISK_ADDR_HIGH - adresse courante (high)
                 return high16(currentAddress);
 
-            // ===== MODE FICHIERS =====
+            // ===== MODE FILE SYSTEM =====
+            case 4: // FS_STATUS - retourne nombre de fichiers
+                const files = fsHook.listFiles();
+                return U8(files.length);
 
-            case 4: // OS_DISK_SECTOR - secteur FS courant
-                return fsHook.currentSector;
+            case 5: // FS_RESULT - résultat dernière commande
+                return fsHook.lastCommandResult;
 
-            case 5: // OS_DISK_FS_COMMAND - résultat dernière commande
-                return fsHook.lastCommandResult ?? 0;
-
-            case 6: // FS_DATA - lire octet depuis fichier
+            case 6: // FS_DATA - lire byte depuis fichier ouvert
                 return fsHook.readData();
 
-            //case 7: // FS_STATUS - état du système de fichiers
-            //    return fsHook.getStatus();
+            case 7: // FS_HANDLE_LOW - handle fichier ouvert (low)
+                return low16(fsHook.currentFileHandle);
+
+            case 8: // FS_HANDLE_HIGH - handle fichier ouvert (high)
+                return high16(fsHook.currentFileHandle);
 
             default:
-                // Ports 8+ pour fonctionnalités FS avancées
-                if (port >= 8) {
-                    //return fsHook.readExtendedPort(port - 8);
-                }
+                console.warn(`Disk: Unknown read port ${port}`);
                 return 0 as u8;
         }
     }, [storage, currentAddress, fsHook]);
 
-
     const write = useCallback((port: u8, value: u8) => {
         switch (port) {
-
             // ===== MODE RAW =====
-
-            case 0: // OS_DISK_DATA port - write byte at current address
+            case 0: // DISK_DATA - écrire byte à l'adresse courante
                 setStorage(s => {
                     const newStorage = new Map(s);
                     newStorage.set(currentAddress, value);
                     return newStorage;
                 });
-                // Auto-increment address after write
+                // Auto-increment
                 setCurrentAddress(addr => U16(addr + 1));
                 break;
 
-            case 2: // OS_DISK_ADDR port low byte - set read/write address
+            case 2: // DISK_ADDR_LOW - définir adresse (low)
                 setCurrentAddress(prev => U16((prev & 0xFF00) | value));
                 break;
 
-            case 3: // OS_DISK_ADDR port high byte
+            case 3: // DISK_ADDR_HIGH - définir adresse (high)
                 setCurrentAddress(prev => U16((prev & 0x00FF) | (value << 8)));
                 break;
 
-            // ===== MODE FICHIERS =====
-
-            case 4: // OS_DISK_SECTOR - changer secteur FS
-                fsHook.setCurrentSector(value);
-                break;
-
-            case 5: // OS_DISK_COMMAND - exécuter commande FS
+            // ===== MODE FILE SYSTEM =====
+            case 5: // FS_COMMAND - exécuter commande FS
                 fsHook.executeCommand(value);
                 break;
 
-            case 6: // FS_DATA - écrire octet dans fichier
+            case 6: // FS_DATA - écrire byte dans fichier ouvert
                 fsHook.writeData(value);
                 break;
 
-            case 7: // FS_FILENAME - écrire caractère du nom
-                //fsHook.writeFilenameChar(value);
+            case 7: // FS_FILENAME_CHAR - ajouter caractère au nom de fichier
+                fsHook.writeFilenameChar(value);
                 break;
 
             default:
-                if (port >= 8) {
-                    //fsHook.writeExtendedPort(port - 8, value);
-                }
+                console.warn(`Disk: Unknown write port ${port}`);
+                break;
         }
-    }, [currentAddress, setCurrentAddress, setStorage, fsHook]);
-
+    }, [currentAddress, fsHook]);
 
     const getSize = useCallback(() => storage.size, [storage]);
-
 
     const diskDeviceHook: DiskDevice = {
         storage,
@@ -122,7 +121,7 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
 
 export type DiskDevice = Device & {
     storage: Map<u16, u8>;
-    fsHook: FsHook | null;
+    fsHook: FsHook;
     setStorage: React.Dispatch<React.SetStateAction<Map<u16, u8>>>;
 };
 

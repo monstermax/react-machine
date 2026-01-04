@@ -106,6 +106,8 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
     const writeInode = useCallback((inodeIndex: number, inode: Inode) => {
         const baseAddr = sectorToAddress(INODE_TABLE_START as u8, inodeIndex * INODE_SIZE as u16);
 
+        // BUG: fait planter le CPU
+
         // Écrire nom (8 bytes max)
         for (let i = 0; i < FILENAME_LENGTH; i++) {
             const charCode = i < inode.name.length ? inode.name.charCodeAt(i) : 0;
@@ -143,6 +145,8 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
             }
         }
 
+        console.log('listFiles:', files)
+
         return files;
     }, [readInode]);
 
@@ -156,6 +160,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         // Chercher inode libre
         const inodeIndex = findFreeInode();
         if (inodeIndex === -1) {
+            console.log('createFile: NO_FREE_SPACE')
             return false; // Plus d'espace
         }
 
@@ -172,6 +177,8 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
             flags: 1 as u8, // Occupé
         };
 
+        console.log('createFile:', inode)
+
         writeInode(inodeIndex, inode);
         return true;
     }, [findFreeInode, writeInode]);
@@ -182,11 +189,14 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
             const inode = readInode(i);
 
             if (inode && inode.flags === 1 && inode.name.trim() === name.trim()) {
+                console.log('openFile:', inode)
                 setCurrentFileHandle(U16(i));
                 setFilePointer(U16(0)); // Réinitialiser pointeur
                 return U16(i);
             }
         }
+
+        console.log('openFile: FILE_NOT_OPENED')
 
         return U16(0xFFFF); // Not found
     }, [readInode]);
@@ -212,6 +222,8 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         // Avancer le pointeur
         setFilePointer(prev => U16(prev + 1));
 
+        console.log('readData:', inode)
+
         return value;
     }, [currentFileHandle, filePointer, sectorToAddress, readByte, readInode]);
 
@@ -230,6 +242,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         // Vérifier si on a besoin d'un nouveau secteur
         if (sector >= 256) {
             // Plus d'espace sur le disque
+            console.log('writeData: NO_FREE_SPACE')
             setLastCommandResult(U8(0xFF)); // Erreur: plus d'espace
             return;
         }
@@ -244,25 +257,27 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
             writeInode(currentFileHandle, newInode);
         }
 
+        console.log('writeData:', inode)
+
         // Avancer le pointeur
         setFilePointer(prev => U16(prev + 1));
     }, [currentFileHandle, filePointer, sectorToAddress, writeByte, readInode, writeInode]);
 
 
     const executeCommand = useCallback((cmd: u8) => {
-        let rc = U8(0);
+        let result = U8(0);
 
         switch (cmd) {
             case 0x90: // LIST - retourne nombre de fichiers
                 const files = listFiles();
-                rc = U8(files.length);
+                result = U8(files.length);
                 break;
 
             case 0x91: // CREATE - utilise filenameBuffer
                 if (createFile(filenameBuffer)) {
-                    rc = U8(1); // Succès
+                    result = U8(1); // Succès
                 } else {
-                    rc = U8(0); // Échec
+                    result = U8(0); // Échec
                 }
                 setFilenameBuffer(""); // Réinitialiser
                 setFilenameIndex(0);
@@ -270,7 +285,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
 
             case 0x92: // OPEN - ouvre fichier
                 const handle = openFile(filenameBuffer);
-                rc = handle === 0xFFFF ? U8(0) : U8(1);
+                result = handle === 0xFFFF ? U8(0) : U8(1);
                 setFilenameBuffer("");
                 setFilenameIndex(0);
                 break;
@@ -278,12 +293,12 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
             case 0x93: // CLOSE - ferme fichier courant
                 setCurrentFileHandle(U16(0xFFFF));
                 setFilePointer(U16(0));
-                rc = U8(1);
+                result = U8(1);
                 break;
 
             case 0x94: // DELETE - supprime fichier
                 // TODO: Implémenter
-                rc = U8(0);
+                result = U8(0);
                 break;
 
             case 0x95: // SEEK - positionne pointeur
@@ -291,10 +306,12 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
                 break;
 
             default:
-                rc = U8(0xFF); // Commande inconnue
+                result = U8(0xFF); // Commande inconnue
         }
 
-        setLastCommandResult(rc);
+        console.log('executeCommand:', result)
+
+        setLastCommandResult(result);
     }, [listFiles, createFile, openFile, filenameBuffer]);
 
 
@@ -335,8 +352,8 @@ export type FsHook = {
     setCurrentSector: React.Dispatch<React.SetStateAction<u8>>;
     setCurrentFileHandle: React.Dispatch<React.SetStateAction<u16>>;
     setFilePointer: React.Dispatch<React.SetStateAction<u16>>;
-    listFiles: () => void;
-    createFile: (name: string) => void;
+    listFiles: () => string[];
+    createFile: (name: string) => boolean;
     //readFile: (name: string) => void;
     readData: () => u8;
     writeData: (value: u8) => void;
@@ -348,13 +365,30 @@ export type FsHook = {
 
 /*
 
-0x01 : LIST - Lister les fichiers
-0x02 : CREATE - Créer fichier
-0x03 : DELETE - Supprimer fichier
-0x04 : OPEN - Ouvrir fichier
-0x05 : READ - Lire octet
-0x06 : WRITE - Écrire octet
-0x07 : SEEK - Déplacer pointeur
+Port 4: FS_STATUS     - Lecture → nombre de fichiers
+Port 5: FS_COMMAND    - Écriture → commande, Lecture → résultat
+Port 6: FS_DATA       - Read/Write bytes du fichier ouvert
+Port 7: FS_FILENAME   - Écriture → ajouter char au nom
+Port 8: FS_HANDLE_LOW - Lecture → handle fichier (low)
+Port 9: FS_HANDLE_HIGH- Lecture → handle fichier (high)
+
+
+0x90: LIST    - Compter fichiers
+0x91: CREATE  - Créer fichier (utilise filename buffer)
+0x92: OPEN    - Ouvrir fichier (utilise filename buffer)
+0x93: CLOSE   - Fermer fichier courant
+0x94: DELETE  - Supprimer (TODO)
+0x95: SEEK    - Positionner pointeur (TODO)
+```
+
+### **💡 Workflow typique**
+```
+1. Écrire nom → port 7 (caractère par caractère)
+2. Créer → port 5 = 0x91
+3. Réécrire nom → port 7
+4. Ouvrir → port 5 = 0x92
+5. Écrire données → port 6
+6. Fermer → port 5 = 0x93
 
 */
 

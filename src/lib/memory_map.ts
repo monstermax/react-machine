@@ -55,19 +55,29 @@ export const MEMORY_MAP = createMemoryMap({
 
     // Device 0: OS Disk (0xFF00-0xFF0F)
     OS_DISK_BASE: 0xFF00,
-    OS_DISK_DATA: 0xFF00,          // Port 0: Read/Write data (accès direct)
-    OS_DISK_SIZE: 0xFF01,          // Port 1: Get size (accès direct)
-    OS_DISK_ADDR_LOW: 0xFF02,      // Port 2: Set address (accès direct) - low
-    OS_DISK_ADDR_HIGH: 0xFF03,     // Port 3: Set address (accès direct) - high
-    OS_DISK_SECTOR: 0xFF04,        // Port 4 - Sélection secteur FS
-    OS_DISK_FS_COMMAND: 0xFF05,    // Port 5 - Commandes FS
-    OS_DISK_FS_DATA: 0xFF06,       // Port 6 - Data FS
+    OS_DISK_DATA: 0xFF00,           // Port 0: Read/Write data (RAW)
+    OS_DISK_SIZE: 0xFF01,           // Port 1: Get size (RAW)
+    OS_DISK_ADDR_LOW: 0xFF02,       // Port 2: Set address low (RAW)
+    OS_DISK_ADDR_HIGH: 0xFF03,      // Port 3: Set address high (RAW)
+    OS_DISK_FS_STATUS: 0xFF04,      // Port 4: FS status (nombre de fichiers)
+    OS_DISK_FS_COMMAND: 0xFF05,     // Port 5: FS command / result
+    OS_DISK_FS_DATA: 0xFF06,        // Port 6: FS data read/write
+    OS_DISK_FS_FILENAME: 0xFF07,    // Port 7: FS filename char
+    OS_DISK_FS_HANDLE_LOW: 0xFF08,  // Port 8: File handle low
+    OS_DISK_FS_HANDLE_HIGH: 0xFF09, // Port 9: File handle high
 
     // Device 1: Program Disk (0xFF10-0xFF1F)
     PROGRAM_DISK_BASE: 0xFF10,
-    PROGRAM_DISK_DATA: 0xFF10, // Port 0: Read/Write data
-    PROGRAM_DISK_SIZE: 0xFF11, // Port 1: Get size
-    PROGRAM_DISK_ADDR: 0xFF12, // Port 2: Set address
+    PROGRAM_DISK_DATA: 0xFF10,
+    PROGRAM_DISK_SIZE: 0xFF11,
+    PROGRAM_DISK_ADDR_LOW: 0xFF12,
+    PROGRAM_DISK_ADDR_HIGH: 0xFF13,
+    PROGRAM_DISK_FS_STATUS: 0xFF14,
+    PROGRAM_DISK_FS_COMMAND: 0xFF15,
+    PROGRAM_DISK_FS_DATA: 0xFF16,
+    PROGRAM_DISK_FS_FILENAME: 0xFF17,
+    PROGRAM_DISK_FS_HANDLE_LOW: 0xFF18,
+    PROGRAM_DISK_FS_HANDLE_HIGH: 0xFF19,
 
     // Timer
     TIMER_BASE: 0xFF20,
@@ -186,20 +196,6 @@ export const isIO = (addr: u16) =>
 // Convertir adresse mémoire absolue en port I/O relatif
 export const memoryToIOPort = (addr: u16): u8 => {
     return U8((addr - MEMORY_MAP.IO_START));
-};
-
-
-export const isImportantIOAddress = (addr: u16): boolean => {
-    return addr === MEMORY_MAP.LEDS_OUTPUT || 
-           addr === MEMORY_MAP.SEVEN_SEG_DATA ||
-           addr === MEMORY_MAP.SEVEN_SEG_RAW ||
-           addr === MEMORY_MAP.OS_DISK_DATA ||
-           addr === MEMORY_MAP.OS_DISK_SIZE ||
-           addr === MEMORY_MAP.OS_DISK_ADDR_LOW ||
-           addr === MEMORY_MAP.OS_DISK_ADDR_HIGH ||
-           addr === MEMORY_MAP.PROGRAM_DISK_DATA ||
-           addr === MEMORY_MAP.PROGRAM_DISK_SIZE ||
-           addr === MEMORY_MAP.PROGRAM_DISK_ADDR;
 };
 
 

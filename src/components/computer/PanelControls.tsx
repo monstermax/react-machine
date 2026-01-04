@@ -35,7 +35,7 @@ const frequencies = [
 
 
 export const PanelControls: React.FC<PanelControlsProps> = (props) => {
-    console.log('RENDER PanelControls');
+    //console.log('RENDER PanelControls');
 
     const { computerHook } = props;
     const { cpuHook } = computerHook;

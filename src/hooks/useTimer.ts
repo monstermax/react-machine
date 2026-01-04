@@ -16,18 +16,17 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
 
     // Tick appelé à chaque cycle CPU ou à intervalle fixe
     const tick = useCallback(() => {
-        console.log(`⏰ Timer tick: enabled=${enabled}, counter=${counter}, period=${period}`);
+        //console.log(`⏰ Timer tick: enabled=${enabled}, counter=${counter}, period=${period}`);
         if (!enabled) return;
 
         setCounter(prev => {
             const newVal = (prev + 1) as u8;
-            console.log(`⏰ Counter: ${prev} -> ${newVal}`);
+            //console.log(`⏰ Counter: ${prev} -> ${newVal}`);
 
             if (newVal >= period) {
                 // Déclencher interruption
-                console.log('⏰ TIMER INTERRUPT! Requesting IRQ 0');
+                //console.log('⏰ TIMER INTERRUPT! Requesting IRQ 0');
                 interruptHook.requestInterrupt(U8(MEMORY_MAP.IRQ_TIMER));
-                console.log('TIMER')
                 return 0 as u8;
             }
 
