@@ -3,6 +3,7 @@
 
 
 ## FEATURES
+- bootloader avec selecteur d'OS (si console, afficher. si keyboard, prompt, sinon booter l'OS par defaut)
 - gérer un language de code pseudo assembleur (en texte brute)
 - gestion multiples disks (io hotplug)
 - gestion file system
