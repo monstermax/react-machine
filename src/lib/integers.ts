@@ -11,3 +11,13 @@ export function U16(value: number | u8): u16 {
     return (value & 0xFFFF) as unknown as u16;
 }
 
+
+export function high16(value: u16): u8 {
+    return U8(value >> 8);
+}
+
+export function low16(value: u16): u8 {
+    return U8(value);
+}
+
+

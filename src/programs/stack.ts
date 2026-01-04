@@ -1,5 +1,6 @@
 
 import { Opcode } from "@/lib/instructions";
+import { high16, low16 } from "@/lib/integers";
 import { MEMORY_MAP } from "@/lib/memory_map";
 
 import type { ProgramInfo, u8 } from "@/types/cpu.types";
@@ -12,8 +13,8 @@ export const programs: Record<string, ProgramInfo> = {
         code: new Map([
             // Initialiser SP
             [0x00, Opcode.SET_SP],
-            [0x01, 0xFF],
-            [0x02, 0xFE], // SP = 0xFEFF (haut de pile)
+            [0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
+            [0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
 
             // Appeler sous-routine
             [0x03, Opcode.CALL],

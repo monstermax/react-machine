@@ -36,12 +36,12 @@ export const MEMORY_MAP = createMemoryMap({
     RAM_START: 0x0100,
     RAM_END: 0xFEFF,
 
-    // OS (0x0100-0x01FF) - 256 bytes
+    // OS (0x0100-0x0FFF) - ~4KB
     OS_START: 0x0100,
-    OS_END: 0x01FF,
+    OS_END: 0x0FFF,
 
-    // PROGRAM (0x0200-0xFDFF) - ~32KB
-    PROGRAM_START: 0x0200,
+    // PROGRAM (0x1000-0xFDFF) - ~60KB
+    PROGRAM_START: 0x1000,
     PROGRAM_END: 0xFDFF,
 
     // STACK (0xFE00-0xFEFF) - 256 bytes
@@ -49,7 +49,7 @@ export const MEMORY_MAP = createMemoryMap({
     STACK_END: 0xFEFF,
 
 
-    // ## I/O Devices ## (0xFF00-0xFFFF)
+    // ## I/O Devices ## (0xFF00-0xFFFF) - 256 ports
     IO_START: 0xFF00,
     IO_END: 0xFFFF,
 

@@ -3,6 +3,7 @@
 
 
 ## FEATURES
+- gérer un language de code pseudo assembleur (en texte brute)
 - gestion multiples disks (io hotplug)
 - gestion file system
 - debugger (interrupt keyboard dans l'OS. detection touche "d")

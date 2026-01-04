@@ -2,6 +2,7 @@
 import { useState, useCallback } from "react";
 
 import type { u8 } from "@/types/cpu.types";
+import { U8 } from "@/lib/integers";
 
 
 /**
@@ -47,7 +48,7 @@ export const useRng = (): RngHook => {
 
             case PORTS.RNG_SEED:
                 // Lecture du seed actuel (high byte)
-                return ((seed >> 24) & 0xFF) as u8;
+                return U8(seed >> 24);
 
             default:
                 console.warn(`RNG: Unknown read port 0x${port.toString(16)}`);

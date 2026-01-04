@@ -1,4 +1,5 @@
 
+import { high16, low16 } from "@/lib/integers";
 import { Opcode } from "../lib/instructions";
 import { mapAddress16, MEMORY_MAP } from "../lib/memory_map";
 
@@ -13,24 +14,24 @@ export const MINI_OS: OsInfo = {
         // === WAIT_FOR_PROGRAM (0x00) ===
         // Vérifier si un programme est chargé à PROGRAM_START
         [0x00, Opcode.MOV_A_MEM],
-        [0x01, MEMORY_MAP.PROGRAM_START & 0xFF],        // Low byte
-        [0x02, (MEMORY_MAP.PROGRAM_START >> 8) & 0xFF], // High byte
+        [0x01, low16(MEMORY_MAP.PROGRAM_START)],  // Low byte
+        [0x02, high16(MEMORY_MAP.PROGRAM_START)], // High byte
 
-        [0x03, Opcode.JZ],                              // Si = 0, boucler
-        [0x04, MEMORY_MAP.OS_START & 0xFF],             // Low: 0x00
-        [0x05, (MEMORY_MAP.OS_START >> 8) & 0xFF],      // High: 0x01
+        [0x03, Opcode.JZ],                        // Si = 0, boucler
+        [0x04, low16(MEMORY_MAP.OS_START)],       // Low: 0x00
+        [0x05, high16(MEMORY_MAP.OS_START)],      // High: 0x01
 
         // === RUN_PROGRAM (0x06) ===
         // Programme détecté, sauter dessus
         [0x06, Opcode.JMP],
-        [0x07, MEMORY_MAP.PROGRAM_START & 0xFF],        // Low: 0x00
-        [0x08, (MEMORY_MAP.PROGRAM_START >> 8) & 0xFF], // High: 0x02
+        [0x07, low16(MEMORY_MAP.PROGRAM_START)],  // Low: 0x00
+        [0x08, high16(MEMORY_MAP.PROGRAM_START)], // High: 0x02
 
         // === PROGRAM_RETURN (0x09) ===
         // Retour au début
         [0x09, Opcode.JMP],
-        [0x0A, MEMORY_MAP.OS_START & 0xFF],             // Low: 0x00
-        [0x0B, (MEMORY_MAP.OS_START >> 8) & 0xFF],      // High: 0x01
+        [0x0A, low16(MEMORY_MAP.OS_START)],       // Low: 0x00
+        [0x0B, high16(MEMORY_MAP.OS_START)],      // High: 0x01
     ] as [u8, u8][]),
 };
 
@@ -50,36 +51,36 @@ export const MINI_OS_V2: OsInfo = {
     code: new Map([
         // === INIT (0x100-0x107) ===
         [0x00, Opcode.SET_SP],
-        [0x01, MEMORY_MAP.STACK_END & 0xFF],        // STACK_END - low
-        [0x02, (MEMORY_MAP.STACK_END >> 8) & 0xFF], // STACK_END - high
+        [0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
+        [0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
 
         // Clear console
         [0x03, Opcode.MOV_A_IMM],
         [0x04, 0x01],
         [0x05, Opcode.MOV_MEM_A],
-        [0x06, MEMORY_MAP.CONSOLE_CLEAR & 0xFF],        // CONSOLE_CLEAR - low
-        [0x07, (MEMORY_MAP.CONSOLE_CLEAR >> 8) & 0xFF], // CONSOLE_CLEAR - high
+        [0x06, low16(MEMORY_MAP.CONSOLE_CLEAR)],  // CONSOLE_CLEAR - low
+        [0x07, high16(MEMORY_MAP.CONSOLE_CLEAR)], // CONSOLE_CLEAR - high
 
         // === MENU (0x108-0x10C) ===
         [0x08, Opcode.CALL],
-        [0x09, (MEMORY_MAP.OS_START + 0x40) & 0xFF],        // $MENU - low
-        [0x0A, ((MEMORY_MAP.OS_START + 0x40) >> 8) & 0xFF], // $MENU - high
+        [0x09, low16(MEMORY_MAP.OS_START + 0x40 as u16)],  // $MENU - low
+        [0x0A, high16(MEMORY_MAP.OS_START + 0x40 as u16)], // $MENU - high
 
         // === WAIT KEY (0x10D-0x119) ===
         [0x0B, Opcode.MOV_A_MEM],
-        [0x0C, MEMORY_MAP.KEYBOARD_STATUS & 0xFF], // read KEYBOARD_STATUS - low
-        [0x0D, (MEMORY_MAP.KEYBOARD_STATUS >> 8) & 0xFF], // read KEYBOARD_STATUS - high
+        [0x0C, low16(MEMORY_MAP.KEYBOARD_STATUS)],    // read KEYBOARD_STATUS - low
+        [0x0D, high16(MEMORY_MAP.KEYBOARD_STATUS)],   // read KEYBOARD_STATUS - high
         [0x0E, Opcode.JZ],
-        [0x0F, (MEMORY_MAP.OS_START + 0x0B) & 0xFF],        // loop to WAIT KEY - low
-        [0x10, ((MEMORY_MAP.OS_START + 0x0B) >> 8) & 0xFF], // loop to WAIT KEY - high
+        [0x0F, low16((MEMORY_MAP.OS_START + 0x0B as u16))],   // loop to WAIT KEY - low
+        [0x10, high16((MEMORY_MAP.OS_START + 0x0B as u16))],  // loop to WAIT KEY - high
         [0x11, Opcode.MOV_A_MEM],
-        [0x12, MEMORY_MAP.KEYBOARD_DATA & 0xFF], // read KEYBOARD_DATA - low
-        [0x13, (MEMORY_MAP.KEYBOARD_DATA >> 8) & 0xFF], // read KEYBOARD_DATA - high
+        [0x12, low16(MEMORY_MAP.KEYBOARD_DATA)],  // read KEYBOARD_DATA - low
+        [0x13, high16(MEMORY_MAP.KEYBOARD_DATA)], // read KEYBOARD_DATA - high
         [0x14, Opcode.MOV_B_IMM],
         [0x15, 0x00],
         [0x16, Opcode.MOV_MEM_B],
-        [0x17, MEMORY_MAP.KEYBOARD_STATUS & 0xFF], // write KEYBOARD_STATUS - low
-        [0x18, (MEMORY_MAP.KEYBOARD_STATUS >> 8) & 0xFF], // write KEYBOARD_STATUS - high
+        [0x17, low16(MEMORY_MAP.KEYBOARD_STATUS)],  // write KEYBOARD_STATUS - low
+        [0x18, high16(MEMORY_MAP.KEYBOARD_STATUS)], // write KEYBOARD_STATUS - high
 
         // === DISPATCH (0x11A-0x12F) ===
         [0x19, Opcode.PUSH_A],
@@ -87,8 +88,8 @@ export const MINI_OS_V2: OsInfo = {
         [0x1B, 0x31],
         [0x1C, Opcode.SUB],
         [0x1D, Opcode.JZ], // Go to Run Program
-        [0x1E, (MEMORY_MAP.OS_START + 0x34) & 0xFF],        // $Run - low
-        [0x1F, ((MEMORY_MAP.OS_START + 0x34) >> 8) & 0xFF], // $Run - high
+        [0x1E, low16((MEMORY_MAP.OS_START + 0x34 as u16))],  // $Run - low
+        [0x1F, high16((MEMORY_MAP.OS_START + 0x34 as u16))], // $Run - high
 
         [0x20, Opcode.POP_A],
         [0x21, Opcode.PUSH_A],
@@ -96,8 +97,8 @@ export const MINI_OS_V2: OsInfo = {
         [0x23, 0x32],
         [0x24, Opcode.SUB],
         [0x25, Opcode.JZ], // Go to Info
-        [0x26, (MEMORY_MAP.OS_START + 0xE0) & 0xFF],        // $Info - low
-        [0x27, ((MEMORY_MAP.OS_START + 0xE0) >> 8) & 0xFF], // $Info - high
+        [0x26, low16((MEMORY_MAP.OS_START + 0xE0 as u16))],  // $Info - low
+        [0x27, high16((MEMORY_MAP.OS_START + 0xE0 as u16))], // $Info - high
 
         [0x28, Opcode.POP_A],
         [0x29, Opcode.PUSH_A],
@@ -105,63 +106,63 @@ export const MINI_OS_V2: OsInfo = {
         [0x2B, 0x33],
         [0x2C, Opcode.SUB],
         [0x2D, Opcode.JZ], // Go to Clear Console
-        [0x2E, (MEMORY_MAP.OS_START + 0x03) & 0xFF],        // $ClearConsole - low
-        [0x2F, ((MEMORY_MAP.OS_START + 0x03) >> 8) & 0xFF], // $ClearConsole - high
+        [0x2E, low16((MEMORY_MAP.OS_START + 0x03 as u16))],  // $ClearConsole - low
+        [0x2F, high16((MEMORY_MAP.OS_START + 0x03 as u16))], // $ClearConsole - high
 
         [0x30, Opcode.POP_A],
         [0x31, Opcode.JMP], // Go to Menu
-        [0x32, (MEMORY_MAP.OS_START + 0x08) & 0xFF],        // MENU - low
-        [0x33, ((MEMORY_MAP.OS_START + 0x08) >> 8) & 0xFF], // MENU - high
+        [0x32, low16((MEMORY_MAP.OS_START + 0x08 as u16))],  // MENU - low
+        [0x33, high16((MEMORY_MAP.OS_START + 0x08 as u16))], // MENU - high
 
         // === OPT 1: RUN (0x131-0x138) ===
         [0x34, Opcode.POP_A],
         [0x35, Opcode.JMP],
-        [0x36, MEMORY_MAP.PROGRAM_START & 0xFF],            // low
-        [0x37, (MEMORY_MAP.PROGRAM_START >> 8) & 0xFF],     // high
+        [0x36, low16(MEMORY_MAP.PROGRAM_START)],      // low
+        [0x37, high16(MEMORY_MAP.PROGRAM_START)],     // high
 
         // === PRINT MENU (0x140-0x1DF) "OS v2\n1-Run 2-Info 3-Clr\n> " ===
-        [0x40, Opcode.MOV_A_IMM], [0x41, 0x4F], [0x42, Opcode.MOV_MEM_A], [0x43, 0x70], [0x44, 0xFF], // O
-        [0x45, Opcode.MOV_A_IMM], [0x46, 0x53], [0x47, Opcode.MOV_MEM_A], [0x48, 0x70], [0x49, 0xFF], // S
-        [0x4A, Opcode.MOV_A_IMM], [0x4B, 0x20], [0x4C, Opcode.MOV_MEM_A], [0x4D, 0x70], [0x4E, 0xFF], // space
-        [0x4F, Opcode.MOV_A_IMM], [0x50, 0x76], [0x51, Opcode.MOV_MEM_A], [0x52, 0x70], [0x53, 0xFF], // v
-        [0x54, Opcode.MOV_A_IMM], [0x55, 0x32], [0x56, Opcode.MOV_MEM_A], [0x57, 0x70], [0x58, 0xFF], // 2
-        [0x59, Opcode.MOV_A_IMM], [0x5A, 0x0A], [0x5B, Opcode.MOV_MEM_A], [0x5C, 0x70], [0x5D, 0xFF], // \n
+        [0x40, Opcode.MOV_A_IMM], [0x41, 0x4F], [0x42, Opcode.MOV_MEM_A], [0x43, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x44, high16(MEMORY_MAP.CONSOLE_CHAR)], // O
+        [0x45, Opcode.MOV_A_IMM], [0x46, 0x53], [0x47, Opcode.MOV_MEM_A], [0x48, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x49, high16(MEMORY_MAP.CONSOLE_CHAR)], // S
+        [0x4A, Opcode.MOV_A_IMM], [0x4B, 0x20], [0x4C, Opcode.MOV_MEM_A], [0x4D, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x4E, high16(MEMORY_MAP.CONSOLE_CHAR)], // space
+        [0x4F, Opcode.MOV_A_IMM], [0x50, 0x76], [0x51, Opcode.MOV_MEM_A], [0x52, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x53, high16(MEMORY_MAP.CONSOLE_CHAR)], // v
+        [0x54, Opcode.MOV_A_IMM], [0x55, 0x32], [0x56, Opcode.MOV_MEM_A], [0x57, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x58, high16(MEMORY_MAP.CONSOLE_CHAR)], // 2
+        [0x59, Opcode.MOV_A_IMM], [0x5A, 0x0A], [0x5B, Opcode.MOV_MEM_A], [0x5C, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x5D, high16(MEMORY_MAP.CONSOLE_CHAR)], // \n
 
-        [0x5E, Opcode.MOV_A_IMM], [0x5F, 0x31], [0x60, Opcode.MOV_MEM_A], [0x61, 0x70], [0x62, 0xFF], // 1
-        [0x63, Opcode.MOV_A_IMM], [0x64, 0x2D], [0x65, Opcode.MOV_MEM_A], [0x66, 0x70], [0x67, 0xFF], // -
-        [0x68, Opcode.MOV_A_IMM], [0x69, 0x52], [0x6A, Opcode.MOV_MEM_A], [0x6B, 0x70], [0x6C, 0xFF], // R
-        [0x6D, Opcode.MOV_A_IMM], [0x6E, 0x75], [0x6F, Opcode.MOV_MEM_A], [0x70, 0x70], [0x71, 0xFF], // u
-        [0x72, Opcode.MOV_A_IMM], [0x73, 0x6E], [0x74, Opcode.MOV_MEM_A], [0x75, 0x70], [0x76, 0xFF], // n
-        [0x77, Opcode.MOV_A_IMM], [0x78, 0x20], [0x79, Opcode.MOV_MEM_A], [0x7A, 0x70], [0x7B, 0xFF], // space
+        [0x5E, Opcode.MOV_A_IMM], [0x5F, 0x31], [0x60, Opcode.MOV_MEM_A], [0x61, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x62, high16(MEMORY_MAP.CONSOLE_CHAR)], // 1
+        [0x63, Opcode.MOV_A_IMM], [0x64, 0x2D], [0x65, Opcode.MOV_MEM_A], [0x66, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x67, high16(MEMORY_MAP.CONSOLE_CHAR)], // -
+        [0x68, Opcode.MOV_A_IMM], [0x69, 0x52], [0x6A, Opcode.MOV_MEM_A], [0x6B, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x6C, high16(MEMORY_MAP.CONSOLE_CHAR)], // R
+        [0x6D, Opcode.MOV_A_IMM], [0x6E, 0x75], [0x6F, Opcode.MOV_MEM_A], [0x70, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x71, high16(MEMORY_MAP.CONSOLE_CHAR)], // u
+        [0x72, Opcode.MOV_A_IMM], [0x73, 0x6E], [0x74, Opcode.MOV_MEM_A], [0x75, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x76, high16(MEMORY_MAP.CONSOLE_CHAR)], // n
+        [0x77, Opcode.MOV_A_IMM], [0x78, 0x20], [0x79, Opcode.MOV_MEM_A], [0x7A, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x7B, high16(MEMORY_MAP.CONSOLE_CHAR)], // space
 
-        [0x7C, Opcode.MOV_A_IMM], [0x7D, 0x32], [0x7E, Opcode.MOV_MEM_A], [0x7F, 0x70], [0x80, 0xFF], // 2
-        [0x81, Opcode.MOV_A_IMM], [0x82, 0x2D], [0x83, Opcode.MOV_MEM_A], [0x84, 0x70], [0x85, 0xFF], // -
-        [0x86, Opcode.MOV_A_IMM], [0x87, 0x49], [0x88, Opcode.MOV_MEM_A], [0x89, 0x70], [0x8A, 0xFF], // I
-        [0x8B, Opcode.MOV_A_IMM], [0x8C, 0x6E], [0x8D, Opcode.MOV_MEM_A], [0x8E, 0x70], [0x8F, 0xFF], // n
-        [0x90, Opcode.MOV_A_IMM], [0x91, 0x66], [0x92, Opcode.MOV_MEM_A], [0x93, 0x70], [0x94, 0xFF], // f
-        [0x95, Opcode.MOV_A_IMM], [0x96, 0x6F], [0x97, Opcode.MOV_MEM_A], [0x98, 0x70], [0x99, 0xFF], // o
-        [0x9A, Opcode.MOV_A_IMM], [0x9B, 0x20], [0x9C, Opcode.MOV_MEM_A], [0x9D, 0x70], [0x9E, 0xFF], // space
+        [0x7C, Opcode.MOV_A_IMM], [0x7D, 0x32], [0x7E, Opcode.MOV_MEM_A], [0x7F, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x80, high16(MEMORY_MAP.CONSOLE_CHAR)], // 2
+        [0x81, Opcode.MOV_A_IMM], [0x82, 0x2D], [0x83, Opcode.MOV_MEM_A], [0x84, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x85, high16(MEMORY_MAP.CONSOLE_CHAR)], // -
+        [0x86, Opcode.MOV_A_IMM], [0x87, 0x49], [0x88, Opcode.MOV_MEM_A], [0x89, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x8A, high16(MEMORY_MAP.CONSOLE_CHAR)], // I
+        [0x8B, Opcode.MOV_A_IMM], [0x8C, 0x6E], [0x8D, Opcode.MOV_MEM_A], [0x8E, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x8F, high16(MEMORY_MAP.CONSOLE_CHAR)], // n
+        [0x90, Opcode.MOV_A_IMM], [0x91, 0x66], [0x92, Opcode.MOV_MEM_A], [0x93, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x94, high16(MEMORY_MAP.CONSOLE_CHAR)], // f
+        [0x95, Opcode.MOV_A_IMM], [0x96, 0x6F], [0x97, Opcode.MOV_MEM_A], [0x98, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x99, high16(MEMORY_MAP.CONSOLE_CHAR)], // o
+        [0x9A, Opcode.MOV_A_IMM], [0x9B, 0x20], [0x9C, Opcode.MOV_MEM_A], [0x9D, low16(MEMORY_MAP.CONSOLE_CHAR)], [0x9E, high16(MEMORY_MAP.CONSOLE_CHAR)], // space
 
-        [0x9F, Opcode.MOV_A_IMM], [0xA0, 0x33], [0xA1, Opcode.MOV_MEM_A], [0xA2, 0x70], [0xA3, 0xFF], // 3
-        [0xA4, Opcode.MOV_A_IMM], [0xA5, 0x2D], [0xA6, Opcode.MOV_MEM_A], [0xA7, 0x70], [0xA8, 0xFF], // -
-        [0xA9, Opcode.MOV_A_IMM], [0xAA, 0x43], [0xAB, Opcode.MOV_MEM_A], [0xAC, 0x70], [0xAD, 0xFF], // C
-        [0xAE, Opcode.MOV_A_IMM], [0xAF, 0x6C], [0xB0, Opcode.MOV_MEM_A], [0xB1, 0x70], [0xB2, 0xFF], // l
-        [0xB3, Opcode.MOV_A_IMM], [0xB4, 0x72], [0xB5, Opcode.MOV_MEM_A], [0xB6, 0x70], [0xB7, 0xFF], // r
-        [0xB8, Opcode.MOV_A_IMM], [0xB9, 0x0A], [0xBA, Opcode.MOV_MEM_A], [0xBB, 0x70], [0xBC, 0xFF], // \n
+        [0x9F, Opcode.MOV_A_IMM], [0xA0, 0x33], [0xA1, Opcode.MOV_MEM_A], [0xA2, low16(MEMORY_MAP.CONSOLE_CHAR)], [0xA3, high16(MEMORY_MAP.CONSOLE_CHAR)], // 3
+        [0xA4, Opcode.MOV_A_IMM], [0xA5, 0x2D], [0xA6, Opcode.MOV_MEM_A], [0xA7, low16(MEMORY_MAP.CONSOLE_CHAR)], [0xA8, high16(MEMORY_MAP.CONSOLE_CHAR)], // -
+        [0xA9, Opcode.MOV_A_IMM], [0xAA, 0x43], [0xAB, Opcode.MOV_MEM_A], [0xAC, low16(MEMORY_MAP.CONSOLE_CHAR)], [0xAD, high16(MEMORY_MAP.CONSOLE_CHAR)], // C
+        [0xAE, Opcode.MOV_A_IMM], [0xAF, 0x6C], [0xB0, Opcode.MOV_MEM_A], [0xB1, low16(MEMORY_MAP.CONSOLE_CHAR)], [0xB2, high16(MEMORY_MAP.CONSOLE_CHAR)], // l
+        [0xB3, Opcode.MOV_A_IMM], [0xB4, 0x72], [0xB5, Opcode.MOV_MEM_A], [0xB6, low16(MEMORY_MAP.CONSOLE_CHAR)], [0xB7, high16(MEMORY_MAP.CONSOLE_CHAR)], // r
+        [0xB8, Opcode.MOV_A_IMM], [0xB9, 0x0A], [0xBA, Opcode.MOV_MEM_A], [0xBB, low16(MEMORY_MAP.CONSOLE_CHAR)], [0xBC, high16(MEMORY_MAP.CONSOLE_CHAR)], // \n
 
-        [0xBD, Opcode.MOV_A_IMM], [0xBE, 0x3E], [0xBF, Opcode.MOV_MEM_A], [0xC0, 0x70], [0xC1, 0xFF], // >
-        [0xC2, Opcode.MOV_A_IMM], [0xC3, 0x20], [0xC4, Opcode.MOV_MEM_A], [0xC5, 0x70], [0xC6, 0xFF], // space
+        [0xBD, Opcode.MOV_A_IMM], [0xBE, 0x3E], [0xBF, Opcode.MOV_MEM_A], [0xC0, low16(MEMORY_MAP.CONSOLE_CHAR)], [0xC1, high16(MEMORY_MAP.CONSOLE_CHAR)], // >
+        [0xC2, Opcode.MOV_A_IMM], [0xC3, 0x20], [0xC4, Opcode.MOV_MEM_A], [0xC5, low16(MEMORY_MAP.CONSOLE_CHAR)], [0xC6, high16(MEMORY_MAP.CONSOLE_CHAR)], // space
         [0xC7, Opcode.RET],
 
         // === OPT 2: INFO (0x1E0-0x1F5) "OK\n" ===
         [0xE0, Opcode.POP_A],
-        [0xE1, Opcode.MOV_A_IMM], [0xE2, 0x4F], [0xE3, Opcode.MOV_MEM_A], [0xE4, 0x70], [0xE5, 0xFF], // O
-        [0xE6, Opcode.MOV_A_IMM], [0xE7, 0x4B], [0xE8, Opcode.MOV_MEM_A], [0xE9, 0x70], [0xEA, 0xFF], // K
-        [0xEB, Opcode.MOV_A_IMM], [0xEC, 0x0A], [0xED, Opcode.MOV_MEM_A], [0xEE, 0x70], [0xEF, 0xFF], // \n
+        [0xE1, Opcode.MOV_A_IMM], [0xE2, 0x4F], [0xE3, Opcode.MOV_MEM_A], [0xE4, low16(MEMORY_MAP.CONSOLE_CHAR)], [0xE5, high16(MEMORY_MAP.CONSOLE_CHAR)], // O
+        [0xE6, Opcode.MOV_A_IMM], [0xE7, 0x4B], [0xE8, Opcode.MOV_MEM_A], [0xE9, low16(MEMORY_MAP.CONSOLE_CHAR)], [0xEA, high16(MEMORY_MAP.CONSOLE_CHAR)], // K
+        [0xEB, Opcode.MOV_A_IMM], [0xEC, 0x0A], [0xED, Opcode.MOV_MEM_A], [0xEE, low16(MEMORY_MAP.CONSOLE_CHAR)], [0xEF, high16(MEMORY_MAP.CONSOLE_CHAR)], // \n
 
         [0xF0, Opcode.JMP], // Go to WAIT KEY
-        [0xF1, (MEMORY_MAP.OS_START + 0x0B) & 0xFF],        // $WAIT_KEY - low
-        [0xF2, ((MEMORY_MAP.OS_START + 0x0B) >> 8) & 0xFF], // $WAIT_KEY - high
+        [0xF1, low16((MEMORY_MAP.OS_START + 0x0B as u16))],  // $WAIT_KEY - low
+        [0xF2, high16((MEMORY_MAP.OS_START + 0x0B as u16))], // $WAIT_KEY - high
 
     ] as [u8, u8][]),
 };

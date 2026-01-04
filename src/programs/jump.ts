@@ -1,8 +1,9 @@
 
 import { Opcode } from "@/lib/instructions";
+import { high16, low16 } from "@/lib/integers";
 import { MEMORY_MAP } from "@/lib/memory_map";
 
-import type { ProgramInfo, u8 } from "@/types/cpu.types";
+import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 export const programs: Record<string, ProgramInfo> = {
@@ -16,8 +17,8 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Test: if A == 0, jump to SKIP
             [0x02, Opcode.JZ],
-            [0x03, 0x08],       // Low byte of jump address
-            [0x04, 0x02],       // High byte of jump address (0x0208)
+            [0x03, low16(MEMORY_MAP.PROGRAM_START + 0x08 as u16)],    // Low byte of jump address
+            [0x04, high16(MEMORY_MAP.PROGRAM_START + 0x08 as u16)],   // High byte of jump address
 
             // This will be skipped (because A == 0)
             [0x05, Opcode.INC_A],

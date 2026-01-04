@@ -1,9 +1,9 @@
 
+import { high16, low16 } from "@/lib/integers";
 import { Opcode } from "../lib/instructions";
 import { MEMORY_MAP } from "../lib/memory_map";
 
-import type { ProgramInfo, u8 } from "@/types/cpu.types";
-
+import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 export const RNG_TEST: ProgramInfo = {
@@ -53,33 +53,42 @@ export const RANDOM_PIXELS: ProgramInfo = {
         // LOOP:
         // X aléatoire
         [0x05, Opcode.MOV_A_MEM],
-        [0x06, 0xB0], [0x07, 0xFF], // RNG_OUTPUT
+        [0x06, low16(MEMORY_MAP.RNG_OUTPUT)],  // RNG_OUTPUT - low
+        [0x07, high16(MEMORY_MAP.RNG_OUTPUT)], // RNG_OUTPUT - high
         [0x08, Opcode.MOV_MEM_A],
-        [0x09, 0xD0], [0x0A, 0xFF], // PIXEL_X
+        [0x09, low16(MEMORY_MAP.PIXEL_X)],     // PIXEL_X - low
+        [0x0A, high16(MEMORY_MAP.PIXEL_X)],    // PIXEL_X - high
 
         // Y aléatoire
         [0x0B, Opcode.MOV_A_MEM],
-        [0x0C, 0xB0], [0x0D, 0xFF], // RNG_OUTPUT
+        [0x0C, low16(MEMORY_MAP.RNG_OUTPUT)],  // RNG_OUTPUT - low
+        [0x0D, high16(MEMORY_MAP.RNG_OUTPUT)], // RNG_OUTPUT - high
         [0x0E, Opcode.MOV_MEM_A],
-        [0x0F, 0xD1], [0x10, 0xFF], // PIXEL_Y
+        [0x0F, low16(MEMORY_MAP.PIXEL_Y)],     // PIXEL_Y - low
+        [0x10, high16(MEMORY_MAP.PIXEL_Y)],    // PIXEL_Y - high
 
         // Couleur aléatoire (0-15)
         [0x11, Opcode.MOV_A_MEM],
-        [0x12, 0xB0], [0x13, 0xFF], // RNG_OUTPUT
-        [0x14, Opcode.MOV_B_IMM], [0x15, 0x0F],
+        [0x12, low16(MEMORY_MAP.RNG_OUTPUT)],  // RNG_OUTPUT - low
+        [0x13, high16(MEMORY_MAP.RNG_OUTPUT)], // RNG_OUTPUT - high
+        [0x14, Opcode.MOV_B_IMM],
+        [0x15, 0x0F],
         [0x16, Opcode.AND], // A = A & 0x0F
         [0x17, Opcode.MOV_MEM_A],
-        [0x18, 0xD2], [0x19, 0xFF], // PIXEL_COLOR
+        [0x18, low16(MEMORY_MAP.PIXEL_COLOR)],  // PIXEL_COLOR - low
+        [0x19, high16(MEMORY_MAP.PIXEL_COLOR)], // PIXEL_COLOR - high
 
         // Décrémenter
         [0x1A, Opcode.DEC_B],
-        [0x1B, Opcode.JNZ],
-        [0x1C, 0x05], [0x1D, 0x02],
+        [0x1B, Opcode.JNZ], // Go to Loop start
+        [0x1C, low16(MEMORY_MAP.PROGRAM_START + 0x05 as u16)],
+        [0x1D, high16(MEMORY_MAP.PROGRAM_START + 0x05 as u16)],
 
         [0x1E, Opcode.HALT],
     ] as [u8, u8][]),
     expectedResult: "100 pixels de couleurs aléatoires"
 };
+
 
 /**
  * PROGRAMME 4: Chronomètre RTC
