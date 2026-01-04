@@ -27,20 +27,20 @@ import { U16, U8 } from "./integers";
 
 export const MEMORY_MAP = createMemoryMap({
 
-    // ## ROM ## (0x0000-0x00FF) - 256 bytes
+    // ## ROM ## (0x0000-0x00FF) - 1280 bytes
     ROM_START: 0x0000,
-    ROM_END: 0x00FF,
+    ROM_END: 0x04FF,
 
 
-    // ## RAM ## (0x8000-0xFEFF) - ~32KB (OS + PROGRAM + STACK)
-    RAM_START: 0x0100,
+    // ## RAM ## (0x0500-0xFEFF) - ~64KB (OS + PROGRAM + STACK)
+    RAM_START: 0x0500,
     RAM_END: 0xFEFF,
 
-    // OS (0x0100-0x0FFF) - ~4KB
-    OS_START: 0x0100,
+    // OS (0x0500-0x0FFF) - ~3KB
+    OS_START: 0x0500,
     OS_END: 0x0FFF,
 
-    // PROGRAM (0x1000-0xFDFF) - ~60KB
+    // PROGRAM + DATA (0x1000-0xFDFF) - ~60KB
     PROGRAM_START: 0x1000,
     PROGRAM_END: 0xFDFF,
 
