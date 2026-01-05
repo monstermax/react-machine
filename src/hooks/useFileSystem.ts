@@ -17,13 +17,28 @@ const ALLOCATION_SECTOR = 1;     // Secteur 1: bitmap d'allocation
 const INODE_TABLE_START = 2;     // Secteurs 2-17: table d'inodes (16 secteurs)
 const DATA_SECTORS_START = 18;   // Secteurs 18-255: données utilisateur
 
+// Bits de permission (style Unix)
+const PERMISSION_BITS = {
+    READ: 0b100,  // 4 - Lecture
+    WRITE: 0b010,  // 2 - Écriture  
+    EXECUTE: 0b001,  // 1 - Exécution
+} as const;
+
+// Valeurs par défaut
+const DEFAULT_PERMISSIONS = PERMISSION_BITS.READ | PERMISSION_BITS.WRITE; // rw- (lecture/écriture)
+const EXECUTABLE_PERMISSIONS = DEFAULT_PERMISSIONS | PERMISSION_BITS.EXECUTE; // rwx
+const READ_ONLY_PERMISSIONS = PERMISSION_BITS.READ; // r-- (lecture seule)
+
+
+type Permission = 'read' | 'write' | 'execute';
 
 // Structure Inode (16 bytes)
 interface Inode {
-    name: string;           // 8 bytes
-    size: u16;           // 2 bytes (taille en bytes, max 65535)
+    name: string;       // 8 bytes
+    size: u16;          // 2 bytes (taille en bytes, max 65535)
     startSector: u8;    // 1 byte (secteur de départ)
     flags: u8;          // 1 byte (0=libre, 1=occupé, 2=verrouillé)
+    permissions: u8;    // 1 byte : rwx bits (propriétaire seulement)
     // 4 bytes réservés pour extensions
 }
 
@@ -99,15 +114,16 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         // Lire flags
         const flags = readByte(U16(baseAddr + 12));
 
-        return { name, size, startSector, flags };
+        // Lire permissions (byte 13)
+        const permissions = readByte(U16(baseAddr + 13));
+
+        return { name, size, startSector, flags, permissions };
     }, [sectorToAddress, readByte]);
 
 
     // Écrire un inode
     const writeInode = useCallback((inodeIndex: number, inode: Inode) => {
         const baseAddr = sectorToAddress(INODE_TABLE_START as u8, inodeIndex * INODE_SIZE as u16);
-
-        // BUG: fait planter le CPU
 
         // Écrire nom (8 bytes max)
         for (let i = 0; i < FILENAME_LENGTH; i++) {
@@ -125,13 +141,53 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         // Écrire flags
         writeByte(U16(baseAddr + 12), U8(inode.flags));
 
-        // Bytes 11, 13-15 réservés (mettre à 0)
+        // Écrire permissions (byte 13)
+        writeByte(U16(baseAddr + 13), U8(inode.permissions || DEFAULT_PERMISSIONS));
+
+        // Bytes 11, 14-15 réservés (mettre à 0)
         writeByte(U16(baseAddr + 11), U8(0));
-        for (let i = 13; i < INODE_SIZE; i++) {
+        for (let i = 14; i < INODE_SIZE; i++) {
             writeByte(U16(baseAddr + i), U8(0));
         }
     }, [sectorToAddress, writeByte]);
 
+    // Vérifier si une permission est accordée
+    const hasPermission = useCallback((inode: Inode, permission: Permission): boolean => {
+        const permBits = inode.permissions || DEFAULT_PERMISSIONS;
+
+        switch (permission) {
+            case 'read':
+                return (permBits & PERMISSION_BITS.READ) !== 0;
+            case 'write':
+                return (permBits & PERMISSION_BITS.WRITE) !== 0;
+            case 'execute':
+                return (permBits & PERMISSION_BITS.EXECUTE) !== 0;
+            default:
+                return false;
+        }
+    }, []);
+
+
+    // Modifier les permissions d'un fichier
+    const setPermissions = useCallback((inodeIndex: number, permissions: u8): boolean => {
+        const inode = readInode(inodeIndex);
+        if (!inode || inode.flags !== 1) return false;
+
+        const updatedInode = { ...inode, permissions };
+        writeInode(inodeIndex, updatedInode);
+        return true;
+    }, [readInode, writeInode]);
+
+
+    // Obtenir une chaîne de permissions style Unix (ex: "rw-", "r-x")
+    const getPermissionString = useCallback((inode: Inode): string => {
+        const perm = inode.permissions || DEFAULT_PERMISSIONS;
+        return [
+            (perm & PERMISSION_BITS.READ) ? 'r' : '-',
+            (perm & PERMISSION_BITS.WRITE) ? 'w' : '-',
+            (perm & PERMISSION_BITS.EXECUTE) ? 'x' : '-'
+        ].join('');
+    }, []);
 
 
     // Gestion du bitmap d'allocation
@@ -243,6 +299,9 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
                 const inodeAddr = sectorToAddress(INODE_TABLE_START as u8, i * INODE_SIZE as u16);
                 // Marquer comme libre (flags = 0)
                 writeByte(U16(inodeAddr + 12), 0 as u8);
+
+                // Permissions par défaut (byte 13)
+                writeByte(U16(inodeAddr + 13), DEFAULT_PERMISSIONS as u8);
             }
 
             // Initialiser le bitmap d'allocation
@@ -251,6 +310,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
             for (let i = 0; i < DATA_SECTORS_START; i++) {
                 bitmap[i] = 1; // Occupés (système)
             }
+
             // Secteurs 18-255 libres (données utilisateur)
             for (let i = DATA_SECTORS_START; i < MAX_SECTORS; i++) {
                 bitmap[i] = 0; // Libres
@@ -268,24 +328,26 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
 
     // ===== IMPLÉMENTATION DES FONCTIONS =====
 
-    const listFiles = useCallback((): string[] => {
-        const files: string[] = [];
+    const listFiles = useCallback((): { name: string, permissions: string, size: number }[] => {
+        const files: { name: string, permissions: string, size: number }[] = [];
 
         for (let i = 0; i < MAX_FILES; i++) {
             const inode = readInode(i);
 
-            if (inode && inode.flags === 1) { // Fichier actif
-                files.push(inode.name);
+            if (inode && inode.flags === 1) {
+                files.push({
+                    name: inode.name.trim(),
+                    permissions: getPermissionString(inode),
+                    size: inode.size
+                });
             }
         }
 
-        //console('listFiles:', files)
-
         return files;
-    }, [readInode]);
+    }, [readInode, getPermissionString]);
 
 
-    const createFile = useCallback((name: string): boolean => {
+    const createFile = useCallback((name: string, permissions: u8 = DEFAULT_PERMISSIONS as u8): boolean => {
         // Vérifier longueur du nom
         if (name.length > FILENAME_LENGTH || name.length === 0) {
             console.error(`createFile: invalid name length: ${name.length}`);
@@ -327,6 +389,7 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
             size: 0 as u16,
             startSector: startSector as u8,
             flags: 1 as u8, // Occupé
+            permissions,
         };
 
         //console(`createFile: writing inode ${inodeIndex}:`, inode);
@@ -336,22 +399,29 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
     }, [findFreeInode, findFreeSectors, allocateSectors, writeInode, getAllocationBitmap]);
 
 
-    const openFile = useCallback((name: string): u16 => {
+    const openFile = useCallback((name: string, mode: 'read' | 'write' = 'read'): u16 => {
         for (let i = 0; i < MAX_FILES; i++) {
             const inode = readInode(i);
 
             if (inode && inode.flags === 1 && inode.name.trim() === name.trim()) {
-                //console('openFile:', inode)
+                // VÉRIFIER LES PERMISSIONS
+                if (mode === 'read' && !hasPermission(inode, 'read')) {
+                    console.log(`openFile: Permission denied (no read access to "${name}")`);
+                    return U16(0xFFFF);
+                }
+                if (mode === 'write' && !hasPermission(inode, 'write')) {
+                    console.log(`openFile: Permission denied (no write access to "${name}")`);
+                    return U16(0xFFFF);
+                }
+
                 setCurrentFileHandle(U16(i));
-                filePointerRef.current = U16(0)
+                filePointerRef.current = U16(0);
                 return U16(i);
             }
         }
 
-        //console('openFile: FILE_NOT_OPENED')
-
         return U16(0xFFFF); // Not found
-    }, [readInode]);
+    }, [readInode, hasPermission]);
 
 
     const readData = useCallback((): u8 => {
@@ -359,6 +429,12 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
 
         const inode = readInode(currentFileHandle);
         if (!inode || inode.flags !== 1) return U8(0);
+
+        // VÉRIFIER PERMISSION LECTURE
+        if (!hasPermission(inode, 'read')) {
+            console.log('readData: Permission denied (no read access)');
+            return U8(0);
+        }
 
         // Vérifier si on dépasse la taille
         if (filePointerRef.current >= inode.size) return U8(0);
@@ -427,6 +503,13 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
 
         const inode = readInode(currentFileHandle);
         if (!inode || inode.flags !== 1) return;
+
+        // VÉRIFIER PERMISSION ÉCRITURE
+        if (!hasPermission(inode, 'write')) {
+            console.log('writeData: Permission denied (no write access)');
+            setLastCommandResult(U8(0xFB)); // Erreur: permission refusée
+            return;
+        }
 
         // 1. Étendre le fichier si besoin
         if (!extendFileIfNeeded(inode, filePointerRef.current)) {
@@ -540,6 +623,46 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
                 // TODO: Implémenter
                 break;
 
+            case 0x96: // CHMOD - changer permissions du fichier courant
+                // La valeur des permissions est dans filenameBuffer (ex: "rwx" = 0b111 = 7)
+                if (currentFileHandle !== 0xFFFF) {
+                    const permValue = parseInt(filenameBuffer, 10) || 0;
+                    if (setPermissions(currentFileHandle, U8(permValue))) {
+                        result = U8(1);
+                    }
+                }
+                setFilenameBuffer("");
+                setFilenameIndex(0);
+                break;
+
+            case 0x97: // GET_PERM - lire permissions du fichier courant
+                if (currentFileHandle !== 0xFFFF) {
+                    const inode = readInode(currentFileHandle);
+                    if (inode) {
+                        result = U8(inode.permissions || DEFAULT_PERMISSIONS);
+                    }
+                }
+                break;
+
+            case 0x98: // CREATE_WITH_PERM - créer fichier avec permissions
+                // Format: "FILENAME:PERM" ex: "TEST.TXT:6" (6 = rw-)
+                const parts = filenameBuffer.split(':');
+                if (parts.length === 2) {
+                    const [name, permStr] = parts;
+                    const permissions = parseInt(permStr, 10) || DEFAULT_PERMISSIONS;
+                    if (createFile(name, U8(permissions))) {
+                        result = U8(1);
+                    }
+                } else {
+                    // Créer avec permissions par défaut
+                    if (createFile(filenameBuffer, DEFAULT_PERMISSIONS as u8)) {
+                        result = U8(1);
+                    }
+                }
+                setFilenameBuffer("");
+                setFilenameIndex(0);
+                break;
+
             default:
                 result = U8(0xFF); // Commande inconnue
         }
@@ -582,6 +705,9 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         listFiles,
         createFile,
         openFile,
+        hasPermission,
+        setPermissions,
+        getPermissionString,
         //readFile,
         readData,
         writeData,
@@ -601,10 +727,13 @@ export type FsHook = {
     initializeFileSystem: () => void;
     setCurrentSector: React.Dispatch<React.SetStateAction<u8>>;
     setCurrentFileHandle: React.Dispatch<React.SetStateAction<u16>>;
-    listFiles: () => string[];
-    createFile: (name: string) => boolean;
+    listFiles: () => {name: string, permissions: string, size: number}[];
+    createFile: (name: string, permissions?: u8) => boolean;
     //readFile: (name: string) => void;
-    openFile: (name: string) => u16
+    openFile: (name: string, mode?: 'read' | 'write') => u16;
+    hasPermission: (inode: Inode, permission: Permission) => boolean;
+    setPermissions: (inodeIndex: number, permissions: u8) => boolean;
+    getPermissionString: (inode: Inode) => string;
     readData: () => u8;
     writeData: (value: u8) => void;
     executeCommand: (cmd: u8) => void;
