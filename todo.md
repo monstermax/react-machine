@@ -3,7 +3,7 @@
 
 ## ROADMAP
 - filesytem
-- execute file: charger le code d'un programme dans le filesytem d'un disk. puis l'executer
+- execute file: charger le code d'un programme dans un fichier du filesytem d'un disk. puis (le charger en RAM et) l'executer
 - shell
 - multitask
 - gestionnaire des processus
