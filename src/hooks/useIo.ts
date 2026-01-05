@@ -28,7 +28,7 @@ export const useIo = (): IOHook => {
     //console.log('RENDER ComputerPage.useComputer.useIo')
 
     // Devices
-    const osDisk = useDiskDevice(mapAddress16(new Map, 0 as u16));      // Device 0: 0xFF00-0xFF0F
+    const osDisk = useDiskDevice(new Map);      // Device 0: 0xFF00-0xFF0F
     const programDisk = useDiskDevice(new Map); // Device 1: 0xFF10-0xFF1F
     const dataDisk = useDiskDevice(new Map); // Device 1: 0xFFF0-0xFFFF
     const interrupt = useInterrupt(); // Device 4

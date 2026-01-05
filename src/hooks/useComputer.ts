@@ -74,6 +74,12 @@ export const useComputer = (): ComputerHook => {
     }, [memoryHook.loadDiskInRAM, ioHook.programDisk.storage, loadedProgram])
 
 
+    // Format Data Disk on component mount
+    useEffect(() => {
+        ioHook.dataDisk.formatDisk();
+    }, [])
+
+
     // Initialize/Reset CPU & RAM
     const resetComputer = useCallback(() => {
         const _loadedOs = loadedOs;

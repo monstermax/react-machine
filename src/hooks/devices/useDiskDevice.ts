@@ -108,6 +108,11 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
     const getSize = useCallback(() => storage.size, [storage]);
 
 
+    const formatDisk = useCallback(() => {
+        fsHook.initializeFileSystem();
+    }, [fsHook.initializeFileSystem])
+
+
     const reset = useCallback(() => {
         setStorage(data);
         setCurrentAddress(0 as u16);
@@ -124,6 +129,7 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
         getSize,
         setStorage,
         reset,
+        formatDisk,
     };
 
     return diskDeviceHook;
@@ -135,5 +141,6 @@ export type DiskDevice = Device & {
     fsHook: FsHook;
     setStorage: React.Dispatch<React.SetStateAction<Map<u16, u8>>>;
     reset: () => void;
+    formatDisk: () => void
 };
 

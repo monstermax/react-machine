@@ -31,8 +31,6 @@ interface Inode {
 
 export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<React.SetStateAction<Map<u16, u8>>>): FsHook => {
     //console.log('RENDER ComputerPage.useComputer.useIo.useDiskDevice')
-    const [isInitialized, setIsInitialized] = useState(false);
-
     const [currentSector, setCurrentSector] = useState<u8>(U8(0)); // TODO: useRef
     const [currentFileHandle, setCurrentFileHandle] = useState<u16>(U16(0)); // TODO: useRef
     const [lastCommandResult, setLastCommandResult] = useState<u8>(U8(0));
@@ -227,11 +225,6 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
 
 
     const initializeFileSystem = useCallback(() => {
-        if (isInitialized) {
-            //console("Filesystem already initialized, skipping");
-            return;
-        }
-
         // Vérifier si déjà initialisé (magic number)
         const magicAddr = sectorToAddress(SUPERBLOCK_SECTOR as u8, 0 as u16);
         const magic = readByte(magicAddr);
@@ -267,13 +260,10 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
 
             //console('Filesystem initialized. Free sectors:', MAX_SECTORS - DATA_SECTORS_START);
 
-            setIsInitialized(true);
-
         } else {
             //console('Filesystem already initialized');
-            setIsInitialized(true);
         }
-    }, [isInitialized, sectorToAddress, readByte, writeByte, setAllocationBitmap]);
+    }, [sectorToAddress, readByte, writeByte, setAllocationBitmap]);
 
 
     // ===== IMPLÉMENTATION DES FONCTIONS =====
@@ -579,27 +569,14 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
         filePointerRef.current = U16(0)
         setFilenameBuffer("");
         setFilenameIndex(0);
-
-        setIsInitialized(false);
-        initializeFileSystem();
-    }, [initializeFileSystem])
-
-
-    useEffect(() => {
-        //console("Initializing filesystem on mount...");
-        initializeFileSystem();
-
-        // DEBUG: Vérifier l'état après initialisation
-        const bitmap = getAllocationBitmap();
-        //console.log("Initial bitmap (sectors 0-25):", Array.from(bitmap.slice(0, 26)).map((v, i) => `${i}:${v}`).join(' '));
-        //console("Sector 18 should be 0 (free):", bitmap[18]);
-    }, [initializeFileSystem, getAllocationBitmap]);
+    }, [])
 
 
     const fsHook: FsHook = {
         currentSector,
         currentFileHandle,
         lastCommandResult,
+        initializeFileSystem,
         setCurrentSector,
         setCurrentFileHandle,
         listFiles,
@@ -621,6 +598,7 @@ export type FsHook = {
     currentSector: u8;
     currentFileHandle: u16;
     lastCommandResult: u8;
+    initializeFileSystem: () => void;
     setCurrentSector: React.Dispatch<React.SetStateAction<u8>>;
     setCurrentFileHandle: React.Dispatch<React.SetStateAction<u16>>;
     listFiles: () => string[];
