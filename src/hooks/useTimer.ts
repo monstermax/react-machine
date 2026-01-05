@@ -73,6 +73,13 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
     }, [setEnabled, setCounter, setPeriod]);
 
 
+    const reset = useCallback(() => {
+        setCounter(0 as u8)
+        setPeriod(10 as u8)
+        setEnabled(false)
+    }, []);
+
+
     const hook: TimerHook = {
         counter,
         enabled,
@@ -80,6 +87,7 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
         read,
         write,
         tick,
+        reset,
     };
 
     return hook;
@@ -90,6 +98,7 @@ export type TimerHook = {
     read: (address: u8) => u8;
     write: (address: u8, value: u8) => void;
     tick: () => void;
+    reset: () => void;
     counter: u8;
     enabled: boolean;
     period: u8;

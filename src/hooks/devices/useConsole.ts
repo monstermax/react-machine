@@ -35,7 +35,7 @@ export const useConsole = (): ConsoleDevice => {
                         return newLines;
                     });
                     setCurrentLine("");
-                    console.log(`📟 Console: "${currentLine}"`);
+                    //console.log(`📟 Console: "${currentLine}"`);
 
                 } else if (value === 0x08) {
                     // Backspace
@@ -54,7 +54,7 @@ export const useConsole = (): ConsoleDevice => {
             case 0x01: // CONSOLE_CLEAR - Clear screen
                 setLines([]);
                 setCurrentLine("");
-                console.log(`📟 Console: Screen cleared`);
+                //console.log(`📟 Console: Screen cleared`);
                 break;
         }
     }, [currentLine, setLines, setCurrentLine]);

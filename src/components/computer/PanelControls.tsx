@@ -163,101 +163,12 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
 
     return (
         <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 lg:col-span-2">
-            <h2 className="text-xl font-semibold mb-2 text-green-400">Execution Controls</h2>
-
-            {/* Sélection d'OS */}
-            <div className="mb-4 flex gap-4 items-center">
-                <label className="text-sm font-medium text-slate-300">Select OS:</label>
-
-                <select
-                    value={selectedOs ?? ''}
-                    onChange={(e) => setSelectedOs(e.target.value || null)}
-                    className="bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white w-96"
-                >
-                    <option key="none" value="">
-                        None
-                    </option>
-                    {Object.entries(os_list).map(([key, prog]) => (
-                        <option key={key} value={key}>
-                            {prog.name} - {prog.description}
-                        </option>
-                    ))}
-                </select>
-
-                <button
-                    onClick={() => {
-                        loadOs(selectedOs ?? '');
-                    }}
-                    disabled={!selectedOs}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
-                >
-                    {(computerHook.loadedOs && computerHook.loadedOs === selectedOs && !isOsUnloaded) ? "Reload" : "Load"}
-                </button>
-
-                <button
-                    onClick={() => unloadOs()}
-                    disabled={!computerHook.loadedOs || isOsUnloaded}
-                    className="bg-purple-800 hover:bg-purple-900 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
-                >
-                    Unload
-                </button>
-            </div>
-
-            {/* Sélection de programme */}
-            <div className="mb-4 flex gap-4 items-center">
-                <label className="text-sm font-medium text-slate-300">Select Program:</label>
-
-                <select
-                    value={selectedProgram ?? ''}
-                    onChange={(e) => setSelectedProgram(e.target.value || null)}
-                    className="bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white w-96"
-                >
-                    <option key="none" value="">
-                        None
-                    </option>
-                    {Object.entries(programs).map(([key, prog]) => (
-                        <option key={key} value={key}>
-                            {prog.name} - {prog.description}
-                        </option>
-                    ))}
-                </select>
-
-                <button
-                    onClick={() => {
-                        loadProgram(selectedProgram ?? '');
-                        //setSelectedProgram(null)
-                    }}
-                    disabled={!selectedProgram}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
-                >
-                    {(computerHook.loadedProgram && computerHook.loadedProgram === selectedProgram && !isProgramUnloaded) ? "Reload" : "Load"}
-                </button>
-
-                <button
-                    onClick={() => unloadProgram()}
-                    disabled={!computerHook.loadedProgram || isProgramUnloaded}
-                    className="bg-purple-800 hover:bg-purple-900 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
-                >
-                    Unload
-                </button>
-            </div>
-
-            <div className="mb-4 flex gap-4 items-center">
+            <div className="flex justify-between mb-8 pb-3 border-b">
+                <h2 className="text-xl font-semibold mb-2 text-green-400">Execution Controls</h2>
 
                 {/* Auto-play */}
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => setIsRunning(!isRunning)}
-                        disabled={cpuHook.halted}
-                        className={`${isRunning
-                            ? "bg-yellow-600 hover:bg-yellow-700"
-                            : "bg-green-600 hover:bg-green-700"
-                            } disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors font-semibold`}
-                    >
-                        {isRunning ? "⏸ Pause" : "▶ Auto-Play"}
-                    </button>
-
-                    <label className="text-sm font-medium text-slate-300">Speed:</label>
+                    <label className="text-sm font-medium text-slate-300">Clock:</label>
                     <select
                         value={frequency}
                         onChange={(e) => setFrequency(Number(e.target.value))}
@@ -273,11 +184,23 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
                     {frequencyReal.toFixed(1)} Hz
                 </div>
 
-                <div className="ms-auto flex items-center gap-6">
+                {/* Buttons */}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setIsRunning(!isRunning)}
+                        disabled={cpuHook.halted}
+                        className={`${isRunning
+                            ? "bg-yellow-600 hover:bg-yellow-700"
+                            : "bg-green-900 hover:bg-green-700"
+                            } disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors font-semibold`}
+                    >
+                        {isRunning ? "⏸ Pause" : "▶ Start"}
+                    </button>
+
                     <button
                         onClick={cpuHook.executeCycle}
                         disabled={cpuHook.halted || isRunning}
-                        className="bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-6 py-2 rounded transition-colors"
+                        className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                     >
                         ⏭ Step
                     </button>
@@ -287,7 +210,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
                             //setIsRunning(false);
                             resetComputer();
                         }}
-                        className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded cursor-pointer disabled:cursor-not-allowed transition-colors"
+                        className="bg-red-900 hover:bg-red-700 px-2 py-1 rounded cursor-pointer disabled:cursor-not-allowed transition-colors"
                     >
                         Reset
                     </button>
@@ -295,25 +218,103 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
 
             </div>
 
+            {/* Sélection d'OS */}
+            <div className="mb-4 flex gap-4 items-center">
+                <label className="text-sm font-bold text-slate-300 w-26">Main OS:</label>
+
+                <div className="flex gap-4">
+                    <select
+                        value={selectedOs ?? ''}
+                        onChange={(e) => setSelectedOs(e.target.value || null)}
+                        className="bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white w-96"
+                    >
+                        <option key="none" value="">
+                            None
+                        </option>
+                        {Object.entries(os_list).map(([key, prog]) => (
+                            <option key={key} value={key}>
+                                {prog.name} - {prog.description}
+                            </option>
+                        ))}
+                    </select>
+
+                    <button
+                        onClick={() => {
+                            loadOs(selectedOs ?? '');
+                        }}
+                        disabled={!selectedOs}
+                        className="bg-blue-900 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                    >
+                        {(computerHook.loadedOs && computerHook.loadedOs === selectedOs && !isOsUnloaded) ? "Reload" : "Load"}
+                    </button>
+                </div>
+
+                <button
+                    onClick={() => unloadOs()}
+                    disabled={!computerHook.loadedOs || isOsUnloaded}
+                    className="ms-auto bg-purple-900 hover:bg-purple-900 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                >
+                    Unload
+                </button>
+            </div>
+
+            {/* Sélection de programme */}
+            <div className="mb-4 flex gap-4 items-center">
+                <label className="text-sm font-bold text-slate-300 w-26">Program:</label>
+
+                <div className="flex gap-4">
+                    <select
+                        value={selectedProgram ?? ''}
+                        onChange={(e) => setSelectedProgram(e.target.value || null)}
+                        className="bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white w-96"
+                    >
+                        <option key="none" value="">
+                            None
+                        </option>
+                        {Object.entries(programs).map(([key, prog]) => (
+                            <option key={key} value={key}>
+                                {prog.name} - {prog.description}
+                            </option>
+                        ))}
+                    </select>
+
+                    <button
+                        onClick={() => {
+                            loadProgram(selectedProgram ?? '');
+                            //setSelectedProgram(null)
+                        }}
+                        disabled={!selectedProgram}
+                        className="bg-blue-900 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                    >
+                        {(computerHook.loadedProgram && computerHook.loadedProgram === selectedProgram && !isProgramUnloaded) ? "Reload" : "Load"}
+                    </button>
+                </div>
+
+                <button
+                    onClick={() => unloadProgram()}
+                    disabled={!computerHook.loadedProgram || isProgramUnloaded}
+                    className="ms-auto bg-purple-900 hover:bg-purple-900 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                >
+                    Unload
+                </button>
+            </div>
+
 
             {/* Info programme */}
             {
                 programInfo && (
-                    <div className="mt-4 p-4 bg-slate-900/50 rounded border border-slate-600">
+                    <div className="mt-4 p-3 bg-slate-900/50 rounded border border-slate-600">
                         <div className="flex text-sm text-slate-300">
                             <strong className="text-blue-400 me-2">Program:</strong> {programInfo.name}
 
                             {(loadedProgramInfo && (!selectedProgram || loadedProgramInfo.name === selectedProgramInfo?.name)) && (
-                                <div className={`ms-auto px-6 py-2 rounded ${isProgramUnloaded ? "bg-orange-600 hover:bg-orange-700" : "bg-green-600 hover:bg-green-700"}`}>
-                                    <>[{isProgramUnloaded ? "UNLOADED" : "LOADED"}]</>
+                                <div className={`ms-auto px-2 py-0 rounded ${isProgramUnloaded ? "bg-orange-600 hover:bg-orange-700" : "bg-green-600 hover:bg-green-700"}`}>
+                                    <>{isProgramUnloaded ? "UNLOADED" : "LOADED"}</>
                                 </div>
                             )}
                         </div>
                         <div className="text-xs text-slate-400 mt-1">
                             {programInfo.description}
-                        </div>
-                        <div className="mt-2 text-xs text-green-400">
-                            <strong>Expected:</strong> {programInfo.expectedResult}
                         </div>
                     </div>
                 )

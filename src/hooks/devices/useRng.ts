@@ -43,7 +43,7 @@ export const useRng = (): RngHook => {
             case PORTS.RNG_OUTPUT:
                 // Générer un nouveau nombre aléatoire
                 const random = generateRandom(seed);
-                console.log(`🎲 RNG: Generated ${random}`);
+                //console.log(`🎲 RNG: Generated ${random}`);
                 return random as u8;
 
             case PORTS.RNG_SEED:

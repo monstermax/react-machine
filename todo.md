@@ -1,6 +1,12 @@
 
 # TODO
 
+## ROADMAP
+- filesytem
+- execute file
+- shell
+- multitask
+- gestionnaire des processus
 
 ## FEATURES
 - gestion file system
