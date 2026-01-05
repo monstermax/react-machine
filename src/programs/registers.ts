@@ -46,7 +46,6 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x10, Opcode.HALT],
         ] as [u8, u8][]),
-        expectedResult: "A = 10 (1+2+3+4), stocké à 0x8000, B=4, C=3, D=4"
     },
 };
 

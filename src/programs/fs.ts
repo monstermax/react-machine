@@ -193,7 +193,6 @@ export const FS_CREATE_FILE: ProgramInfo = {
         [0x90, Opcode.SYSCALL],
         [0x91, 0],               // ← Syscall 0 = exit
     ] as [u8, u8][]),
-    expectedResult: "Fichier TEST.TXT créé avec 'Hello\\n'"
 };
 
 
@@ -286,7 +285,6 @@ export const FS_READ_FILE: ProgramInfo = {
         [0x41, Opcode.SYSCALL],
         [0x42, 0],               // ← Syscall 0 = exit
     ] as [u8, u8][]),
-    expectedResult: "Console affiche 'Hello\\n'"
 };
 
 
@@ -315,5 +313,4 @@ export const FS_LIST_FILES: ProgramInfo = {
         [0x09, Opcode.SYSCALL],
         [0x0A, 0],               // ← Syscall 0 = exit
     ] as [u8, u8][]),
-    expectedResult: "LEDs affichent nombre de fichiers"
 };

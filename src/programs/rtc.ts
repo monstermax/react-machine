@@ -90,7 +90,6 @@ export const LCD_CLOCK: ProgramInfo = {
         [0x58, Opcode.JMP],
         [0x59, 0x08], [0x5A, 0x02],
     ] as [u8, u8][]),
-    expectedResult: "LCD affiche 'Time: HH:MM:SS'"
 };
 
 
@@ -160,7 +159,6 @@ export const CONSOLE_DATE: ProgramInfo = {
 
         [0x4B, Opcode.HALT],
     ] as [u8, u8][]),
-    expectedResult: "Console affiche 'Date: DD/MM/YY'"
 };
 
 
@@ -233,7 +231,6 @@ export const CONSOLE_DATETIME: ProgramInfo = {
 
         [0x57, Opcode.HALT],
     ] as [u8, u8][]),
-    expectedResult: "Console: '03/01/25 14:30:45'"
 };
 
 
@@ -291,6 +288,5 @@ export const LCD_LIVE_CLOCK: ProgramInfo = {
         [0x39, low16(MEMORY_MAP.OS_START + 0x02 as u16)],   // OS_START + 0x02 - Low
         [0x3A, high16(MEMORY_MAP.OS_START + 0x02 as u16)],  // OS_START + 0x02 - High
     ] as [u8, u8][]),
-    expectedResult: "LCD affiche l'heure qui se met à jour"
 };
 

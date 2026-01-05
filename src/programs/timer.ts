@@ -81,7 +81,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x50, Opcode.POP_A],
             [0x51, Opcode.IRET],
         ] as [u8, u8][]),
-        expectedResult: "LEDs comptent toutes les 10 cycles, IRQ acknowledged"
     },
 
     timer_02: {
@@ -153,7 +152,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x60, Opcode.POP_A],
             [0x61, Opcode.IRET], // Retourne à 0x0229 (le HALT)
         ] as [u8, u8][]),
-        expectedResult: "1 interrupt → LEDs=0xFF → HALT"
     },
 }
 

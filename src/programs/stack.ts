@@ -39,6 +39,5 @@ export const programs: Record<string, ProgramInfo> = {
             // Retour à l'appelant
             [0x14, Opcode.RET],
         ] as [u8, u8][]),
-        expectedResult: "SP décrémenté/incrementé, PC sauvegardé/restauré"
     },
 }

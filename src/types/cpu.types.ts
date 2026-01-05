@@ -41,7 +41,6 @@ export type ProgramInfo = {
     name: string;
     description: string;
     code: Map<u8, u8> | Map<u16, u8>;
-    expectedResult: string;
 };
 
 

@@ -23,6 +23,5 @@ export const programs: Record<string, ProgramInfo> = {
             [0x0A, Opcode.SYSCALL],
             [0x0B, 0],               // ← Syscall 0 = exit
         ] as [u8, u8][]),
-        expectedResult: "A = 42, Memory[0x80] = 42"
     },
 }

@@ -22,7 +22,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
         ] as [u8, u8][]),
-        expectedResult: "LEDs qui comptent en binaire de 0 à 255"
     },
 
     leds_off: {
@@ -40,7 +39,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
         ] as [u8, u8][]),
-        expectedResult: "LEDs qui comptent en binaire de 0 à 255"
     },
 
     leds_blink: {
@@ -60,7 +58,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x07, low16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],   // PROGRAM_START + 0x02 - Low
             [0x08, high16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],  // PROGRAM_START + 0x02 - High
         ] as [u8, u8][]),
-        expectedResult: "LEDs qui comptent en binaire de 0 à 255"
     },
 
     seven_segments: {
@@ -92,7 +89,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x10, low16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],   // PROGRAM_START + 0x02 - Low
             [0x11, high16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],  // PROGRAM_START + 0x02 - High
         ] as [u8, u8][]),
-        expectedResult: "Compteur 0→F qui boucle"
     },
 
     hello_world: {
@@ -186,7 +182,6 @@ export const programs: Record<string, ProgramInfo> = {
             // HALT
             [0x44, Opcode.HALT],
         ] as [u8, u8][]),
-        expectedResult: "Console affiche 'Hello World!'"
     },
 
     console_counter: {
@@ -238,7 +233,6 @@ export const programs: Record<string, ProgramInfo> = {
             // Fini
             [0x1B, Opcode.HALT],
         ] as [u8, u8][]),
-        expectedResult: "Console affiche 0-9 avec newlines"
     },
 
     lcd_hello: {
@@ -298,7 +292,6 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x44, Opcode.HALT],
         ] as [u8, u8][]),
-        expectedResult: "LCD affiche 'Hello' et 'World!'"
     },
 
     lcd_counter: {
@@ -407,7 +400,6 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x4B, Opcode.HALT],
         ] as [u8, u8][]),
-        expectedResult: "LCD compte de 00 à 99"
     },
 
     pixel_line: {
@@ -447,7 +439,6 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x19, Opcode.HALT],
         ] as [u8, u8][]),
-        expectedResult: "Ligne diagonale de (0,0) à (31,31)"
     },
 
     pixel_square: {
@@ -555,7 +546,6 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x63, Opcode.HALT],
         ] as [u8, u8][]),
-        expectedResult: "Carré 10x10 avec uniquement les contours"
     },
 
 }

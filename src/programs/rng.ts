@@ -36,7 +36,6 @@ export const RNG_TEST: ProgramInfo = {
 
         [0x14, Opcode.HALT],
     ] as [u8, u8][]),
-    expectedResult: "10 nombres aléatoires affichés dans les LEDs"
 };
 
 
@@ -86,7 +85,6 @@ export const RANDOM_PIXELS: ProgramInfo = {
 
         [0x1E, Opcode.HALT],
     ] as [u8, u8][]),
-    expectedResult: "100 pixels de couleurs aléatoires"
 };
 
 
@@ -131,5 +129,4 @@ export const RTC_STOPWATCH: ProgramInfo = {
         [0x1A, Opcode.JMP],
         [0x1B, 0x07], [0x1C, 0x02],
     ] as [u8, u8][]),
-    expectedResult: "LEDs mises à jour chaque seconde"
 };

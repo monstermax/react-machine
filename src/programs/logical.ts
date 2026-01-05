@@ -18,7 +18,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
         ] as [u8, u8][]),
-        expectedResult: "A = 8"
     },
     add_10_25: {
         name: "Addition Grande",
@@ -32,7 +31,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
         ] as [u8, u8][]),
-        expectedResult: "A = 35"
     },
     double_addition: {
         name: "Double Addition",
@@ -49,7 +47,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x08, Opcode.SYSCALL],
             [0x09, 0],               // ← Syscall 0 = exit
         ] as [u8, u8][]),
-        expectedResult: "A = 18"
     },
     subtraction: {
         name: "Soustraction",
@@ -63,7 +60,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
         ] as [u8, u8][]),
-        expectedResult: "A = 7"
     },
     logical_ops: {
         name: "Opérations Logiques",
@@ -77,7 +73,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
         ] as [u8, u8][]),
-        expectedResult: "A = 8 (0b1000)"
     },
     increment_loop: {
         name: "Boucle d'Incrémentation",
@@ -106,7 +101,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x0B, Opcode.SYSCALL],
             [0x0C, 0],
         ] as [u8, u8][]),
-        expectedResult: "A = 5"
     },
     overflow_test: {
         name: "Overflow Test",
@@ -120,6 +114,5 @@ export const programs: Record<string, ProgramInfo> = {
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
         ] as [u8, u8][]),
-        expectedResult: "A = 44 (overflow), Carry flag = 1"
     },
 }

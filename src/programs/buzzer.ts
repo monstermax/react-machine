@@ -15,21 +15,25 @@ export const SIMPLE_BEEP: ProgramInfo = {
     description: "Bip simple à 440 Hz",
     code: new Map([
         [0x00, Opcode.SET_SP],
-        [0x01, 0xFF], [0x02, 0xFE],
+        [0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
+        [0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
 
         // Fréquence = 440 Hz → valeur ≈ (440-100)/7.45 ≈ 45
-        [0x03, Opcode.MOV_A_IMM], [0x04, 45],
+        [0x03, Opcode.MOV_A_IMM],
+        [0x04, 45],
         [0x05, Opcode.MOV_MEM_A],
-        [0x06, 0x80], [0x07, 0xFF], // BUZZER_FREQ
+        [0x06, 0x80],
+        [0x07, 0xFF], // BUZZER_FREQ
 
         // Durée = 500ms → 500/10 = 50
-        [0x08, Opcode.MOV_A_IMM], [0x09, 50],
+        [0x08, Opcode.MOV_A_IMM],
+        [0x09, 50],
         [0x0A, Opcode.MOV_MEM_A],
-        [0x0B, 0x81], [0x0C, 0xFF], // BUZZER_DURATION (déclenche le son)
+        [0x0B, 0x81],
+        [0x0C, 0xFF], // BUZZER_DURATION (déclenche le son)
 
         [0x0D, Opcode.HALT],
     ] as [u8, u8][]),
-    expectedResult: "Bip court à 440 Hz"
 };
 
 
@@ -84,7 +88,6 @@ export const SIREN: ProgramInfo = {
 
         [0x29, Opcode.HALT],
     ] as [u8, u8][]),
-    expectedResult: "Sirène avec alternance haute/basse"
 };
 
 
@@ -154,7 +157,6 @@ export const MUSICAL_SCALE: ProgramInfo = {
 
         [0x46, Opcode.HALT],
     ] as [u8, u8][]),
-    expectedResult: "Gamme Do-Ré-Mi-Fa-Sol-La-Si-Do"
 };
 
 
@@ -204,7 +206,6 @@ export const RTC_ALARM_BEEP: ProgramInfo = {
         [0x1F, Opcode.JMP],
         [0x20, 0x07], [0x21, 0x02],
     ] as [u8, u8][]),
-    expectedResult: "Bip court chaque seconde"
 };
 
 
@@ -262,5 +263,4 @@ export const RANDOM_NOTES: ProgramInfo = {
         [0x20, Opcode.SYSCALL],
         [0x21, 0],
     ] as [u8, u8][]),
-    expectedResult: "20 notes aléatoires"
 };

@@ -30,7 +30,6 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x0A, Opcode.HALT], // Or SYSCALL 0
         ] as [u8, u8][]),
-        expectedResult: "A = 100 (INC_A skipped)"
     },
 }
 

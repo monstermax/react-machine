@@ -48,7 +48,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x15, 0x03],
             [0x16, 0x02],
         ] as [u8, u8][]),
-        expectedResult: "Les caractères tapés s'affichent dans la console"
     },
 
     keyboard_interrupt: {
@@ -104,7 +103,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x51, Opcode.POP_A], // Restaurer A seulement
             [0x52, Opcode.IRET],
         ] as [u8, u8][]),
-        expectedResult: "Echo clavier parfait avec IRET qui fonctionne"
     },
 };
 
