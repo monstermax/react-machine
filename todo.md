@@ -30,3 +30,11 @@
 - Gestionnaire de processus (Table des processus + États: RUNNING, READY, BLOCKED + Scheduler round-robin)
 - OS Complet (Tout ce qui précède + Syscalls étendus + File system simple + Memory manager)
 
+
+
+## OS + Filesystem + Run file
+=> créer programme qui fait les taches suivantes :
+- charger le code d'un programme demo (ex: SIMPLE_BEEP) sur le disk Data1 (raw)
+- charger le contenu du disk Data1 dans un fichier du filesytem du disk Data2
+- charger le contenu du fichier en RAM (à l'adresse PROGRAM_START ?)
+- executer le code du fichier

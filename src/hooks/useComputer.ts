@@ -30,7 +30,7 @@ export const useComputer = (): ComputerHook => {
     if (true) {
         // DEBUG
         (window as any).ioHook = ioHook;
-        (window as any).fs = ioHook.programDisk.fsHook;
+        (window as any).fs = ioHook.dataDisk.fsHook;
     }
 
 
