@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 
-import { compileCode, compileDemo, decompileCode, decompileDemo, type CompiledCode, type PrecompiledCode, type string } from "@/lib/compiler";
+import { compileCode, compileDemo, decompileCode, decompileDemo, type CompiledCode } from "@/lib/compiler";
 import { toHex } from "@/lib/integers";
 
 
