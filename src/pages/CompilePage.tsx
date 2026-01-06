@@ -1,9 +1,11 @@
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 
 import { compileCode, compileDemo, decompileCode, decompileDemo, type CompiledCode } from "@/lib/compiler";
-import { toHex } from "@/lib/integers";
+import { toHex, U16 } from "@/lib/integers";
+import { MEMORY_MAP } from "@/lib/memory_map";
+import type { u16 } from "@/types/cpu.types";
 
 
 type DisplayMode = "array" | "readable" | "editable";
@@ -78,10 +80,19 @@ export const CompilePage: React.FC = () => {
     const [editableCode, setEditableCode] = useState<string>("");
     const [editError, setEditError] = useState<string>("");
 
+    const [compileMemoryOffsetStr, setCompileMemoryOffsetStr] = useState('0x00');
+    const [compileMemoryOffsetUint, setCompileMemoryOffsetUint] = useState<u16>(0 as u16);
+
+    useEffect(() => {
+        const newCompileMemoryOffsetUint = Number(compileMemoryOffsetStr)
+        setCompileMemoryOffsetUint(U16(newCompileMemoryOffsetUint))
+
+    }, [compileMemoryOffsetStr])
+
 
     const handleCompile = () => {
         try {
-            const result: CompiledCode = compileCode(sourceCode);
+            const result: CompiledCode = compileCode(sourceCode, compileMemoryOffsetUint);
             setCompiledCode(result);
 
             // Initialiser le contenu éditable
@@ -250,6 +261,22 @@ export const CompilePage: React.FC = () => {
                         </button>
                         <div className="text-xs text-gray-400 mt-2">
                             {sourceCode.split('\n').filter(l => l.trim()).length} lines
+                        </div>
+
+                        <div className="ms-auto flex gap-2 items-center">
+                            <div>Offset Memory:</div>
+
+                            <input
+                                type="text"
+                                value={'0x' + (compileMemoryOffsetStr.startsWith('0x') ? compileMemoryOffsetStr.slice(2) : compileMemoryOffsetStr)}
+                                placeholder="0x0000"
+                                onChange={(event) => setCompileMemoryOffsetStr(event.target.value)}
+                                className={"w-16 font-mono text-sm bg-gray-800 text-yellow-300 p-1 border-none focus:outline-none"}
+                            />
+
+                            <div className="w-16">
+                                ({compileMemoryOffsetUint})
+                            </div>
                         </div>
                     </div>
                 </div>

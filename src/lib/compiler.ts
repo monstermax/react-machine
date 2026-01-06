@@ -74,11 +74,11 @@ export function decompileDemo() {
 }
 
 
-export function compileCode(inputCode: string) {
+export function compileCode(inputCode: string, memoryOffset: u16=0 as u16) {
     const stage1 = compileStage1(inputCode)
     //console.log('compile stage1:', stage1)
 
-    const stage2 = compileStage2(stage1)
+    const stage2 = compileStage2(stage1, memoryOffset)
     //console.log('compile stage2:', stage2)
 
     return stage2;
@@ -146,7 +146,7 @@ function compileStage1(code: string): {opcode: string, value: string, comment: s
 }
 
 
-function compileStage2(stage1: {opcode: string, value: string, comment: string}[]): CompiledCode {
+function compileStage2(stage1: {opcode: string, value: string, comment: string}[], memoryOffset: u16): CompiledCode {
     const step1: [line: number, opcode: string, labels: string[], comment: string][] = [];
     let asmLineNum = 0;
     let currentLabels: string[] = [];
@@ -210,8 +210,6 @@ function compileStage2(stage1: {opcode: string, value: string, comment: string}[
         let labels = item[2];
         let comment = item[3];
 
-        const offset = MEMORY_MAP.PROGRAM_START;
-
         if (value.startsWith('$')) {
             const parts = value.split('$');
             const [_, labelName, weight] = parts;
@@ -221,7 +219,7 @@ function compileStage2(stage1: {opcode: string, value: string, comment: string}[
                 throw new Error(`Instruction not found for label ${labelName}`)
             }
 
-            const line = labelInstruction[0] + offset as u16;
+            const line = labelInstruction[0] + memoryOffset as u16;
 
             const valueInt = weight === 'low'
                 ? low16(line)

@@ -37,3 +37,17 @@ export const BOOTLOADER: Map<u16, u8> = new Map([
     [0x0B, high16(MEMORY_MAP.OS_START)],    // High byte: 0x01
 ] as [u16, u8][]);
 
+
+
+const BootloaderSourceCode = `
+:INIT
+SET_SP MEMORY_MAP.STACK_END # Initialiser le Stack Pointer
+
+:WAIT_FOR_OS
+MOV_A_MEM MEMORY_MAP.OS_START # Vérifie si un OS est chargé en mémoire
+NOP
+JZ $WAIT_FOR_OS # Si pas d'OS détecté on boucle
+
+:RUN_OS
+JMP MEMORY_MAP.OS_START # Lance l'OS
+`;
