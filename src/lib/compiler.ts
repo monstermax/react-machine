@@ -70,7 +70,9 @@ export function loadCode(sourceCode: string, memoryOffset: u16=0 as u16) {
 
 
 export async function loadCodeFromFile(sourceFile: string, memoryOffset: u16=0 as u16) {
-    const sourceCodeModule = await import(`../programs/asm/${sourceFile}?raw`);
+    const sourceCodeModule = sourceFile.endsWith('.ts')
+        ? await import(`../programs/asm/${sourceFile}`)
+        : await import(`../programs/asm/${sourceFile}?raw`);
     const sourceCode = sourceCodeModule.default;
     const code = loadCode(sourceCode, memoryOffset);
     return code;
