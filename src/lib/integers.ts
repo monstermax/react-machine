@@ -21,3 +21,8 @@ export function low16(value: u16): u8 {
 }
 
 
+export function toHex(intValue: number) {
+    const hex = intValue.toString(16).toUpperCase();
+    return '0x' + (hex.length % 2 === 0 ? hex : `0${hex}`);
+}
+

@@ -7,6 +7,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 
 import { Home } from "@/pages/Home";
 import { ComputerPage } from "./pages/Computer";
+import { CompilePage } from "./pages/CompilePage";
 import NotFound from "@/pages/NotFound";
 
 import '@/App.css';
@@ -46,6 +47,7 @@ function Router() {
         <Switch>
             <Route path={"/"} component={Home} />
             <Route path={"/cpu"} component={ComputerPage} />
+            <Route path={"/compiler"} component={CompilePage} />
             <Route path={"/404"} component={NotFound} />
             {/* Final fallback route */}
             <Route component={NotFound} />
