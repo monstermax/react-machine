@@ -1,7 +1,8 @@
 
 export type u8 = number & { readonly __brand: 'u8' };
-
 export type u16 = number & { readonly __brand: 'u16' };
+export type u32 = number & { readonly __brand: 'u32' };
+export type u64 = number & { readonly __brand: 'u64' };
 
 
 export type Register8 = 

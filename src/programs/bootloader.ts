@@ -30,30 +30,3 @@ JMP MEMORY_MAP.OS_START # Lance l'OS
 export const BOOTLOADER: Map<u16, u8> = compileCode(BootloaderSourceCode, MEMORY_MAP.ROM_START).code;
 
 
-
-
-export const BOOTLOADER_OLD: Map<u16, u8> = new Map([
-    // Initialiser le Stack Pointer
-    [0x00, Opcode.SET_SP],
-    [0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
-    [0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
-
-    // === WAIT_FOR_OS (0x00) ===
-    // Vérifier si un OS est chargé à OS_START
-    [0x03, Opcode.MOV_A_MEM],
-    [0x04, low16(MEMORY_MAP.OS_START)],  // Low byte
-    [0x05, high16(MEMORY_MAP.OS_START)], // High byte
-
-    // Si pas d'OS, revenir à 0x03
-    [0x06, Opcode.JZ], // Si = 0, boucler
-    [0x07, 0x03],      // Low: 0x03
-    [0x08, 0x00],      // High: 0x00
-
-    // === RUN_OS (0x06) ===
-    // Sauter à l'OS qui est déjà en RAM
-    [0x09, Opcode.JMP],
-    [0x0A, low16(MEMORY_MAP.OS_START)],     // Low byte: 0x00
-    [0x0B, high16(MEMORY_MAP.OS_START)],    // High byte: 0x01
-] as [u16, u8][]);
-
-
