@@ -100,7 +100,7 @@ export const useLcdDisplay = (): LCDDevice => {
     }, [display]);
 
 
-    return {
+    const lcdHook: LCDDevice = {
         read,
         write,
         reset,
@@ -110,6 +110,8 @@ export const useLcdDisplay = (): LCDDevice => {
         cursorCol,
         cursorVisible,
     };
+
+    return lcdHook;
 };
 
 

@@ -13,7 +13,7 @@ export const Home: React.FC = () => {
 
                 <div className="mb-12">
                     <h1 className="text-8xl font-black text-stone-800 mb-2 tracking-tight">
-                        CPU Simulator
+                        16-Bit React Machine
                     </h1>
                     <div className="h-2 w-64 bg-amber-600" />
                 </div>
@@ -42,23 +42,30 @@ export const Home: React.FC = () => {
                     <ul className="space-y-3 text-stone-700 text-lg">
                         <li className="flex items-center gap-3">
                             <span className="w-2 h-2 bg-stone-800 rounded-full" />
-                            Feature1
+                            Realtime CPU
                         </li>
                         <li className="flex items-center gap-3">
                             <span className="w-2 h-2 bg-stone-800 rounded-full" />
-                            Feature2
+                            Assembly language
                         </li>
                         <li className="flex items-center gap-3">
                             <span className="w-2 h-2 bg-stone-800 rounded-full" />
-                            Feature3
+                            IO Devices
                         </li>
                     </ul>
 
-                    {/* CTA */}
                     <div className="flex flex-col gap-4">
                         <Link to="/cpu">
                             <button className="px-16 py-8 bg-stone-900 text-amber-50 text-xl font-bold hover:bg-stone-800 transition-colors w-full">
-                                Start CPU
+                                Start Machine
+                            </button>
+                        </Link>
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                        <Link to="/compiler">
+                            <button className="px-16 py-8 bg-stone-900 text-amber-50 text-xl font-bold hover:bg-stone-800 transition-colors w-full">
+                                Compile Code
                             </button>
                         </Link>
                     </div>

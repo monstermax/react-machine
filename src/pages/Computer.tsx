@@ -1,5 +1,6 @@
 
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "wouter";
 
 import { useComputer } from "@/hooks/useComputer";
 
@@ -19,7 +20,9 @@ export const ComputerPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-slate-950 text-white">
-            <h1 className="text-2xl font-bold px-4 py-2">16-Bit React Machine</h1>
+            <h1 className="text-2xl font-bold px-4 py-2">
+                <Link to="/">CPU Simulator</Link>
+            </h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
                 <div className="space-y-8">
