@@ -76,10 +76,10 @@ export function decompileDemo() {
 
 export function compileCode(inputCode: string) {
     const stage1 = compileStage1(inputCode)
-    console.log('compile stage1:', stage1)
+    //console.log('compile stage1:', stage1)
 
     const stage2 = compileStage2(stage1)
-    console.log('compile stage2:', stage2)
+    //console.log('compile stage2:', stage2)
 
     return stage2;
 }
@@ -87,10 +87,10 @@ export function compileCode(inputCode: string) {
 
 export function decompileCode(inputCode: CompiledCode): string {
     const stage1 = decompileStage1(inputCode);
-    console.log('decompile stage1:', stage1)
+    //console.log('decompile stage1:', stage1)
 
     const stage2 = decompileStage2(stage1);
-    console.log('decompile stage2:', stage2)
+    //console.log('decompile stage2:', stage2)
     return stage2;
 }
 

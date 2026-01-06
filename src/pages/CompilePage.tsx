@@ -18,9 +18,9 @@ MOV_MEM_A MEMORY_MAP.LCD_COMMAND # clear LCD
 
 :START
 CALL $LEDS_ON # Go to LEDS_ON
-MOV_A_IMM 0x0f
-CALL $WAIT_LOOP
-CALL $LEDS_OFF
+MOV_A_IMM 0x0f # A = Delay counter for WAIT_LOOP
+CALL $WAIT_LOOP # Go to WAIT_LOOP
+CALL $LEDS_OFF # Go to LEDS_OFF
 JMP $END # Go to END
 
 :LEDS_ON
@@ -133,8 +133,17 @@ export const CompilePage: React.FC = () => {
 
 
     const formatCompiledCodeArray = (code: CompiledCode): string => {
-        return '[\n' + code.map(([line, value, comment, labels]) => {
-            return `    [${toHex(line)}, ${value}],${comment ? ` // ${comment}` : ""}${labels?.length ? ` // [${labels.join(' - ')}]` : ""}`;
+        return '[\n' + code.map(([line, value, comment, labels], idx) => {
+            let result = "";
+
+            if (labels?.length) {
+                const prefix = idx === 0 ? "" : "\n";
+                result += `${prefix}    // [${labels.join(' - ')}]\n`;
+            }
+
+            result += `    [${toHex(line)}, ${value}],${comment ? ` // ${comment}` : ""}`;
+
+            return result;
         }).join('\n') + '\n]';
     };
 
@@ -250,6 +259,12 @@ export const CompilePage: React.FC = () => {
                     <div className="flex justify-between items-center mb-2">
                         <h2 className="text-lg font-semibold">Compiled Code</h2>
                         <div className="flex gap-1 bg-gray-800 rounded-lg p-1">
+                            <button
+                                onClick={() => {if (compiledCode) navigator.clipboard.writeText(formatCompiledCodeArray(compiledCode))}}
+                                className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded me-4"
+                            >
+                                Copy
+                            </button>
                             <button
                                 onClick={() => handleModeChange("array")}
                                 className={`px-3 py-1 text-sm rounded ${displayMode === "array" ? "bg-gray-700" : "hover:bg-gray-700"}`}
