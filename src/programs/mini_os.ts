@@ -24,7 +24,7 @@ JMP $CHECK_PROGRAM_LOADED
 
 
 export const MINI_OS: OsInfo = {
-    name: "Mini OS (liveCompiled)",
+    name: "Mini OS",
     description: "Attend qu'un programme soit chargé en RAM, puis l'exécute",
     code: compileCode(codeSourceV1, MEMORY_MAP.OS_START).code,
 };
@@ -33,7 +33,7 @@ export const MINI_OS: OsInfo = {
 
 // Mini OS : Attend qu'un programme soit chargé en RAM, puis l'exécute
 export const MINI_OS_OLD: OsInfo = {
-    name: "Mini OS",
+    name: "Mini OS - OLD",
     description: "Attend qu'un programme soit chargé en RAM, puis l'exécute",
     code: new Map([
         // === WAIT_FOR_PROGRAM (0x00) ===
@@ -195,7 +195,7 @@ JMP $WAIT_KEY # Go to WAIT KEY
 
 
 export const MINI_OS_V2: OsInfo = {
-    name: "Mini OS (v2. liveCompiled)",
+    name: "Mini OS (v2)",
     description: "Menu avec console et choix au clavier",
     code: compileCode(codeSourceV2, MEMORY_MAP.OS_START).code,
 };
@@ -203,7 +203,7 @@ export const MINI_OS_V2: OsInfo = {
 
 
 export const MINI_OS_V2_OLD: OsInfo = {
-    name: "Mini OS (v2)",
+    name: "Mini OS (v2) - OLD",
     description: "Menu avec console et choix au clavier",
     code: new Map([
         // === INIT (0x100-0x107) ===
@@ -332,7 +332,7 @@ export const MINI_OS_V2_OLD: OsInfo = {
 
 export const os_list: Record<string, OsInfo> = {
     MINI_OS,
-    MINI_OS_OLD,
+    //MINI_OS_OLD,
     MINI_OS_V2,
-    MINI_OS_V2_OLD,
+    //MINI_OS_V2_OLD,
 };
