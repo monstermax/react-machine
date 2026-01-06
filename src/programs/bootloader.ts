@@ -39,6 +39,7 @@ export const BOOTLOADER: Map<u16, u8> = new Map([
 
 
 
+// Exemple de bootloader en language assembleur => TODO: remplacer le BOOTLOADER actuel par celui ci
 const BootloaderSourceCode = `
 :INIT
 SET_SP MEMORY_MAP.STACK_END # Initialiser le Stack Pointer
