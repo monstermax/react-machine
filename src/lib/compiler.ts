@@ -7,14 +7,10 @@ import { Opcode } from './instructions';
 import type { u16, u8 } from '../types/cpu.types';
 
 
-export type CompiledCode = [line: number, code: string, comment?: string][];
-export type PrecompiledCode1 = [opcode: string, value: string, comment: string][];
-export type PrecompiledCode2 = [line: number, value: string, comment: string][];
-export type SourceCode = string;
+export type CompiledCode = [line: number, code: string, comment?: string, labels?: string[]][];
 
 
-
-const codeStr: SourceCode = `
+const codeStr: string = `
 :INIT
 SET_SP MEMORY_MAP.STACK_END
 MOV_A_IMM 0x01 # Commande clear
@@ -78,7 +74,7 @@ export function decompileDemo() {
 }
 
 
-export function compileCode(inputCode: SourceCode) {
+export function compileCode(inputCode: string) {
     const stage1 = compileStage1(inputCode)
     console.log('stage1:', stage1)
 
@@ -89,7 +85,7 @@ export function compileCode(inputCode: SourceCode) {
 }
 
 
-export function decompileCode(inputCode: CompiledCode): SourceCode {
+export function decompileCode(inputCode: CompiledCode): string {
     const stage1 = decompileStage1(inputCode);
     console.log('stage1:', stage1)
 
@@ -99,7 +95,7 @@ export function decompileCode(inputCode: CompiledCode): SourceCode {
 }
 
 
-function compileStage1(code: string): PrecompiledCode1 {
+function compileStage1(code: string): {opcode: string, value: string, comment: string}[] {
 
     /* == INPUT ==
     :INIT
@@ -115,10 +111,8 @@ function compileStage1(code: string): PrecompiledCode1 {
     ]
     */
 
-    type SourceCodeLine = string
-    type SourceCodeLineParts = string
 
-    const step1: SourceCodeLine[] = code
+    const step1: string[] = code
         .split('\n') // split lines
         .filter(line => line.trim() && !line.trim().startsWith('#')) // discard empty lines
         //.map(line => line.split('#')[0]?.split('//')[0]?.trim().replace(/\s+/g, ' ') ?? '') // remove comments
@@ -128,7 +122,7 @@ function compileStage1(code: string): PrecompiledCode1 {
         .map(parts => [...parts.slice(0, 1), parts.slice(1).join(' ').trim()]) // merge arguments
 */
 
-    const step2: PrecompiledCode1 = [];
+    const step2: {opcode: string, value: string, comment: string}[] = [];
 
     for (const line of step1) {
         const partsComment = line.split('#');
@@ -136,25 +130,29 @@ function compileStage1(code: string): PrecompiledCode1 {
         const comment = partsComment.join('#');
 
         const partsTmp = instructionLine.split(' ');
-        const parts = [partsTmp[0] || -1, partsTmp.slice(1).join(' ').trim(), comment] as [opcode: string, value: string, comment: string]
+        const parts = {
+            opcode: partsTmp[0] || -1,
+            value: partsTmp.slice(1).join(' ').trim(),
+            comment,
+        } as {opcode: string, value: string, comment: string}
 
         step2.push(parts);
     }
 
-    const step3: PrecompiledCode1 = step2
+    const step3: {opcode: string, value: string, comment: string}[] = step2
         .map(replaceMemoryMapAddresses)
 
     return step3;
 }
 
 
-function compileStage2(stage1: PrecompiledCode1): CompiledCode {
+function compileStage2(stage1: {opcode: string, value: string, comment: string}[]): CompiledCode {
     const step1: [line: number, opcode: string, labels: string[], comment: string][] = [];
     let asmLineNum = 0;
     let currentLabels: string[] = [];
-debugger
+
     for (const lineParts of stage1) {
-        const [opcode, value, comment] = lineParts;
+        const { opcode, value, comment } = lineParts;
 
         if (opcode.startsWith(':')) {
             currentLabels.push(opcode.slice(1))
@@ -170,6 +168,8 @@ debugger
 
         step1.push(lineInstruction)
         asmLineNum++;
+        currentLabels = [];
+
 
         const opCodeValue = Opcode[opcode as keyof typeof Opcode] as u8;
         const instructionArgsCount = getInstructionLength(opCodeValue) - 1;
@@ -201,15 +201,16 @@ debugger
             asmLineNum++;
         }
 
-        currentLabels = [];
     }
 
 
-    const stage2: PrecompiledCode2 = step1.map(item => {
+    const stage2: CompiledCode = step1.map(item => {
         let line = item[0];
         let value = item[1];
         let labels = item[2];
         let comment = item[3];
+
+        const offset = MEMORY_MAP.PROGRAM_START;
 
         if (value.startsWith('$')) {
             const parts = value.split('$');
@@ -220,7 +221,7 @@ debugger
                 throw new Error(`Instruction not found for label ${labelName}`)
             }
 
-            const line = labelInstruction[0] as u16;
+            const line = labelInstruction[0] + offset as u16;
 
             const valueInt = weight === 'low'
                 ? low16(line)
@@ -229,10 +230,11 @@ debugger
             value = toHex(valueInt);
         }
 
-        const _stage2: [line: number, value: string, comment: string] = [
+        const _stage2: [line: number, value: string, comment: string, labels: string[]] = [
             line,
             value,
             comment,
+            labels,
         ]
 
         return _stage2
@@ -243,13 +245,15 @@ debugger
 
 
 
-function decompileStage1(inputCode: CompiledCode): PrecompiledCode2 {
-    const outputCode: PrecompiledCode2 = [];
+function decompileStage1(inputCode: CompiledCode): { line: string, opcode: string, value: string }[] {
+    const outputCode: { line: string, opcode: string, value: string }[] = [];
     let sourceLineNum = 0;
+
+    const offset = MEMORY_MAP.PROGRAM_START;
 
     for (let lineIdx = 0; lineIdx < inputCode.length; lineIdx++) {
         const instructionLine = inputCode[lineIdx];
-        const asmLineNum = instructionLine[0];
+        const asmLineNum = instructionLine[0] + offset;
 
         const lineParts = instructionLine[1].split('.');
 
@@ -278,7 +282,11 @@ function decompileStage1(inputCode: CompiledCode): PrecompiledCode2 {
         }
 
         sourceLineNum++;
-        const lineInstruction: [line: string, opcode: string, value: string] = [toHex(sourceLineNum), opcode, toHex(value)];
+        const lineInstruction: { line: string, opcode: string, value: string } = {
+            line: toHex(asmLineNum),
+            opcode,
+            value: toHex(value)
+        };
         outputCode.push(lineInstruction);
     }
 
@@ -286,11 +294,11 @@ function decompileStage1(inputCode: CompiledCode): PrecompiledCode2 {
 }
 
 
-function decompileStage2(inputCode: PrecompiledCode1): SourceCode {
+function decompileStage2(inputCode: { line: string, opcode: string, value: string }[]): string {
     let outputCode = "";
 
     for (const lineParts of inputCode) {
-        const [lineNum, opcode, valueHex] = lineParts;
+        const { line, opcode, value: valueHex } = lineParts;
         const value = parseInt(valueHex.replace('0x', ''), 16);
 
         // Remplacer les adresses mémoires connues par leurs noms
@@ -309,19 +317,19 @@ function decompileStage2(inputCode: PrecompiledCode1): SourceCode {
             }
         }
 
-        outputCode += `${lineNum} ${opcode} ${valueStr}\n`;
+        outputCode += `${line} ${opcode} ${valueStr}\n`;
     }
 
     return outputCode.trim();
 }
 
 
-function replaceMemoryMapAddresses(parts: [code: string, value: string, comment: string]): [opcode: string, value: string, comment: string] {
-    if (parts.length <= 1) {
-        return parts;
-    }
+function replaceMemoryMapAddresses(parts: {opcode: string, value: string, comment: string}): {opcode: string, value: string, comment: string} {
+    //if (parts.value) {
+    //    return parts;
+    //}
 
-    let valuePart = parts[1];
+    let valuePart = parts.value;
 
     if (valuePart && valuePart.includes('MEMORY_MAP.')) {
         // Recherche de toutes les références MEMORY_MAP dans la chaîne
@@ -354,7 +362,11 @@ function replaceMemoryMapAddresses(parts: [code: string, value: string, comment:
         }
     }
 
-    return [parts[0], valuePart, parts[2]];
+    return {
+        opcode: parts.opcode,
+        value: valuePart,
+        comment: parts.comment,
+    };
 }
 
 

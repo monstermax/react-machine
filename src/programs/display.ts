@@ -11,7 +11,7 @@ export const programs: Record<string, ProgramInfo> = {
         name: "LED TEST",
         description: "Allume les LEDs",
         code: new Map([
-            [0x00, Opcode.SET_SP], //  Init Stack
+            [0x00, Opcode.SET_SP], //  Init Stack // [INIT]
             [0x01, 0xFF],
             [0x02, 0xFE],
             [0x03, Opcode.MOV_A_IMM], //  clear LCD
@@ -19,38 +19,38 @@ export const programs: Record<string, ProgramInfo> = {
             [0x05, Opcode.MOV_MEM_A], //  clear LCD
             [0x06, 0xA1],
             [0x07, 0xFF],
-            [0x08, Opcode.CALL], //  Go to LEDS_ON
+            [0x08, Opcode.CALL], //  Go to LEDS_ON // [START]
             [0x09, 0x16],
-            [0x0A, 0x00],
+            [0x0A, 0x10],
             [0x0B, Opcode.MOV_A_IMM],
             [0x0C, 0x0F],
             [0x0D, Opcode.CALL],
             [0x0E, 0x22],
-            [0x0F, 0x00],
+            [0x0F, 0x10],
             [0x10, Opcode.CALL],
             [0x11, 0x1C],
-            [0x12, 0x00],
+            [0x12, 0x10],
             [0x13, Opcode.JMP], //  Go to END
-            [0x14, 0x00],
-            [0x15, 0x00],
-            [0x16, Opcode.MOV_A_IMM],
+            [0x14, 0x27],
+            [0x15, 0x10],
+            [0x16, Opcode.MOV_A_IMM], // [LEDS_ON]
             [0x17, 0xFF],
             [0x18, Opcode.MOV_MEM_A],
             [0x19, 0x30],
             [0x1A, 0xFF],
             [0x1B, Opcode.RET],
-            [0x1C, Opcode.MOV_A_IMM],
+            [0x1C, Opcode.MOV_A_IMM], // [LEDS_OFF]
             [0x1D, 0x00],
             [0x1E, Opcode.MOV_MEM_A],
             [0x1F, 0x30],
             [0x20, 0xFF],
             [0x21, Opcode.RET],
-            [0x22, Opcode.DEC_A],
+            [0x22, Opcode.DEC_A], // [WAIT_LOOP]
             [0x23, Opcode.JNZ], //  Go to WAIT_LOOP
             [0x24, 0x22],
-            [0x25, 0x00],
+            [0x25, 0x10],
             [0x26, Opcode.RET],
-            [0x27, Opcode.SYSCALL],
+            [0x27, Opcode.SYSCALL], // [END]
             [0x28, 0x00],
         ] as [u8, u8][]),
     },

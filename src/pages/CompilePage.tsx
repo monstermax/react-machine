@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 
-import { compileCode, compileDemo, decompileCode, decompileDemo, type CompiledCode, type PrecompiledCode, type SourceCode } from "@/lib/compiler";
+import { compileCode, compileDemo, decompileCode, decompileDemo, type CompiledCode, type PrecompiledCode, type string } from "@/lib/compiler";
 import { toHex } from "@/lib/integers";
 
 
@@ -20,7 +20,7 @@ CALL $LEDS_ON # Go to LEDS_ON
 MOV_A_IMM 0x0f
 CALL $WAIT_LOOP
 CALL $LEDS_OFF
-JMP END # Go to END
+JMP $END # Go to END
 
 :LEDS_ON
 MOV_A_IMM 0xff
@@ -68,10 +68,10 @@ const demoCompiledCode = `
 
 
 export const CompilePage: React.FC = () => {
-    const [sourceCode, setSourceCode] = useState<SourceCode>(demoSourceCode);
+    const [sourceCode, setSourceCode] = useState<string>(demoSourceCode);
 
     const [compiledCode, setCompiledCode] = useState<CompiledCode | null>(null);
-    const [decompiledCode, setDecompiledCode] = useState<SourceCode>("");
+    const [decompiledCode, setDecompiledCode] = useState<string>("");
 
     const [displayMode, setDisplayMode] = useState<DisplayMode>("array");
     const [editableCode, setEditableCode] = useState<string>("");
@@ -120,7 +120,7 @@ export const CompilePage: React.FC = () => {
         }
 
         try {
-            const result: SourceCode = decompileCode(codeToDecompile);
+            const result: string = decompileCode(codeToDecompile);
             setDecompiledCode(result);
 
         } catch (error) {
@@ -132,16 +132,16 @@ export const CompilePage: React.FC = () => {
 
 
     const formatCompiledCodeArray = (code: CompiledCode): string => {
-        return '[\n' + code.map(([line, value, comment]) => {
-            return `    [${toHex(line)}, ${value}],${comment ? ` // ${comment}` : ""}`;
+        return '[\n' + code.map(([line, value, comment, labels]) => {
+            return `    [${toHex(line)}, ${value}],${comment ? ` // ${comment}` : ""}${labels?.length ? ` // [${labels.join(' - ')}]` : ""}`;
         }).join('\n') + '\n]';
     };
 
     const formatCompiledCodeReadable = (code: CompiledCode): string => {
-        return code.map(([line, value, comment]) => {
+        return code.map(([line, value, comment, labels]) => {
             const lineStr = toHex(line);
             const valueStr = value.startsWith('Opcode.') ? value : toHex(parseInt(value));
-            return `${lineStr}: ${valueStr}${comment ? `  # ${comment}` : ""}`;
+            return `${lineStr}: ${valueStr}${comment ? `  # ${comment}` : ""}${labels?.length ? ` # [${labels.join(' - ')}]` : ""}`;
         }).join('\n');
     };
 
