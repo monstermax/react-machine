@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Link } from "wouter";
 
 import { compileCode, compileDemo, decompileCode, decompileDemo, type CompiledCode } from "@/lib/compiler";
 import { toHex } from "@/lib/integers";
@@ -210,7 +211,7 @@ export const CompilePage: React.FC = () => {
 
     return (
         <div className="p-4 bg-gray-900 text-gray-100 min-h-screen">
-            <h1 className="text-2xl font-bold mb-6 text-white">Assembler Compiler</h1>
+            <h1 className="text-2xl font-bold mb-6 text-white"><Link to="/">Assembler Compiler</Link></h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Section Code Source */}

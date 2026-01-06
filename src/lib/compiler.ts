@@ -76,10 +76,10 @@ export function decompileDemo() {
 
 export function compileCode(inputCode: string) {
     const stage1 = compileStage1(inputCode)
-    console.log('stage1:', stage1)
+    console.log('compile stage1:', stage1)
 
     const stage2 = compileStage2(stage1)
-    console.log('stage2:', stage2)
+    console.log('compile stage2:', stage2)
 
     return stage2;
 }
@@ -87,10 +87,10 @@ export function compileCode(inputCode: string) {
 
 export function decompileCode(inputCode: CompiledCode): string {
     const stage1 = decompileStage1(inputCode);
-    console.log('stage1:', stage1)
+    console.log('decompile stage1:', stage1)
 
     const stage2 = decompileStage2(stage1);
-    console.log('stage2:', stage2)
+    console.log('decompile stage2:', stage2)
     return stage2;
 }
 
@@ -245,8 +245,8 @@ function compileStage2(stage1: {opcode: string, value: string, comment: string}[
 
 
 
-function decompileStage1(inputCode: CompiledCode): { line: string, opcode: string, value: string }[] {
-    const outputCode: { line: string, opcode: string, value: string }[] = [];
+function decompileStage1(inputCode: CompiledCode): { line: string, opcode: string, value: string | null }[] {
+    const outputCode: { line: string, opcode: string, value: string | null }[] = [];
     let sourceLineNum = 0;
 
     const offset = MEMORY_MAP.PROGRAM_START;
@@ -268,24 +268,28 @@ function decompileStage1(inputCode: CompiledCode): { line: string, opcode: strin
         const opCodeValue = Opcode[opcode as keyof typeof Opcode] as u8;
         const instructionArgsCount = getInstructionLength(opCodeValue) - 1;
 
-        let value = 0
+        let value: number | null = null
 
-        for (let i = 1; i <= instructionArgsCount; i++) {
-            lineIdx++;
-            const instructionValue = Number(inputCode[lineIdx][1]);
+        if (instructionArgsCount) {
+            value = 0
 
-            const asmLineValue = (i === 1)
-                ? low16(instructionValue as u16)
-                : ((instructionValue << 8) as u16);
+            for (let i = 1; i <= instructionArgsCount; i++) {
+                lineIdx++;
+                const instructionValue = Number(inputCode[lineIdx][1]);
 
-            value += asmLineValue;
+                const asmLineValue = (i === 1)
+                    ? low16(instructionValue as u16)
+                    : ((instructionValue << 8) as u16);
+
+                value += asmLineValue;
+            }
         }
 
         sourceLineNum++;
-        const lineInstruction: { line: string, opcode: string, value: string } = {
+        const lineInstruction: { line: string, opcode: string, value: string | null } = {
             line: toHex(asmLineNum),
             opcode,
-            value: toHex(value)
+            value: (value === null) ? null : toHex(value)
         };
         outputCode.push(lineInstruction);
     }
@@ -294,25 +298,29 @@ function decompileStage1(inputCode: CompiledCode): { line: string, opcode: strin
 }
 
 
-function decompileStage2(inputCode: { line: string, opcode: string, value: string }[]): string {
+function decompileStage2(inputCode: { line: string, opcode: string, value: string | null }[]): string {
     let outputCode = "";
 
     for (const lineParts of inputCode) {
         const { line, opcode, value: valueHex } = lineParts;
-        const value = parseInt(valueHex.replace('0x', ''), 16);
+        let valueStr = '';
 
-        // Remplacer les adresses mémoires connues par leurs noms
-        let valueStr = valueHex;
+        if (valueHex !== null) {
+            const value = parseInt(valueHex.replace('0x', ''), 16);
 
-        const allowReplaceValue = value >= 256; //['JMP', 'JZ', 'JNZ', 'JC', 'SET_SP', 'CALL'].includes(opcode)
+            // Remplacer les adresses mémoires connues par leurs noms
+            valueStr = valueHex;
 
-        if (allowReplaceValue) {
-            for (const [key, memValue] of Object.entries(MEMORY_MAP)) {
-                if (key.startsWith('IRQ_')) continue;
+            const allowReplaceValue = value >= 256; //['JMP', 'JZ', 'JNZ', 'JC', 'SET_SP', 'CALL'].includes(opcode)
 
-                if (memValue === value) {
-                    valueStr = `MEMORY_MAP.${key}`;
-                    break;
+            if (allowReplaceValue) {
+                for (const [key, memValue] of Object.entries(MEMORY_MAP)) {
+                    if (key.startsWith('IRQ_')) continue;
+
+                    if (memValue === value) {
+                        valueStr = `MEMORY_MAP.${key}`;
+                        break;
+                    }
                 }
             }
         }
