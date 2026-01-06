@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback, memo } from "react";
 import { programs } from "@/lib/programs";
 import type { ComputerHook } from "@/hooks/useComputer";
 import { MEMORY_MAP } from "@/lib/memory_map";
-import { MINI_OS, MINI_OS_V2, os_list } from "@/programs/mini_os";
+import { os_list } from "@/programs/mini_os";
 import type { OsInfo, u16, u8 } from "@/types/cpu.types";
 
 

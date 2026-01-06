@@ -17,7 +17,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x04, Opcode.ADD],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
     add_10_25: {
         name: "Addition Grande",
@@ -30,7 +30,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x04, Opcode.ADD],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
     double_addition: {
         name: "Double Addition",
@@ -46,7 +46,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x07, Opcode.ADD],      // A = 18
             [0x08, Opcode.SYSCALL],
             [0x09, 0],               // ← Syscall 0 = exit
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
     subtraction: {
         name: "Soustraction",
@@ -59,7 +59,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x04, Opcode.SUB],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
     logical_ops: {
         name: "Opérations Logiques",
@@ -72,7 +72,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x04, Opcode.AND],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
     increment_loop: {
         name: "Boucle d'Incrémentation",
@@ -100,7 +100,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x0A, 5],                 // Restaurer A = 5 (car SUB l'a mis à 0)
             [0x0B, Opcode.SYSCALL],
             [0x0C, 0],
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
     overflow_test: {
         name: "Overflow Test",
@@ -113,6 +113,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x04, Opcode.ADD],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 }

@@ -2,7 +2,7 @@
 import { Opcode } from "@/lib/instructions";
 import { MEMORY_MAP } from "@/lib/memory_map";
 
-import type { ProgramInfo, u8 } from "@/types/cpu.types";
+import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 export const programs: Record<string, ProgramInfo> = {
@@ -22,6 +22,6 @@ export const programs: Record<string, ProgramInfo> = {
             [0x09, 0x00],       // High byte (0x0080)
             [0x0A, Opcode.SYSCALL],
             [0x0B, 0],               // ← Syscall 0 = exit
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 }

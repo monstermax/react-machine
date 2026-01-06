@@ -89,7 +89,7 @@ export const LCD_CLOCK: ProgramInfo = {
         // Loop
         [0x58, Opcode.JMP],
         [0x59, 0x08], [0x5A, 0x02],
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };
 
 
@@ -158,7 +158,7 @@ export const CONSOLE_DATE: ProgramInfo = {
         [0x49, 0x70], [0x4A, 0xFF],
 
         [0x4B, Opcode.HALT],
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };
 
 
@@ -230,7 +230,7 @@ export const CONSOLE_DATETIME: ProgramInfo = {
         [0x54, Opcode.MOV_MEM_A], [0x55, 0x70], [0x56, 0xFF],
 
         [0x57, Opcode.HALT],
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };
 
 
@@ -287,6 +287,6 @@ export const LCD_LIVE_CLOCK: ProgramInfo = {
         [0x38, Opcode.JMP],
         [0x39, low16(MEMORY_MAP.OS_START + 0x02 as u16)],   // OS_START + 0x02 - Low
         [0x3A, high16(MEMORY_MAP.OS_START + 0x02 as u16)],  // OS_START + 0x02 - High
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };
 

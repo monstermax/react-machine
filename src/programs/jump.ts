@@ -29,7 +29,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x09, 100],        // A = 100
 
             [0x0A, Opcode.HALT], // Or SYSCALL 0
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 }
 

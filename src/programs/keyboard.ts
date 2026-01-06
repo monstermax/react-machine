@@ -47,7 +47,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x14, Opcode.JMP],
             [0x15, 0x03],
             [0x16, 0x02],
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 
     keyboard_interrupt: {
@@ -102,7 +102,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x51, Opcode.POP_A], // Restaurer A seulement
             [0x52, Opcode.IRET],
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 };
 

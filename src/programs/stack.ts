@@ -3,7 +3,7 @@ import { Opcode } from "@/lib/instructions";
 import { high16, low16 } from "@/lib/integers";
 import { MEMORY_MAP } from "@/lib/memory_map";
 
-import type { ProgramInfo, u8 } from "@/types/cpu.types";
+import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 export const programs: Record<string, ProgramInfo> = {
@@ -38,6 +38,6 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Retour à l'appelant
             [0x14, Opcode.RET],
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 }

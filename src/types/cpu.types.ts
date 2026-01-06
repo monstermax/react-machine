@@ -33,14 +33,19 @@ export interface Device {
 export type OsInfo = {
     name: string,
     description: string,
-    code: Map<u8, u8> | Map<u16, u8>,
+    code: CompiledCode,
 }
 
 
 export type ProgramInfo = {
     name: string;
     description: string;
-    code: Map<u8, u8> | Map<u16, u8>;
+    code: CompiledCode;
 };
 
+
+
+export type PreCompiledCode = [line: u16, code: string, comment?: string, labels?: string[]][];
+
+export type CompiledCode = Map<u16, u8>;
 

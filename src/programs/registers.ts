@@ -1,7 +1,7 @@
 
 import { Opcode } from "@/lib/instructions";
 
-import type { ProgramInfo, u8 } from "@/types/cpu.types";
+import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 export const programs: Record<string, ProgramInfo> = {
@@ -45,7 +45,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x0E, 0x00], [0x0F, 0x80], // Adresse 0x8000
 
             [0x10, Opcode.HALT],
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 };
 

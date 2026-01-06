@@ -35,7 +35,7 @@ export const RNG_TEST: ProgramInfo = {
         [0x12, 0x0A], [0x13, 0x02], // → LOOP
 
         [0x14, Opcode.HALT],
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };
 
 
@@ -84,7 +84,7 @@ export const RANDOM_PIXELS: ProgramInfo = {
         [0x1D, high16(MEMORY_MAP.PROGRAM_START + 0x05 as u16)],
 
         [0x1E, Opcode.HALT],
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };
 
 
@@ -128,5 +128,5 @@ export const RTC_STOPWATCH: ProgramInfo = {
 
         [0x1A, Opcode.JMP],
         [0x1B, 0x07], [0x1C, 0x02],
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };

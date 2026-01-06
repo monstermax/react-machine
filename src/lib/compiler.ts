@@ -4,10 +4,7 @@ import { getInstructionLength } from './instructions';
 import { high16, low16, toHex } from './integers';
 import { Opcode } from './instructions';
 
-import type { u16, u8 } from '../types/cpu.types';
-
-
-export type CompiledCode = [line: number, code: string, comment?: string, labels?: string[]][];
+import type { CompiledCode, PreCompiledCode, u16, u8 } from '../types/cpu.types';
 
 
 const codeStr: string = `
@@ -43,7 +40,7 @@ SYSCALL 0
 `;
 
 
-const codeAsm: CompiledCode = [
+const codeAsm: PreCompiledCode = [
     [1, 'Opcode.SET_SP'],
     [2, '0xff'],
     [3, '0xfe'],
@@ -62,7 +59,7 @@ const codeAsm: CompiledCode = [
     [16, 'Opcode.JMP'],
     [17, '0x0'],
     [18, '0x5']
-];
+] as [u16, string][];
 
 
 export function compileDemo() {
@@ -74,7 +71,7 @@ export function decompileDemo() {
 }
 
 
-export function compileCode(inputCode: string, memoryOffset: u16=0 as u16) {
+export function preCompileCode(inputCode: string, memoryOffset: u16=0 as u16): PreCompiledCode {
     const stage1 = compileStage1(inputCode)
     //console.log('compile stage1:', stage1)
 
@@ -84,8 +81,27 @@ export function compileCode(inputCode: string, memoryOffset: u16=0 as u16) {
     return stage2;
 }
 
+export function compileCode(inputCode: string, memoryOffset: u16=0 as u16): { code: CompiledCode, comments: [line: u16, comment: string][], labels: [line: u16, label: string[]][] } {
+    const stage2 = preCompileCode(inputCode, memoryOffset)
 
-export function decompileCode(inputCode: CompiledCode): string {
+    const codeArr = stage2.map(codeParts => {
+        const val = [
+            codeParts[0],
+            (new Function('Opcode', 'return ' + codeParts[1]))(Opcode),
+        ];
+        return val as [line: u16, code: u8]
+    });
+
+    const code: CompiledCode = new Map<u16, u8>(codeArr);
+
+    const comments = stage2.map(codeParts => [codeParts[0], codeParts[2]] as [line: u16, comment: string]);
+    const labels = stage2.map(codeParts => [codeParts[0], codeParts[3]] as [line: u16, labels: string[]]);
+
+    return { code, comments, labels };
+}
+
+
+export function decompileCode(inputCode: PreCompiledCode): string {
     const stage1 = decompileStage1(inputCode);
     //console.log('decompile stage1:', stage1)
 
@@ -146,7 +162,7 @@ function compileStage1(code: string): {opcode: string, value: string, comment: s
 }
 
 
-function compileStage2(stage1: {opcode: string, value: string, comment: string}[], memoryOffset: u16): CompiledCode {
+function compileStage2(stage1: {opcode: string, value: string, comment: string}[], memoryOffset: u16): PreCompiledCode {
     const step1: [line: number, opcode: string, labels: string[], comment: string][] = [];
     let asmLineNum = 0;
     let currentLabels: string[] = [];
@@ -204,8 +220,8 @@ function compileStage2(stage1: {opcode: string, value: string, comment: string}[
     }
 
 
-    const stage2: CompiledCode = step1.map(item => {
-        let line = item[0];
+    const stage2: PreCompiledCode = step1.map(item => {
+        let line = item[0] as u16;
         let value = item[1];
         let labels = item[2];
         let comment = item[3];
@@ -228,7 +244,7 @@ function compileStage2(stage1: {opcode: string, value: string, comment: string}[
             value = toHex(valueInt);
         }
 
-        const _stage2: [line: number, value: string, comment: string, labels: string[]] = [
+        const _stage2: [line: u16, value: string, comment: string, labels: string[]] = [
             line,
             value,
             comment,
@@ -243,7 +259,7 @@ function compileStage2(stage1: {opcode: string, value: string, comment: string}[
 
 
 
-function decompileStage1(inputCode: CompiledCode): { line: string, opcode: string, value: string | null }[] {
+function decompileStage1(inputCode: PreCompiledCode): { line: string, opcode: string, value: string | null }[] {
     const outputCode: { line: string, opcode: string, value: string | null }[] = [];
     let sourceLineNum = 0;
 

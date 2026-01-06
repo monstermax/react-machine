@@ -33,7 +33,7 @@ export const SIMPLE_BEEP: ProgramInfo = {
         [0x0C, 0xFF], // BUZZER_DURATION (déclenche le son)
 
         [0x0D, Opcode.HALT],
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };
 
 
@@ -87,7 +87,7 @@ export const SIREN: ProgramInfo = {
         [0x27, 0x05], [0x28, 0x02], // → LOOP
 
         [0x29, Opcode.HALT],
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };
 
 
@@ -156,7 +156,7 @@ export const MUSICAL_SCALE: ProgramInfo = {
         [0x44, 0x2D], [0x45, 0x02], // → LOOP
 
         [0x46, Opcode.HALT],
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };
 
 
@@ -205,7 +205,7 @@ export const RTC_ALARM_BEEP: ProgramInfo = {
 
         [0x1F, Opcode.JMP],
         [0x20, 0x07], [0x21, 0x02],
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };
 
 
@@ -262,5 +262,5 @@ export const RANDOM_NOTES: ProgramInfo = {
 
         [0x20, Opcode.SYSCALL],
         [0x21, 0],
-    ] as [u8, u8][]),
+    ] as [u16, u8][]),
 };

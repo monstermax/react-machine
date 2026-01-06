@@ -2,10 +2,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 
-import { compileCode, compileDemo, decompileCode, decompileDemo, type CompiledCode } from "@/lib/compiler";
+import { compileCode, compileDemo, decompileCode, decompileDemo, preCompileCode } from "@/lib/compiler";
 import { toHex, U16 } from "@/lib/integers";
 import { MEMORY_MAP } from "@/lib/memory_map";
-import type { u16 } from "@/types/cpu.types";
+import type { CompiledCode, PreCompiledCode, u16 } from "@/types/cpu.types";
 
 
 type DisplayMode = "array" | "readable" | "editable";
@@ -73,7 +73,7 @@ const demoCompiledCode = `
 export const CompilePage: React.FC = () => {
     const [sourceCode, setSourceCode] = useState<string>(demoSourceCode);
 
-    const [compiledCode, setCompiledCode] = useState<CompiledCode | null>(null);
+    const [compiledCode, setCompiledCode] = useState<PreCompiledCode | null>(null);
     const [decompiledCode, setDecompiledCode] = useState<string>("");
 
     const [displayMode, setDisplayMode] = useState<DisplayMode>("array");
@@ -92,7 +92,12 @@ export const CompilePage: React.FC = () => {
 
     const handleCompile = () => {
         try {
-            const result: CompiledCode = compileCode(sourceCode, compileMemoryOffsetUint);
+            const result: PreCompiledCode = preCompileCode(sourceCode, compileMemoryOffsetUint);
+
+            const result2 = compileCode(sourceCode, compileMemoryOffsetUint);
+            //const { code, comments, labels } = result2;
+            console.log('result2:', result2)
+
             setCompiledCode(result);
 
             // Initialiser le contenu éditable
@@ -107,7 +112,7 @@ export const CompilePage: React.FC = () => {
 
 
     const handleDecompile = () => {
-        let codeToDecompile: CompiledCode;
+        let codeToDecompile: PreCompiledCode;
 
         if (displayMode === "editable") {
             // Si on est en mode éditable, utiliser le code modifié
@@ -143,7 +148,7 @@ export const CompilePage: React.FC = () => {
 
 
 
-    const formatCompiledCodeArray = (code: CompiledCode): string => {
+    const formatCompiledCodeArray = (code: PreCompiledCode): string => {
         return '[\n' + code.map(([line, value, comment, labels], idx) => {
             let result = "";
 
@@ -158,7 +163,7 @@ export const CompilePage: React.FC = () => {
         }).join('\n') + '\n]';
     };
 
-    const formatCompiledCodeReadable = (code: CompiledCode): string => {
+    const formatCompiledCodeReadable = (code: PreCompiledCode): string => {
         return code.map(([line, value, comment, labels]) => {
             const lineStr = toHex(line);
             const valueStr = value.startsWith('Opcode.') ? value : toHex(parseInt(value));
@@ -166,12 +171,12 @@ export const CompilePage: React.FC = () => {
         }).join('\n');
     };
 
-    const parseCompiledCode = (text: string): CompiledCode => {
-        const outputCode: CompiledCode = text
+    const parseCompiledCode = (text: string): PreCompiledCode => {
+        const outputCode: PreCompiledCode = text
             .split('\n') // split by line
             .filter(line => line.trim() && line.includes('[') && line.includes(']')) // discard empty lines
             .map(line => line.replace('[', '').replace(']', '').trim().split(',').slice(0, 2))
-            .map(parts => [Number(parts[0]), parts[1].trim() as string])
+            .map(parts => [U16(Number(parts[0])), parts[1].trim() as string])
 
         return outputCode;
     };

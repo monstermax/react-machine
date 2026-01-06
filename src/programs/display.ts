@@ -63,7 +63,7 @@ export const programs: Record<string, ProgramInfo> = {
             // [END]
             [0x27, Opcode.SYSCALL],
             [0x28, 0x00],
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
     leds_on: {
         name: "LED ON",
@@ -79,7 +79,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 
     leds_off: {
@@ -96,7 +96,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 
     leds_blink: {
@@ -115,7 +115,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x06, Opcode.JMP],
             [0x07, low16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],   // PROGRAM_START + 0x02 - Low
             [0x08, high16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],  // PROGRAM_START + 0x02 - High
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 
     seven_segments: {
@@ -146,7 +146,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x0F, Opcode.JMP],
             [0x10, low16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],   // PROGRAM_START + 0x02 - Low
             [0x11, high16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],  // PROGRAM_START + 0x02 - High
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 
     hello_world: {
@@ -239,7 +239,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             // HALT
             [0x44, Opcode.HALT],
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 
     console_counter: {
@@ -290,7 +290,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Fini
             [0x1B, Opcode.HALT],
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 
     lcd_hello: {
@@ -352,7 +352,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x44, Opcode.SYSCALL],
             [0x45, 0],
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 
     lcd_counter: {
@@ -517,7 +517,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x53, Opcode.JMP],
             [0x54, low16(MEMORY_MAP.PROGRAM_START + 0x0A as u16)],
             [0x55, high16(MEMORY_MAP.PROGRAM_START + 0x0A as u16)],
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 
     pixel_line: {
@@ -564,7 +564,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x19, Opcode.SYSCALL],
             [0x1A, 0],
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 
     pixel_square: {
@@ -672,7 +672,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             [0x63, Opcode.SYSCALL],
             [0x64, 0],
-        ] as [u8, u8][]),
+        ] as [u16, u8][]),
     },
 
 }
