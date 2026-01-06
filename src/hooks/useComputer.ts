@@ -10,8 +10,13 @@ import { os_list } from "@/programs/mini_os";
 import { programs } from "@/lib/programs";
 import { mapAddress16, MEMORY_MAP } from "@/lib/memory_map";
 import { U16 } from "@/lib/integers";
+import { programs as displayPrograms } from "@/programs/display";
+import { compileCode, loadCodeFromFile } from "@/lib/compiler";
 
 import type { OsInfo, ProgramInfo, u16, u8 } from "@/types/cpu.types";
+
+import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
+
 
 
 export const useComputer = (): ComputerHook => {
@@ -30,7 +35,7 @@ export const useComputer = (): ComputerHook => {
     if (true) {
         // DEBUG
         (window as any).ioHook = ioHook;
-        (window as any).fs = ioHook.dataDisk.fsHook;
+        (window as any).fs = ioHook.dataDisk1.fsHook;
     }
 
 
@@ -48,6 +53,7 @@ export const useComputer = (): ComputerHook => {
         const pc = cpuHook.getRegister('PC');
 
         if (pc >= MEMORY_MAP.OS_START) {
+            // Restart Bootloader if OS was running
             cpuHook.setRegister('PC', MEMORY_MAP.ROM_START);
         }
 
@@ -68,15 +74,22 @@ export const useComputer = (): ComputerHook => {
         const pc = cpuHook.getRegister('PC');
 
         if (pc >= MEMORY_MAP.PROGRAM_START) {
+            // Restart OS if program was running
             cpuHook.setRegister('PC', MEMORY_MAP.OS_START);
         }
 
     }, [memoryHook.loadDiskInRAM, ioHook.programDisk.storage, loadedProgram])
 
 
-    // Format Data Disk on component mount
+    // Format DataDisk1 (with filesystem) on component mount
     useEffect(() => {
-        ioHook.dataDisk.formatDisk();
+        ioHook.dataDisk1.formatDisk();
+    }, [])
+
+    // Load DataDisk2 on component mount
+    useEffect(() => {
+        const demoProgram = compileCode(ledTestCodeSource)
+        ioHook.dataDisk2.setStorage(demoProgram.code)
     }, [])
 
 
@@ -107,16 +120,27 @@ export const useComputer = (): ComputerHook => {
     const loadOs = useCallback((osName: string) => {
         const os: OsInfo | null = osName ? os_list[osName] : null;
 
-        if (!os) {
+        if (!os || !os.filepath) {
             console.warn(`WARNING. OS not found`)
             return;
         }
 
-        // Charger le programme sur le disk (overwrite full disk)
-        const newDiskStorage = mapAddress16(os.code, 0 as u16);
-        ioHook.osDisk.setStorage(newDiskStorage)
 
-        setLoadedOs(osName);
+        if (os.filepath) {
+            loadCodeFromFile(os.filepath, MEMORY_MAP.OS_START)
+                .then(code => {
+                    //console.log('OS code:', code)
+                    ioHook.osDisk.setStorage(code)
+                    setLoadedOs(osName);
+                })
+
+        } else {
+            // Charger le programme sur le disk (overwrite full disk)
+            //const newDiskStorage = mapAddress16(os.code, 0 as u16);
+            //ioHook.osDisk.setStorage(newDiskStorage)
+            //setLoadedOs(osName);
+        }
+
     }, [ioHook.osDisk.setStorage, setLoadedOs]);
 
 
@@ -129,11 +153,25 @@ export const useComputer = (): ComputerHook => {
             return;
         }
 
-        // Charger le programme sur le disk (overwrite full disk)
-        const newDiskStorage = mapAddress16(program.code, 0 as u16);
-        ioHook.programDisk.setStorage(newDiskStorage)
+        if (program.filepath) {
+            loadCodeFromFile(program.filepath, MEMORY_MAP.PROGRAM_START)
+                .then(code => {
+                    //console.log('Program code:', code)
 
-        setLoadedProgram(programName);
+                    // Charger le programme sur le disk (overwrite full disk)
+                    ioHook.programDisk.setStorage(code)
+                    setLoadedProgram(programName);
+                })
+
+        } else {
+            // Charger le programme sur le disk (overwrite full disk)
+            const newDiskStorage = mapAddress16(program.code, 0 as u16);
+            ioHook.programDisk.setStorage(newDiskStorage)
+
+            setLoadedProgram(programName);
+        }
+
+
     }, [ioHook.programDisk.setStorage, setLoadedProgram]);
 
 

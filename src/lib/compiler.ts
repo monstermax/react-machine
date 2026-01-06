@@ -62,6 +62,21 @@ const codeAsm: PreCompiledCode = [
 ] as [u16, string][];
 
 
+
+export function loadCode(sourceCode: string, memoryOffset: u16=0 as u16) {
+    const code = compileCode(sourceCode, memoryOffset).code;
+    return code;
+}
+
+
+export async function loadCodeFromFile(sourceFile: string, memoryOffset: u16=0 as u16) {
+    const sourceCodeModule = await import(`../programs/asm/${sourceFile}?raw`);
+    const sourceCode = sourceCodeModule.default;
+    const code = loadCode(sourceCode, memoryOffset);
+    return code;
+}
+
+
 export function compileDemo() {
     return compileCode(codeStr)
 }

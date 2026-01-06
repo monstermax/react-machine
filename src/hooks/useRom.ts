@@ -10,7 +10,7 @@ export const useRom = (): RomHook => {
     //console.log('RENDER ComputerPage.useComputer.useRom')
 
     // ROM est immuable, initialisée avec le bootloader
-    const [storage] = useState<Map<u16, u8>>(new Map(BOOTLOADER));
+    const [storage] = useState<Map<u16, u8>>(BOOTLOADER);
 
 
     const read = (address: u16): u8 => {

@@ -30,18 +30,19 @@ export const useIo = (): IOHook => {
     // Devices
     const osDisk = useDiskDevice(new Map);      // Device 0: 0xFF00-0xFF0F
     const programDisk = useDiskDevice(new Map); // Device 1: 0xFF10-0xFF1F
-    const dataDisk = useDiskDevice(new Map); // Device 1: 0xFFF0-0xFFFF
-    const interrupt = useInterrupt(); // Device 4
-    const timer = useTimer(interrupt); // Device 2
-    const keyboard = useKeyboard(interrupt); // Device 5
-    const consoleDevice = useConsole(); // Device 7: 0xFF70-0xFF7F
-    const leds = useLedsDisplay(); // Device 3: 0xFF20-0xFF2F
+    const interrupt = useInterrupt(); // Device 4: 0xFF40-0xFF4F
+    const timer = useTimer(interrupt); // Device 2: 0xFF20-0xFF2F
+    const leds = useLedsDisplay(); // Device 3: 0xFF30-0xFF3F
+    const keyboard = useKeyboard(interrupt); // Device 5: 0xFF50-0xFF5F
     const sevenSegment = useSevenSegmentDisplay(); // Device 6: 0xFF60-0xFF6F
+    const consoleDevice = useConsole(); // Device 7: 0xFF70-0xFF7F
+    const buzzer = useBuzzer(); // 0xFF80-0xFF8F
     const lcd = useLcdDisplay(); // Device 10 (0x0A): 0xFFA0-0xFFAF
-    const buzzer = useBuzzer();
+    const rng = useRng(); // 0xFFB0-0xFFBF
+    const rtc = useRtc(); // 0xFFC0-0xFFCF
     const pixelDisplay = usePixelDisplay(); // Device 13 (0x0D): 0xFFD0-0xFFDF
-    const rng = useRng();
-    const rtc = useRtc();
+    const dataDisk1 = useDiskDevice(new Map); // 0xFFE0-0xFFEF
+    const dataDisk2 = useDiskDevice(new Map); // 0xFFF0-0xFFFF
 
 
     // Device registry
@@ -59,9 +60,10 @@ export const useIo = (): IOHook => {
             [0x0B, rng],            // Random Number Generator
             [0x0C, rtc],            // Real-Time Clock
             [0x0D, pixelDisplay],   // Pixel Display 32x32 (0xFFD0-0xFFDF)
-            [0x0F, dataDisk],       // Data disk
+            [0x0E, dataDisk1],      // Data disk 1
+            [0x0F, dataDisk2],      // Data disk 2
         ] as [any, Device][])
-    , [osDisk, programDisk, timer, leds, interrupt, keyboard, sevenSegment, consoleDevice, buzzer, lcd, rng, rtc, pixelDisplay, dataDisk]);
+    , [osDisk, programDisk, timer, leds, interrupt, keyboard, sevenSegment, consoleDevice, buzzer, lcd, rng, rtc, pixelDisplay, dataDisk1, dataDisk2]);
 
 
     // I/O read: router vers le bon device
@@ -120,7 +122,8 @@ export const useIo = (): IOHook => {
         pixelDisplay,
         rng,
         rtc,
-        dataDisk,
+        dataDisk1,
+        dataDisk2,
         read,
         write,
         reset,
@@ -143,7 +146,8 @@ export type IOHook = {
     lcd: LCDDevice;
     buzzer: BuzzerHook;
     pixelDisplay: PixelDisplayDevice;
-    dataDisk: DiskDevice;
+    dataDisk1: DiskDevice;
+    dataDisk2: DiskDevice;
     rng: RngHook;
     rtc: RtcHook;
     read: (ioPort: u8) => u8;

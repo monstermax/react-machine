@@ -34,7 +34,7 @@ export interface Device {
 export type OsInfo = {
     name: string,
     description: string,
-    code: CompiledCode,
+    filepath?: string,
 }
 
 
@@ -42,6 +42,7 @@ export type ProgramInfo = {
     name: string;
     description: string;
     code: CompiledCode;
+    filepath?: string;
 };
 
 

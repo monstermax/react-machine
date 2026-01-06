@@ -7,6 +7,145 @@ import { high16, low16 } from "@/lib/integers";
 import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
+
+/**
+ * PROGRAMME 1: Créer un fichier et écrire dedans
+ * Créer "TEST.TXT" et écrire "Hello\n"
+ */
+export const FS_CREATE_FILE_COMPILED: ProgramInfo = {
+    name: "FS: Create File (compiled)",
+    description: "Créer fichier TEST.TXT avec contenu",
+    code: new Map([
+        // [PROGRAM_START - CREATE_COMMAND]
+        [0x00, Opcode.CALL],
+        [0x01, 0x46],
+        [0x02, 0x10],
+        [0x03, Opcode.MOV_A_IMM], //  Commande CREATE
+        [0x04, 0x91],
+        [0x05, Opcode.MOV_MEM_A],
+        [0x06, 0xE5],
+        [0x07, 0xFF],
+        [0x08, Opcode.MOV_A_MEM], //  Vérifier résultat
+        [0x09, 0xE5],
+        [0x0A, 0xFF],
+        [0x0B, Opcode.JZ], //  Si échec, halt
+        [0x0C, 0x6F],
+        [0x0D, 0x10],
+
+        // [OPEN_FILE]
+        [0x0E, Opcode.CALL],
+        [0x0F, 0x46],
+        [0x10, 0x10],
+        [0x11, Opcode.MOV_A_IMM], //  Command OPEN
+        [0x12, 0x92],
+        [0x13, Opcode.MOV_MEM_A],
+        [0x14, 0xE5],
+        [0x15, 0xFF],
+
+        // [WRITE_FILE_CONTENT]
+        [0x16, Opcode.MOV_A_IMM], //  'H'
+        [0x17, 0x48],
+        [0x18, Opcode.MOV_MEM_A],
+        [0x19, 0xE6],
+        [0x1A, 0xFF],
+        [0x1B, Opcode.MOV_A_IMM], //  'e'
+        [0x1C, 0x65],
+        [0x1D, Opcode.MOV_MEM_A],
+        [0x1E, 0xE6],
+        [0x1F, 0xFF],
+        [0x20, Opcode.MOV_A_IMM], //  'l'
+        [0x21, 0x6C],
+        [0x22, Opcode.MOV_MEM_A],
+        [0x23, 0xE6],
+        [0x24, 0xFF],
+        [0x25, Opcode.MOV_A_IMM], //  'l'
+        [0x26, 0x6C],
+        [0x27, Opcode.MOV_MEM_A],
+        [0x28, 0xE6],
+        [0x29, 0xFF],
+        [0x2A, Opcode.MOV_A_IMM], //  'o'
+        [0x2B, 0x6F],
+        [0x2C, Opcode.MOV_MEM_A],
+        [0x2D, 0xE6],
+        [0x2E, 0xFF],
+        [0x2F, Opcode.MOV_A_IMM], //  '\n
+        [0x30, 0x0A],
+        [0x31, Opcode.MOV_MEM_A],
+        [0x32, 0xE6],
+        [0x33, 0xFF],
+
+        // [CLOSE_FILE]
+        [0x34, Opcode.MOV_A_IMM], //  Command CLOSE
+        [0x35, 0x93],
+        [0x36, Opcode.MOV_MEM_A],
+        [0x37, 0xE5],
+        [0x38, 0xFF],
+
+        // [PLAY_SOUND]
+        [0x39, Opcode.MOV_A_IMM], //  Fréquence = 440 Hz → valeur ≈ (440-100)/7.45 ≈ 45
+        [0x3A, 0x2D],
+        [0x3B, Opcode.MOV_MEM_A],
+        [0x3C, 0x80],
+        [0x3D, 0xFF],
+        [0x3E, Opcode.MOV_A_IMM], //  Durée = 500ms → 500/10 = 50
+        [0x3F, 0x32],
+        [0x40, Opcode.MOV_MEM_A], //  déclenche le son
+        [0x41, 0x81],
+        [0x42, 0xFF],
+        [0x43, Opcode.JMP],
+        [0x44, 0x6F],
+        [0x45, 0x10],
+
+        // [WRITE_FILENAME]
+        [0x46, Opcode.MOV_A_IMM], //  "T"
+        [0x47, 0x54],
+        [0x48, Opcode.MOV_MEM_A],
+        [0x49, 0xE7],
+        [0x4A, 0xFF],
+        [0x4B, Opcode.MOV_A_IMM], //  "E"
+        [0x4C, 0x45],
+        [0x4D, Opcode.MOV_MEM_A],
+        [0x4E, 0xE7],
+        [0x4F, 0xFF],
+        [0x50, Opcode.MOV_A_IMM], //  "S"
+        [0x51, 0x53],
+        [0x52, Opcode.MOV_MEM_A],
+        [0x53, 0xE7],
+        [0x54, 0xFF],
+        [0x55, Opcode.MOV_A_IMM], //  "T"
+        [0x56, 0x54],
+        [0x57, Opcode.MOV_MEM_A],
+        [0x58, 0xE7],
+        [0x59, 0xFF],
+        [0x5A, Opcode.MOV_A_IMM], //  "."
+        [0x5B, 0x2E],
+        [0x5C, Opcode.MOV_MEM_A],
+        [0x5D, 0xE7],
+        [0x5E, 0xFF],
+        [0x5F, Opcode.MOV_A_IMM], //  "T"
+        [0x60, 0x54],
+        [0x61, Opcode.MOV_MEM_A],
+        [0x62, 0xE7],
+        [0x63, 0xFF],
+        [0x64, Opcode.MOV_A_IMM], //  "X"
+        [0x65, 0x58],
+        [0x66, Opcode.MOV_MEM_A],
+        [0x67, 0xE7],
+        [0x68, 0xFF],
+        [0x69, Opcode.MOV_A_IMM], //  "T"
+        [0x6A, 0x54],
+        [0x6B, Opcode.MOV_MEM_A],
+        [0x6C, 0xE7],
+        [0x6D, 0xFF],
+        [0x6E, Opcode.RET],
+
+        // [END]
+        [0x6F, Opcode.SYSCALL],
+        [0x70, 0x00],
+    ] as [u16, u8][]),
+};
+
+
 /**
  * PROGRAMME 1: Créer un fichier et écrire dedans
  * Créer "TEST.TXT" et écrire "Hello\n"

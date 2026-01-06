@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { compileCode, compileDemo, decompileCode, decompileDemo, preCompileCode } from "@/lib/compiler";
 import { toHex, U16 } from "@/lib/integers";
 import { MEMORY_MAP } from "@/lib/memory_map";
+
 import type { CompiledCode, PreCompiledCode, u16 } from "@/types/cpu.types";
 
 
@@ -83,11 +84,14 @@ export const CompilePage: React.FC = () => {
     const [compileMemoryOffsetStr, setCompileMemoryOffsetStr] = useState('0x00');
     const [compileMemoryOffsetUint, setCompileMemoryOffsetUint] = useState<u16>(0 as u16);
 
+
+    // Synchronize compileMemoryOffsetStr & compileMemoryOffsetUint
     useEffect(() => {
         const newCompileMemoryOffsetUint = Number(compileMemoryOffsetStr)
         setCompileMemoryOffsetUint(U16(newCompileMemoryOffsetUint))
 
     }, [compileMemoryOffsetStr])
+
 
 
     const handleCompile = () => {
@@ -174,7 +178,7 @@ export const CompilePage: React.FC = () => {
     const parseCompiledCode = (text: string): PreCompiledCode => {
         const outputCode: PreCompiledCode = text
             .split('\n') // split by line
-            .filter(line => line.trim() && line.includes('[') && line.includes(']')) // discard empty lines
+            .filter(line => line.trim() && line.includes('[') && line.includes(']') && line.trim().startsWith('[')) // discard empty lines
             .map(line => line.replace('[', '').replace(']', '').trim().split(',').slice(0, 2))
             .map(parts => [U16(Number(parts[0])), parts[1].trim() as string])
 
@@ -292,7 +296,7 @@ export const CompilePage: React.FC = () => {
                         <h2 className="text-lg font-semibold">Compiled Code</h2>
                         <div className="flex gap-1 bg-gray-800 rounded-lg p-1">
                             <button
-                                onClick={() => {if (compiledCode) navigator.clipboard.writeText(formatCompiledCodeArray(compiledCode))}}
+                                onClick={() => { if (compiledCode) navigator.clipboard.writeText(formatCompiledCodeArray(compiledCode)) }}
                                 className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded me-4"
                             >
                                 Copy
@@ -329,8 +333,8 @@ export const CompilePage: React.FC = () => {
                             onClick={handleDecompile}
                             disabled={!compiledCode && displayMode !== "editable"}
                             className={`px-4 py-2 rounded transition-colors ${(compiledCode || displayMode === "editable")
-                                    ? "bg-green-600 hover:bg-green-700 text-white"
-                                    : "bg-gray-700 text-gray-400 cursor-not-allowed"
+                                ? "bg-green-600 hover:bg-green-700 text-white"
+                                : "bg-gray-700 text-gray-400 cursor-not-allowed"
                                 }`}
                         >
                             Decompile

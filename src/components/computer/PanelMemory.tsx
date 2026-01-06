@@ -16,7 +16,7 @@ export type PanelMemoryProps = {
 }
 
 
-type TabType = "memory" | "os-disk" | "program-disk" | "data-disk";
+type TabType = "memory" | "os-disk" | "program-disk" | "data-disk-1" | "data-disk-2";
 
 
 export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
@@ -111,25 +111,31 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
 
     // Accès aux disks
     const osDiskStorage = useMemo(() => {
-        // Récupère le stockage du OS Disk depuis le hook correspondant
+        // Récupère le stockage du OSDisk depuis le hook correspondant
         return ioHook.osDisk?.storage || new Map<u16, u8>();
     }, [ioHook]);
 
     const programDiskStorage = useMemo(() => {
-        // Récupère le stockage du Program Disk
+        // Récupère le stockage du ProgramDisk
         return ioHook.programDisk?.storage || new Map<u16, u8>();
     }, [ioHook]);
 
-    const dataDiskStorage = useMemo(() => {
-        // Récupère le stockage du Program Disk
-        return ioHook.dataDisk?.storage || new Map<u16, u8>();
+    const dataDisk1Storage = useMemo(() => {
+        // Récupère le stockage du DataDisk2
+        return ioHook.dataDisk1?.storage || new Map<u16, u8>();
+    }, [ioHook]);
+
+    const dataDisk2Storage = useMemo(() => {
+        // Récupère le stockage du DataDisk2
+        return ioHook.dataDisk2?.storage || new Map<u16, u8>();
     }, [ioHook]);
 
     const currentPC = cpuHook.getRegister("PC");
     const sortedMemory = Array.from(currentMemory.entries()).sort(([a], [b]) => a - b);
     const sortedOsDisk = Array.from(osDiskStorage.entries()).sort(([a], [b]) => a - b);
     const sortedProgramDisk = Array.from(programDiskStorage.entries()).sort(([a], [b]) => a - b);
-    const sorteddataDisk = Array.from(dataDiskStorage.entries()).sort(([a], [b]) => a - b);
+    const sorteddataDisk1 = Array.from(dataDisk1Storage.entries()).sort(([a], [b]) => a - b);
+    const sorteddataDisk2 = Array.from(dataDisk2Storage.entries()).sort(([a], [b]) => a - b);
 
     const MEMORY_MAP_REVERSE = Object.fromEntries(
         Object.entries(MEMORY_MAP).map(e => [e[1], e[0]])
@@ -183,9 +189,13 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
         analyzeInstructions(programDiskStorage),
         [programDiskStorage, analyzeInstructions]);
 
-    const dataDiskInstructionMap = useMemo(() =>
-        analyzeInstructions(dataDiskStorage),
-        [dataDiskStorage, analyzeInstructions]);
+    const dataDisk1InstructionMap = useMemo(() =>
+        analyzeInstructions(dataDisk1Storage),
+        [dataDisk1Storage, analyzeInstructions]);
+
+    const dataDisk2InstructionMap = useMemo(() =>
+        analyzeInstructions(dataDisk2Storage),
+        [dataDisk2Storage, analyzeInstructions]);
 
 
     const toggleBreakpoint = useCallback((addr: number) => {
@@ -281,8 +291,10 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
                 return renderDiskTab("OS Disk", sortedOsDisk, osDiskInstructionMap);
             case "program-disk":
                 return renderDiskTab("Program Disk", sortedProgramDisk, programDiskInstructionMap);
-            case "data-disk":
-                return renderDiskTab("Data Disk", sorteddataDisk, dataDiskInstructionMap);
+            case "data-disk-1":
+                return renderDiskTab("Data Disk #1", sorteddataDisk1, dataDisk1InstructionMap);
+            case "data-disk-2":
+                return renderDiskTab("Data Disk #2", sorteddataDisk2, dataDisk2InstructionMap);
             default:
                 return renderMemoryTab();
         }
@@ -479,13 +491,22 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
                     Program Disk
                 </button>
                 <button
-                    onClick={() => setActiveTab("data-disk")}
-                    className={`px-4 py-2 font-medium transition-colors ${activeTab === "data-disk"
+                    onClick={() => setActiveTab("data-disk-1")}
+                    className={`px-4 py-2 font-medium transition-colors ${activeTab === "data-disk-1"
                         ? "text-purple-400 border-b-2 border-purple-400"
                         : "text-slate-400 hover:text-slate-300"
                         }`}
                 >
-                    Data Disk
+                    Data Disk #1
+                </button>
+                <button
+                    onClick={() => setActiveTab("data-disk-2")}
+                    className={`px-4 py-2 font-medium transition-colors ${activeTab === "data-disk-2"
+                        ? "text-purple-400 border-b-2 border-purple-400"
+                        : "text-slate-400 hover:text-slate-300"
+                        }`}
+                >
+                    Data Disk #2
                 </button>
             </div>
 
