@@ -10,7 +10,7 @@ JZ $END # Si échec, halt
 CALL $WRITE_FILE_CONTENT
 
 CALL $PLAY_SOUND
-CALL $LOAD_FILE_IN_RAM
+CALL $EXECUTE_FILE
 
 JMP $END # End of main
 
@@ -83,9 +83,10 @@ CALL $OPEN_FILE
 :LOAD_FILE_IN_RAM_LOOP
 PUSH_A
 MOV_A_MEM MEMORY_MAP.DATA_DISK_FS_DATA     # Lecture octet sur FS
-MOV_PTR_CD_A     # Ecriture octet dans RAM à 0X2000 + A
+MOV_PTR_CD_A     # Ecriture octet dans RAM à 0X2000
 POP_A
 
+INC_C
 INC_A
 MOV_PTR_CD_A     # update position dans le contenu
 
@@ -94,12 +95,14 @@ SUB
 POP_A
 JNZ $LOAD_FILE_IN_RAM_LOOP
 
-CALL $CLOSE_FILE
 RET
 
 
 :EXECUTE_FILE
-NOP
+CALL $LOAD_FILE_IN_RAM
+CALL $CLOSE_FILE
+JMP 0x2000
+RET
 
 
 
