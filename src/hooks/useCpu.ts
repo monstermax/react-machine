@@ -12,7 +12,6 @@ import type { IOHook } from "./useIo";
 export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
     //console.log('RENDER ComputerPage.useComputer.useCpu')
 
-
     // CPU STATES
     const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map([
         ["A", 0 as u8],      // Register A
@@ -24,6 +23,12 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         ["SP", 0 as u16],    // Stack Pointer
         ["FLAGS", 0 as u8],  // Bit 0: Carry, Bit 1: Zero
     ] as [string, u8 | u16][]));
+
+
+    // THREADS => TODO
+    //const threads = new Map<string, any>([['thread0', { registers }]]);
+    //console.log('threads:', threads)
+
 
     const [halted, setHalted] = useState<boolean>(false);
 
