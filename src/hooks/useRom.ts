@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { BOOTLOADER } from "@/programs/bootloader";
 
@@ -13,13 +13,15 @@ export const useRom = (): RomHook => {
     const [storage] = useState<Map<u16, u8>>(BOOTLOADER);
 
 
-    const read = (address: u16): u8 => {
+    const read = useCallback((address: u16): u8 => {
         return storage.get(address) ?? 0 as u8;
-    }
+    }, [storage])
+
 
     const write = (address: u16, value: u8) => {
         console.warn(`Cannot write ROM`);
     }
+
 
     const romHook: RomHook = {
         storage,

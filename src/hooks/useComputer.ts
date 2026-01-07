@@ -20,7 +20,7 @@ import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
 
 
 export const useComputer = (): ComputerHook => {
-    //console.log('RENDER ComputerPage.useComputer')
+    console.log('RENDER ComputerPage.useComputer')
 
     const romHook = useRom();           // ROM avec bootloader
     const ramHook = useRam();
@@ -41,55 +41,67 @@ export const useComputer = (): ComputerHook => {
 
     // Load OSDisk into RAM, when loadedOs changes
     useEffect(() => {
-        const currentOs = loadedOs ? os_list[loadedOs] : null
+        const _start_os = () => {
+            const currentOs = loadedOs ? os_list[loadedOs] : null
 
-        if (currentOs) {
-            memoryHook.loadDiskInRAM(ioHook.osDisk.storage, MEMORY_MAP.OS_START)
+            if (currentOs) {
+                memoryHook.loadDiskInRAM(ioHook.osDisk.storage, MEMORY_MAP.OS_START)
 
-        } else {
-            memoryHook.writeMemory(MEMORY_MAP.OS_START, 0 as u8);
+            } else {
+                memoryHook.writeMemory(MEMORY_MAP.OS_START, 0 as u8);
+            }
+
+            const pc = cpuHook.getRegister('PC');
+
+            if (pc >= MEMORY_MAP.OS_START) {
+                // Restart Bootloader if OS was running
+                cpuHook.setRegister('PC', MEMORY_MAP.ROM_START);
+            }
         }
 
-        const pc = cpuHook.getRegister('PC');
+        const timer = setTimeout(_start_os, 100);
+        return () => clearTimeout(timer);
 
-        if (pc >= MEMORY_MAP.OS_START) {
-            // Restart Bootloader if OS was running
-            cpuHook.setRegister('PC', MEMORY_MAP.ROM_START);
-        }
-
-    }, [memoryHook.loadDiskInRAM, ioHook.osDisk.storage, loadedOs])
+    }, [ioHook.osDisk.storage, loadedOs])
 
 
     // Load ProgramDisk into RAM, when loadedProgram changes
     useEffect(() => {
         // Charger le programme en RAM à PROGRAM_START, quand l'osDisk ou loadedProgram change
 
-        if (loadedProgram) {
-            memoryHook.loadDiskInRAM(ioHook.programDisk.storage, MEMORY_MAP.PROGRAM_START)
+        const _start_program = () => {
+            if (loadedProgram) {
+                memoryHook.loadDiskInRAM(ioHook.programDisk.storage, MEMORY_MAP.PROGRAM_START)
 
-        } else {
-            memoryHook.writeMemory(MEMORY_MAP.PROGRAM_START, 0 as u8);
+            } else {
+                memoryHook.writeMemory(MEMORY_MAP.PROGRAM_START, 0 as u8);
+            }
+
+            const pc = cpuHook.getRegister('PC');
+
+            if (pc >= MEMORY_MAP.PROGRAM_START) {
+                // Restart OS if program was running
+                cpuHook.setRegister('PC', MEMORY_MAP.OS_START);
+            }
         }
 
-        const pc = cpuHook.getRegister('PC');
-
-        if (pc >= MEMORY_MAP.PROGRAM_START) {
-            // Restart OS if program was running
-            cpuHook.setRegister('PC', MEMORY_MAP.OS_START);
-        }
+        const timer = setTimeout(_start_program, 100);
+        return () => clearTimeout(timer);
 
     }, [memoryHook.loadDiskInRAM, ioHook.programDisk.storage, loadedProgram])
 
 
-    // Format DataDisk1 (with filesystem) on component mount
-    useEffect(() => {
-        ioHook.dataDisk1.formatDisk();
-    }, [])
-
     // Load DataDisk2 on component mount
     useEffect(() => {
-        const demoProgram = compileCode(ledTestCodeSource, 0x2000 as u16)
-        ioHook.dataDisk2.setStorage(demoProgram.code)
+        const memoryOffset = 0x2000;
+
+        const _load_data_disk_2 = () => {
+            const demoProgram = compileCode(ledTestCodeSource, memoryOffset as u16)
+            ioHook.dataDisk2.setStorage(demoProgram.code)
+        }
+
+        const timer = setTimeout(_load_data_disk_2, 100);
+        return () => clearTimeout(timer);
     }, [])
 
 

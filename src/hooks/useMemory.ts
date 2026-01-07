@@ -28,7 +28,7 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
         // RAM read
         //return ramHook.storage.get(address) ?? 0 as u8;
         return ramHook.read(address);
-    }, [ramHook.storage, ioHook, romHook.storage]);
+    }, [romHook.read, ramHook.read, ioHook.read]);
 
 
     // Write to Memory
@@ -49,7 +49,7 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
         //ramHook.storage.set(address, (value & 0xFF) as u8);
         //ramHook.setStorage(oldMap => new Map(oldMap).set(address, value))
         ramHook.write(address, value)
-    }, [ioHook, ramHook.write]);
+    }, [ioHook.write, ramHook.write]);
 
 
     const loadDiskInRAM = useCallback((data: Map<u8, u8> | Map<u16, u8>, offset: u16) => {

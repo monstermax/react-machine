@@ -88,15 +88,13 @@ PUSH_A
 MOV_A_MEM MEMORY_MAP.DATA_DISK_FS_DATA     # Lecture octet sur FS
 MOV_PTR_CD_A     # Ecriture octet dans RAM à 0X2000
 POP_A
-
 INC_C
 INC_A
 MOV_PTR_CD_A     # update position dans le contenu
-
 PUSH_A
 SUB
 POP_A
-JNZ $LOAD_FILE_IN_RAM_LOOP
+JNZ $LOAD_FILE_IN_RAM_LOOP # si fin de fichier non atteint on retourne à LOAD_FILE_IN_RAM_LOOP
 
 RET
 

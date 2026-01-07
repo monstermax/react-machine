@@ -1,7 +1,7 @@
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 
-import { high16, low16, U16, U8 } from "@/lib/integers";
+import { high16, low16, toHex, U16, U8 } from "@/lib/integers";
 import { useFileSystem, type FsHook } from "../useFileSystem";
 
 import type { Device, u16, u8 } from "@/types/cpu.types";
@@ -19,14 +19,85 @@ import type { Device, u16, u8 } from "@/types/cpu.types";
  */
 
 
-export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
+export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=false, formatFs=false): DiskDevice => {
     //console.log('RENDER ComputerPage.useComputer.useIo.useDiskDevice')
 
+    const [mounted, setMounted] = useState(false)
+    const [initialized, setInitialized] = useState(false)
     const [storage, setStorage] = useState<Map<u16, u8>>(data);
+    const [skipStorageEffect, setSkipStorageEffect] = useState(false);
     const [currentAddress, setCurrentAddress] = useState<u16>(0 as u16);
 
     // File System Hook (utilise le même storage)
     const fsHook = useFileSystem(storage, setStorage);
+
+
+    useEffect(() => {
+        if (mounted) return;
+
+        const _mount = () => {
+            setMounted(true)
+        }
+
+        const timer = setTimeout(_mount, 1000);
+
+        return () => clearTimeout(timer);
+    }, [mounted]);
+
+
+    // Format Disk Filesystem on component mount
+    useEffect(() => {
+        if (!mounted || initialized) return
+
+        const _init = () => {
+            if (formatFs) {
+                console.log('_init format', diskName)
+                // Format disk (FS)
+                formatDisk();
+
+            } else if (persistent) {
+                console.log('_init load', diskName)
+                // Load storage
+                const key = `disk_${diskName}`
+                const storageArrJson = localStorage.getItem(key);
+                if (storageArrJson === null || storageArrJson === undefined) return;
+
+                const storageArr = JSON.parse(storageArrJson) as [u16, u8][];
+                setSkipStorageEffect(true);
+                setStorage(new Map(storageArr))
+            }
+
+            setInitialized(true);
+        }
+
+        const timer = setTimeout(_init, 100);
+
+        return () => clearTimeout(timer);
+    }, [initialized, mounted, persistent, formatFs])
+
+
+    // Save storage
+    useEffect(() => {
+        if (!mounted || !initialized) return
+
+        if (skipStorageEffect) {
+            setSkipStorageEffect(false)
+            return;
+        }
+
+        const _save = () => {
+            if (!persistent) return;
+            console.log('_save', diskName)
+
+            const key = `disk_${diskName}`
+            const storageArrJson = JSON.stringify(Array.from(storage.entries()))
+            localStorage.setItem(key, storageArrJson)
+        }
+
+        const timer = setTimeout(_save, 100);
+
+        return () => clearTimeout(timer);
+    }, [mounted, storage, skipStorageEffect, persistent])
 
 
     const read = useCallback((port: u8): u8 => {
@@ -109,7 +180,7 @@ export const useDiskDevice = (data: Map<u16, u8>): DiskDevice => {
 
 
     const formatDisk = useCallback(() => {
-        fsHook.initializeFileSystem();
+        fsHook.initializeFileSystem(true);
     }, [fsHook.initializeFileSystem])
 
 

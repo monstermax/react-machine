@@ -28,8 +28,8 @@ export const useIo = (): IOHook => {
     //console.log('RENDER ComputerPage.useComputer.useIo')
 
     // Devices
-    const osDisk = useDiskDevice(new Map);      // Device 0: 0xFF00-0xFF0F
-    const programDisk = useDiskDevice(new Map); // Device 1: 0xFF10-0xFF1F
+    const osDisk = useDiskDevice('os', new Map);      // Device 0: 0xFF00-0xFF0F
+    const programDisk = useDiskDevice('program', new Map); // Device 1: 0xFF10-0xFF1F
     const interrupt = useInterrupt(); // Device 4: 0xFF40-0xFF4F
     const timer = useTimer(interrupt); // Device 2: 0xFF20-0xFF2F
     const leds = useLedsDisplay(); // Device 3: 0xFF30-0xFF3F
@@ -41,8 +41,8 @@ export const useIo = (): IOHook => {
     const rng = useRng(); // 0xFFB0-0xFFBF
     const rtc = useRtc(); // 0xFFC0-0xFFCF
     const pixelDisplay = usePixelDisplay(); // Device 13 (0x0D): 0xFFD0-0xFFDF
-    const dataDisk1 = useDiskDevice(new Map); // 0xFFE0-0xFFEF
-    const dataDisk2 = useDiskDevice(new Map); // 0xFFF0-0xFFFF
+    const dataDisk1 = useDiskDevice('data_1', new Map, true, false); // 0xFFE0-0xFFEF
+    const dataDisk2 = useDiskDevice('data_2', new Map); // 0xFFF0-0xFFFF
 
 
     // Device registry

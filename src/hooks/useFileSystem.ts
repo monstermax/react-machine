@@ -280,12 +280,12 @@ export const useFileSystem = (storage: Map<u16, u8>, setStorage: React.Dispatch<
     }, [getAllocationBitmap, setAllocationBitmap]);
 
 
-    const initializeFileSystem = useCallback(() => {
+    const initializeFileSystem = useCallback((force=false) => {
         // Vérifier si déjà initialisé (magic number)
         const magicAddr = sectorToAddress(SUPERBLOCK_SECTOR as u8, 0 as u16);
         const magic = readByte(magicAddr);
 
-        if (magic !== 0x42) { // Notre magic number
+        if (magic !== 0x42 || force) { // Notre magic number
             //console('Initializing new filesystem...');
 
             // Écrire magic number
@@ -724,7 +724,7 @@ export type FsHook = {
     currentSector: u8;
     currentFileHandle: u16;
     lastCommandResult: u8;
-    initializeFileSystem: () => void;
+    initializeFileSystem: (force?: boolean) => void;
     setCurrentSector: React.Dispatch<React.SetStateAction<u8>>;
     setCurrentFileHandle: React.Dispatch<React.SetStateAction<u16>>;
     listFiles: () => {name: string, permissions: string, size: number}[];

@@ -13,7 +13,7 @@ export const Home: React.FC = () => {
 
                 <div className="mb-12">
                     <h1 className="text-8xl font-black text-stone-800 mb-2 tracking-tight">
-                        16-Bit React Machine
+                        8-Bit React Machine
                     </h1>
                     <div className="h-2 w-64 bg-amber-600" />
                 </div>
