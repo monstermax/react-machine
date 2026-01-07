@@ -1,4 +1,7 @@
 
+# Créé un fichier TEST.TXT et y injecte du code venant de dataDisk2, charge le fichier en RAM, et execute le fichier
+# TODO: ne pas hardcoder le nom du fichier
+# TODO: ne pas hardcoder la taille du code/fichier (detecter la taille de dataDisk2 en parcourant et tant qu'on rencontre pas 3 "0x00" d'affilé)
 
 :PROGRAM_START
 
@@ -43,7 +46,7 @@ RET
 :WRITE_FILE_CONTENT
 CALL $OPEN_FILE
 
-MOV_B_IMM 0x25 # initialise la taille du contenu a lire (hardcodé)
+MOV_B_IMM 0x26 # initialise la taille du contenu a lire (hardcodé)
 MOV_A_IMM 0x00 # initialise la position du curseur
 MOV_MEM_A MEMORY_MAP.DATA_DISK_2_ADDR_LOW   # initialise position dans le contenu à parcourir - low
 MOV_MEM_A MEMORY_MAP.DATA_DISK_2_ADDR_HIGH  # initialise position dans le contenu à parcourir - high
@@ -74,7 +77,7 @@ RET
 
 :LOAD_FILE_IN_RAM
 # charger le fichier en RAM (à l'adresse 0x2000) puis l'executer
-MOV_B_IMM 0x25    # initialise la taille du contenu a lire (hardcodé)
+MOV_B_IMM 0x26    # initialise la taille du contenu a lire (hardcodé)
 MOV_A_IMM 0x00    # initialise la position du curseur FS l(ecture)
 MOV_C_IMM 0x00    # initialise la position du curseur RAM (ecriture) - low
 MOV_D_IMM 0x20    # initialise la position du curseur RAM (ecriture) - high
