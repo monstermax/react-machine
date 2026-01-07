@@ -20,7 +20,7 @@ import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
 
 
 export const useComputer = (): ComputerHook => {
-    console.log('RENDER ComputerPage.useComputer')
+    //console.log('RENDER ComputerPage.useComputer')
 
     const romHook = useRom();           // ROM avec bootloader
     const ramHook = useRam();

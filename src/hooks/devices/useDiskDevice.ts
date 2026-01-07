@@ -51,13 +51,13 @@ export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=f
 
         const _init = () => {
             if (formatFs) {
-                console.log('_init format', diskName)
                 // Format disk (FS)
+                //console.log('_init format', diskName)
                 formatDisk();
 
             } else if (persistent) {
-                console.log('_init load', diskName)
                 // Load storage
+                //console.log('_init load', diskName)
                 const key = `disk_${diskName}`
                 const storageArrJson = localStorage.getItem(key);
                 if (storageArrJson === null || storageArrJson === undefined) return;
@@ -87,7 +87,7 @@ export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=f
 
         const _save = () => {
             if (!persistent) return;
-            console.log('_save', diskName)
+            //console.log('_save', diskName)
 
             const key = `disk_${diskName}`
             const storageArrJson = JSON.stringify(Array.from(storage.entries()))
