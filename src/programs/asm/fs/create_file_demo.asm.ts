@@ -16,20 +16,20 @@ MOV_A_IMM 0x92 # Command OPEN
 MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_COMMAND
 
 :WRITE_FILE_CONTENT
-${new Array(3).fill(null).map((_, idx) => `
-MOV_A_IMM 0x48 # 'H'
-MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_DATA
-MOV_A_IMM 0x65 # 'e'
-MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_DATA
-MOV_A_IMM 0x6C # 'l'
-MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_DATA
-MOV_A_IMM 0x6C # 'l'
-MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_DATA
-MOV_A_IMM 0x6F # 'o'
-MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_DATA
-MOV_A_IMM 0x0A # '\n
-MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_DATA
-`).join('\n\n')}
+MOV_B_IMM 0x25 # initialise la taille du contenu a lire (hardcodé)
+MOV_A_IMM 0x00
+MOV_MEM_A MEMORY_MAP.DATA_DISK_2_ADDR_LOW   # initialise position dans le contenu à parcourir - low
+MOV_MEM_A MEMORY_MAP.DATA_DISK_2_ADDR_HIGH  # initialise position dans le contenu à parcourir - high
+
+:WRITE_FILE_CONTENT_LOOP
+MOV_C_MEM MEMORY_MAP.DATA_DISK_2_DATA # Read dataDisk2 (raw)
+MOV_MEM_C MEMORY_MAP.DATA_DISK_FS_DATA # Write dataDisk (fs)
+INC_A
+MOV_MEM_A MEMORY_MAP.DATA_DISK_2_ADDR_LOW   # update position dans le contenu à parcourir - low
+PUSH_A
+SUB
+POP_A
+JNZ $WRITE_FILE_CONTENT_LOOP
 
 :CLOSE_FILE
 MOV_A_IMM 0x93 # Command CLOSE
@@ -40,6 +40,9 @@ MOV_A_IMM 45 # Fréquence = 440 Hz → valeur ≈ (440-100)/7.45 ≈ 45
 MOV_MEM_A MEMORY_MAP.BUZZER_FREQ
 MOV_A_IMM 50 # Durée = 500ms → 500/10 = 50
 MOV_MEM_A MEMORY_MAP.BUZZER_DURATION # déclenche le son
+
+:EXECUTE_FILE
+# TODO: charger le fichier en RAM puis l'executer
 JMP $END
 
 :WRITE_FILENAME

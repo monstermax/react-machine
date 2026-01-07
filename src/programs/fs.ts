@@ -13,11 +13,11 @@ import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
  * Créer "TEST.TXT" et écrire "Hello\n"
  */
 export const FS_CREATE_FILE_COMPILED: ProgramInfo = {
-    name: "FS: Create File (liveCompiled)",
+    name: "FS: Create File (liveCompiled ts)",
     description: "Créer fichier TEST.TXT avec contenu",
     code: new Map,
-    //filepath: 'fs/create_file_demo.asm',
-    filepath: 'fs/create_file_demo.asm.ts',
+    filepath: 'fs/create_file_demo.asm',
+    //filepath: 'fs/create_file_demo.asm.ts',
 };
 
 

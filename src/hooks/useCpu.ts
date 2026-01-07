@@ -696,7 +696,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
                 console.error(`Unknown opcode at 0x${pc.toString(16)}: 0x${instruction.toString(16)}`);
                 setHalted(true);
         }
-    }, [memory.readMemory, memory.writeMemory, getRegister, setRegister, pushValue, popValue, setHalted, setFlags, readMem16, readMem8, handleSyscall, handleCall, handleRet, handleIRet]);
+    }, [memory.readMemory, memory.writeMemory, getFlag, getRegister, setRegister, pushValue, popValue, setHalted, setFlags, readMem16, readMem8, handleSyscall, handleCall, handleRet, handleIRet]);
 
 
     const handleInterrupt = useCallback(() => {

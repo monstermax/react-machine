@@ -88,7 +88,7 @@ export const useComputer = (): ComputerHook => {
 
     // Load DataDisk2 on component mount
     useEffect(() => {
-        const demoProgram = compileCode(ledTestCodeSource)
+        const demoProgram = compileCode(ledTestCodeSource, 0x2000 as u16)
         ioHook.dataDisk2.setStorage(demoProgram.code)
     }, [])
 

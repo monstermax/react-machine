@@ -188,44 +188,44 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.IRET: return "IRET";
 
         // MOV Register to Register
-        case Opcode.MOV_AB: return "MOV A,B";
-        case Opcode.MOV_AC: return "MOV A,C";
-        case Opcode.MOV_AD: return "MOV A,D";
-        case Opcode.MOV_BA: return "MOV B,A";
-        case Opcode.MOV_BC: return "MOV B,C";
-        case Opcode.MOV_BD: return "MOV B,D";
-        case Opcode.MOV_CA: return "MOV C,A";
-        case Opcode.MOV_CB: return "MOV C,B";
-        case Opcode.MOV_CD: return "MOV C,D";
-        case Opcode.MOV_DA: return "MOV D,A";
-        case Opcode.MOV_DB: return "MOV D,B";
-        case Opcode.MOV_DC: return "MOV D,C";
+        case Opcode.MOV_AB: return "MOV A B";
+        case Opcode.MOV_AC: return "MOV A C";
+        case Opcode.MOV_AD: return "MOV A D";
+        case Opcode.MOV_BA: return "MOV B A";
+        case Opcode.MOV_BC: return "MOV B C";
+        case Opcode.MOV_BD: return "MOV B D";
+        case Opcode.MOV_CA: return "MOV C A";
+        case Opcode.MOV_CB: return "MOV C B";
+        case Opcode.MOV_CD: return "MOV C D";
+        case Opcode.MOV_DA: return "MOV D A";
+        case Opcode.MOV_DB: return "MOV D B";
+        case Opcode.MOV_DC: return "MOV D C";
 
         // MOV avec Immediate
-        case Opcode.MOV_A_IMM: return "MOV A,#";
-        case Opcode.MOV_B_IMM: return "MOV B,#";
-        case Opcode.MOV_C_IMM: return "MOV C,#";
-        case Opcode.MOV_D_IMM: return "MOV D,#";
+        case Opcode.MOV_A_IMM: return "MOV A IMM";
+        case Opcode.MOV_B_IMM: return "MOV B IMM";
+        case Opcode.MOV_C_IMM: return "MOV C IMM";
+        case Opcode.MOV_D_IMM: return "MOV D IMM";
 
         // MOV Memory to Register
-        case Opcode.MOV_A_MEM: return "MOV A,M";
-        case Opcode.MOV_B_MEM: return "MOV B,M";
-        case Opcode.MOV_C_MEM: return "MOV C,M";
-        case Opcode.MOV_D_MEM: return "MOV D,M";
+        case Opcode.MOV_A_MEM: return "MOV A MEM";
+        case Opcode.MOV_B_MEM: return "MOV B MEM";
+        case Opcode.MOV_C_MEM: return "MOV C MEM";
+        case Opcode.MOV_D_MEM: return "MOV D MEM";
 
         // MOV Register to Memory
-        case Opcode.MOV_MEM_A: return "MOV M,A";
-        case Opcode.MOV_MEM_B: return "MOV M,B";
-        case Opcode.MOV_MEM_C: return "MOV M,C";
-        case Opcode.MOV_MEM_D: return "MOV M,D";
+        case Opcode.MOV_MEM_A: return "MOV MEM A";
+        case Opcode.MOV_MEM_B: return "MOV MEM B";
+        case Opcode.MOV_MEM_C: return "MOV MEM C";
+        case Opcode.MOV_MEM_D: return "MOV MEM D";
 
         // MOV Memory to Register (indirect via C:D)
-        case Opcode.MOV_A_PTR_CD: return "MOV A,[CD]";
-        case Opcode.MOV_B_PTR_CD: return "MOV B,[CD]";
+        case Opcode.MOV_A_PTR_CD: return "MOV A PTR_CD";
+        case Opcode.MOV_B_PTR_CD: return "MOV B PTR_CD";
 
         // MOV Register to Memory (indirect via C:D)
-        case Opcode.MOV_PTR_CD_A: return "MOV [CD],A";
-        case Opcode.MOV_PTR_CD_B: return "MOV [CD],B";
+        case Opcode.MOV_PTR_CD_A: return "MOV PTR_CD A";
+        case Opcode.MOV_PTR_CD_B: return "MOV PTR_CD B";
 
         default: return "???";
     }
