@@ -69,3 +69,30 @@ type ProcessControlBlock = { // cf https://youtu.be/M9HHWFp84f0?t=499
     parent: ProcessControlBlock | null;
 }
 
+/*
+# Monolithic Kernal
+
+## Kernel Space
+- File System
+- Memory Management
+- Device Drviers
+- Code OS
+
+## User Space
+- User Applications
+- Syscall to Kernel
+
+
+# MicroKernel
+
+## Kernel Space
+- CPU Scheduling
+- Memory Management
+
+## User Space
+- User Applications
+- File System
+- Device Drviers
+- IPC & Syscall to Kernel
+
+*/
