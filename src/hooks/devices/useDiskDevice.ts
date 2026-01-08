@@ -57,14 +57,18 @@ export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=f
 
             } else if (persistent) {
                 // Load storage
-                //console.log('_init load', diskName)
+                //console.log('_init persistent load', diskName)
                 const key = `disk_${diskName}`
                 const storageArrJson = localStorage.getItem(key);
-                if (storageArrJson === null || storageArrJson === undefined) return;
 
-                const storageArr = JSON.parse(storageArrJson) as [u16, u8][];
-                setSkipStorageEffect(true);
-                setStorage(new Map(storageArr))
+                if (storageArrJson === null || storageArrJson === undefined) {
+                    // No localStorage found
+
+                } else {
+                    const storageArr = JSON.parse(storageArrJson) as [u16, u8][];
+                    setSkipStorageEffect(true);
+                    setStorage(new Map(storageArr))
+                }
             }
 
             setInitialized(true);
@@ -78,6 +82,7 @@ export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=f
 
     // Save storage
     useEffect(() => {
+        //console.log('PRE _save', diskName, mounted, initialized)
         if (!mounted || !initialized) return
 
         if (skipStorageEffect) {
@@ -87,7 +92,7 @@ export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=f
 
         const _save = () => {
             if (!persistent) return;
-            //console.log('_save', diskName)
+            //console.log('_save persistent data', diskName)
 
             const key = `disk_${diskName}`
             const storageArrJson = JSON.stringify(Array.from(storage.entries()))
@@ -97,7 +102,7 @@ export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=f
         const timer = setTimeout(_save, 100);
 
         return () => clearTimeout(timer);
-    }, [mounted, storage, skipStorageEffect, persistent])
+    }, [mounted, initialized, storage, skipStorageEffect, persistent])
 
 
     const read = useCallback((port: u8): u8 => {
