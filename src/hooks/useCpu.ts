@@ -28,6 +28,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
     // CPU STATES
     const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map(initialRegisters));
+    const registersRef = useRef<Map<string, u8 | u16>>(new Map(initialRegisters));
 
 
     // THREADS => TODO
@@ -104,25 +105,28 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
     // CPU METHODS
 
     const getRegister = useCallback(<T extends Register>(reg: T): T extends Register16 ? u16 : u8 => {
-        const value = registers.get(reg) ?? 0;
+        //const value = registers.get(reg) ?? 0;
+        const value = registersRef.current.get(reg) ?? 0;
 
         if (reg === "PC" || reg === "SP") {
             return value as T extends Register16 ? u16 : u8;
         } else {
             return value as T extends Register16 ? u16 : u8;
         }
-    }, [registers]);
+    }, [/* registers */]);
 
 
     const setRegister = useCallback((reg: Register, value: u8 | u16) => {
         // PC et SP sont 16-bit, les autres 8-bit
         if (reg === "PC" || reg === "SP") {
-            registers.set(reg, (value & 0xFFFF) as u16); // 16-bit
+            //registers.set(reg, (value & 0xFFFF) as u16); // 16-bit
+            registersRef.current.set(reg, (value & 0xFFFF) as u16); // 16-bit
 
         } else {
-            registers.set(reg, (value & 0xFF) as u8);   // 8-bit
+            //registers.set(reg, (value & 0xFF) as u8);   // 8-bit
+            registersRef.current.set(reg, (value & 0xFF) as u8);   // 8-bit
         }
-    }, [registers])
+    }, [/* registers */])
 
 
     const getFlag = useCallback((flag: 'zero' | 'carry'): boolean => {
@@ -137,18 +141,8 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
 
     const reset = useCallback(() => {
-        const resetRegisters = new Map<string, u8 | u16>([
-            ["A", 0 as u8],
-            ["B", 0 as u8],
-            ["C", 0 as u8],
-            ["D", 0 as u8],
-            ["PC", MEMORY_MAP.ROM_START],
-            ["IR", 0 as u8],
-            ["SP", 0 as u16],
-            ["FLAGS", 0 as u8],
-        ] as [string, u8 | u16][]);
-
-        setRegisters(resetRegisters);
+        registersRef.current = new Map(initialRegisters)
+        setRegisters(new Map(initialRegisters));
         setHalted(false);
         setClockCycle(0 as u16);
         clockCycleRef.current = 0 as u16;
@@ -160,7 +154,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
     const syncUi = useCallback(() => {
         setClockCycle(clockCycleRef.current)
-        //setRegisters(new Map(registersRef.current))
+        setRegisters(new Map(registersRef.current))
         lastUiSyncRef.current = Date.now()
         //setLastUiSync(Date.now())
         //console.log('syncUi exec', lastUiSyncRef.current/1000);
