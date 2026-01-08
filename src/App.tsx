@@ -11,14 +11,12 @@ import { CompilePage } from "./pages/CompilePage";
 import NotFound from "@/pages/NotFound";
 
 import '@/App.css';
+import { useEffect, useState } from "react";
+import { ComputerBeta } from "./pages/ComputerBeta";
 
 
 function App() {
-    const search = useSearch();
-    const params = new URLSearchParams(search);
-
-    const chunkId: string | null = params.get('chunk') || null;
-    const useMockDB = !!params.get('mock');
+    //console.log('RENDER App')
 
     return (
         <ErrorBoundary>
@@ -47,6 +45,7 @@ function Router() {
         <Switch>
             <Route path={"/"} component={Home} />
             <Route path={"/cpu"} component={ComputerPage} />
+            <Route path={"/cpu-beta"} component={ComputerBeta} />
             <Route path={"/compiler"} component={CompilePage} />
             <Route path={"/404"} component={NotFound} />
             {/* Final fallback route */}

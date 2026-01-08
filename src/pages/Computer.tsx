@@ -13,10 +13,30 @@ import { IosDevices } from "@/components/io/IosDevices";
 export const ComputerPage: React.FC = () => {
     //console.log('RENDER ComputerPage')
 
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        if (mounted) return
+        setMounted(true)
+    }, [mounted])
+
+
+    if (!mounted) return null;
+
+    return (
+        <>
+            <ComputerComponent />
+        </>
+    );
+};
+
+
+
+export const ComputerComponent: React.FC = () => {
+    //console.log('RENDER ComputerPage.ComputerComponent')
+
     const computerHook = useComputer();
     const { resetComputer, loadOs, unloadOs, loadProgram, unloadProgram } = computerHook;
-
-
 
     return (
         <div className="min-h-screen bg-slate-950 text-white">

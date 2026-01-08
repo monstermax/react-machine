@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { MEMORY_MAP, isROM, isIO, memoryToIOPort } from "@/lib/memory_map";
 import type { IOHook } from "./useIo";
@@ -6,11 +6,28 @@ import type { RomHook } from "./useRom";
 
 import type { u16, u8 } from "@/types/cpu.types";
 import type { RamHook } from "./useRam";
-import { U16, U8 } from "@/lib/integers";
+import { toHex, U16, U8 } from "@/lib/integers";
 
 
 export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): MemoryHook => {
     //console.log('RENDER ComputerPage.useComputer.useMemory')
+
+    const [id] = useState(() => Math.round(Math.random() * 999_999_999));
+
+
+    // DEBUG (memory changes)
+    useEffect(() => {
+        //console.log('memory ROM changed')
+    }, [romHook])
+
+    useEffect(() => {
+        //console.log('memory RAM changed')
+    }, [ramHook])
+
+    useEffect(() => {
+        //console.log('memory IO changed')
+    }, [ioHook])
+
 
     // Read from Memory
     const readMemory = useCallback((address: u16): u8 => {
@@ -26,8 +43,9 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
         }
 
         // RAM read
-        //return ramHook.storage.get(address) ?? 0 as u8;
-        return ramHook.read(address);
+        const value = ramHook.read(address);
+        console.log(`MEMORY-RAM ${id} @address ${toHex(address)} = ${value}`)
+        return value;
     }, [romHook.read, ramHook.read, ioHook.read]);
 
 
@@ -66,6 +84,8 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
 
 
     const memoryHook: MemoryHook = {
+        id,
+        ramHook,
         readMemory,
         writeMemory,
         loadDiskInRAM,
@@ -76,8 +96,10 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
 
 
 export type MemoryHook = {
+    id: number;
     readMemory: (address: u16) => u8;
     writeMemory: (address: u16, value: u8) => void;
     loadDiskInRAM: (data: Map<u8, u8> | Map<u16, u8>, offset: u16) => void,
+    ramHook: RamHook;
 };
 

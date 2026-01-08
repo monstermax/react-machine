@@ -34,6 +34,9 @@ export const useComputer = (): ComputerHook => {
 
     if (true) {
         // DEBUG
+        (window as any).cpuHook = cpuHook;
+        (window as any).memoryHook = memoryHook;
+        (window as any).ramHook = ramHook;
         (window as any).ioHook = ioHook;
         (window as any).fs = ioHook.dataDisk1.fsHook;
     }

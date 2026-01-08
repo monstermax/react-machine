@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useRef, useCallback, memo } from "react";
+import { useEffect, useState, useRef, useCallback, memo, useMemo } from "react";
 
 import { programs } from "@/lib/programs";
 import type { ComputerHook } from "@/hooks/useComputer";
@@ -45,12 +45,26 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
 
     const loadedOsInfo = computerHook.loadedOs ? os_list[computerHook.loadedOs] : null;
     //const osInfo = loadedOsInfo;
-    const isOsUnloaded = loadedOsInfo ? (computerHook.memoryHook.readMemory(MEMORY_MAP.OS_START) === 0x00) : false;
+
+    const isOsUnloaded = useMemo(() => {
+        return false; // DEBUG
+        console.log('RELOADING isOsUnloaded')
+        return loadedOsInfo
+            ? (computerHook.memoryHook.readMemory(MEMORY_MAP.OS_START) === 0x00)
+            : false;
+    }, [computerHook.memoryHook])
 
     const selectedProgramInfo = selectedProgram ? programs[selectedProgram] : null;
     const loadedProgramInfo = computerHook.loadedProgram ? programs[computerHook.loadedProgram] : null;
     const programInfo = selectedProgramInfo ?? loadedProgramInfo;
-    const isProgramUnloaded = loadedProgramInfo ? (computerHook.memoryHook.readMemory(MEMORY_MAP.PROGRAM_START) === 0x00) : false;
+
+    const isProgramUnloaded = useMemo(() => {
+        return false; // DEBUG
+        console.log('RELOADING isProgramUnloaded')
+        return loadedProgramInfo
+            ? (computerHook.memoryHook.readMemory(MEMORY_MAP.PROGRAM_START) === 0x00)
+            : false;
+    }, [computerHook.memoryHook])
 
     const [triggerFrequencyRefresh, setTriggerFrequencyRefresh] = useState(0)
     //const triggerFrequencyRefreshRef = useRef(0)
