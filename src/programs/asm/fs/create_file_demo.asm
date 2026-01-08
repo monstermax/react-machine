@@ -1,7 +1,7 @@
 
 # Créé un fichier TEST.TXT et y injecte du code venant de dataDisk2, charge le fichier en RAM, et execute le fichier
 # TODO: ne pas hardcoder le nom du fichier
-# TODO: ne pas hardcoder la taille du code/fichier (detecter la taille de dataDisk2 en parcourant et tant qu'on rencontre pas 3 "0x00" d'affilé)
+# TODO: ne pas hardcoder la taille du code/fichier
 
 PROGRAM_START:
 
@@ -133,7 +133,7 @@ LOAD_FILE_IN_RAM:
 
         INC_C   # update position du curseur RAM - low
         DEC_B   # update position du curseur FS  - low
-# BUG
+
         JNZ $LOAD_FILE_IN_RAM_LOOP # si fin de fichier non atteint on retourne à LOAD_FILE_IN_RAM_LOOP
 
     RET
