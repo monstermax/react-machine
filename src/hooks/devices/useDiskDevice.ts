@@ -106,30 +106,35 @@ export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=f
             case 0: // DISK_DATA - lecture byte à l'adresse courante
                 return storage.get(currentAddress) ?? 0 as u8;
 
-            case 1: // DISK_SIZE - taille disque
-                return U8(storage.size); // Low byte
+            case 1: // DISK_SIZE_LOW - taille disque
+                return low16(storage.size as u16); // Low byte
 
-            case 2: // DISK_ADDR_LOW - adresse courante (low)
+            case 2: // DISK_SIZE_HIGH - taille disque
+                return high16(storage.size as u16); // Low byte
+
+            case 3: // DISK_ADDR_LOW - adresse courante (low)
                 return low16(currentAddress);
 
-            case 3: // DISK_ADDR_HIGH - adresse courante (high)
+            case 4: // DISK_ADDR_HIGH - adresse courante (high)
                 return high16(currentAddress);
 
             // ===== MODE FILE SYSTEM =====
-            case 4: // FS_STATUS - retourne nombre de fichiers
+            case 8: // FS_STATUS - retourne nombre de fichiers
                 const files = fsHook.listFiles();
                 return U8(files.length);
 
-            case 5: // FS_RESULT - résultat dernière commande
+            case 9: // FS_COMMAND - résultat dernière commande
                 return fsHook.lastCommandResult;
 
-            case 6: // FS_DATA - lire byte depuis fichier ouvert
+            case 10: // FS_DATA - lire byte depuis fichier ouvert
                 return fsHook.readData();
 
-            case 7: // FS_HANDLE_LOW - handle fichier ouvert (low)
+            //case 11: // PROGRAM_DISK_FS_FILENAME
+
+            case 12: // FS_HANDLE_LOW - handle fichier ouvert (low)
                 return low16(fsHook.currentFileHandle);
 
-            case 8: // FS_HANDLE_HIGH - handle fichier ouvert (high)
+            case 13: // FS_HANDLE_HIGH - handle fichier ouvert (high)
                 return high16(fsHook.currentFileHandle);
 
             default:
@@ -148,26 +153,29 @@ export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=f
                 setCurrentAddress(addr => U16(addr + 1));
                 break;
 
-            case 2: // DISK_ADDR_LOW - définir adresse (low)
+            case 3: // DISK_ADDR_LOW - définir adresse (low)
                 setCurrentAddress(prev => U16((prev & 0xFF00) | value));
                 break;
 
-            case 3: // DISK_ADDR_HIGH - définir adresse (high)
+            case 4: // DISK_ADDR_HIGH - définir adresse (high)
                 setCurrentAddress(prev => U16((prev & 0x00FF) | (value << 8)));
                 break;
 
             // ===== MODE FILE SYSTEM =====
-            case 5: // FS_COMMAND - exécuter commande FS
+            case 9: // FS_COMMAND - exécuter commande FS
                 fsHook.executeCommand(value);
                 break;
 
-            case 6: // FS_DATA - écrire byte dans fichier ouvert
+            case 10: // FS_DATA - écrire byte dans fichier ouvert
                 fsHook.writeData(value);
                 break;
 
-            case 7: // FS_FILENAME_CHAR - ajouter caractère au nom de fichier
+            case 11: // FS_FILENAME - ajouter caractère au nom de fichier
                 fsHook.writeFilenameChar(value);
                 break;
+
+            //case 12: // FS_HANDLE_LOW
+            //case 13: // FS_HANDLE_HIGH
 
             default:
                 console.warn(`Disk: Unknown write port ${port}`);
@@ -193,6 +201,7 @@ export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=f
 
 
     const diskDeviceHook: DiskDevice = {
+        diskName,
         storage,
         fsHook,
         read,
@@ -208,6 +217,7 @@ export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=f
 
 
 export type DiskDevice = Device & {
+    diskName: string;
     storage: Map<u16, u8>;
     fsHook: FsHook;
     setStorage: React.Dispatch<React.SetStateAction<Map<u16, u8>>>;

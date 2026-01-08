@@ -7,6 +7,7 @@ import { isROM, isRAM, MEMORY_MAP, memoryToIOPort, isIO } from "@/lib/memory_map
 import type { ComputerHook } from "@/hooks/useComputer";
 import type { u16, u8 } from "@/types/cpu.types";
 import { U16, U8 } from "@/lib/integers";
+import type { DiskDevice } from "@/hooks/devices/useDiskDevice";
 
 
 export type PanelMemoryProps = {
@@ -288,13 +289,13 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
             case "memory":
                 return renderMemoryTab();
             case "os-disk":
-                return renderDiskTab("OS Disk", sortedOsDisk, osDiskInstructionMap);
+                return renderDiskTab("OS Disk", sortedOsDisk, osDiskInstructionMap, ioHook.osDisk);
             case "program-disk":
-                return renderDiskTab("Program Disk", sortedProgramDisk, programDiskInstructionMap);
+                return renderDiskTab("Program Disk", sortedProgramDisk, programDiskInstructionMap, ioHook.programDisk);
             case "data-disk-1":
-                return renderDiskTab("Data Disk #1", sorteddataDisk1, dataDisk1InstructionMap);
+                return renderDiskTab("Data Disk #1", sorteddataDisk1, dataDisk1InstructionMap, ioHook.dataDisk1);
             case "data-disk-2":
-                return renderDiskTab("Data Disk #2", sorteddataDisk2, dataDisk2InstructionMap);
+                return renderDiskTab("Data Disk #2", sorteddataDisk2, dataDisk2InstructionMap, ioHook.dataDisk2);
             default:
                 return renderMemoryTab();
         }
@@ -402,7 +403,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
 
 
     // Rendu d'un onglet de disque
-    const renderDiskTab = (title: string, diskData: [u16, u8][], instructionMap: Map<number, boolean>) => (
+    const renderDiskTab = (title: string, diskData: [u16, u8][], instructionMap: Map<number, boolean>, device: DiskDevice) => (
         <>
             <div className="font-mono text-sm space-y-1 max-h-[600px] overflow-y-auto">
                 <div className="text-xs text-slate-400 mb-2">
@@ -444,13 +445,27 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
                 )}
             </div>
 
-            <div className="mt-2">
+            <div className="mt-2 flex gap-4">
                 <button
                     onClick={() => setDecodeInstructions(b => !b)}
-                    className="flex gap-2 cursor-pointer"
+                    className="flex gap-2 cursor-pointer px-4 py-2 font-medium transition-colors bg-purple-400"
                 >
-                    <div>{decodeInstructions ? "✅" : "❌"}</div>
                     <div>Decode Instructions</div>
+                    <div>{decodeInstructions ? "✅" : "❌"}</div>
+                </button>
+
+                <button
+                    onClick={() => { if (confirm(`Erase all data on disk ${device.diskName}`)) { device.setStorage(new Map) } }}
+                    className={`cursor-pointer px-4 py-2 font-medium transition-colors bg-red-400`}
+                >
+                    Erase Disk
+                </button>
+
+                <button
+                    onClick={() => { if (confirm(`Format Disk Filesystem ${device.diskName}`)) { device.formatDisk() } }}
+                    className={`cursor-pointer px-4 py-2 font-medium transition-colors bg-red-400`}
+                >
+                    Format FS
                 </button>
             </div>
         </>

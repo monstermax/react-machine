@@ -56,29 +56,31 @@ export const MEMORY_MAP = createMemoryMap({
 
     // Device 0: OS Disk (0xFF00-0xFF0F)
     OS_DISK_BASE: 0xFF00,
-    OS_DISK_DATA: 0xFF00,           // Port 0: Read/Write data (RAW)
-    OS_DISK_SIZE: 0xFF01,           // Port 1: Get size (RAW)
-    OS_DISK_ADDR_LOW: 0xFF02,       // Port 2: Set address low (RAW)
-    OS_DISK_ADDR_HIGH: 0xFF03,      // Port 3: Set address high (RAW)
-    OS_DISK_FS_STATUS: 0xFF04,      // Port 4: FS status (nombre de fichiers)
-    OS_DISK_FS_COMMAND: 0xFF05,     // Port 5: FS command / result
-    OS_DISK_FS_DATA: 0xFF06,        // Port 6: FS data read/write
-    OS_DISK_FS_FILENAME: 0xFF07,    // Port 7: FS filename char
-    OS_DISK_FS_HANDLE_LOW: 0xFF08,  // Port 8: File handle low
-    OS_DISK_FS_HANDLE_HIGH: 0xFF09, // Port 9: File handle high
+    OS_DISK_DATA: 0xFF00,           // Port  0: Read/Write data (RAW)
+    OS_DISK_SIZE_LOW: 0xFF01,       // Port  1: Get size (RAW)
+    OS_DISK_SIZE_HIGH: 0xFF02,      // Port  2: Get size (RAW)
+    OS_DISK_ADDR_LOW: 0xFF03,       // Port  3: Set address low (RAW)
+    OS_DISK_ADDR_HIGH: 0xFF04,      // Port  4: Set address high (RAW)
+    OS_DISK_FS_STATUS: 0xFF08,      // Port  8: FS status (nombre de fichiers)
+    OS_DISK_FS_COMMAND: 0xFF09,     // Port  9: FS command / result
+    OS_DISK_FS_DATA: 0xFF0A,        // Port 10: FS data read/write
+    OS_DISK_FS_FILENAME: 0xFF0B,    // Port 11: FS filename char
+    OS_DISK_FS_HANDLE_LOW: 0xFF0C,  // Port 12: File handle low
+    OS_DISK_FS_HANDLE_HIGH: 0xFF0D, // Port 13: File handle high
 
     // Device 1: Program Disk (0xFF10-0xFF1F)
     PROGRAM_DISK_BASE: 0xFF10,
-    PROGRAM_DISK_DATA: 0xFF10,
-    PROGRAM_DISK_SIZE: 0xFF11,
-    PROGRAM_DISK_ADDR_LOW: 0xFF12,
-    PROGRAM_DISK_ADDR_HIGH: 0xFF13,
-    PROGRAM_DISK_FS_STATUS: 0xFF14,
-    PROGRAM_DISK_FS_COMMAND: 0xFF15,
-    PROGRAM_DISK_FS_DATA: 0xFF16,
-    PROGRAM_DISK_FS_FILENAME: 0xFF17,
-    PROGRAM_DISK_FS_HANDLE_LOW: 0xFF18,
-    PROGRAM_DISK_FS_HANDLE_HIGH: 0xFF19,
+    PROGRAM_DISK_DATA: 0xFF10,           // Port  0: Read/Write data (RAW)
+    PROGRAM_DISK_LOW_SIZE: 0xFF11,       // Port  1: Get size (RAW)
+    PROGRAM_DISK_HIGH_SIZE: 0xFF12,      // Port  2: Get size (RAW)
+    PROGRAM_DISK_ADDR_LOW: 0xFF13,       // Port  3: Set address low (RAW)
+    PROGRAM_DISK_ADDR_HIGH: 0xFF14,      // Port  4: Set address high (RAW)
+    PROGRAM_DISK_FS_STATUS: 0xFF18,      // Port  8: FS status (nombre de fichiers)
+    PROGRAM_DISK_FS_COMMAND: 0xFF19,     // Port  9: FS command / result
+    PROGRAM_DISK_FS_DATA: 0xFF1A,        // Port 10: FS data read/write
+    PROGRAM_DISK_FS_FILENAME: 0xFF1B,    // Port 11: FS filename char
+    PROGRAM_DISK_FS_HANDLE_LOW: 0xFF1C,  // Port 12: File handle low
+    PROGRAM_DISK_FS_HANDLE_HIGH: 0xFF1D, // Port 13: File handle high
 
     // Timer
     TIMER_BASE: 0xFF20,
@@ -155,29 +157,31 @@ export const MEMORY_MAP = createMemoryMap({
 
     // Device 14: Data Disk (0xFFE0-0xFFEF)
     DATA_DISK_BASE: 0xFFE0,
-    DATA_DISK_DATA: 0xFFE0,
-    DATA_DISK_SIZE: 0xFFE1,
-    DATA_DISK_ADDR_LOW: 0xFFE2,
-    DATA_DISK_ADDR_HIGH: 0xFFE3,
-    DATA_DISK_FS_STATUS: 0xFFE4,
-    DATA_DISK_FS_COMMAND: 0xFFE5,
-    DATA_DISK_FS_DATA: 0xFFE6,
-    DATA_DISK_FS_FILENAME: 0xFFE7,
-    DATA_DISK_FS_HANDLE_LOW: 0xFFE8,
-    DATA_DISK_FS_HANDLE_HIGH: 0xFFE9,
+    DATA_DISK_DATA: 0xFFE0,           // Port  0: Read/Write data (RAW)
+    DATA_DISK_SIZE_LOW: 0xFFE1,       // Port  1: Get size (RAW) - low
+    DATA_DISK_SIZE_HIGH: 0xFFE2,      // Port  2: Get size (RAW) - high
+    DATA_DISK_ADDR_LOW: 0xFFE3,       // Port  3: Set address (RAW) - low
+    DATA_DISK_ADDR_HIGH: 0xFFE4,      // Port  4: Set address (RAW) - high
+    DATA_DISK_FS_STATUS: 0xFFE8,      // Port  8: FS status (nombre de fichiers)
+    DATA_DISK_FS_COMMAND: 0xFFE9,     // Port  9: FS command / result
+    DATA_DISK_FS_DATA: 0xFFEA,        // Port 10: FS data read/write
+    DATA_DISK_FS_FILENAME: 0xFFEB,    // Port 11: FS filename char
+    DATA_DISK_FS_HANDLE_LOW: 0xFFEC,  // Port 12: File handle low
+    DATA_DISK_FS_HANDLE_HIGH: 0xFFED, // Port 13: File handle high
 
     // Device 15: Data Disk (0xFFF0-0xFFFF)
     DATA_DISK_2_BASE: 0xFFF0,
-    DATA_DISK_2_DATA: 0xFFF0,
-    DATA_DISK_2_SIZE: 0xFFF1,
-    DATA_DISK_2_ADDR_LOW: 0xFFF2,
-    DATA_DISK_2_ADDR_HIGH: 0xFFF3,
-    DATA_DISK_2_FS_STATUS: 0xFFF4,
-    DATA_DISK_2_FS_COMMAND: 0xFFF5,
-    DATA_DISK_2_FS_DATA: 0xFFF6,
-    DATA_DISK_2_FS_FILENAME: 0xFFF7,
-    DATA_DISK_2_FS_HANDLE_LOW: 0xFFF8,
-    DATA_DISK_2_FS_HANDLE_HIGH: 0xFFF9,
+    DATA_DISK_2_DATA: 0xFFF0,           // Port  0: Read/Write data (RAW)
+    DATA_DISK_2_SIZE_LOW: 0xFFF1,       // Port  1: Get size (RAW) - low
+    DATA_DISK_2_SIZE_HIGH: 0xFFF2,      // Port  2: Get size (RAW) - high
+    DATA_DISK_2_ADDR_LOW: 0xFFF3,       // Port  3: Set address (RAW) - low
+    DATA_DISK_2_ADDR_HIGH: 0xFFF4,      // Port  4: Set address (RAW) - high
+    DATA_DISK_2_FS_STATUS: 0xFFF8,      // Port  8: FS status (nombre de fichiers)
+    DATA_DISK_2_FS_COMMAND: 0xFFF9,     // Port  9: FS command / result
+    DATA_DISK_2_FS_DATA: 0xFFFA,        // Port 10: FS data read/write
+    DATA_DISK_2_FS_FILENAME: 0xFFFB,    // Port 11: FS filename char
+    DATA_DISK_2_FS_HANDLE_LOW: 0xFFFC,  // Port 12: File handle low
+    DATA_DISK_2_FS_HANDLE_HIGH: 0xFFFD, // Port 13: File handle high
 
 
     // IRQ //
