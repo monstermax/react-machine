@@ -608,3 +608,13 @@ export const FS_LIST_FILES: ProgramInfo = {
 };
 
 
+
+export const DISK_SIZE: ProgramInfo = {
+    name: "Disk size",
+    description: "Affiche la taille d'un disque",
+    code: new Map,
+    filepath: 'fs/disk_size.asm',
+};
+
+
+

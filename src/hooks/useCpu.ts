@@ -31,6 +31,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
 
     const [halted, setHalted] = useState<boolean>(false);
+    const [paused, setPaused] = useState<boolean>(false);
 
     const [clockCycle, setClockCycle] = useState<u16>(0 as u16);
     //const clockCycleRef = useRef<u16>(0 as u16);
@@ -348,6 +349,11 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
                 handleSyscall(pc);
                 break;
 
+            case Opcode.BREAKPOINT:
+                setPaused(true);
+                setRegister("PC", (pc + 1) as u16);
+                break;
+
             case Opcode.HALT:
                 setHalted(true);
                 break;
@@ -440,6 +446,14 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
             case Opcode.JC:
                 if (getFlag('carry')) {
+                    setRegister("PC", readMem16(pc));
+                } else {
+                    setRegister("PC", (pc + 3) as u16);
+                }
+                break;
+
+            case Opcode.JNC:
+                if (!getFlag('carry')) {
                     setRegister("PC", readMem16(pc));
                 } else {
                     setRegister("PC", (pc + 3) as u16);
@@ -775,6 +789,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
     const cpuHook: CpuHook = {
         halted,
+        paused,
         registers,
         clockCycle,
         //clockCycle: clockCycleRef,
@@ -786,6 +801,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         tick,
         executeCycle,
         reset,
+        setPaused,
     };
 
     return cpuHook
@@ -794,6 +810,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
 export type CpuHook = {
     halted: boolean;
+    paused: boolean;
     registers: Map<string, number>,
     clockCycle: u16;
     //clockCycle: React.RefObject<u16>;
@@ -805,6 +822,7 @@ export type CpuHook = {
     executeCycle: () => void,
     tick: () => void,
     reset: () => void,
+    setPaused: (value: React.SetStateAction<boolean>) => void,
 }
 
 

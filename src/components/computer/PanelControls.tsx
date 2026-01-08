@@ -45,7 +45,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
 
     // État Play/Pause
-    const [isRunning, setIsRunning] = useState(false);
+    const [isRunning, setIsRunning] = useState(false); // TODO: a remplacer par cpuHook.paused (ou déplacer toute la logique de clock dans cpuHook)
     const [frequency, setFrequency] = useState(1); // Hz (cycles par seconde)
     const [currentBreakpoint, setCurrentBreakpoint] = useState<number | null>(null);
     const lastCycleTsRef = useRef(0);
@@ -112,10 +112,10 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
 
     // Arrêter automatiquement si le CPU halt
     useEffect(() => {
-        if (cpuHook.halted && isRunning) {
+        if ((cpuHook.halted || cpuHook.paused) && isRunning) {
             setIsRunning(false);
         }
-    }, [cpuHook.halted, isRunning]);
+    }, [cpuHook.halted, cpuHook.paused, isRunning]);
 
 
     const execCycle = useCallback(() => {
@@ -187,7 +187,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
                 {/* Buttons */}
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={() => setIsRunning(!isRunning)}
+                        onClick={() => { cpuHook.setPaused(false); setIsRunning(!isRunning)}}
                         disabled={cpuHook.halted}
                         className={`${isRunning
                             ? "bg-yellow-600 hover:bg-yellow-700"

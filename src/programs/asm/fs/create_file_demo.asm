@@ -68,27 +68,33 @@ OPEN_FILE:
 
 
 CLOSE_FILE:
+    PUSH_A
     MOV_A_IMM 0x93 # Command CLOSE
     MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_COMMAND
+    POP_A
     RET
 
 
 WRITE_FILE_CONTENT:
     CALL $OPEN_FILE # Call OPEN_FILE
 
-    MOV_B_IMM 0x26 # initialise la taille du contenu a lire (hardcodé)
-    MOV_A_IMM 0x00 # initialise la position du curseur
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_2_ADDR_LOW   # initialise position dans le contenu à parcourir - low
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_2_ADDR_HIGH  # initialise position dans le contenu à parcourir - high
+    READ_DISK_SIZE:
+        #MOV_A_IMM 0x26 # initialise la taille du contenu a lire (hardcodé)
+        MOV_A_MEM MEMORY_MAP.DATA_DISK_2_SIZE_LOW  # Lit la taille du disque - A = low byte DATA_DISK_2_SIZE
+        MOV_C_MEM MEMORY_MAP.DATA_DISK_2_SIZE_HIGH # Lit la taille du disque - C = low byte DATA_DISK_2_SIZE
+
+    MOV_B_IMM 0x00 # initialise la position du curseur
+    MOV_MEM_B MEMORY_MAP.DATA_DISK_2_ADDR_LOW   # initialise position dans le contenu à parcourir - low
+    MOV_MEM_B MEMORY_MAP.DATA_DISK_2_ADDR_HIGH  # initialise position dans le contenu à parcourir - high
 
     WRITE_FILE_CONTENT_LOOP:
-        MOV_C_MEM MEMORY_MAP.DATA_DISK_2_DATA # Read dataDisk2 (raw)
-        MOV_MEM_C MEMORY_MAP.DATA_DISK_FS_DATA # Write dataDisk (fs)
-
-        INC_A   # update position du curseur
-        MOV_MEM_A MEMORY_MAP.DATA_DISK_2_ADDR_LOW   # update position dans le contenu à parcourir - low
-
         PUSH_A
+        MOV_D_MEM MEMORY_MAP.DATA_DISK_2_DATA # Read dataDisk2 (raw)
+        MOV_MEM_D MEMORY_MAP.DATA_DISK_FS_DATA # Write dataDisk (fs)
+
+        INC_B   # update position du curseur
+        MOV_MEM_B MEMORY_MAP.DATA_DISK_2_ADDR_LOW   # update position dans le contenu à parcourir - low
+
         SUB
         POP_A
         JNZ $WRITE_FILE_CONTENT_LOOP
@@ -98,33 +104,38 @@ WRITE_FILE_CONTENT:
 
 
 PLAY_SOUND:
+    PUSH_A
     MOV_A_IMM 45 # Fréquence = 440 Hz → valeur ≈ (440-100)/7.45 ≈ 45
     MOV_MEM_A MEMORY_MAP.BUZZER_FREQ
     MOV_A_IMM 50 # Durée = 500ms → 500/10 = 50
     MOV_MEM_A MEMORY_MAP.BUZZER_DURATION # déclenche le son
+    POP_A
     RET
 
 
 LOAD_FILE_IN_RAM:
     # charger le fichier en RAM (à l'adresse 0x2000) puis l'executer
-    MOV_B_IMM 0x26    # initialise la taille du contenu a lire (hardcodé)
-    MOV_A_IMM 0x00    # initialise la position du curseur FS l(ecture)
+
+    READ_DISK_SIZE:
+        #MOV_B_IMM 0x25    # initialise la taille du contenu a lire (hardcodé)
+        MOV_B_MEM MEMORY_MAP.DATA_DISK_2_SIZE_LOW  # Lit la taille du disque - low byte dans B
+        # TODO: lire la taille du fichier FS
+
+    #MOV_B_IMM 0x00    # initialise la position du curseur FS (lecture) - B = position FS
     MOV_C_IMM 0x00    # initialise la position du curseur RAM (ecriture) - low
     MOV_D_IMM 0x20    # initialise la position du curseur RAM (ecriture) - high
     CALL $OPEN_FILE # Call OPEN_FILE
 
+    BREAKPOINT
     LOAD_FILE_IN_RAM_LOOP:
-    PUSH_A
-    MOV_A_MEM MEMORY_MAP.DATA_DISK_FS_DATA     # Lecture octet sur FS
-    MOV_PTR_CD_A     # Ecriture octet dans RAM à 0X2000
-    POP_A
-    INC_C
-    INC_A
-    MOV_PTR_CD_A     # update position dans le contenu
-    PUSH_A
-    SUB
-    POP_A
-    JNZ $LOAD_FILE_IN_RAM_LOOP # si fin de fichier non atteint on retourne à LOAD_FILE_IN_RAM_LOOP
+        MOV_A_MEM MEMORY_MAP.DATA_DISK_FS_DATA     # Lecture octet sur FS
+        MOV_PTR_CD_A     # Ecriture octet dans RAM à 0X2000
+
+        INC_C   # update position du curseur RAM - low
+        DEC_B   # update position du curseur FS  - low
+# BUG
+        JNZ $LOAD_FILE_IN_RAM_LOOP # si fin de fichier non atteint on retourne à LOAD_FILE_IN_RAM_LOOP
+
     RET
 
 

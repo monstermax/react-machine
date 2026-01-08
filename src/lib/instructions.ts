@@ -4,6 +4,7 @@ import type { u8 } from "@/types/cpu.types";
 export enum Opcode {
     // Contrôle
     NOP = 0x00,
+    BREAKPOINT = 0x0D,
     SYSCALL = 0x0E,
     HALT = 0x0F,
 
@@ -52,8 +53,6 @@ export enum Opcode {
     SET_SP = 0x3A,     // SET SP, imm16
     CALL = 0x3B,       // CALL addr16 (push PC+3, then JMP)
     RET = 0x3C,        // RET (pop PC)
-    //PUSH_FLAGS = 0x3E, // push flags
-    //POP_FLAGS = 0x3F,  // pop flags
 
     // Interrupts (0x3D-0x3F)
     EI = 0x3D,         // Enable Interrupts
@@ -65,6 +64,7 @@ export enum Opcode {
     JZ = 0x41,         // JZ addr16 (16-bit address)
     JNZ = 0x42,        // JNZ addr16 (16-bit address)
     JC = 0x43,         // JC addr16 (16-bit address)
+    JNC = 0x44,        // JNC addr16 (16-bit address)
 
     //XCHG_A_B = 0x50,  // Échange A et B
 
@@ -126,6 +126,7 @@ export const INSTRUCTIONS_WITH_TWO_OPERANDS = [
     Opcode.JZ,
     Opcode.JNZ,
     Opcode.JC,
+    Opcode.JNC,
     Opcode.SET_SP,
     Opcode.CALL,
     Opcode.MOV_A_MEM,
@@ -144,6 +145,7 @@ export const getOpcodeName = (opcode: u8): string => {
         // Contrôle
         case Opcode.NOP: return "NOP";
         case Opcode.SYSCALL: return "SYSCALL";
+        case Opcode.BREAKPOINT: return "BREAKPOINT";
         case Opcode.HALT: return "HALT";
 
         // ALU
@@ -166,6 +168,7 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.JZ: return "JZ";
         case Opcode.JNZ: return "JNZ";
         case Opcode.JC: return "JC";
+        case Opcode.JNC: return "JNC";
 
         // Stack
         case Opcode.PUSH_A: return "PUSH A";
