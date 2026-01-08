@@ -44,7 +44,7 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
 
         // RAM read
         const value = ramHook.read(address);
-        console.log(`MEMORY-RAM ${id} @address ${toHex(address)} = ${value}`)
+        //console.log(`MEMORY-RAM ${id} @address ${toHex(address)} = ${value}`)
         return value;
     }, [romHook.read, ramHook.read, ioHook.read]);
 

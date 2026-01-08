@@ -16,7 +16,7 @@ export const useRam = (): RamHook => {
 
     const read = useCallback((address: u16): u8 => {
         const value = storage.get(address) ?? 0 as u8;
-        console.log(`RAM @address ${toHex(address)} = ${value}`)
+        //console.log(`RAM @address ${toHex(address)} = ${value}`)
         return value;
     }, [storage])
 
