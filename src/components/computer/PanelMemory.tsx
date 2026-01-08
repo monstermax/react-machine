@@ -12,8 +12,6 @@ import type { DiskDevice } from "@/hooks/devices/useDiskDevice";
 
 export type PanelMemoryProps = {
     computerHook: ComputerHook;
-    breakpoints: Set<number>
-    setBreakpoints: React.Dispatch<React.SetStateAction<Set<number>>>
 }
 
 
@@ -21,7 +19,7 @@ type TabType = "memory" | "os-disk" | "program-disk" | "data-disk-1" | "data-dis
 
 
 export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
-    //console.log('RENDER ComputerPage.PanelMemory')
+    console.log('RENDER ComputerPage.PanelMemory')
 
     const { computerHook } = props;
     const { cpuHook, romHook, ramHook, ioHook } = computerHook;
@@ -52,7 +50,9 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
             view.set(addr, value);
         }
 
-        if (false) {
+        const displayIoAddresses = false;
+
+        if (displayIoAddresses) {
             // I/O - Adresses de départ des devices
             const ioStartAddresses: u16[] = [
                 MEMORY_MAP.OS_DISK_BASE,
@@ -143,7 +143,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
     );
 
 
-    // Correction 2: Fonction pour analyser les instructions dans les disks aussi
+    // Fonction pour analyser les instructions dans les disks aussi
     const analyzeInstructions = useCallback((data: Map<u16, u8> | [u16, u8][]) => {
         const entries = Array.isArray(data) ? data : Array.from(data.entries());
         const sorted = entries.sort(([a], [b]) => a - b);
@@ -200,13 +200,13 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
 
 
     const toggleBreakpoint = useCallback((addr: number) => {
-        props.setBreakpoints(prev => {
+        cpuHook.setBreakpoints(prev => {
             const next = new Set(prev);
             if (next.has(addr)) next.delete(addr);
             else next.add(addr);
             return next;
         });
-    }, [props.setBreakpoints]);
+    }, [ cpuHook.setBreakpoints ]);
 
 
     // Fonction utilitaire pour scroller dans le conteneur
@@ -361,7 +361,7 @@ export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
                                         onClick={() => toggleBreakpoint(addr)}
                                         className={`
                                             w-3 h-3 rounded-full cursor-pointer transition-all
-                                            ${props.breakpoints.has(addr) ? 'bg-red-600' : 'bg-slate-700 hover:bg-red-500/40 border border-slate-600'}
+                                            ${cpuHook.breakpoints.has(addr) ? 'bg-red-600' : 'bg-slate-700 hover:bg-red-500/40 border border-slate-600'}
                                             ${isInstruction ? "" : "opacity-0"}
                                         `}
                                         title="Toggle breakpoint"

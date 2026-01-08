@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 
 import { useComputer } from "@/hooks/useComputer";
@@ -16,7 +16,7 @@ export const ComputerPage: React.FC = () => {
     const computerHook = useComputer();
     const { resetComputer, loadOs, unloadOs, loadProgram, unloadProgram } = computerHook;
 
-    const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set());
+
 
     return (
         <div className="min-h-screen bg-slate-950 text-white">
@@ -30,7 +30,6 @@ export const ComputerPage: React.FC = () => {
                     {/* Controls */}
                     <PanelControls
                         computerHook={computerHook}
-                        breakpoints={breakpoints}
                         loadOs={loadOs}
                         loadProgram={loadProgram}
                         unloadOs={unloadOs}
@@ -45,9 +44,7 @@ export const ComputerPage: React.FC = () => {
 
                 {/* Memory */}
                 <PanelMemory
-                    breakpoints={breakpoints}
                     computerHook={computerHook}
-                    setBreakpoints={setBreakpoints}
                     />
 
 

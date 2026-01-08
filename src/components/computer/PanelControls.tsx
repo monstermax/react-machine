@@ -10,7 +10,6 @@ import type { OsInfo, u16, u8 } from "@/types/cpu.types";
 
 export type PanelControlsProps = {
     computerHook: ComputerHook;
-    breakpoints: Set<number>;
     loadOs: (osName: string) => void;
     loadProgram: (programName: string) => void;
     unloadProgram: () => void;
@@ -44,14 +43,8 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     const [selectedOs, setSelectedOs] = useState<string | null>(null);
     const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
 
-    // État Play/Pause
-    const [isRunning, setIsRunning] = useState(false); // TODO: a remplacer par cpuHook.paused (ou déplacer toute la logique de clock dans cpuHook)
-    const [frequency, setFrequency] = useState(1); // Hz (cycles par seconde)
-    const [currentBreakpoint, setCurrentBreakpoint] = useState<number | null>(null);
-    const lastCycleTsRef = useRef(0);
-
     const loadedOsInfo = computerHook.loadedOs ? os_list[computerHook.loadedOs] : null;
-    const osInfo = loadedOsInfo;
+    //const osInfo = loadedOsInfo;
     const isOsUnloaded = loadedOsInfo ? (computerHook.memoryHook.readMemory(MEMORY_MAP.OS_START) === 0x00) : false;
 
     const selectedProgramInfo = selectedProgram ? programs[selectedProgram] : null;
@@ -59,11 +52,10 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     const programInfo = selectedProgramInfo ?? loadedProgramInfo;
     const isProgramUnloaded = loadedProgramInfo ? (computerHook.memoryHook.readMemory(MEMORY_MAP.PROGRAM_START) === 0x00) : false;
 
-    const [triggerFrequencyRefresh, setTriggerFrequencyRefresh] = useState(0)
+    //const [triggerFrequencyRefresh, setTriggerFrequencyRefresh] = useState(0)
+    const triggerFrequencyRefreshRef = useRef(0)
     const [frequencyReal, setFrequencyReal] = useState(0)
     const [lastFrequencyStat, setLastFrequencyStat] = useState<{ timestamp: number, cycles: number } | null>(null)
-    const [triggerCycle, setTriggerCycle] = useState(0)
-    const [boost, setBoost] = useState(false) // 2 cycles per interval if enabled. 1 cycle if disabled
 
 
     // Calculer la frequence reelle
@@ -90,58 +82,16 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
         }
 
         updateFrequencyStat()
-    }, [triggerFrequencyRefresh])
-
-
-    useAnimationFrame((time) => {
-        //console.log('CLOCK TIMER FRAME', (1000/time).toFixed(), 'FPS')
-
-        const interval = 1000 / frequency; // Intervalle en ms
-        const now = Date.now();
-        const age = now - lastCycleTsRef.current
-
-        if (isRunning) {
-            if (age > interval) {
-                lastCycleTsRef.current = now
-                setTriggerCycle(c => c + 1);
-            }
-        }
-    }, [frequency, isRunning, setTriggerCycle])
-
-
-
-    // Arrêter automatiquement si le CPU halt
-    useEffect(() => {
-        if ((cpuHook.halted || cpuHook.paused) && isRunning) {
-            setIsRunning(false);
-        }
-    }, [cpuHook.halted, cpuHook.paused, isRunning]);
-
-
-    const execCycle = useCallback(() => {
-        if (!isRunning) return;
-
-        const pc = cpuHook.getRegister("PC");
-
-        // Vérifier breakpoint
-        if (currentBreakpoint !== pc && props.breakpoints.has(pc)) {
-            setIsRunning(false);
-            setCurrentBreakpoint(pc);
-            return;
-        }
-
-        if (currentBreakpoint) {
-            setCurrentBreakpoint(null);
-        }
-
-        cpuHook.executeCycle();
-    }, [isRunning, currentBreakpoint, props.breakpoints, cpuHook.executeCycle])
+    }, [triggerFrequencyRefreshRef.current, cpuHook.paused, cpuHook.halted])
 
 
     // Gestion du timer de control
     useEffect(() => {
         //console.log('CTRL TIMER UP')
-        const timerCtrl = setInterval(() => setTriggerFrequencyRefresh(x => x + 1), 100);
+        const timerCtrl = setInterval(() => {
+            //setTriggerFrequencyRefresh(x => x + 1)
+            triggerFrequencyRefreshRef.current = triggerFrequencyRefreshRef.current + 1
+        }, 100);
 
         return () => {
             //console.log('CTRL TIMER DOWN')
@@ -150,16 +100,15 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     }, []);
 
 
-    useEffect(() => {
-        if (triggerCycle > 0) {
-            execCycle()
+    const handleStart = () => {
+        cpuHook.setPaused(b => !b);
+        //setIsRunning(!isRunning)
+    }
 
-            if (boost) {
-                setTimeout(execCycle, (1000 / frequency) / 2)
-            }
-        }
-    }, [triggerCycle, boost])
-
+    const handleChangeFrequency = (frequency: number) => {
+        //setFrequency(frequency)
+        cpuHook.setClockFrequency(frequency)
+    }
 
     return (
         <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 lg:col-span-2">
@@ -170,8 +119,8 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
                 <div className="flex items-center gap-2">
                     <label className="text-sm font-medium text-slate-300">Clock:</label>
                     <select
-                        value={frequency}
-                        onChange={(e) => setFrequency(Number(e.target.value))}
+                        value={cpuHook.clockFrequency}
+                        onChange={(e) => handleChangeFrequency(Number(e.target.value))}
                         className="bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white text-sm"
                         disabled={false}
                     >
@@ -187,19 +136,19 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
                 {/* Buttons */}
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={() => { cpuHook.setPaused(false); setIsRunning(!isRunning)}}
+                        onClick={() => handleStart()}
                         disabled={cpuHook.halted}
-                        className={`${isRunning
+                        className={`${!cpuHook.paused
                             ? "bg-yellow-600 hover:bg-yellow-700"
                             : "bg-green-900 hover:bg-green-700"
                             } disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors font-semibold`}
                     >
-                        {isRunning ? "⏸ Pause" : "▶ Start"}
+                        {!cpuHook.paused ? "⏸ Pause" : "▶ Start"}
                     </button>
 
                     <button
                         onClick={cpuHook.executeCycle}
-                        disabled={cpuHook.halted || isRunning}
+                        disabled={cpuHook.halted || !cpuHook.paused}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                     >
                         ⏭ Step

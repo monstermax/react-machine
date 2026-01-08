@@ -18,3 +18,6 @@ export const WidgetLEDsDisplay: React.FC<{ device: LedsDevice }> = ({ device }) 
     );
 };
 
+
+
+// TODO: colors LED
