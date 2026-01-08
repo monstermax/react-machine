@@ -47,8 +47,8 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     //const osInfo = loadedOsInfo;
 
     const isOsUnloaded = useMemo(() => {
-        return false; // DEBUG
-        console.log('RELOADING isOsUnloaded')
+        //return false; // DEBUG
+        //console.log('RELOADING isOsUnloaded')
         return loadedOsInfo
             ? (computerHook.memoryHook.readMemory(MEMORY_MAP.OS_START) === 0x00)
             : false;
@@ -59,8 +59,8 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     const programInfo = selectedProgramInfo ?? loadedProgramInfo;
 
     const isProgramUnloaded = useMemo(() => {
-        return false; // DEBUG
-        console.log('RELOADING isProgramUnloaded')
+        //return false; // DEBUG
+        //console.log('RELOADING isProgramUnloaded')
         return loadedProgramInfo
             ? (computerHook.memoryHook.readMemory(MEMORY_MAP.PROGRAM_START) === 0x00)
             : false;
