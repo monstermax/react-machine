@@ -52,8 +52,8 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
     const programInfo = selectedProgramInfo ?? loadedProgramInfo;
     const isProgramUnloaded = loadedProgramInfo ? (computerHook.memoryHook.readMemory(MEMORY_MAP.PROGRAM_START) === 0x00) : false;
 
-    //const [triggerFrequencyRefresh, setTriggerFrequencyRefresh] = useState(0)
-    const triggerFrequencyRefreshRef = useRef(0)
+    const [triggerFrequencyRefresh, setTriggerFrequencyRefresh] = useState(0)
+    //const triggerFrequencyRefreshRef = useRef(0)
     const [frequencyReal, setFrequencyReal] = useState(0)
     const [lastFrequencyStat, setLastFrequencyStat] = useState<{ timestamp: number, cycles: number } | null>(null)
 
@@ -63,6 +63,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
         const updateFrequencyStat = () => {
             const timestamp = Date.now() / 1000;
             const cyclesNew = cpuHook.clockCycle;
+            //const cyclesNew = cpuHook.clockCycleRef.current;
 
             if (lastFrequencyStat) {
                 const duration = timestamp - lastFrequencyStat.timestamp;
@@ -82,15 +83,15 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
         }
 
         updateFrequencyStat()
-    }, [triggerFrequencyRefreshRef.current, cpuHook.paused, cpuHook.halted])
+    }, [triggerFrequencyRefresh, cpuHook.paused, cpuHook.halted])
 
 
     // Gestion du timer de control
     useEffect(() => {
         //console.log('CTRL TIMER UP')
         const timerCtrl = setInterval(() => {
-            //setTriggerFrequencyRefresh(x => x + 1)
-            triggerFrequencyRefreshRef.current = triggerFrequencyRefreshRef.current + 1
+            setTriggerFrequencyRefresh(x => x + 1)
+            //triggerFrequencyRefreshRef.current = triggerFrequencyRefreshRef.current + 1
         }, 100);
 
         return () => {

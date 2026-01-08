@@ -19,7 +19,7 @@ type TabType = "memory" | "os-disk" | "program-disk" | "data-disk-1" | "data-dis
 
 
 export const PanelMemory: React.FC<PanelMemoryProps> = memo((props) => {
-    console.log('RENDER ComputerPage.PanelMemory')
+    //console.log('RENDER ComputerPage.PanelMemory')
 
     const { computerHook } = props;
     const { cpuHook, romHook, ramHook, ioHook } = computerHook;

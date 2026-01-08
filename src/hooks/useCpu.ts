@@ -13,9 +13,11 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
     //console.log('RENDER ComputerPage.useComputer.useCpu')
 
     const [clockFrequency, setClockFrequency] = useState(1);
+    const [uiFrequency, setUiFrequency] = useState(2);
 
     const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set());
-    const [currentBreakpoint, setCurrentBreakpoint] = useState<number | null>(null);
+    //const [currentBreakpoint, setCurrentBreakpoint] = useState<number | null>(null);
+    const currentBreakpointRef = useRef<number | null>(null);
 
 
     // CPU STATES
@@ -45,7 +47,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
     const clockCycleRef = useRef<u16>(0 as u16);
     const [clockCycle, setClockCycle] = useState<u16>(0 as u16);
-    const [lastUiSync, setLastUiSync] = useState(0);
+    const lastUiSyncRef = useRef(0);
 
     const [interruptsEnabled, setInterruptsEnabled] = useState(false);
     const [inInterruptHandler, setInInterruptHandler] = useState(false);
@@ -158,16 +160,19 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         clockCycleRef.current = 0 as u16;
         setInterruptsEnabled(false);
         setInInterruptHandler(false);
-        setCurrentBreakpoint(null);
+        //setCurrentBreakpoint(null);
+        currentBreakpointRef.current = null
 
     }, [setRegisters, setHalted, setInterruptsEnabled, setInInterruptHandler])
 
 
-    const syncUi = useCallback(() => {
+    const syncUi = () => {
         setClockCycle(clockCycleRef.current)
-        setLastUiSync(Date.now())
         setRegisters(new Map(registersRef.current))
-    }, [setClockCycle, setLastUiSync, setRegisters])
+        lastUiSyncRef.current = Date.now()
+        //setLastUiSync(Date.now())
+        //console.log('syncUi exec', lastUiSyncRef.current/1000);
+    }
 
 
     const tick = useCallback(() => {
@@ -175,15 +180,17 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         clockCycleRef.current = (clockCycleRef.current + 1) as u16;
         //console.log('tick:', clockCycleRef.current)
 
-        const syncInterval = 100; // 10x/sec
+        //const syncInterval = 100; // 10x/sec
+        const syncInterval = 1000 / uiFrequency;
 
-        if (Date.now() - lastUiSync > syncInterval) {
+        if (paused || Date.now() - lastUiSyncRef.current > syncInterval) {
+            //console.log('syncUi call', syncInterval, lastUiSyncRef.current/1000)
             syncUi();
         }
 
         // Tick du timer à chaque cycle CPU
         ioHook.timer.tick();
-    }, [lastUiSync, syncUi, ioHook.timer.tick]);
+    }, [ /*lastUiSync, */ uiFrequency, syncUi, ioHook.timer.tick]);
 
 
 
@@ -794,16 +801,28 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
     const executeCycle = useCallback(() => {
         if (halted) return;
 
+        /*
+        1. Fetch
+        2. Decode
+        3. Execute
+        4. MEmory
+        5. Write-back
+        */
+
         const pc = getRegister("PC");
 
-        if (currentBreakpoint === null && breakpoints.has(pc) && !paused) {
+        //if (currentBreakpoint === null && breakpoints.has(pc) && !paused) {
+        if (currentBreakpointRef.current === null && breakpoints.has(pc) && !paused) {
             setPaused(true);
-            setCurrentBreakpoint(pc);
+            //setCurrentBreakpoint(pc);
+            currentBreakpointRef.current = pc;
             return
         }
 
-        if (currentBreakpoint) {
-            setCurrentBreakpoint(null);
+        //if (currentBreakpoint) {
+        if (currentBreakpointRef.current) {
+            //setCurrentBreakpoint(null);
+            currentBreakpointRef.current = null;
         }
 
         // Increment clockCycle
@@ -827,7 +846,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         //console.log('executeOpcode', pc, opcode) // DEBUG
         executeOpcode(pc, opcode);
 
-    }, [halted, paused, interruptsEnabled, inInterruptHandler, currentBreakpoint, breakpoints, ioHook.interrupt.hasPendingInterrupt, memory.readMemory, tick, setRegister, getRegister, handleInterrupt, executeOpcode, setCurrentBreakpoint]);
+    }, [halted, paused, interruptsEnabled, inInterruptHandler, /* currentBreakpoint, */ breakpoints, ioHook.interrupt.hasPendingInterrupt, memory.readMemory, tick, setRegister, getRegister, handleInterrupt, executeOpcode]);
 
 
     // CLOCK
@@ -854,7 +873,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         registers,
         registersRef,
         clockCycle,
-        //clockCycle: clockCycleRef,
+        clockCycleRef,
         ALU,
         breakpoints,
         setClockFrequency,
@@ -880,7 +899,7 @@ export type CpuHook = {
     registers: Map<string, number>,
     registersRef: React.RefObject<Map<string, number>>,
     clockCycle: u16;
-    //clockCycle: React.RefObject<u16>;
+    clockCycleRef: React.RefObject<u16>;
     ALU: Record<string, (...args: any[]) => any>
     breakpoints: Set<number>;
     setClockFrequency: React.Dispatch<React.SetStateAction<number>>,

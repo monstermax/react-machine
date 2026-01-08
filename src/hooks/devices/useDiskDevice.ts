@@ -198,11 +198,21 @@ export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=f
 
 
     const reset = useCallback(() => {
-        setStorage(data);
+        if (! persistent) {
+            if (formatFs) {
+                setStorage(new Map)
+                formatDisk()
+
+            } else {
+                setStorage(data);
+            }
+
+        }
+
         setCurrentAddress(0 as u16);
 
         fsHook.reset()
-    }, [data])
+    }, [data, persistent])
 
 
     const diskDeviceHook: DiskDevice = {

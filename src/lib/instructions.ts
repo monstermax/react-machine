@@ -1,4 +1,11 @@
+
 import type { u8 } from "@/types/cpu.types";
+
+// 8086 instruction set
+// https://www.eng.auburn.edu/~sylee/ee2220/8086_instruction_set.html
+// https://www.tutorialspoint.com/microprocessor/microprocessor_8086_instruction_sets.htm
+// https://www.geeksforgeeks.org/electronics-engineering/8086-instruction-set/
+
 
 // Instructions
 export enum Opcode {
