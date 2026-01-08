@@ -51,6 +51,12 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
     const [interruptsEnabled, setInterruptsEnabled] = useState(false);
     const [inInterruptHandler, setInInterruptHandler] = useState(false);
 
+    const executeCycleRef = useRef<() => void>(() => {});
+    const clockHook = useCpuClock(executeCycleRef.current, clockFrequency, paused, halted);
+
+    const executeOpcodeRef = useRef<(pc: u16, instruction: u8) => void>(() => {});
+    const handleInterruptRef = useRef<() => void>(() => {});
+
 
     // ALU
     const ALU = {
@@ -360,7 +366,8 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
 
 
     // Execute an instruction
-    const executeOpcode = useCallback((pc: u16, instruction: u8) => {
+    executeOpcodeRef.current = (pc: u16, instruction: u8) => {
+    //const executeOpcode = useCallback((pc: u16, instruction: u8) => {
         switch (instruction) {
             // ===== SYSTEM =====
             case Opcode.NOP:
@@ -737,10 +744,12 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
                 console.error(`Unknown opcode at 0x${pc.toString(16)}: 0x${instruction.toString(16)}`);
                 setHalted(true);
         }
-    }, [memoryHook.readMemory, memoryHook.writeMemory, getFlag, getRegister, setRegister, pushValue, popValue, setHalted, setFlags, readMem16, readMem8, handleSyscall, handleCall, handleRet, handleIRet]);
+    }
+    //}, [memoryHook.readMemory, memoryHook.writeMemory, getFlag, getRegister, setRegister, pushValue, popValue, setHalted, setFlags, readMem16, readMem8, handleSyscall, handleCall, handleRet, handleIRet]);
 
 
-    const handleInterrupt = useCallback(() => {
+    //const handleInterrupt = useCallback(() => {
+    handleInterruptRef.current = () => {
         const irq = ioHook.interrupt.getPendingIRQ();
         if (irq === null) return;
 
@@ -777,11 +786,13 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         setRegister("PC", handlerAddress);
 
         console.log(`🔄 Interruption IRQ${irq} -> Handler 0x${handlerAddress.toString(16)}`);
-    }, [ioHook.interrupt.getPendingIRQ, ioHook.interrupt.handlerAddr, ioHook.interrupt.acknowledgeInterrupt, memoryHook.writeMemory, setRegister, getRegister, setInterruptsEnabled, setInInterruptHandler]);
+    }
+    //}, [ioHook.interrupt.getPendingIRQ, ioHook.interrupt.handlerAddr, ioHook.interrupt.acknowledgeInterrupt, memoryHook.writeMemory, setRegister, getRegister, setInterruptsEnabled, setInInterruptHandler]);
 
 
     // Execute a CPU cycle
-    const executeCycle = useCallback(() => {
+    //const executeCycle = useCallback(() => {
+    executeCycleRef.current = () => {
         if (halted) return;
 
         /*
@@ -814,7 +825,8 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
 
         // Vérifier les interruptions AVANT de fetch
         if (interruptsEnabled && !inInterruptHandler && ioHook.interrupt.hasPendingInterrupt()) {
-            handleInterrupt();
+            //handleInterrupt();
+            handleInterruptRef.current();
             return; // On saute l'exécution normale ce cycle
         }
 
@@ -828,9 +840,11 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
 
         // Execute logical operations
         //console.log('executeOpcode', pc, opcode) // DEBUG
-        executeOpcode(pc, opcode);
+        //executeOpcode(pc, opcode);
+        executeOpcodeRef.current(pc, opcode);
 
-    }, [halted, interruptsEnabled, inInterruptHandler, breakpoints, ioHook.interrupt.hasPendingInterrupt, memoryHook.readMemory, tick, setRegister, getRegister, handleInterrupt, executeOpcode]);
+    }
+    //}, [halted, interruptsEnabled, inInterruptHandler, breakpoints, ioHook.interrupt.hasPendingInterrupt, memoryHook.readMemory, tick, setRegister, getRegister, handleInterrupt, executeOpcode]);
 
 
     useEffect(() => {
@@ -840,19 +854,19 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
 
 
     // CLOCK
-    useEffect(() => {
-        if (paused || halted || clockFrequency <= 0) return;
-        console.log('init CLOCK');
-
-        const _clockCycle = () => {
-            executeCycle()
-        }
-
-        const interval = 1000 / clockFrequency;
-        const timer = setInterval(_clockCycle, interval)
-
-        return () => clearInterval(timer);
-    }, [clockFrequency, paused, halted, executeCycle])
+//    useEffect(() => {
+//        if (paused || halted || clockFrequency <= 0) return;
+//        console.log('init CLOCK');
+//
+//        const _clockCycle = () => {
+//            executeCycle()
+//        }
+//
+//        const interval = 1000 / clockFrequency;
+//        const timer = setInterval(_clockCycle, interval)
+//
+//        return () => clearInterval(timer);
+//    }, [clockFrequency, paused, halted, executeCycle])
 
 
 
@@ -872,7 +886,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         getFlag,
         setFlags,
         tick,
-        executeCycle,
+        executeCycle: executeCycleRef.current,
         reset,
         setPaused,
         setBreakpoints,
@@ -904,4 +918,22 @@ export type CpuHook = {
     setBreakpoints: React.Dispatch<React.SetStateAction<Set<number>>>;
 }
 
+
+
+
+const useCpuClock = (
+    executeCycle: () => void,
+    clockFrequency: number,
+    paused: boolean,
+    halted: boolean
+) => {
+    useEffect(() => {
+        if (paused || halted || clockFrequency <= 0) return;
+
+        const interval = 1000 / clockFrequency;
+        const timer = setInterval(executeCycle, interval);
+
+        return () => clearInterval(timer);
+    }, [clockFrequency, paused, halted, executeCycle]);
+};
 
