@@ -187,8 +187,8 @@ function compileStage2(stage1: {opcode: string, value: string, comment: string}[
     for (const lineParts of stage1) {
         const { opcode, value, comment } = lineParts;
 
-        if (opcode.startsWith(':')) {
-            currentLabels.push(opcode.slice(1))
+        if (opcode.endsWith(':')) {
+            currentLabels.push(opcode.slice(0, -1))
             continue;
         }
 

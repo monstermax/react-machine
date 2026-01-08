@@ -209,10 +209,10 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
                 console.log("📍 Program exit (syscall 0)");
 
                 // Clear program memory - pour eviter que le programme ne se relance automatiquement (si mini_os v1)
-                for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
-                    memory.writeMemory(addr, 0 as u8);
-                    break; // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
-                }
+                //for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
+                //    memory.writeMemory(addr, 0 as u8);
+                //    break; // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
+                //}
 
                 // Retour à l'OS
                 setRegister("PC", MEMORY_MAP.OS_START);

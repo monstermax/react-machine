@@ -110,7 +110,7 @@ export const useDiskDevice = (diskName: string, data: Map<u16, u8>, persistent=f
                 return low16(storage.size as u16); // Low byte
 
             case 2: // DISK_SIZE_HIGH - taille disque
-                return high16(storage.size as u16); // Low byte
+                return high16(storage.size as u16); // High byte
 
             case 3: // DISK_ADDR_LOW - adresse courante (low)
                 return low16(currentAddress);

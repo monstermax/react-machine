@@ -198,8 +198,9 @@ export const useComputer = (): ComputerHook => {
             const newRam = new Map(current); // Garder l'existant
 
             for (let addr = MEMORY_MAP.OS_START; addr <= MEMORY_MAP.OS_END; addr++) {
-                newRam.set(U16(addr), 0x00 as u8);
-                break; // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
+                //newRam.set(U16(addr), 0x00 as u8); // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
+                //break;
+                newRam.delete(U16(addr)); // le delete est rapide
             }
 
             return newRam;
@@ -217,8 +218,9 @@ export const useComputer = (): ComputerHook => {
             const newRam = new Map(current); // Garder l'existant
 
             for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
-                newRam.set(U16(addr), 0x00 as u8);
-                break; // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
+                //newRam.set(U16(addr), 0x00 as u8); // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
+                //break;
+                newRam.delete(U16(addr)); // le delete est rapide
             }
 
             return newRam;
