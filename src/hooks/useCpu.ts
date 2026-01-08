@@ -24,6 +24,8 @@ const initialRegisters = [
 export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
     //console.log('RENDER ComputerPage.useComputer.useCpu')
 
+    const [id] = useState(() => Math.round(Math.random() * 999_999_999));
+
     // CPU STATES
     const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map(initialRegisters));
 
@@ -33,7 +35,10 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
     //console.log('threads:', threads)
 
     const [clockFrequency, setClockFrequency] = useState(1);
+    const [uiFrequency, setUiFrequency] = useState(2);
+
     const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set());
+    const currentBreakpointRef = useRef<number | null>(null);
 
     const [halted, setHalted] = useState<boolean>(false);
     const [paused, setPaused] = useState<boolean>(true);
@@ -812,6 +817,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
 
     const cpuHook: CpuHook = {
+        id,
         clockFrequency,
         halted,
         paused,
@@ -837,6 +843,7 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
 
 
 export type CpuHook = {
+    id: number;
     clockFrequency: number;
     halted: boolean;
     paused: boolean;
