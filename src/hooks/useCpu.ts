@@ -44,7 +44,8 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
     const [paused, setPaused] = useState<boolean>(true);
 
     const [clockCycle, setClockCycle] = useState<u16>(0 as u16);
-    //const clockCycleRef = useRef<u16>(0 as u16);
+    const clockCycleRef = useRef<u16>(0 as u16);
+    const lastUiSyncRef = useRef(0);
 
     const [interruptsEnabled, setInterruptsEnabled] = useState(false);
     const [inInterruptHandler, setInInterruptHandler] = useState(false);
@@ -150,17 +151,33 @@ export const useCpu = (memory: MemoryHook, ioHook: IOHook): CpuHook => {
         setRegisters(resetRegisters);
         setHalted(false);
         setClockCycle(0 as u16);
-        //clockCycleRef.current = 0 as u16;
+        clockCycleRef.current = 0 as u16;
         setInterruptsEnabled(false);
         setInInterruptHandler(false);
 
     }, [setRegisters, setHalted, setInterruptsEnabled, setInInterruptHandler])
 
 
+    const syncUi = useCallback(() => {
+        setClockCycle(clockCycleRef.current)
+        //setRegisters(new Map(registersRef.current))
+        lastUiSyncRef.current = Date.now()
+        //setLastUiSync(Date.now())
+        //console.log('syncUi exec', lastUiSyncRef.current/1000);
+    }, [])
+
+
     const tick = useCallback(() => {
-        setClockCycle(c => (c + 1) as u16)
-        //clockCycleRef.current = (clockCycleRef.current + 1) as u16;
+        //setClockCycle(c => (c + 1) as u16)
+        clockCycleRef.current = (clockCycleRef.current + 1) as u16;
         //console.log('tick:', clockCycleRef.current)
+
+        const syncInterval = 1000 / uiFrequency;
+
+        if (paused || Date.now() - lastUiSyncRef.current > syncInterval) {
+            //console.log('syncUi call', syncInterval, lastUiSyncRef.current/1000)
+            syncUi();
+        }
 
         // Tick du timer à chaque cycle CPU
         ioHook.timer.tick();
