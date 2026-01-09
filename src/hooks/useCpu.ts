@@ -39,8 +39,8 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
     const [uiFrequency, setUiFrequency] = useState(2);
 
     const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set());
-    const [currentBreakpoint, setCurrentBreakpoint] = useState<number | null>(null);
-    //const currentBreakpointRef = useRef<number | null>(null);
+    //const [currentBreakpoint, setCurrentBreakpoint] = useState<number | null>(null);
+    const currentBreakpointRef = useRef<number | null>(null);
 
     const [halted, setHalted] = useState<boolean>(false);
 
@@ -158,8 +158,8 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         //clockCycleRef.current = 0 as u16;
         setInterruptsEnabled(false);
         setInInterruptHandler(false);
-        //currentBreakpointRef.current = null
-        setCurrentBreakpoint(null)
+        currentBreakpointRef.current = null
+        //setCurrentBreakpoint(null)
 
     }, [clockHook])
 
@@ -810,19 +810,20 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         const pc = getRegister("PC");
 
         //if (currentBreakpoint === null && breakpoints.has(pc) && !clockHook.paused) {
-        if (currentBreakpoint === null && breakpoints.has(pc) && !clockHook.pausedRef.current) {
+        //if (currentBreakpoint === null && breakpoints.has(pc) && !clockHook.pausedRef.current) {
         //if (currentBreakpointRef.current === null && breakpoints.has(pc) && !clockHook.paused) {
+        if (currentBreakpointRef.current === null && breakpoints.has(pc) && !clockHook.pausedRef.current) {
             //clockHook.setPaused(true);
             clockHook.pausedRef.current = true
-            setCurrentBreakpoint(pc);
-            //currentBreakpointRef.current = pc;
+            //setCurrentBreakpoint(pc);
+            currentBreakpointRef.current = pc;
             return
         }
 
-        if (currentBreakpoint) {
-        //if (currentBreakpointRef.current) {
-            setCurrentBreakpoint(null);
-            //currentBreakpointRef.current = null;
+        //if (currentBreakpoint) {
+        if (currentBreakpointRef.current) {
+            //setCurrentBreakpoint(null);
+            currentBreakpointRef.current = null;
         }
 
 
@@ -847,7 +848,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         //console.log('executeOpcode', pc, opcode) // DEBUG
         executeOpcode(pc, opcode);
 
-    }, [halted, interruptsEnabled, inInterruptHandler, breakpoints, currentBreakpoint, ioHook.interrupt, memoryHook]);
+    }, [halted, interruptsEnabled, inInterruptHandler, breakpoints, /* currentBreakpoint */, currentBreakpointRef.current, ioHook.interrupt, memoryHook]);
 
 
 //    useEffect(() => {

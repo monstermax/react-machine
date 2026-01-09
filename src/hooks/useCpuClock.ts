@@ -23,7 +23,12 @@ export const useCpuClock = (halted: boolean) => {
         if (pausedRef.current || halted || clockFrequency <= 0) return;
 
         const interval = 1000 / clockFrequency;
-        const timer = setInterval(tick, interval);
+        //const timer = setInterval(tick, interval);
+
+        const timer = setInterval(() => {
+            if (pausedRef.current || halted || clockFrequency <= 0) return; // TODO: setPaused + pausedRef.current=
+            tick()
+        }, interval);
 
         return () => clearInterval(timer);
     }, [clockFrequency, pausedRef.current, /* paused, */ halted]);
