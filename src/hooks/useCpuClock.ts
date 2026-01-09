@@ -13,7 +13,7 @@ export const useCpuClock = (halted: boolean) => {
 
 
     const tick = () => {
-        console.log('clock tick')
+        //console.log('clock tick')
         setClockCycle(c => (c || 0) + 1 as u16)
     }
 

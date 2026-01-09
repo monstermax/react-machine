@@ -1,293 +1,678 @@
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, type JSXElementConstructor } from 'react'
 
 import type { Device, Register, Register16, u16, u8 } from '@/types/cpu.types';
+import * as cpuApi from './beta/lib/api';
 
-
-const initialRegisters = [
-        ["A", 0 as u8],      // Register A
-        ["B", 0 as u8],      // Register B
-        ["C", 0 as u8],      // Register C
-        ["D", 0 as u8],      // Register D
-        ["PC", 0 as u16],    // Program Counter
-        ["IR", 0 as u8],     // Instruction Register
-        ["SP", 0 as u16],    // Stack Pointer
-        ["FLAGS", 0 as u8],  // Bit 0: Carry, Bit 1: Zero
-    ] as [string, u8 | u16][]
-;
 
 
 export const ComputerBeta: React.FC = () => {
     console.log('RENDER ComputerBeta')
 
-    const [ computer, setComputer ] = useState<Computer | null>(null);
+    return (
+        <div className="text-white">
+            <h1 className="px-4 py-1 bg-background-light font-bold text-xl mb-4">Computer Simulator</h1>
 
-    const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map(initialRegisters));
+            <div>
+                <Computer>
+                    <Cpu />
+                    <MemoryBus>
+                        <Ram />
+                        <Rom />
+                        <Devices>
+                            <StorageDisk name="os_disk" />
+                            <StorageDisk name="program_disk" />
+                        </Devices>
+                    </MemoryBus>
+                </Computer>
+            </div>
+        </div>
+    );
+}
 
+
+export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+    const [computer, setComputer] = useState<cpuApi.Computer | null>(null);
+    const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
+    const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
+    const [childrenVisible, setChildrenVisible] = useState(true);
 
     // instanciate Computer
     useEffect(() => {
         const _instanciateComputer = () => {
-            setComputer(new Computer);
+            setComputer(new cpuApi.Computer);
         }
 
         const timer = setTimeout(_instanciateComputer, 100);
         return () => clearTimeout(timer);
-    }, [])
+    }, []);
 
 
+    // Mount CPU - récupère l'instance du CPU depuis les enfants
     useEffect(() => {
-        const _refresh_ui = () => {
-            
-        }
-
-        const timer = setTimeout(_refresh_ui, 1000);
-        return () => clearTimeout(timer);
-    }, [])
-
-
-    const boot = () => {
         if (!computer) return;
 
-        console.log('boot')
-
-        computer.cpu.executeCycle()
-    }
-
-
-    if (!computer) return null;
-
-    return (
-        <div className="text-white">
-            <div>Computer {computer.id}</div>
-
-            <div>
-                <button
-                    onClick={() => boot()}
-                    className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
-                    >
-                    Step
-                </button>
-            </div>
-
-            <div>
-                <PanelRegisters registers={registers} halted={false} clockCycle={computer.cpu.clockCycle} />
-            </div>
-        </div>
-    );
-}
-
-
-export const PanelRegisters: React.FC<{ registers: Map<string, u8 | u16>, halted: boolean, clockCycle: number }> = ({ registers, halted, clockCycle }) => {
-    //console.log('RENDER ComputerPage.PanelRegisters')
-
-    return (
-        <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-            <h2 className="text-xl font-semibold mb-2 text-blue-400">CPU Registers</h2>
-
-            <div className="grid grid-cols-2 space-x-2 space-y-2 font-mono text-sm">
-                {Array.from(registers.entries()).map(([reg, value]) => (
-                    <div
-                        key={reg}
-                        className={`flex justify-between p-2 rounded ${reg === "PC" ? "bg-blue-900/50" :
-                            reg === "A" && halted ? "bg-green-900/50 border border-green-500" :
-                                "bg-slate-900/50"
-                            }`}
-                    >
-                        <span className="text-cyan-400">{reg}:</span>
-                        <span className="text-green-400">
-                            {value} (0x{value.toString(16).padStart(
-                                reg === "PC" || reg === "SP" ? 4 : 2,  // 4 digits pour PC/SP, 2 pour les autres
-                                "0"
-                            )})
-                            {/* reg === "FLAGS" && ` [Z:${cpu.getFlag('zero') ? 1 : 0} C:${cpu.getFlag('carry') ? 1 : 0}]` */}
-                        </span>
-                    </div>
-                ))}
-                <div className="flex justify-between p-2 rounded bg-slate-900/50 border border-red-500/30">
-                    <span className="text-red-400">Status:</span>
-                    <span className={halted ? "text-red-400" : "text-green-400"}>
-                        {halted ? "HALTED" : "RUNNING"}
-                    </span>
-                </div>
-                <div className="flex justify-between p-2 rounded bg-slate-900/50 border border-cyan-500/30">
-                    <span className="text-cyan-400">Clock:</span>
-                    <span className="text-green-400">{clockCycle} cycles</span>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-
-
-class Computer {
-    public id: number;
-    public cpu: Cpu;
-    private memoryBus: MemoryBus;
-    private loadedOs: string | null;
-    private loadedProgram: string | null;
-
-    constructor() {
-        console.log(`Initializing Computer`);
-
-        this.id = Math.round(Math.random() * 999_999_999);
-        this.cpu = new Cpu;
-        this.memoryBus = new MemoryBus;
-        this.loadedOs = null;
-        this.loadedProgram = null;
-    }
-
-}
-
-
-class Cpu {
-    public id: number;
-    public registers: Map<string, u8 | u16>;
-    public clockFrequency: number;
-    public uiFrequency: number;
-    public breakpoints: Set<number>;
-    public halted: boolean;
-    public paused: boolean;
-    public clockCycle: number;
-    private currentBreakpoint: number | null;
-    private lastUiSync: number | null;
-    private interruptsEnabled: boolean;
-    private inInterruptHandler: boolean;
-
-    constructor() {
-        console.log(`Initializing Cpu`);
-
-        this.id = Math.round(Math.random() * 999_999_999);
-        this.registers = new Map(initialRegisters);
-        this.clockFrequency = 1;
-        this.uiFrequency = 1;
-        this.breakpoints = new Set;
-        this.currentBreakpoint = null;
-        this.halted = false;
-        this.paused = true;
-        this.clockCycle = 0;
-        this.lastUiSync = null;
-        this.interruptsEnabled = false;
-        this.inInterruptHandler = false;
-    }
-
-
-    getRegister<T extends Register>(reg: T): T extends Register16 ? u16 : u8 {
-        const value = this.registers.get(reg) ?? 0;
-
-        if (reg === "PC" || reg === "SP") {
-            return value as T extends Register16 ? u16 : u8;
-        } else {
-            return value as T extends Register16 ? u16 : u8;
+        if (cpuInstance) {
+            computer.cpu = cpuInstance;
+            console.log('CPU monté dans Computer:', cpuInstance);
         }
+    }, [computer, cpuInstance]);
+
+
+    // Mount MemoryBus - récupère l'instance du MemoryBus depuis les enfants
+    useEffect(() => {
+        if (!computer) return;
+
+        if (memoryBusInstance) {
+            computer.memoryBus = memoryBusInstance;
+            console.log('MemoryBus monté dans Computer:', cpuInstance);
+        }
+    }, [computer, memoryBusInstance]);
+
+
+    const childrenWithProps = React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+            const childElement = child as React.ReactElement<any>;
+
+            switch (childElement.type) {
+                case Cpu:
+                    return React.cloneElement(childElement, {
+                        onInstanceCreated: (instance: cpuApi.Cpu) => {
+                            setCpuInstance(instance);
+                        }
+                    });
+                    break;
+
+                case MemoryBus:
+                    return React.cloneElement(childElement, {
+                        onInstanceCreated: (instance: cpuApi.MemoryBus) => {
+                            setMemoryBusInstance(instance);
+                        }
+                    });
+                    break;
+
+                default:
+                    console.log(`Invalid component mounted into Computer : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
+                    return null;
+                    break;
+            }
+        }
+        return child;
+    });
+
+
+    const runStep = () => {
+        if (!computer) return;
+
+        console.log('runStep');
+
+        if (computer.cpu) {
+            computer.cpu.executeCycle();
+        }
+    };
+
+    if (!computer) {
+        return <>Loading Computer</>;
     }
 
+    return (
+        <div className="computer bg-background-light-2xl m-2 p-1 rounded">
+            <div className="w-full flex bg-background-light p-2 rounded">
+                <h2 className="font-bold">Computer #{computer.id}</h2>
 
-    getFlag(flag: 'zero' | 'carry'): boolean {
-        const flags = this.getRegister("FLAGS");
-        return flag === 'zero' ? !!(flags & 0b10) : !!(flags & 0b01);
+                {childrenWithProps && (
+                    <button
+                        className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
+                        onClick={() => setChildrenVisible(b => !b)}
+                    >
+                        {childrenVisible ? "-" : "+"}
+                    </button>
+                )}
+            </div>
+
+            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+                <div className="p-2 rounded bg-background-light-xl">
+                    <button
+                        onClick={() => runStep()}
+                        className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                    >
+                        Step
+                    </button>
+                </div>
+
+                {childrenWithProps && (
+                    <div className="computer-children flex flex-col space-y-1">
+                        {childrenWithProps}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+
+type CpuProps = {
+    children?: React.ReactNode,
+    onInstanceCreated?: (cpu: cpuApi.Cpu) => void,
+}
+
+export const Cpu: React.FC<CpuProps> = (props) => {
+    const { children, onInstanceCreated } = props;
+
+    const [cpu, setCpu] = useState<cpuApi.Cpu | null>(null);
+    const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map(cpuApi.initialRegisters));
+    const [childrenVisible, setChildrenVisible] = useState(true);
+
+    const [clockCycle, setClockCycle] = useState(0);
+
+
+    // instanciate CPU
+    useEffect(() => {
+        const _instanciateCpu = () => {
+            const cpu = new cpuApi.Cpu;
+            setCpu(cpu);
+
+            cpu.on('update: clockCycle', (clockCycle: number) => {
+                setClockCycle(clockCycle)
+            })
+        }
+
+        const timer = setTimeout(_instanciateCpu, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
+
+    // Notifie le parent quand le CPU est créé
+    useEffect(() => {
+        if (cpu && onInstanceCreated) {
+            onInstanceCreated(cpu);
+        }
+    }, [cpu, onInstanceCreated]);
+
+
+    const childrenWithProps = React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+            const childElement = child as React.ReactElement<any>;
+
+            switch (childElement.type) {
+
+                default:
+                    console.log(`Invalid component mounted into Cpu : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
+                    return null;
+                    break;
+            }
+        }
+        return child;
+    });
+
+    if (!cpu) {
+        return <>Loading CPU</>;
     }
 
+    return (
+        <div className="cpu">
+            <div className="w-full flex bg-background-light-xl p-2 rounded">
+                <h2 className="font-bold">CPU #{cpu.id}</h2>
 
-    executeCycle() {
-        this.clockCycle++
-        console.log('CPU executeCycle', this.clockCycle)
-    }
+                {childrenWithProps && (
+                    <button
+                        className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
+                        onClick={() => setChildrenVisible(b => !b)}
+                    >
+                        {childrenVisible ? "-" : "+"}
+                    </button>
+                )}
+            </div>
+
+            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+                <div className="p-2 rounded bg-background-light-xl">
+                    cycle #{clockCycle}
+                </div>
+
+                {childrenWithProps && (
+                    <div className="cpu-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
+                        {childrenWithProps}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+
+type MemoryBusProps = {
+    children?: React.ReactNode,
+    onInstanceCreated?: (cpu: cpuApi.MemoryBus) => void,
 
 }
 
+export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
+    const { children, onInstanceCreated } = props;
 
-class MemoryBus {
-    public id: number;
-    private rom: ROM;
-    private ram: RAM;
-    private io: IO;
+    const [memoryBus, setMemoryBus] = useState<cpuApi.MemoryBus | null>(null);
+    const [romInstance, setRomInstance] = useState<cpuApi.ROM | null>(null);
+    const [ramInstance, setRamInstance] = useState<cpuApi.RAM | null>(null);
+    const [devicesInstance, setDevicesInstance] = useState<cpuApi.IO | null>(null);
+    const [childrenVisible, setChildrenVisible] = useState(true);
 
-    constructor() {
-        console.log(`Initializing MemoryBus`);
+    // instanciate MemoryBus
+    useEffect(() => {
+        const _instanciateMemoryBus = () => {
+            setMemoryBus(new cpuApi.MemoryBus);
+        }
 
-        this.id = Math.round(Math.random() * 999_999_999);
-        this.rom = new ROM;
-        this.ram = new RAM;
-        this.io = new IO;
+        const timer = setTimeout(_instanciateMemoryBus, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
+
+    // Notifie le parent quand le MemoryBus est créé
+    useEffect(() => {
+        if (memoryBus && onInstanceCreated) {
+            onInstanceCreated(memoryBus);
+        }
+    }, [memoryBus, onInstanceCreated]);
+
+
+    // Mount ROM - récupère l'instance du ROM depuis les enfants
+    useEffect(() => {
+        if (!memoryBus) return;
+
+        if (romInstance) {
+            memoryBus.rom = romInstance;
+            console.log('ROM monté dans MemoryBus:', romInstance);
+        }
+    }, [memoryBus, romInstance]);
+
+
+    // Mount RAM - récupère l'instance du RAM depuis les enfants
+    useEffect(() => {
+        if (!memoryBus) return;
+
+        if (ramInstance) {
+            memoryBus.ram = ramInstance;
+            console.log('RAM monté dans MemoryBus:', ramInstance);
+        }
+    }, [memoryBus, ramInstance]);
+
+
+    // Mount Devices - récupère l'instance du Devices depuis les enfants
+    useEffect(() => {
+        if (!memoryBus) return;
+
+        if (devicesInstance) {
+            memoryBus.io = devicesInstance;
+            console.log('Devices monté dans MemoryBus:', devicesInstance);
+        }
+    }, [memoryBus, devicesInstance]);
+
+
+    const childrenWithProps = React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+            const childElement = child as React.ReactElement<any>;
+
+            switch (childElement.type) {
+                case Rom:
+                    return React.cloneElement(childElement, {
+                        onInstanceCreated: (instance: cpuApi.ROM) => {
+                            setRomInstance(instance);
+                        }
+                    });
+                    break;
+                case Ram:
+                    return React.cloneElement(childElement, {
+                        onInstanceCreated: (instance: cpuApi.RAM) => {
+                            setRamInstance(instance);
+                        }
+                    });
+                    break;
+                case Devices:
+                    return React.cloneElement(childElement, {
+                        onInstanceCreated: (instance: cpuApi.IO) => {
+                            setDevicesInstance(instance);
+                        }
+                    });
+                    break;
+
+                default:
+                    console.log(`Invalid component mounted into MemoryBus : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
+                    return null;
+                    break;
+            }
+        }
+        return child;
+    });
+
+    if (!memoryBus) {
+        return <>Loading Memory Bus</>;
     }
 
+    return (
+        <div className="memory-bus">
+            <div className="w-full flex bg-background-light-xl p-2 rounded">
+                <h2 className="font-bold">Memory Bus #{memoryBus.id}</h2>
+
+                {childrenWithProps && (
+                    <button
+                        className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
+                        onClick={() => setChildrenVisible(b => !b)}
+                    >
+                        {childrenVisible ? "-" : "+"}
+                    </button>
+                )}
+            </div>
+
+            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+                {childrenWithProps && (
+                    <div className="memory-bus-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
+                        {childrenWithProps}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 }
 
 
-class ROM {
-    public id: number;
-    private storage: Map<u16, u8>;
+type RomProps = {
+    children?: React.ReactNode,
+    onInstanceCreated?: (cpu: cpuApi.ROM) => void,
+}
 
-    constructor() {
-        console.log(`Initializing ROM`);
+export const Rom: React.FC<RomProps> = (props) => {
+    const { children, onInstanceCreated } = props;
 
-        this.id = Math.round(Math.random() * 999_999_999);
-        this.storage = new Map;
-    }
+    const [rom, setRom] = useState<cpuApi.ROM | null>(null);
+    const [childrenVisible, setChildrenVisible] = useState(true);
 
+
+    // instanciate Rom
+    useEffect(() => {
+        const _instanciateRom = () => {
+            setRom(new cpuApi.ROM);
+        }
+
+        const timer = setTimeout(_instanciateRom, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
+
+    // Notifie le parent quand le Rom est créé
+    useEffect(() => {
+        if (rom && onInstanceCreated) {
+            onInstanceCreated(rom);
+        }
+    }, [rom, onInstanceCreated]);
+
+
+    const childrenWithProps = React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+            const childElement = child as React.ReactElement<any>;
+
+            switch (childElement.type) {
+
+                default:
+                    console.log(`Invalid component mounted into Rom : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
+                    return null;
+                    break;
+
+            }
+        }
+        return child;
+    });
+
+    return (
+        <div className="rom">
+            <div className="w-full flex bg-background-light-xl p-2 rounded">
+                <h2 className="font-bold">ROM</h2>
+
+                {childrenWithProps && (
+                    <button
+                        className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
+                        onClick={() => setChildrenVisible(b => !b)}
+                    >
+                        {childrenVisible ? "-" : "+"}
+                    </button>
+                )}
+            </div>
+
+            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+                {childrenWithProps && (
+                    <div className="rom-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
+                        {childrenWithProps}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 }
 
 
-class RAM {
-    public id: number;
-    private storage: Map<u16, u8>;
 
-    constructor() {
-        console.log(`Initializing RAM`);
+type RamProps = {
+    children?: React.ReactNode,
+    onInstanceCreated?: (cpu: cpuApi.RAM) => void,
+}
 
-        this.id = Math.round(Math.random() * 999_999_999);
-        this.storage = new Map;
-    }
+export const Ram: React.FC<RamProps> = (props) => {
+    const { children, onInstanceCreated } = props;
 
+    const [ram, setRam] = useState<cpuApi.RAM | null>(null);
+    const [childrenVisible, setChildrenVisible] = useState(true);
+
+
+    // instanciate Ram
+    useEffect(() => {
+        const _instanciateRam = () => {
+            setRam(new cpuApi.RAM);
+        }
+
+        const timer = setTimeout(_instanciateRam, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
+
+    // Notifie le parent quand le Ram est créé
+    useEffect(() => {
+        if (ram && onInstanceCreated) {
+            onInstanceCreated(ram);
+        }
+    }, [ram, onInstanceCreated]);
+
+
+    const childrenWithProps = React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+            const childElement = child as React.ReactElement<any>;
+
+            switch (childElement.type) {
+
+                default:
+                    console.log(`Invalid component mounted into Ram : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
+                    return null;
+                    break;
+
+            }
+        }
+        return child;
+    });
+
+    return (
+        <div className="ram">
+            <div className="w-full flex bg-background-light-xl p-2 rounded">
+                <h2 className="font-bold">RAM</h2>
+
+                {childrenWithProps && (
+                    <button
+                        className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
+                        onClick={() => setChildrenVisible(b => !b)}
+                    >
+                        {childrenVisible ? "-" : "+"}
+                    </button>
+                )}
+            </div>
+
+            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+                {childrenWithProps && (
+                    <div className="ram-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
+                        {childrenWithProps}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 }
 
 
-class IO {
-    public id: number;
-    private devices: Device[];
+type DevicesProps = {
+    children?: React.ReactNode,
+    onInstanceCreated?: (cpu: cpuApi.IO) => void,
+}
 
-    constructor() {
-        console.log(`Initializing IO`);
+export const Devices: React.FC<DevicesProps> = (props) => {
+    const { children, onInstanceCreated } = props;
 
-        this.id = Math.round(Math.random() * 999_999_999);
-        this.devices = [];
-    }
+    const [devices, setDevices] = useState<cpuApi.IO | null>(null);
+    //const [devicesIo, setDevicesIo] = useState<Map<u8, Device>>();
+    const [childrenVisible, setChildrenVisible] = useState(true);
 
+
+    // instanciate Devices
+    useEffect(() => {
+        const _instanciateDevices = () => {
+            setDevices(new cpuApi.IO);
+        }
+
+        const timer = setTimeout(_instanciateDevices, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
+
+    // Notifie le parent quand le Devices est créé
+    useEffect(() => {
+        if (devices && onInstanceCreated) {
+            onInstanceCreated(devices);
+        }
+    }, [devices, onInstanceCreated]);
+
+
+    const childrenWithProps = React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+            const childElement = child as React.ReactElement<any>;
+
+            switch (childElement.type) {
+                case StorageDisk:
+                    break;
+
+                default:
+                    console.log(`Invalid component mounted into Devices : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
+                    return null;
+                    break;
+
+            }
+        }
+        return child;
+    });
+
+
+    return (
+        <div className="devices">
+            <div className="w-full flex bg-background-light-xl p-2 rounded">
+                <h2 className="font-bold">Devices</h2>
+
+                {childrenWithProps && (
+                    <button
+                        className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
+                        onClick={() => setChildrenVisible(b => !b)}
+                    >
+                        {childrenVisible ? "-" : "+"}
+                    </button>
+                )}
+            </div>
+
+            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+                {childrenWithProps && (
+                    <div className="devices-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
+                        {childrenWithProps}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 }
 
 
-class StorageDisk {
-    public id: number;
-    private name: string;
-    private storage: Map<u16, u8>;
-    private fs: StorageFileSystem;
-
-    constructor(name: string) {
-        console.log(`Initializing StorageDisk`);
-
-        this.id = Math.round(Math.random() * 999_999_999);
-        this.name = name;
-        this.storage = new Map;
-        this.fs = new StorageFileSystem(this);
-    }
-
-    getName() {
-        return this.name;
-    }
-
+type StorageDiskProps = {
+    name: string;
+    children?: React.ReactNode,
+    onInstanceCreated?: (cpu: cpuApi.StorageDisk) => void,
 }
 
-class StorageFileSystem {
-    public id: number;
-    private storageDisk: StorageDisk;
+export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
+    const { name, children, onInstanceCreated } = props
 
-    constructor(storageDisk: StorageDisk) {
-        console.log(`Initializing StorageFileSystem (${storageDisk.getName()})`);
+    const [storageDisk, setStorageDisk] = useState<cpuApi.StorageDisk | null>(null);
+    const [childrenVisible, setChildrenVisible] = useState(true);
 
-        this.id = Math.round(Math.random() * 999_999_999);
-        this.storageDisk = storageDisk;
-    }
 
+    // instanciate StorageDisk
+    useEffect(() => {
+        const _instanciateStorageDisk = () => {
+            setStorageDisk(new cpuApi.StorageDisk(name));
+        }
+
+        const timer = setTimeout(_instanciateStorageDisk, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
+
+    // Notifie le parent quand le StorageDisk est créé
+    useEffect(() => {
+        if (storageDisk && onInstanceCreated) {
+            onInstanceCreated(storageDisk);
+        }
+    }, [storageDisk, onInstanceCreated]);
+
+
+    const childrenWithProps = React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+            const childElement = child as React.ReactElement<any>;
+
+            switch (childElement.type) {
+
+                default:
+                    console.log(`Invalid component mounted into StorageDisk : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
+                    return null;
+                    break;
+
+            }
+        }
+        return child;
+    });
+
+
+    return (
+        <div className="io">
+            <div className="w-full flex bg-background-light-xl p-2 rounded">
+                <h2 className="font-bold">Storage Disk "{name}"</h2>
+
+                {childrenWithProps && (
+                    <button
+                        className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
+                        onClick={() => setChildrenVisible(b => !b)}
+                    >
+                        {childrenVisible ? "-" : "+"}
+                    </button>
+                )}
+            </div>
+
+            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+                {childrenWithProps && (
+                    <div className="io-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
+                        {childrenWithProps}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 }
+

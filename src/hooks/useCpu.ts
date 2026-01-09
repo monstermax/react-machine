@@ -58,7 +58,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
     // CLOCK
     useEffect(() => {
         if (!clockHook.clockCycle) return;
-        console.log('executeCycle', clockHook.clockCycle)
+        //console.log('executeCycle', clockHook.clockCycle)
         executeCycle()
     }, [clockHook.clockCycle])
 
