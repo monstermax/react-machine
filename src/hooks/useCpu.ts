@@ -30,6 +30,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
     // CPU STATES
     const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map(initialRegisters));
     //const registersRef = useRef<Map<string, u8 | u16>>(new Map(initialRegisters));
+    const [cpuPaused, setCpuPaused] = useState<boolean>(true);
 
 
     // THREADS => TODO
@@ -164,34 +165,9 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
     }, [clockHook])
 
 
-//    const syncUi = useCallback(() => {
-//        //setClockCycle(clockCycleRef.current)
-//        //setRegisters(new Map(registersRef.current))
-//        //lastUiSyncRef.current = Date.now()
-//        //setLastUiSync(Date.now())
-//        //console.log('syncUi exec', lastUiSyncRef.current/1000);
-//    }, [])
-
     const incrementCpuCycle = () => {
         setCpuCycle(c => c + 1 as u16)
     }
-/*
-    const tick = useCallback(() => {
-        //setClockCycle(c => (c + 1) as u16)
-        //clockCycleRef.current = (clockCycleRef.current + 1) as u16;
-        //console.log('tick:', clockCycleRef.current)
-
-//        const syncInterval = 1000 / uiFrequency;
-//
-//        if (clockHook.paused || Date.now() - lastUiSyncRef.current > syncInterval) {
-//            //console.log('syncUi call', syncInterval, lastUiSyncRef.current/1000)
-//            syncUi();
-//        }
-
-        // Tick du timer à chaque cycle CPU
-        ioHook.timer.tick();
-    }, [uiFrequency, clockHook.paused, ioHook.timer.tick]);
-*/
 
     const readMem8 = useCallback((pc: u16): u8 => {
         const value = memoryHook.readMemory((pc + 1) as u16);
@@ -386,7 +362,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
                 break;
 
             case Opcode.BREAKPOINT:
-                //clockHook.setPaused(true);
+                setCpuPaused(true);
                 clockHook.pausedRef.current = true
                 setRegister("PC", (pc + 1) as u16);
                 break;
@@ -813,7 +789,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         //if (currentBreakpoint === null && breakpoints.has(pc) && !clockHook.pausedRef.current) {
         //if (currentBreakpointRef.current === null && breakpoints.has(pc) && !clockHook.paused) {
         if (currentBreakpointRef.current === null && breakpoints.has(pc) && !clockHook.pausedRef.current) {
-            //clockHook.setPaused(true);
+            setCpuPaused(true);
             clockHook.pausedRef.current = true
             //setCurrentBreakpoint(pc);
             currentBreakpointRef.current = pc;
@@ -878,11 +854,9 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         id,
         clockFrequency: clockHook.clockFrequency,
         halted,
-        //paused: clockHook.paused,
-        paused: clockHook.pausedRef.current,
+        cpuPaused,
         registers,
         clockCycle: clockHook.clockCycle || 0 as u16,
-        //clockCycle: clockCycleRef,
         ALU,
         breakpoints,
         setClockFrequency: clockHook.setClockFrequency,
@@ -891,10 +865,8 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         getFlag,
         setFlags,
         tick: clockHook.tick,
-        //executeCycle,
         reset,
-        //setPaused: clockHook.setPaused,
-        setPaused: () => { clockHook.pausedRef.current = ! clockHook.pausedRef.current; incrementCpuCycle() },
+        setCpuPaused: (val) => { setCpuPaused(val => { clockHook.pausedRef.current = !val; return !val; });},
         setBreakpoints,
     };
 
@@ -906,10 +878,9 @@ export type CpuHook = {
     id: number;
     clockFrequency: number;
     halted: boolean;
-    paused: boolean;
+    cpuPaused: boolean;
     registers: Map<string, number>,
     clockCycle: u16;
-    //clockCycle: React.RefObject<u16>;
     ALU: Record<string, (...args: any[]) => any>
     breakpoints: Set<number>;
     setClockFrequency: React.Dispatch<React.SetStateAction<number>>,
@@ -917,10 +888,9 @@ export type CpuHook = {
     setRegister: (reg: Register, value: u8 | u16) => void,
     getFlag: (flag: "zero" | "carry") => boolean,
     setFlags: (zero: boolean, carry: boolean) => void,
-    //executeCycle: () => void,
     tick: () => void,
     reset: () => void,
-    setPaused: (value: React.SetStateAction<boolean>) => void,
+    setCpuPaused: (value: React.SetStateAction<boolean>) => void,
     setBreakpoints: React.Dispatch<React.SetStateAction<Set<number>>>;
 }
 

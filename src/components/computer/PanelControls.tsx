@@ -97,7 +97,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
         }
 
         updateFrequencyStat()
-    }, [triggerFrequencyRefresh, cpuHook.paused, cpuHook.halted])
+    }, [triggerFrequencyRefresh, cpuHook.cpuPaused, cpuHook.halted])
 
 
     // Gestion du timer de control
@@ -116,7 +116,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
 
 
     const handleStart = () => {
-        cpuHook.setPaused(b => !b);
+        cpuHook.setCpuPaused(b => !b);
         //setIsRunning(!isRunning)
     }
 
@@ -157,17 +157,17 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
                     <button
                         onClick={() => handleStart()}
                         disabled={cpuHook.halted}
-                        className={`${!cpuHook.paused
+                        className={`${!cpuHook.cpuPaused
                             ? "bg-yellow-600 hover:bg-yellow-700"
                             : "bg-green-900 hover:bg-green-700"
                             } disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors font-semibold`}
                     >
-                        {!cpuHook.paused ? "⏸ Pause" : "▶ Start"}
+                        {!cpuHook.cpuPaused ? "⏸ Pause" : "▶ Start"}
                     </button>
 
                     <button
                         onClick={() => handleStep()}
-                        disabled={cpuHook.halted || !cpuHook.paused}
+                        disabled={cpuHook.halted || !cpuHook.cpuPaused}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                     >
                         ⏭ Step
