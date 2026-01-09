@@ -1,5 +1,5 @@
 
-import type { u8 } from "@/types/cpu.types";
+import type { u16, u8 } from "@/types/cpu.types";
 
 // 8086 instruction set
 // https://www.eng.auburn.edu/~sylee/ee2220/8086_instruction_set.html
@@ -252,3 +252,41 @@ export const getInstructionLength = (opcode: u8): number => {
     }
     return 1; // opcode seul
 };
+
+
+
+export const buildMemoryInstructionMap = (data: Map<u16, u8> | [u16, u8][]) => {
+    const entries = Array.isArray(data) ? data : Array.from(data.entries());
+    const sorted = entries.sort(([a], [b]) => a - b);
+
+    const isInstruction = new Map<number, boolean>();
+    const operandAddresses = new Set<number>();
+
+    for (const [address, value] of sorted) {
+        // Si déjà marqué comme opérande, ce n'est pas une instruction
+        if (operandAddresses.has(address)) {
+            isInstruction.set(address, false);
+            continue;
+        }
+
+        // Si c'est un opcode valide, c'est une instruction
+        if (Object.values(Opcode).includes(value)) {
+            isInstruction.set(address, true);
+
+            // Marquer les opérandes suivants
+            if (INSTRUCTIONS_WITH_OPERAND.includes(value)) {
+                operandAddresses.add(address + 1);
+            }
+            if (INSTRUCTIONS_WITH_TWO_OPERANDS.includes(value)) {
+                operandAddresses.add(address + 1);
+                operandAddresses.add(address + 2);
+            }
+
+        } else {
+            isInstruction.set(address, false);
+        }
+    }
+
+    return isInstruction;
+}
+
