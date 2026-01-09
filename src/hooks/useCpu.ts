@@ -44,7 +44,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
 
     const [halted, setHalted] = useState<boolean>(false);
 
-    //const [clockCycle, setClockCycle] = useState<u16>(0 as u16);
+    const [cpuCycle, setCpuCycle] = useState<u16>(0 as u16); // force le refresh UI
     //const clockCycleRef = useRef<u16>(0 as u16);
     //const lastUiSyncRef = useRef(0);
 
@@ -57,8 +57,9 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
     // CLOCK
     useEffect(() => {
         if (!clockHook.clockCycle) return;
+        console.log('executeCycle', clockHook.clockCycle)
         executeCycle()
-    }, [clockHook.clockCycle, clockHook.paused])
+    }, [clockHook.clockCycle])
 
 
     // ALU
@@ -160,17 +161,20 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         //currentBreakpointRef.current = null
         setCurrentBreakpoint(null)
 
-    }, [setRegisters, setHalted, setInterruptsEnabled, setInInterruptHandler])
+    }, [clockHook.setClockCycle])
 
 
-    const syncUi = useCallback(() => {
-        //setClockCycle(clockCycleRef.current)
-        //setRegisters(new Map(registersRef.current))
-        //lastUiSyncRef.current = Date.now()
-        //setLastUiSync(Date.now())
-        //console.log('syncUi exec', lastUiSyncRef.current/1000);
-    }, [])
+//    const syncUi = useCallback(() => {
+//        //setClockCycle(clockCycleRef.current)
+//        //setRegisters(new Map(registersRef.current))
+//        //lastUiSyncRef.current = Date.now()
+//        //setLastUiSync(Date.now())
+//        //console.log('syncUi exec', lastUiSyncRef.current/1000);
+//    }, [])
 
+    const incrementCpuCycle = () => {
+        setCpuCycle(c => c + 1 as u16)
+    }
 /*
     const tick = useCallback(() => {
         //setClockCycle(c => (c + 1) as u16)
@@ -747,7 +751,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
                 console.error(`Unknown opcode at 0x${pc.toString(16)}: 0x${instruction.toString(16)}`);
                 setHalted(true);
         }
-    }, [memoryHook.readMemory, memoryHook.writeMemory, getFlag, getRegister, setRegister, pushValue, popValue, setHalted, setFlags, readMem16, readMem8, handleSyscall, handleCall, handleRet, handleIRet]);
+    }, [memoryHook.readMemory, memoryHook.writeMemory, clockHook.setPaused, getFlag, getRegister, setRegister, pushValue, popValue, setHalted, setFlags, readMem16, readMem8, handleSyscall, handleCall, handleRet, handleIRet]);
 
 
     const handleInterrupt = useCallback(() => {
@@ -820,7 +824,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
 
 
         // Increment clockCycle
-        //tick();
+        incrementCpuCycle();
 
         // Vérifier les interruptions AVANT de fetch
         if (interruptsEnabled && !inInterruptHandler && ioHook.interrupt.hasPendingInterrupt()) {
@@ -840,13 +844,13 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         //console.log('executeOpcode', pc, opcode) // DEBUG
         executeOpcode(pc, opcode);
 
-    }, [halted, interruptsEnabled, inInterruptHandler, breakpoints, currentBreakpoint, ioHook.interrupt.hasPendingInterrupt, memoryHook.readMemory /* , tick */, setRegister, getRegister, handleInterrupt, executeOpcode]);
+    }, [halted, interruptsEnabled, inInterruptHandler, breakpoints, currentBreakpoint, ioHook.interrupt.hasPendingInterrupt, memoryHook.readMemory, incrementCpuCycle, setRegister, getRegister, handleInterrupt, executeOpcode]);
 
 
-    useEffect(() => {
-        //console.log('init SYNC_UI');
-        syncUi();
-    }, [clockHook.clockFrequency, clockHook.paused, halted])
+//    useEffect(() => {
+//        //console.log('init SYNC_UI');
+//        syncUi();
+//    }, [clockHook.clockFrequency, clockHook.paused, halted])
 
 
     // CLOCK

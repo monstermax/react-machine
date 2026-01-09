@@ -16,7 +16,7 @@ export const useRom = (): RomHook => {
 
     const read = useCallback((address: u16): u8 => {
         const value = storage.get(address) ?? 0 as u8;
-        //console.log(`Read Memory (ROM) @address ${toHex(address, 4)} = ${toHex(value)}`)
+        console.log(`Read Memory (ROM) @address ${toHex(address, 4)} = ${toHex(value)}`)
         return value;
     }, [storage])
 
