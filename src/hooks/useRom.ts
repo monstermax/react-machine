@@ -2,6 +2,7 @@
 import { useCallback, useMemo, useState } from "react";
 
 import { BOOTLOADER } from "@/programs/bootloader";
+import { toHex } from "@/lib/integers";
 
 import type { u16, u8 } from "@/types/cpu.types";
 
@@ -14,7 +15,9 @@ export const useRom = (): RomHook => {
 
 
     const read = useCallback((address: u16): u8 => {
-        return storage.get(address) ?? 0 as u8;
+        const value = storage.get(address) ?? 0 as u8;
+        //console.log(`Read Memory (ROM) @address ${toHex(address, 4)} = ${toHex(value)}`)
+        return value;
     }, [storage])
 
 

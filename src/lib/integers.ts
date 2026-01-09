@@ -21,8 +21,14 @@ export function low16(value: u16): u8 {
 }
 
 
-export function toHex(intValue: number) {
+export function toHex(intValue: number, padleft=0) {
     const hex = intValue.toString(16).toUpperCase();
-    return '0x' + (hex.length % 2 === 0 ? hex : `0${hex}`);
+    let val = (hex.length % 2 === 0 ? hex : `0${hex}`);
+
+    if (padleft && val.length < padleft) {
+        val = val.padStart(padleft, '0')
+    }
+
+    return '0x' + val;
 }
 

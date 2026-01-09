@@ -162,7 +162,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
                     </button>
 
                     <button
-                        onClick={cpuHook.executeCycle}
+                        onClick={() => cpuHook.tick()}
                         disabled={cpuHook.halted || !cpuHook.paused}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                     >

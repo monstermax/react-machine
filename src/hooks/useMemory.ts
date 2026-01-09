@@ -33,18 +33,22 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
     const readMemory = useCallback((address: u16): u8 => {
         // ROM read
         if (isROM(address)) {
-            //return romHook.storage.get(address) ?? 0 as u8;
-            return romHook.read(address);
+            const value = romHook.read(address);
+            //console.log(`Read Memory (ROM) @address ${toHex(address)} = ${toHex(value)}`)
+            return value;
         }
 
         // I/O read - déléguer au gestionnaire I/O
         if (isIO(address)) {
-            return ioHook.read(memoryToIOPort(address));
+            const value = ioHook.read(memoryToIOPort(address));
+            //console.log(`Read Memory (IO) @address ${toHex(address)} = ${toHex(value)}`)
+            return value;
         }
 
         // RAM read
         const value = ramHook.read(address);
         //console.log(`MEMORY-RAM ${id} @address ${toHex(address)} = ${value}`)
+        //console.log(`Read Memory (RAM) @address ${toHex(address)} = ${toHex(value)}`)
         return value;
     }, [romHook.read, ramHook.read, ioHook.read]);
 
@@ -59,13 +63,13 @@ export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): M
 
         // I/O write - déléguer au gestionnaire I/O
         if (isIO(address)) {
+            //console.log(`Write Memory (IO) @address ${toHex(address)} = ${toHex(value)}`)
             ioHook.write(memoryToIOPort(address), value);
             return;
         }
 
         // RAM write
-        //ramHook.storage.set(address, (value & 0xFF) as u8);
-        //ramHook.setStorage(oldMap => new Map(oldMap).set(address, value))
+        //console.log(`Write Memory (RAM) @address ${toHex(address)} = ${toHex(value)}`)
         ramHook.write(address, value)
     }, [ioHook.write, ramHook.write]);
 
