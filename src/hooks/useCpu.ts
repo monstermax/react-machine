@@ -142,12 +142,12 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
     const getFlag = useCallback((flag: 'zero' | 'carry'): boolean => {
         const flags = getRegister("FLAGS");
         return flag === 'zero' ? !!(flags & 0b10) : !!(flags & 0b01);
-    }, [getRegister])
+    }, [])
 
 
     const setFlags = useCallback((zero: boolean, carry: boolean) => {
         setRegister('FLAGS', ((zero ? 0b10 : 0) | (carry ? 0b01 : 0)) as u8)
-    }, [setRegister])
+    }, [])
 
 
     const reset = useCallback(() => {
@@ -161,7 +161,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         //currentBreakpointRef.current = null
         setCurrentBreakpoint(null)
 
-    }, [clockHook.setClockCycle])
+    }, [clockHook])
 
 
 //    const syncUi = useCallback(() => {
@@ -196,7 +196,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
     const readMem8 = useCallback((pc: u16): u8 => {
         const value = memoryHook.readMemory((pc + 1) as u16);
         return value;
-    }, [memoryHook.readMemory])
+    }, [memoryHook])
 
 
     const readMem16 = useCallback((pc: u16): u16 => {
@@ -204,7 +204,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         const high = memoryHook.readMemory((pc + 2) as u16);
         const value = ((high << 8) | low) as u16;
         return value;
-    }, [memoryHook.readMemory])
+    }, [memoryHook])
 
 
     // Fonction pour push une valeur sur la pile
@@ -217,7 +217,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         // Décrémenter SP (pile descend)
         sp = ((sp - 1) & 0xFFFF) as u16;
         setRegister("SP", sp);
-    }, [memoryHook.writeMemory, getRegister, setRegister]);
+    }, [memoryHook]);
 
 
     // Fonction pour pop une valeur de la pile
@@ -234,7 +234,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         setRegister("SP", sp);
 
         return value;
-    }, [memoryHook.readMemory, getRegister, setRegister]);
+    }, [memoryHook]);
 
 
     // Fonction pour CALL
@@ -295,7 +295,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
                 setRegister("PC", (pc + 2) as u16);
                 break;
         }
-    }, [memoryHook.readMemory, memoryHook.writeMemory, getRegister, setRegister]);
+    }, [memoryHook]);
 
 
     const handleCall = useCallback((pc: u16) => {
@@ -320,7 +320,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
 
         // Sauter
         setRegister("PC", callAddr);
-    }, [memoryHook.writeMemory, getRegister, setRegister, readMem16]);
+    }, [memoryHook]);
 
 
     // Fonction pour RET
@@ -342,7 +342,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
 
         // Sauter à l'adresse retour
         setRegister("PC", retAddr);
-    }, [memoryHook.readMemory, getRegister, setRegister]);
+    }, [memoryHook]);
 
 
     // Fonction pour IRET (Return from Interrupt)
@@ -370,7 +370,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         // Réactiver interruptions
         setInterruptsEnabled(true);
         setInInterruptHandler(false);
-    }, [memoryHook.readMemory, getRegister, setRegister, setInterruptsEnabled, setInInterruptHandler]);
+    }, [memoryHook]);
 
 
     // Execute an instruction
@@ -386,7 +386,8 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
                 break;
 
             case Opcode.BREAKPOINT:
-                clockHook.setPaused(true);
+                //clockHook.setPaused(true);
+                clockHook.pausedRef.current = true
                 setRegister("PC", (pc + 1) as u16);
                 break;
 
@@ -751,7 +752,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
                 console.error(`Unknown opcode at 0x${pc.toString(16)}: 0x${instruction.toString(16)}`);
                 setHalted(true);
         }
-    }, [memoryHook.readMemory, memoryHook.writeMemory, clockHook.setPaused, getFlag, getRegister, setRegister, pushValue, popValue, setHalted, setFlags, readMem16, readMem8, handleSyscall, handleCall, handleRet, handleIRet]);
+    }, [memoryHook, clockHook]);
 
 
     const handleInterrupt = useCallback(() => {
@@ -791,7 +792,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         setRegister("PC", handlerAddress);
 
         console.log(`🔄 Interruption IRQ${irq} -> Handler 0x${handlerAddress.toString(16)}`);
-    }, [ioHook.interrupt.getPendingIRQ, ioHook.interrupt.handlerAddr, ioHook.interrupt.acknowledgeInterrupt, memoryHook.writeMemory, setRegister, getRegister, setInterruptsEnabled, setInInterruptHandler]);
+    }, [ioHook.interrupt, ioHook.interrupt.handlerAddr, memoryHook]);
 
 
     // Execute a CPU cycle
@@ -808,9 +809,11 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
 
         const pc = getRegister("PC");
 
-        if (currentBreakpoint === null && breakpoints.has(pc) && !clockHook.paused) {
+        //if (currentBreakpoint === null && breakpoints.has(pc) && !clockHook.paused) {
+        if (currentBreakpoint === null && breakpoints.has(pc) && !clockHook.pausedRef.current) {
         //if (currentBreakpointRef.current === null && breakpoints.has(pc) && !clockHook.paused) {
-            clockHook.setPaused(true);
+            //clockHook.setPaused(true);
+            clockHook.pausedRef.current = true
             setCurrentBreakpoint(pc);
             //currentBreakpointRef.current = pc;
             return
@@ -844,7 +847,7 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         //console.log('executeOpcode', pc, opcode) // DEBUG
         executeOpcode(pc, opcode);
 
-    }, [halted, interruptsEnabled, inInterruptHandler, breakpoints, currentBreakpoint, ioHook.interrupt.hasPendingInterrupt, memoryHook.readMemory, incrementCpuCycle, setRegister, getRegister, handleInterrupt, executeOpcode]);
+    }, [halted, interruptsEnabled, inInterruptHandler, breakpoints, currentBreakpoint, ioHook.interrupt, memoryHook]);
 
 
 //    useEffect(() => {
@@ -874,7 +877,8 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         id,
         clockFrequency: clockHook.clockFrequency,
         halted,
-        paused: clockHook.paused,
+        //paused: clockHook.paused,
+        paused: clockHook.pausedRef.current,
         registers,
         clockCycle: clockHook.clockCycle || 0 as u16,
         //clockCycle: clockCycleRef,
@@ -888,7 +892,8 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
         tick: clockHook.tick,
         //executeCycle,
         reset,
-        setPaused: clockHook.setPaused,
+        //setPaused: clockHook.setPaused,
+        setPaused: () => { clockHook.pausedRef.current = ! clockHook.pausedRef.current; incrementCpuCycle() },
         setBreakpoints,
     };
 

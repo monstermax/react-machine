@@ -120,6 +120,10 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
         //setIsRunning(!isRunning)
     }
 
+    const handleStep = () => {
+        cpuHook.tick()
+    }
+
     const handleChangeFrequency = (frequency: number) => {
         //setFrequency(frequency)
         cpuHook.setClockFrequency(frequency)
@@ -162,7 +166,7 @@ export const PanelControls: React.FC<PanelControlsProps> = memo((props) => {
                     </button>
 
                     <button
-                        onClick={() => cpuHook.tick()}
+                        onClick={() => handleStep()}
                         disabled={cpuHook.halted || !cpuHook.paused}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                     >
