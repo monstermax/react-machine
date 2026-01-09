@@ -2,6 +2,7 @@
 import type { Computer } from "./Computer";
 import type { Cpu } from "./Cpu";
 import type { MemoryBus } from "./MemoryBus";
+import type { Ram } from "./Ram";
 
 import type { u16, u8 } from "@/types/cpu.types";
 
@@ -26,6 +27,10 @@ export const cpuRef = {
 
 export const memoryBusRef = {
     current: null as MemoryBus | null
+};
+
+export const ramRef = {
+    current: null as Ram | null
 };
 
 

@@ -3,12 +3,14 @@ import { EventEmitter } from "eventemitter3";
 
 import { U16, U8 } from "@/lib/integers";
 
-import type { u16, u8 } from "@/types/cpu.types";
+import type { CompiledCode, u16, u8 } from "@/types/cpu.types";
+import { MEMORY_MAP } from "@/lib/memory_map";
 
 
 export class Ram extends EventEmitter {
     public id: number;
     public storage: Map<u16, u8>;
+
 
     constructor(data?: Array<[u16, u8]> | Map<u16, u8>) {
         console.log(`Initializing RAM`);
@@ -28,5 +30,16 @@ export class Ram extends EventEmitter {
         this.storage.set(address, U8(value))
     }
 
+
+    async loadCodeInRam (code: CompiledCode, memoryOffset: u16=0 as u16) {
+        console.log('Loaded code size in RAM:', code.size)
+
+        for (const [addr, value] of code.entries()) {
+            this.write(U16(memoryOffset + addr), value);
+        }
+
+        this.emit('state', { storage: new Map(this.storage) })
+    }
 }
+
 

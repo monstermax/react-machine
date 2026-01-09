@@ -25,7 +25,6 @@ export const Ram: React.FC<RamProps> = (props) => {
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
 
     const computerInstance = cpuApi.computerRef.current;
-    const memoryBusInstance = cpuApi.memoryBusRef.current;
 
 
     // Instanciate Ram
@@ -34,6 +33,10 @@ export const Ram: React.FC<RamProps> = (props) => {
             const ram = new cpuApi.Ram;
             setRam(ram);
 
+            // Save RamBus Ref
+            cpuApi.ramRef.current = ram;
+
+            // Handle state updates
             ram.on('state', (state) => {
                 console.log('RAM state update', state)
 
@@ -77,26 +80,19 @@ export const Ram: React.FC<RamProps> = (props) => {
 
 
     const loadOsInRam = async (osName: string) => {
-        if (!ram || !computerInstance || !memoryBusInstance) return;
+        if (!ram || !computerInstance) return;
 
         const currentOs: OsInfo | null = osName ? os_list[osName] : null;
         if (!currentOs?.filepath) return;
 
-        const code = await loadCodeFromFile(currentOs.filepath, MEMORY_MAP.OS_START)
-
-        console.log('Loaded code size:', code.size)
-        //ioHook.osDisk.setStorage(code)
+        const memoryOffset = MEMORY_MAP.OS_START;
+        const code = await loadCodeFromFile(currentOs.filepath, memoryOffset)
 
         if (currentOs) {
-            const offset = 0x500;
-
-            for (const [addr, value] of code.entries()) {
-                //ram.storage.set(U16(offset + addr), value);
-                memoryBusInstance.writeMemory(U16(offset + addr), value);
-            }
+            ram.loadCodeInRam(code);
 
         } else {
-            memoryBusInstance.writeMemory(MEMORY_MAP.OS_START, 0 as u8);
+            ram.write(memoryOffset, 0 as u8);
         }
 
         ram.emit('state', { storage: new Map(ram.storage) })

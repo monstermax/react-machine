@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
+import React from 'react'
 
 import { Computer } from './beta/components/Computer';
 import { Cpu } from './beta/components/Cpu';
@@ -8,6 +8,7 @@ import { Ram } from './beta/components/Ram';
 import { Rom } from './beta/components/Rom';
 import { Devices } from './beta/components/Devices';
 import { StorageDisk } from './beta/components/StorageDisk';
+import { Clock } from './beta/components/Clock';
 
 
 export const ComputerBeta: React.FC = () => {
@@ -19,7 +20,9 @@ export const ComputerBeta: React.FC = () => {
 
             <div>
                 <Computer>
-                    <Cpu />
+                    <Cpu>
+                        <Clock />
+                    </Cpu>
                     <MemoryBus>
                         <Rom />
                         <Ram />

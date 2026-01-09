@@ -28,6 +28,7 @@ export const Rom: React.FC<RomProps> = (props) => {
             const rom = new cpuApi.Rom(BOOTLOADER)
             setRom(rom);
 
+            // Handle state updates
             rom.on('state', (state) => {
             })
 

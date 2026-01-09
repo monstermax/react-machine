@@ -17,9 +17,13 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
 
     const memoryInstructionMap = (() => {
-        console.log('buildMemoryInstructionMap:', name, storage)
+        //console.log('buildMemoryInstructionMap:', name, storage)
         return buildMemoryInstructionMap(storage);
     })();
+
+    const sortedStorage = useMemo(() => {
+        return Array.from(storage.entries()).sort((entry1, entry2) => entry1[0] - entry2[0]);
+    }, [storage]);
 
 
     useEffect(() => {
@@ -57,7 +61,7 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
     return (
         <div className="space-y-2">
-            {Array.from(storage.entries()).map(([address, value]) => {
+            {sortedStorage.map(([address, value]) => {
                 const isPC = cpuInstance && (address === pc);
                 const isInstruction = memoryInstructionMap.get(address) ?? false;
                 const inROM = isROM(address);

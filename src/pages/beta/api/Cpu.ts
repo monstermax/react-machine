@@ -4,24 +4,63 @@ import { EventEmitter } from "eventemitter3";
 import { U16, U8 } from "@/lib/integers";
 import { Opcode } from "@/lib/instructions";
 import { initialRegisters } from "./api";
+import { MEMORY_MAP } from "@/lib/memory_map";
 
 import type { MemoryBus } from "./MemoryBus";
 import type { Register, Register16, u16, u8 } from "@/types/cpu.types";
-import { MEMORY_MAP } from "@/lib/memory_map";
+
+
+export class Clock extends EventEmitter {
+    public id: number;
+    public clockFrequency: number = 1;
+    private timer: NodeJS.Timeout | null = null;
+
+
+    constructor() {
+        console.log(`Initializing Clock`);
+        super();
+
+        this.id = Math.round(Math.random() * 999_999_999);
+        this.start();
+    }
+
+
+    tick(): void {
+        console.log('Clock tick')
+        this.emit('tick');
+    }
+
+
+    start(): void {
+        if (this.timer || this.clockFrequency <= 0) return;
+
+        const interval = 1000 / this.clockFrequency;
+        this.timer = setInterval(this.tick.bind(this), interval);
+    }
+
+
+    stop(): void {
+        if (!this.timer) return;
+        clearInterval(this.timer);
+    }
+
+
+    status(): boolean {
+        return !!this.timer;
+    }
+}
 
 
 export class Cpu extends EventEmitter {
     public id: number;
     public memoryBus: MemoryBus | null = null;
     public registers: Map<string, u8 | u16> = new Map;
-    public clockFrequency: number = 1;
-    //public uiFrequency: number;
+    public clock: Clock | null = null;
     public breakpoints: Set<number> = new Set;
     public halted: boolean = false;
     public paused: boolean = true;
     public clockCycle: number = 0;
     private currentBreakpoint: number | null = null;
-    //private lastUiSync: number | null;
     private interruptsEnabled: boolean = false;
     private inInterruptHandler: boolean = false;
 

@@ -1,6 +1,8 @@
+
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '../api/api';
+import { Clock } from './Clock';
 
 import type { u16, u8 } from '@/types/cpu.types';
 
@@ -14,15 +16,15 @@ export type CpuProps = {
 export const Cpu: React.FC<CpuProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
-    const [computer, setComputer] = useState<cpuApi.Computer | null>(null);
     const [cpu, setCpu] = useState<cpuApi.Cpu | null>(null);
+    const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
     const [childrenVisible, setChildrenVisible] = useState(true);
 
     // UI snapshot state
     const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map(cpuApi.initialRegisters));
     const [clockCycle, setClockCycle] = useState(0);
-    const [halted, setHalted] = useState(0);
-    const [paused, setPaused] = useState(0);
+    const [halted, setHalted] = useState(false);
+    const [paused, setPaused] = useState(true);
 
 
     // Instanciate CPU
@@ -39,6 +41,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 cpuApi.cpuRef.current.memoryBus = cpuApi.memoryBusRef.current;
             }
 
+            // Handle state updates
             cpu.on('state', (state) => {
                 console.log('CPU state update', state)
 
@@ -47,6 +50,9 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 }
                 if (state.registers) {
                     setRegisters(state.registers)
+                }
+                if (state.paused) {
+                    setPaused(state.paused)
                 }
             })
         }
@@ -64,11 +70,36 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     }, [cpu, onInstanceCreated]);
 
 
+    // Mount Clock - récupère l'instance du Clock depuis les enfants
+    useEffect(() => {
+        if (!cpu) return;
+
+        if (clockInstance && !cpu.clock) {
+            cpu.clock = clockInstance;
+
+            // Handle state updates
+            clockInstance.on('tick', () => {
+                if (cpu.paused) return;
+                cpu.executeCycle()
+            })
+
+            console.log('Clock monté dans CPU:', clockInstance);
+        }
+    }, [cpu, clockInstance]);
+
+
     const childrenWithProps = React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
             const childElement = child as React.ReactElement<any>;
 
             switch (childElement.type) {
+                case Clock:
+                    return React.cloneElement(childElement, {
+                        onInstanceCreated: (instance: cpuApi.Clock) => {
+                            setClockInstance(instance);
+                        }
+                    });
+                    break;
 
                 default:
                     console.log(`Invalid component mounted into Cpu : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
@@ -87,6 +118,18 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
         if (cpu) {
             cpu.executeCycle();
+        }
+    };
+
+
+    const runLoop = () => {
+        if (!cpu) return;
+
+        console.log(`runStep cycle #${clockCycle + 1}`);
+
+        if (cpu) {
+            cpu.paused = ! cpu.paused;
+            cpu.emit('state', { paused: cpu.paused })
         }
     };
 
@@ -137,9 +180,19 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
                     <button
                         onClick={() => runStep()}
-                        className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                        className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
                     >
                         Step
+                    </button>
+
+                    <button
+                        onClick={() => runLoop()}
+                        className={`bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${!paused
+                            ? "bg-yellow-600 hover:bg-yellow-700"
+                            : "bg-green-900 hover:bg-green-700"
+                            }`}
+                    >
+                        Loop
                     </button>
                 </div>
 

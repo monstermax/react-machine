@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '../api/api';
+import type { u16, u8 } from '@/types/cpu.types';
+import { buildMemoryInstructionMap, getOpcodeName } from '@/lib/instructions';
 
 
 export type StorageDiskProps = {
@@ -16,11 +18,36 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
     const [storageDisk, setStorageDisk] = useState<cpuApi.StorageDisk | null>(null);
     const [childrenVisible, setChildrenVisible] = useState(true);
 
+    // UI snapshot state
+    const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
+    const [decodeInstructions, setDecodeInstructions] = useState(true);
+
+
+    const sortedDiskData = useMemo(() => {
+        return Array.from(storage.entries()).sort(([a], [b]) => a - b)
+    }, [storage]);
+
+
+    const diskInstructionMap = useMemo(() => {
+        //console.log('buildMemoryInstructionMap:', name, storage)
+        return buildMemoryInstructionMap(storage);
+    },
+    [storage]);
+
 
     // Instanciate StorageDisk
     useEffect(() => {
         const _instanciateStorageDisk = () => {
-            setStorageDisk(new cpuApi.StorageDisk(name));
+            const disk = new cpuApi.StorageDisk(name);
+            setStorageDisk(disk);
+
+            disk.on('state', (state) => {
+                console.log('Disk state update', state)
+
+                if (state.storage) {
+                    setStorage(state.storage)
+                }
+            })
         }
 
         const timer = setTimeout(_instanciateStorageDisk, 100);
@@ -72,6 +99,73 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
 
             {/* StorageDisk Content */}
             <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+
+                <>
+                    <div className="font-mono text-sm space-y-1 max-h-[600px] overflow-y-auto">
+                        <div className="text-xs text-slate-400 mb-2">
+                            {name}: {sortedDiskData.length} bytes
+                        </div>
+
+                        {sortedDiskData.length > 0 ? (
+                            sortedDiskData.map(([addr, val]) => {
+                                const isInstruction = (decodeInstructions && diskInstructionMap.get(addr)) ?? false;
+
+                                return (
+                                    <div
+                                        key={addr}
+                                        className="flex justify-between p-2 rounded bg-slate-900/50"
+                                    >
+                                        <span className="text-yellow-400">
+                                            0x{addr.toString(16).padStart(4, "0")}:
+                                        </span>
+                                        <div className="flex gap-4">
+                                            {/* Afficher aussi le caractère ASCII si c'est un caractère imprimable */}
+                                            {!isInstruction && val >= 32 && val <= 126 && (
+                                                <span className="text-xs text-slate-400 mt-1">
+                                                    '{String.fromCharCode(val)}'
+                                                </span>
+                                            )}
+
+                                            <span className={`${isInstruction ? "text-pink-400" : "text-green-400"}`}>
+                                                0x{val.toString(16).padStart(2, "0")}
+                                                {isInstruction && ` (${getOpcodeName(val)})`}
+                                            </span>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="text-slate-500 italic text-center py-8">
+                                {name} is empty
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mt-2 flex gap-4">
+                        <button
+                            onClick={() => setDecodeInstructions(b => !b)}
+                            className="flex gap-2 cursor-pointer px-4 py-2 font-medium transition-colors bg-purple-400"
+                        >
+                            <div>Decode Instructions</div>
+                            <div>{decodeInstructions ? "✅" : "❌"}</div>
+                        </button>
+
+                        <button
+                            onClick={() => { if (confirm(`Erase all data on disk ${name}`)) { setStorage(new Map) } }}
+                            className={`cursor-pointer px-4 py-2 font-medium transition-colors bg-red-400`}
+                        >
+                            Erase Disk
+                        </button>
+
+                        <button
+                            onClick={() => { if (confirm(`Format Disk Filesystem ${name}`)) { /* storageDisk.formatDisk() */ } }}
+                            className={`cursor-pointer px-4 py-2 font-medium transition-colors bg-red-400`}
+                        >
+                            Format FS
+                        </button>
+                    </div>
+                </>
+
 
                 {/* StorageDisk Children */}
                 <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>

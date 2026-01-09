@@ -11,7 +11,7 @@ export class Computer extends EventEmitter {
     public cpu: Cpu | null = null;
     public memoryBus: MemoryBus | null = null;
     public loadedOs: string | null = null;
-    private loadedProgram: string | null = null;
+    public loadedProgram: string | null = null;
 
 
     constructor() {

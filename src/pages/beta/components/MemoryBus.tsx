@@ -32,9 +32,10 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
             // Attach MemoryBus to CPU
             if (cpuApi.cpuRef.current) {
-                cpuApi.cpuRef.current.memoryBus = cpuApi.memoryBusRef.current;
+                cpuApi.cpuRef.current.memoryBus = memoryBus;
             }
 
+            // Handle state updates
             memoryBus.on('state', (state) => {
                 console.log('MemoryBus state update', state)
 
