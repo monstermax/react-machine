@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
-import * as cpuApi from '../lib/api';
+import * as cpuApi from '../api/api';
 
 import type { u16, u8 } from '@/types/cpu.types';
 
@@ -105,7 +105,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     }
 
     return (
-        <div className="cpu">
+        <div className="cpu w-96">
 
             {/* CPU Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
@@ -124,7 +124,14 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             {/* CPU Content */}
             <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
 
-                <div className="p-2 rounded bg-background-light-2xl">
+                <div className="p-2 rounded bg-background-light-2xl flex gap-2">
+                    <button
+                        onClick={() => resetCpu()}
+                        className="bg-red-900 hover:bg-red-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                    >
+                        Reset
+                    </button>
+
                     <button
                         onClick={() => runStep()}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"

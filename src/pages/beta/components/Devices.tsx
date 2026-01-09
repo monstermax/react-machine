@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
-import * as cpuApi from '../lib/api';
+import * as cpuApi from '../api/api';
 import { StorageDisk } from './StorageDisk';
 
 
@@ -57,7 +57,7 @@ export const Devices: React.FC<DevicesProps> = (props) => {
 
 
     return (
-        <div className="devices">
+        <div className="devices w-96">
 
             {/* Devices Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

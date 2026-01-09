@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
-import * as cpuApi from '../lib/api';
+import * as cpuApi from '../api/api';
 import { MemoryTable } from './MemoryTable';
 
 import type { u16, u8 } from '@/types/cpu.types';
@@ -64,7 +64,7 @@ export const Ram: React.FC<RamProps> = (props) => {
     });
 
     return (
-        <div className="ram">
+        <div className="ram w-96">
 
             {/* RAM Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

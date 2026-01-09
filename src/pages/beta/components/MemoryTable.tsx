@@ -1,6 +1,7 @@
+
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
-import * as cpuApi from '../lib/api';
+import * as cpuApi from '../api/api';
 import { isROM } from '@/lib/memory_map';
 import { buildMemoryInstructionMap, getOpcodeName } from '@/lib/instructions';
 import { U16 } from '@/lib/integers';
@@ -12,6 +13,7 @@ export const MemoryTable: React.FC<{ storage: Map<u16, u8> }> = ({ storage }) =>
     const cpuInstance = cpuApi.cpuRef.current;
 
     const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set);
+    const [pc, setPc] = useState<u16>(0 as u16);
 
 
     const memoryInstructionMap = useMemo(() => {
@@ -26,6 +28,12 @@ export const MemoryTable: React.FC<{ storage: Map<u16, u8> }> = ({ storage }) =>
             cpuInstance.on('state', (state) => {
                 if (state.breakpoints) {
                     setBreakpoints(new Set(state.breakpoints))
+                }
+            });
+
+            cpuInstance.on('state', (state) => {
+                if (state.registers) {
+                    setPc(state.registers.get('PC'))
                 }
             });
         }
@@ -49,7 +57,6 @@ export const MemoryTable: React.FC<{ storage: Map<u16, u8> }> = ({ storage }) =>
     return (
         <div className="space-y-2">
             {Array.from(storage.entries()).map(([address, value]) => {
-                const pc = cpuInstance ? cpuInstance.getRegister('PC') : U16(0);
                 const isPC = cpuInstance && (address === pc);
                 const isInstruction = memoryInstructionMap.get(address) ?? false;
                 const inROM = isROM(address);

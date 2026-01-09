@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
-import * as cpuApi from '../lib/api';
+import * as cpuApi from '../api/api';
 import { BOOTLOADER } from '@/programs/bootloader';
 import { MemoryTable } from './MemoryTable';
 
@@ -62,7 +62,7 @@ export const Rom: React.FC<RomProps> = (props) => {
     });
 
     return (
-        <div className="rom">
+        <div className="rom w-96">
 
             {/* ROM Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
