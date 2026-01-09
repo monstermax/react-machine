@@ -40,6 +40,8 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             }
 
             cpu.on('state', (state) => {
+                console.log('CPU state update', state)
+
                 if (state.clockCycle) {
                     setClockCycle(state.clockCycle)
                 }
@@ -124,6 +126,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             {/* CPU Content */}
             <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
 
+                {/* Buttons */}
                 <div className="p-2 rounded bg-background-light-2xl flex gap-2">
                     <button
                         onClick={() => resetCpu()}
@@ -140,8 +143,9 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     </button>
                 </div>
 
+                {/* Cycles */}
                 <div className="p-2 rounded bg-background-light-2xl">
-                    cycle #{clockCycle}
+                    CPU Cycle #{clockCycle}
                 </div>
 
                 {/* Registers */}

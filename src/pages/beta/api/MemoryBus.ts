@@ -16,14 +16,12 @@ export class MemoryBus extends EventEmitter {
     public ram: Ram | null = null;
     public io: IO | null = null;
 
+
     constructor() {
         console.log(`Initializing MemoryBus`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);
-        //this.rom = new ROM;
-        //this.ram = new RAM;
-        //this.io = new IO;
     }
 
 
@@ -54,7 +52,24 @@ export class MemoryBus extends EventEmitter {
 
 
     writeMemory(address: u16, value: u8): void {
+        // ROM is read-only!
+        if (isROM(address)) {
+            console.warn(`Attempted write to ROM at 0x${address.toString(16)}`);
+            return;
+        }
 
+        // I/O write - déléguer au gestionnaire I/O
+        if (this.io && isIO(address)) {
+            //console.log(`Write Memory (IO) @address ${toHex(address)} = ${toHex(value)}`)
+            this.io.write(memoryToIOPort(address), value);
+            return;
+        }
+
+        // RAM write
+        if (this.ram) {
+            //console.log(`Write Memory (RAM) @address ${toHex(address)} = ${toHex(value)}`)
+            this.ram.write(address, value)
+        }
     }
 
 }

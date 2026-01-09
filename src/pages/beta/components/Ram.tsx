@@ -3,7 +3,11 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 import * as cpuApi from '../api/api';
 import { MemoryTable } from './MemoryTable';
 
-import type { u16, u8 } from '@/types/cpu.types';
+import type { OsInfo, u16, u8 } from '@/types/cpu.types';
+import { os_list } from '@/programs/mini_os';
+import { loadCodeFromFile } from '@/lib/compiler';
+import { MEMORY_MAP } from '@/lib/memory_map';
+import { U16 } from '@/lib/integers';
 
 
 export type RamProps = {
@@ -15,10 +19,13 @@ export const Ram: React.FC<RamProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
     const [ram, setRam] = useState<cpuApi.Ram | null>(null);
-    const [childrenVisible, setChildrenVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(true);
 
     // UI snapshot state
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
+
+    const computerInstance = cpuApi.computerRef.current;
+    const memoryBusInstance = cpuApi.memoryBusRef.current;
 
 
     // Instanciate Ram
@@ -27,8 +34,13 @@ export const Ram: React.FC<RamProps> = (props) => {
             const ram = new cpuApi.Ram;
             setRam(ram);
 
-            // TEST: import test data
-            ram.storage = new Map([[0x0500, 123], [0x0501, 124]] as [u16, u8][])
+            ram.on('state', (state) => {
+                console.log('RAM state update', state)
+
+                if (state.storage) {
+                    setStorage(state.storage)
+                }
+            })
 
             // UI snapshot state
             setStorage(ram.storage);
@@ -63,6 +75,37 @@ export const Ram: React.FC<RamProps> = (props) => {
         return child;
     });
 
+
+    const loadOsInRam = async (osName: string) => {
+        if (!ram || !computerInstance || !memoryBusInstance) return;
+
+        const currentOs: OsInfo | null = osName ? os_list[osName] : null;
+        if (!currentOs?.filepath) return;
+
+        const code = await loadCodeFromFile(currentOs.filepath, MEMORY_MAP.OS_START)
+
+        console.log('Loaded code size:', code.size)
+        //ioHook.osDisk.setStorage(code)
+
+        if (currentOs) {
+            const offset = 0x500;
+
+            for (const [addr, value] of code.entries()) {
+                //ram.storage.set(U16(offset + addr), value);
+                memoryBusInstance.writeMemory(U16(offset + addr), value);
+            }
+
+        } else {
+            memoryBusInstance.writeMemory(MEMORY_MAP.OS_START, 0 as u8);
+        }
+
+        ram.emit('state', { storage: new Map(ram.storage) })
+
+        computerInstance.loadedOs = osName;
+        computerInstance.emit('state', { loadedOs: osName })
+    }
+
+
     return (
         <div className="ram w-96">
 
@@ -70,28 +113,38 @@ export const Ram: React.FC<RamProps> = (props) => {
             <div className="w-full flex bg-background-light-xl p-2 rounded">
                 <h2 className="font-bold">RAM</h2>
 
-                {childrenWithProps && (
+                {true && (
                     <button
                         className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
-                        onClick={() => setChildrenVisible(b => !b)}
+                        onClick={() => setContentVisible(b => !b)}
                     >
-                        {childrenVisible ? "-" : "+"}
+                        {contentVisible ? "-" : "+"}
                     </button>
                 )}
             </div>
 
             {/* RAM Content */}
-            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+
+                {/* Buttons */}
+                <div className="p-2 rounded bg-background-light-2xl flex gap-2">
+                    <button
+                        onClick={() => loadOsInRam('MINI_OS_V1')}
+                        className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                        >
+                        Load OS
+                    </button>
+                </div>
 
                 {/* Storage */}
                 <div className="p-2 rounded bg-background-light-2xl">
-                    <h3>Storage</h3>
+                    <h3>RAM Storage</h3>
 
-                    <MemoryTable storage={storage} />
+                    <MemoryTable name="ram" storage={storage} />
                 </div>
 
                 {/* RAM Children */}
-                <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+                <div className={`flex-col space-y-1 bg-background-light-3xl p-1`}>
                     {childrenWithProps && (
                         <div className="ram-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
                             {childrenWithProps}
@@ -100,6 +153,7 @@ export const Ram: React.FC<RamProps> = (props) => {
                 </div>
 
             </div>
+
         </div>
     );
 }

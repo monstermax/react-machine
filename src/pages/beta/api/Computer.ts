@@ -3,13 +3,14 @@ import { EventEmitter } from "eventemitter3";
 
 import type { Cpu } from "./Cpu";
 import type { MemoryBus } from "./MemoryBus";
+import type { IO } from "./IO";
 
 
 export class Computer extends EventEmitter {
     public id: number;
     public cpu: Cpu | null = null;
     public memoryBus: MemoryBus | null = null;
-    private loadedOs: string | null = null;
+    public loadedOs: string | null = null;
     private loadedProgram: string | null = null;
 
 

@@ -3,12 +3,14 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 import * as cpuApi from '../api/api';
 import { MemoryBus } from './MemoryBus';
 import { Cpu } from './Cpu';
+import { Devices } from './Devices';
 
 
 export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     const [computer, setComputer] = useState<cpuApi.Computer | null>(null);
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
+    const [devicesInstance, setDevicesInstance] = useState<cpuApi.IO | null>(null);
     const [childrenVisible, setChildrenVisible] = useState(true);
 
 
@@ -31,7 +33,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
     useEffect(() => {
         if (!computer) return;
 
-        if (cpuInstance) {
+        if (cpuInstance && !computer.cpu) {
             computer.cpu = cpuInstance;
             console.log('CPU monté dans Computer:', cpuInstance);
         }
@@ -42,11 +44,22 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
     useEffect(() => {
         if (!computer) return;
 
-        if (memoryBusInstance) {
+        if (memoryBusInstance && !computer.memoryBus) {
             computer.memoryBus = memoryBusInstance;
             console.log('MemoryBus monté dans Computer:', cpuInstance);
         }
     }, [computer, memoryBusInstance]);
+
+
+    // Mount Devices - récupère l'instance du Devices depuis les enfants
+    useEffect(() => {
+        if (!computer?.memoryBus) return;
+
+        if (devicesInstance && !computer.memoryBus.io) {
+            computer.memoryBus.io = devicesInstance;
+            console.log('Devices monté dans MemoryBus via Computer:', devicesInstance);
+        }
+    }, [computer, devicesInstance]);
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -66,6 +79,13 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
                     return React.cloneElement(childElement, {
                         onInstanceCreated: (instance: cpuApi.MemoryBus) => {
                             setMemoryBusInstance(instance);
+                        }
+                    });
+                    break;
+                case Devices:
+                    return React.cloneElement(childElement, {
+                        onInstanceCreated: (instance: cpuApi.IO) => {
+                            setDevicesInstance(instance);
                         }
                     });
                     break;
@@ -103,6 +123,15 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
 
             {/* Computer Content */}
             <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+
+                <div className="p-2 rounded bg-background-light-2xl flex gap-2 justify-around">
+                    <div className="w-5/12 bg-background-light-xl px-2 py-1 rounded">
+                        Main OS:
+                    </div>
+                    <div className="w-5/12 bg-background-light-xl px-2 py-1 rounded">
+                        Program:
+                    </div>
+                </div>
 
                 {/* Computer Children */}
                 {childrenWithProps && (

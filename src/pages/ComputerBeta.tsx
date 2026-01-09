@@ -21,13 +21,13 @@ export const ComputerBeta: React.FC = () => {
                 <Computer>
                     <Cpu />
                     <MemoryBus>
-                        <Ram />
                         <Rom />
-                        <Devices>
-                            <StorageDisk name="os_disk" />
-                            <StorageDisk name="program_disk" />
-                        </Devices>
+                        <Ram />
                     </MemoryBus>
+                    <Devices>
+                        <StorageDisk name="os_disk" />
+                        <StorageDisk name="program_disk" />
+                    </Devices>
                 </Computer>
             </div>
         </div>

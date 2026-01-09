@@ -9,16 +9,17 @@ import { U16 } from '@/lib/integers';
 import type { u16, u8 } from '@/types/cpu.types';
 
 
-export const MemoryTable: React.FC<{ storage: Map<u16, u8> }> = ({ storage }) => {
+export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({ name, storage }) => {
     const cpuInstance = cpuApi.cpuRef.current;
 
     const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set);
     const [pc, setPc] = useState<u16>(0 as u16);
 
 
-    const memoryInstructionMap = useMemo(() => {
+    const memoryInstructionMap = (() => {
+        console.log('buildMemoryInstructionMap:', name, storage)
         return buildMemoryInstructionMap(storage);
-    }, [storage]);
+    })();
 
 
     useEffect(() => {

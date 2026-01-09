@@ -18,7 +18,6 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     const [memoryBus, setMemoryBus] = useState<cpuApi.MemoryBus | null>(null);
     const [romInstance, setRomInstance] = useState<cpuApi.Rom | null>(null);
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
-    const [devicesInstance, setDevicesInstance] = useState<cpuApi.IO | null>(null);
     const [childrenVisible, setChildrenVisible] = useState(true);
 
 
@@ -37,6 +36,8 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
             }
 
             memoryBus.on('state', (state) => {
+                console.log('MemoryBus state update', state)
+
             })
         }
 
@@ -57,7 +58,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     useEffect(() => {
         if (!memoryBus) return;
 
-        if (romInstance) {
+        if (romInstance && !memoryBus.rom) {
             memoryBus.rom = romInstance;
             console.log('ROM monté dans MemoryBus:', romInstance);
         }
@@ -68,22 +69,11 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     useEffect(() => {
         if (!memoryBus) return;
 
-        if (ramInstance) {
+        if (ramInstance && !memoryBus.ram) {
             memoryBus.ram = ramInstance;
             console.log('RAM monté dans MemoryBus:', ramInstance);
         }
     }, [memoryBus, ramInstance]);
-
-
-    // Mount Devices - récupère l'instance du Devices depuis les enfants
-    useEffect(() => {
-        if (!memoryBus) return;
-
-        if (devicesInstance) {
-            memoryBus.io = devicesInstance;
-            console.log('Devices monté dans MemoryBus:', devicesInstance);
-        }
-    }, [memoryBus, devicesInstance]);
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -105,16 +95,9 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
                         }
                     });
                     break;
-                case Devices:
-                    return React.cloneElement(childElement, {
-                        onInstanceCreated: (instance: cpuApi.IO) => {
-                            setDevicesInstance(instance);
-                        }
-                    });
-                    break;
 
                 default:
-                    console.log(`Invalid component mounted into MemoryBus : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
+                    console.log(`Invalid component mounted into MemoryBus :`, (childElement.type as JSXElementConstructor<any>).name);
                     return null;
                     break;
             }
@@ -127,7 +110,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     }
 
     return (
-        <div className="memory-bus">
+        <div className="memory-bus min-w-48 grow">
 
             {/* MemoryBus Head */}
             <div className="flex bg-background-light-xl p-2 rounded">

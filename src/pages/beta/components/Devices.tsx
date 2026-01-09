@@ -57,7 +57,7 @@ export const Devices: React.FC<DevicesProps> = (props) => {
 
 
     return (
-        <div className="devices w-96">
+        <div className="devices min-w-48 grow">
 
             {/* Devices Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

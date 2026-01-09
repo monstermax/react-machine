@@ -16,7 +16,7 @@ export const Rom: React.FC<RomProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
     const [rom, setRom] = useState<cpuApi.Rom | null>(null);
-    const [childrenVisible, setChildrenVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(true);
 
     // UI snapshot state
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
@@ -27,6 +27,9 @@ export const Rom: React.FC<RomProps> = (props) => {
         const _instanciateRom = () => {
             const rom = new cpuApi.Rom(BOOTLOADER)
             setRom(rom);
+
+            rom.on('state', (state) => {
+            })
 
             // UI snapshot state
             setStorage(rom.storage);
@@ -68,28 +71,28 @@ export const Rom: React.FC<RomProps> = (props) => {
             <div className="w-full flex bg-background-light-xl p-2 rounded">
                 <h2 className="font-bold">ROM</h2>
 
-                {childrenWithProps && (
+                {true && (
                     <button
                         className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
-                        onClick={() => setChildrenVisible(b => !b)}
+                        onClick={() => setContentVisible(b => !b)}
                     >
-                        {childrenVisible ? "-" : "+"}
+                        {contentVisible ? "-" : "+"}
                     </button>
                 )}
             </div>
 
             {/* ROM Content */}
-            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
 
                 {/* Storage */}
                 <div className="p-2 rounded bg-background-light-2xl">
-                    <h3>Storage</h3>
+                    <h3>ROM Storage</h3>
 
-                    <MemoryTable storage={storage} />
+                    <MemoryTable name="rom" storage={storage} />
                 </div>
 
                 {/* ROM Children */}
-                <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+                <div className={`flex-col space-y-1 bg-background-light-3xl p-1`}>
                     {childrenWithProps && (
                         <div className="rom-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
                             {childrenWithProps}

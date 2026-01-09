@@ -7,6 +7,7 @@ import { initialRegisters } from "./api";
 
 import type { MemoryBus } from "./MemoryBus";
 import type { Register, Register16, u16, u8 } from "@/types/cpu.types";
+import { MEMORY_MAP } from "@/lib/memory_map";
 
 
 export class Cpu extends EventEmitter {
@@ -103,42 +104,405 @@ export class Cpu extends EventEmitter {
 
 
     executeOpcode(pc: u16, instruction: u8) {
+        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+
         switch (instruction) {
             // ===== SYSTEM =====
             case Opcode.NOP:
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
+            case Opcode.SYSCALL:
+                this.handleSyscall(pc);
+                break;
+
+            case Opcode.BREAKPOINT:
+                this.paused = true
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.HALT:
+                this.halted = true;
+                break;
+
             // ===== ALU INSTRUCTIONS =====
-            case Opcode.ADD:
-                const a = this.getRegister("A");
-                const b = this.getRegister("B");
-                const { result, flags } = ALU.add(a, b);
+            case Opcode.ADD: {
+                const { result, flags } = ALU.add(this.getRegister("A"), this.getRegister("B"));
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
+            }
+
+            case Opcode.SUB: {
+                const { result, flags } = ALU.sub(this.getRegister("A"), this.getRegister("B"))
+                this.setRegister("A", result);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.AND: {
+                const { result, flags } = ALU.and(this.getRegister("A"), this.getRegister("B"))
+                this.setRegister("A", result);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.OR: {
+                const { result, flags } = ALU.or(this.getRegister("A"), this.getRegister("B"))
+                this.setRegister("A", result);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.XOR: {
+                const { result, flags } = ALU.xor(this.getRegister("A"), this.getRegister("B"))
+                this.setRegister("A", result);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.INC_A: {
+                const { result, flags } = ALU.inc(this.getRegister("A"))
+                this.setRegister("A", result);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.DEC_A: {
+                const { result, flags } = ALU.dec(this.getRegister("A"))
+                this.setRegister("A", result);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.INC_B: {
+                const { result, flags } = ALU.inc(this.getRegister("B"))
+                this.setRegister("B", result);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.DEC_B: {
+                const { result, flags } = ALU.dec(this.getRegister("B"))
+                this.setRegister("B", result);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.INC_C: {
+                const { result, flags } = ALU.inc(this.getRegister("C"))
+                this.setRegister("C", result);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.DEC_C: {
+                const { result, flags } = ALU.dec(this.getRegister("C"))
+                this.setRegister("C", result);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.INC_D: {
+                const { result, flags } = ALU.inc(this.getRegister("D"))
+                this.setRegister("D", result);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.DEC_D: {
+                const { result, flags } = ALU.dec(this.getRegister("D"))
+                this.setRegister("D", result);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
 
             // ===== JUMP INSTRUCTIONS =====
             case Opcode.JMP:
                 this.setRegister("PC", this.readMem16(pc));
                 break;
 
+            case Opcode.JZ:
+                if (this.getFlag('zero')) {
+                    this.setRegister("PC", this.readMem16(pc));
+                } else {
+                    this.setRegister("PC", (pc + 3) as u16);
+                }
+                break;
+
+            case Opcode.JNZ:
+                if (!this.getFlag('zero')) {
+                    this.setRegister("PC", this.readMem16(pc));
+                } else {
+                    this.setRegister("PC", (pc + 3) as u16);
+                }
+                break;
+
+            case Opcode.JC:
+                if (this.getFlag('carry')) {
+                    this.setRegister("PC", this.readMem16(pc));
+                } else {
+                    this.setRegister("PC", (pc + 3) as u16);
+                }
+                break;
+
+            case Opcode.JNC:
+                if (!this.getFlag('carry')) {
+                    this.setRegister("PC", this.readMem16(pc));
+                } else {
+                    this.setRegister("PC", (pc + 3) as u16);
+                }
+                break;
+
             // ===== PUSH =====
+            case Opcode.PUSH_A: {
+                this.pushValue(this.getRegister("A"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.PUSH_B:
+                this.pushValue(this.getRegister("B"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.PUSH_C:
+                this.pushValue(this.getRegister("C"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.PUSH_D:
+                this.pushValue(this.getRegister("D"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
 
             // ===== POP =====
+            case Opcode.POP_A:
+                this.setRegister("A", this.popValue());
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.POP_B:
+                this.setRegister("B", this.popValue());
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.POP_C:
+                this.setRegister("C", this.popValue());
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.POP_D:
+                this.setRegister("D", this.popValue());
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
 
             // ===== STACK =====
+            case Opcode.SET_SP:
+                // SET_SP imm16 : SP = valeur immédiate 16-bit
+                this.setRegister("SP", this.readMem16(pc));
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.CALL:
+                this.handleCall(pc);
+                break;
+
+            case Opcode.RET:
+                this.handleRet();
+                break;
 
             // ===== INTERRUPTS =====
+            case Opcode.EI:  // Enable Interrupts
+                this.interruptsEnabled = true;
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.DI:  // Disable Interrupts
+                this.interruptsEnabled = false;
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.IRET: // Return from Interrupt
+                this.handleIRet();
+                break;
 
             // ===== MOV register-register =====
+            case Opcode.MOV_AB:  // A → B
+                this.setRegister("B", this.getRegister("A"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
 
-            // ===== MOV register-immediate =====
+            case Opcode.MOV_AC:  // A → C
+                this.setRegister("C", this.getRegister("A"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
 
-            // ===== MOV memory-register =====
+            case Opcode.MOV_AD:  // A → D
+                this.setRegister("D", this.getRegister("A"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_BA:  // B → A
+                this.setRegister("A", this.getRegister("B"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_BC:  // B → C
+                this.setRegister("C", this.getRegister("B"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_BD:  // B → D
+                this.setRegister("D", this.getRegister("B"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_CA:  // C → A
+                this.setRegister("A", this.getRegister("C"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_CB:  // C → B
+                this.setRegister("B", this.getRegister("C"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_CD:  // C → D
+                this.setRegister("D", this.getRegister("C"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_DA:  // D → A
+                this.setRegister("A", this.getRegister("D"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_DB:  // D → B
+                this.setRegister("B", this.getRegister("D"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_DC:  // D → C
+                this.setRegister("C", this.getRegister("D"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            // ===== MOV register-immediate (set flags) =====
+            case Opcode.MOV_A_IMM:  // MOV A, imm8
+                const immA = this.memoryBus.readMemory((pc + 1) as u16);
+                this.setRegister("A", immA);
+                this.setFlags(immA === 0, false);  // Set zero flag
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+
+            case Opcode.MOV_B_IMM:  // MOV B, imm8
+                const immB = this.memoryBus.readMemory((pc + 1) as u16);
+                this.setRegister("B", immB);
+                this.setFlags(immB === 0, false);  // Set zero flag
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+
+            case Opcode.MOV_C_IMM:  // MOV C, imm8
+                const immC = this.memoryBus.readMemory((pc + 1) as u16);
+                this.setRegister("C", immC);
+                this.setFlags(immC === 0, false);  // Set zero flag
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+
+            case Opcode.MOV_D_IMM:  // MOV D, imm8
+                const immD = this.memoryBus.readMemory((pc + 1) as u16);
+                this.setRegister("D", immD);
+                this.setFlags(immD === 0, false);  // Set zero flag
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+
+            // ===== MOV memory-register (set flags) =====
+            case Opcode.MOV_A_MEM:  // MOV A, [addr16]
+                const addrA = this.readMem16(pc);
+                const memValueA = this.memoryBus.readMemory(addrA);
+                this.setRegister("A", memValueA);
+                this.setFlags(memValueA === 0, false);  // Set zero flag
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_B_MEM:  // MOV B, [addr16]
+                const addrB = this.readMem16(pc);
+                const memValueB = this.memoryBus.readMemory(addrB);
+                this.setRegister("B", memValueB);
+                this.setFlags(memValueB === 0, false);  // Set zero flag
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_C_MEM:  // MOV C, [addr16]
+                const addrC = this.readMem16(pc);
+                const memValueC = this.memoryBus.readMemory(addrC);
+                this.setRegister("C", memValueC);
+                this.setFlags(memValueC === 0, false);  // Set zero flag
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_D_MEM:  // MOV D, [addr16]
+                const addrD = this.readMem16(pc);
+                const memValueD = this.memoryBus.readMemory(addrD);
+                this.setRegister("D", memValueD);
+                this.setFlags(memValueD === 0, false);  // Set zero flag
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
 
             // ===== MOV register-memory =====
+            case Opcode.MOV_MEM_A:  // MOV [addr16], A
+                const addrMemA = this.readMem16(pc);
+                this.memoryBus.writeMemory(addrMemA, this.getRegister("A"));
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_MEM_B:  // MOV [addr16], B
+                const addrMemB = this.readMem16(pc);
+                this.memoryBus.writeMemory(addrMemB, this.getRegister("B"));
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_MEM_C:  // MOV [addr16], C
+                const addrMemC = this.readMem16(pc);
+                this.memoryBus.writeMemory(addrMemC, this.getRegister("C"));
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_MEM_D:  // MOV [addr16], D
+                const addrMemD = this.readMem16(pc);
+                this.memoryBus.writeMemory(addrMemD, this.getRegister("D"));
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
+
+            case Opcode.MOV_A_PTR_CD:  // MOV A, *[C:D]
+                const ptrCD_LoadA = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
+                const valuePtr_A = this.memoryBus.readMemory(ptrCD_LoadA);
+                this.setRegister("A", valuePtr_A);
+                this.setFlags(valuePtr_A === 0, false);  // Set zero flag
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_B_PTR_CD:  // MOV B, *[C:D]
+                const ptrCD_LoadB = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
+                const valuePtr_B = this.memoryBus.readMemory(ptrCD_LoadB);
+                this.setRegister("B", valuePtr_B);
+                this.setFlags(valuePtr_B === 0, false);  // Set zero flag
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_PTR_CD_A:  // MOV *[C:D], A
+                const ptrCD_StoreA = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
+                this.memoryBus.writeMemory(ptrCD_StoreA, this.getRegister("A"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.MOV_PTR_CD_B:  // MOV *[C:D], B
+                const ptrCD_StoreB = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
+                this.memoryBus.writeMemory(ptrCD_StoreB, this.getRegister("B"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
 
             default:
                 this.setRegister("PC", (pc + 1) as u16);
@@ -150,6 +514,151 @@ export class Cpu extends EventEmitter {
         }
 
     }
+
+
+    // Fonction pour CALL
+    handleSyscall(pc: u16) {
+        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+
+        const syscallNum = this.memoryBus.readMemory((pc + 1) as u16);
+
+        switch (syscallNum) {
+            case 0: // exit
+                console.log("📍 Program exit (syscall 0)");
+
+                // Clear program memory - pour eviter que le programme ne se relance automatiquement (si mini_os v1)
+                //for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
+                //    memory.writeMemory(addr, 0 as u8);
+                //    break; // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
+                //}
+
+                // Retour à l'OS
+                this.setRegister("PC", MEMORY_MAP.OS_START);
+                break;
+
+            case 1: // pause
+                // TODO: mettre en pause dans l'interface UI
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+
+            case 2: // print_char - afficher A comme caractère
+                //console.log(`📝 print_char: ${String.fromCharCode(getRegister("A"))}`);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+
+            case 3: // print_num - afficher A comme nombre
+                //console.log(`📊 print_num: ${getRegister("A")}`);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+
+            case 4: // print_string - afficher string pointée par C:D
+                {
+                    let addr = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
+
+                    // Lire caractères jusqu'à '\0'
+                    while (true) {
+                        const char = this.memoryBus.readMemory(addr);
+
+                        if (char === 0) break; // '\0' trouvé
+
+                        // Écrire dans console
+                        //ioHook.console.write(0x00 as u8, char); // CONSOLE_CHAR
+
+                        addr = ((addr + 1) & 0xFFFF) as u16;
+                    }
+
+                    this.setRegister("PC", (pc + 2) as u16);
+                }
+                break;
+
+            default:
+                console.warn(`Unknown syscall: ${syscallNum}`);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+        }
+    }
+
+
+    handleCall(pc: u16) {
+        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+
+        // Adresse de retour = PC + 3 (opcode + 2 bytes d'adresse)
+        const returnAddr = pc + 3;
+
+        // PUSH l'adresse de retour sur la pile (16 bits)
+        let sp = this.getRegister("SP");
+
+        // PUSH high byte
+        this.memoryBus.writeMemory(sp, ((returnAddr >> 8) & 0xFF) as u8);
+        sp = ((sp - 1) & 0xFFFF) as u16;
+
+        // PUSH low byte
+        this.memoryBus.writeMemory(sp, (returnAddr & 0xFF) as u8);
+        sp = ((sp - 1) & 0xFFFF) as u16;
+
+        this.setRegister("SP", sp);
+
+        // Lire l'adresse de destination
+        const callAddr = this.readMem16(pc);
+
+        // Sauter
+        this.setRegister("PC", callAddr);
+    }
+
+
+    // Fonction pour RET
+    handleRet() {
+        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+
+        let sp = this.getRegister("SP");
+
+        // POP low byte
+        sp = ((sp + 1) & 0xFFFF) as u16;
+        const low = this.memoryBus.readMemory(sp);
+
+        // POP high byte
+        sp = ((sp + 1) & 0xFFFF) as u16;
+        const high = this.memoryBus.readMemory(sp);
+
+        const retAddr = ((high << 8) | low) as u16;
+
+        // Mettre à jour SP
+        this.setRegister("SP", sp);
+
+        // Sauter à l'adresse retour
+        this.setRegister("PC", retAddr);
+    }
+
+
+    // Fonction pour IRET (Return from Interrupt)
+    handleIRet() {
+        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+
+        let sp = this.getRegister("SP");
+
+        // POP PC - low
+        sp = ((sp + 1) & 0xFFFF) as u16;
+        const pcLow = this.memoryBus.readMemory(sp);
+
+        // POP PC - high
+        sp = ((sp + 1) & 0xFFFF) as u16;
+        const pcHigh = this.memoryBus.readMemory(sp);
+        const returnAddr = ((pcHigh << 8) | pcLow) as u16;
+
+        // POP Flags
+        sp = ((sp + 1) & 0xFFFF) as u16;
+        const flags = this.memoryBus.readMemory(sp);
+
+        // Mettre à jour registres
+        this.setRegister("SP", sp);
+        this.setRegister("PC", returnAddr);
+        this.setRegister("FLAGS", flags);
+
+        // Réactiver interruptions
+        this.interruptsEnabled = true;
+        this.inInterruptHandler = false;
+    }
+
 
 
     readMem8(pc: u16): u8 {
@@ -165,6 +674,40 @@ export class Cpu extends EventEmitter {
         const low = this.memoryBus.readMemory((pc + 1) as u16);
         const high = this.memoryBus.readMemory((pc + 2) as u16);
         const value = ((high << 8) | low) as u16;
+        return value;
+    }
+
+
+    // Fonction pour push une valeur sur la pile
+    pushValue(value: u8) {
+        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+
+        let sp = this.getRegister("SP");
+
+        // Écrire la valeur à [SP]
+        this.memoryBus.writeMemory(sp, value);
+
+        // Décrémenter SP (pile descend)
+        sp = ((sp - 1) & 0xFFFF) as u16;
+        this.setRegister("SP", sp);
+    }
+
+
+    // Fonction pour pop une valeur de la pile
+    popValue(): u8 {
+        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+
+        let sp = this.getRegister("SP");
+
+        // Incrémenter SP d'abord (pile remonte)
+        sp = ((sp + 1) & 0xFFFF) as u16;
+
+        // Lire la valeur à [SP]
+        const value = this.memoryBus.readMemory(sp);
+
+        // Mettre à jour SP
+        this.setRegister("SP", sp);
+
         return value;
     }
 
