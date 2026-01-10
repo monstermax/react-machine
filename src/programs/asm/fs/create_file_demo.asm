@@ -11,13 +11,13 @@ MAIN:
     JZ $END # Si échec, halt
 
     # 2. Write content
-    CALL $WRITE_FILE_CONTENT # Call WRITE_FILE_CONTENT
+#    CALL $WRITE_FILE_CONTENT # Call WRITE_FILE_CONTENT
 
     # 3. Play sound
     CALL $PLAY_SOUND # Call PLAY_SOUND
 
     # 4. Execute file
-    CALL $EXECUTE_FILE # Call EXECUTE_FILE
+#    CALL $EXECUTE_FILE # Call EXECUTE_FILE
 
     # 5. End
     END:

@@ -75,11 +75,41 @@ export class Cpu extends EventEmitter {
     executeCycle() {
         if (!this.memoryBus) return;
 
-        this.clockCycle++
-        //console.log('CPU executeCycle', this.clockCycle)
-
         // 1. Fetch
         const pc = this.getRegister("PC");
+
+
+        // Handle manual breakpoints
+        if (this.currentBreakpoint === null && this.breakpoints.has(pc) && !this.paused) {
+            this.paused = true;
+            this.currentBreakpoint = pc;
+            // TODO: petit bug à corriger. si on step jusqu'a un breakpoint. quand on redémarrage il toussote
+
+            // Update UI State
+            this.emit('state', {
+                paused: this.paused,
+            })
+
+            return;
+        }
+
+        this.currentBreakpoint = null;
+
+        /*
+        if (this.currentBreakpoint == pc) {
+            this.setRegister("PC", (pc + 1) as u16);
+            this.currentBreakpoint = null;
+
+        } else {
+            this.paused = true
+            this.currentBreakpoint = pc;
+
+            // Update UI State
+            this.emit('state', {
+                paused: this.paused,
+            })
+        }
+        */
 
         const instruction = this.memoryBus.readMemory(pc);
         this.setRegister("IR", instruction);
@@ -88,6 +118,10 @@ export class Cpu extends EventEmitter {
         const opcode = this.getRegister("IR");
 
         // 3. Execute
+
+        this.clockCycle++
+        //console.log('CPU executeCycle', this.clockCycle)
+
         this.executeOpcode(pc, opcode);
 
         // 4. Memory
@@ -116,18 +150,21 @@ export class Cpu extends EventEmitter {
                 break;
 
             case Opcode.BREAKPOINT:
-                if (this.currentBreakpoint == pc) {
-                    this.setRegister("PC", (pc + 1) as u16);
+                if (this.currentBreakpoint === pc) {
                     this.currentBreakpoint = null;
+                    this.setRegister("PC", (pc + 1) as u16);
 
                 } else {
-                    this.paused = true
                     this.currentBreakpoint = pc;
 
-                    // Update UI State
-                    this.emit('state', {
-                        paused: this.paused,
-                    })
+                    if (!this.paused) {
+                        this.paused = true
+
+                        // Update UI State
+                        this.emit('state', {
+                            paused: this.paused,
+                        })
+                    }
                 }
                 break;
 
