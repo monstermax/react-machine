@@ -10,13 +10,14 @@ export type StorageDiskProps = {
     name: string;
     ioPort: number;
     persistent?: boolean;
+    open?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.StorageDisk) => void,
 }
 
 
 export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
-    const { name, ioPort, persistent, children, onInstanceCreated } = props
+    const { name, ioPort, persistent, open, children, onInstanceCreated } = props
 
     // Core
     const [storageDiskInstance, setStorageDiskInstance] = useState<cpuApi.StorageDisk | null>(null);
@@ -25,7 +26,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open === undefined ? true : open);
     const [skipStorageEffect, setSkipStorageEffect] = useState(false);
     const [initialized, setInitialized] = useState(false)
     const [decodeInstructions, setDecodeInstructions] = useState(true);
