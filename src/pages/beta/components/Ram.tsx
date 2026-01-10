@@ -18,7 +18,8 @@ export type RamProps = {
 export const Ram: React.FC<RamProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
-    const [ram, setRam] = useState<cpuApi.Ram | null>(null);
+    const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
+
     const [contentVisible, setContentVisible] = useState(true);
 
     // UI snapshot state
@@ -31,7 +32,7 @@ export const Ram: React.FC<RamProps> = (props) => {
     useEffect(() => {
         const _instanciateRam = () => {
             const ram = new cpuApi.Ram;
-            setRam(ram);
+            setRamInstance(ram);
 
             // Save RamBus Ref
             cpuApi.ramRef.current = ram;
@@ -56,10 +57,10 @@ export const Ram: React.FC<RamProps> = (props) => {
 
     // Notifie le parent quand le Ram est créé
     useEffect(() => {
-        if (ram && onInstanceCreated) {
-            onInstanceCreated(ram);
+        if (ramInstance && onInstanceCreated) {
+            onInstanceCreated(ramInstance);
         }
-    }, [ram, onInstanceCreated]);
+    }, [ramInstance, onInstanceCreated]);
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -80,7 +81,7 @@ export const Ram: React.FC<RamProps> = (props) => {
 
 
     const loadOsInRam = async (osName: string) => {
-        if (!ram || !computerInstance) return;
+        if (!ramInstance || !computerInstance) return;
 
         const currentOs: OsInfo | null = osName ? os_list[osName] : null;
         if (!currentOs?.filepath) return;
@@ -89,13 +90,13 @@ export const Ram: React.FC<RamProps> = (props) => {
         const code = await loadCodeFromFile(currentOs.filepath, memoryOffset)
 
         if (currentOs) {
-            ram.loadCodeInRam(code);
+            ramInstance.loadCodeInRam(code);
 
         } else {
-            ram.write(memoryOffset, 0 as u8);
+            ramInstance.write(memoryOffset, 0 as u8);
         }
 
-        ram.emit('state', { storage: new Map(ram.storage) })
+        ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
 
         computerInstance.loadedOs = osName;
         computerInstance.emit('state', { loadedOs: osName })

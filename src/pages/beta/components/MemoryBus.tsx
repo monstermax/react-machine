@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 import * as cpuApi from '../api/api';
 import { Rom } from './Rom';
 import { Ram } from './Ram';
-import { Devices } from './Devices';
+import { DevicesManager } from './Devices';
 
 
 type MemoryBusProps = {
@@ -15,17 +15,18 @@ type MemoryBusProps = {
 export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
-    const [memoryBus, setMemoryBus] = useState<cpuApi.MemoryBus | null>(null);
+    const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
     const [romInstance, setRomInstance] = useState<cpuApi.Rom | null>(null);
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
-    const [childrenVisible, setChildrenVisible] = useState(true);
+
+    const [contentVisible, setContentVisible] = useState(true);
 
 
     // Instanciate MemoryBus
     useEffect(() => {
         const _instanciateMemoryBus = () => {
             const memoryBus = new cpuApi.MemoryBus;
-            setMemoryBus(memoryBus);
+            setMemoryBusInstance(memoryBus);
 
             // Save MemoryBus Ref
             cpuApi.memoryBusRef.current = memoryBus;
@@ -49,32 +50,32 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
     // Notifie le parent quand le MemoryBus est créé
     useEffect(() => {
-        if (memoryBus && onInstanceCreated) {
-            onInstanceCreated(memoryBus);
+        if (memoryBusInstance && onInstanceCreated) {
+            onInstanceCreated(memoryBusInstance);
         }
-    }, [memoryBus, onInstanceCreated]);
+    }, [memoryBusInstance, onInstanceCreated]);
 
 
     // Mount ROM - récupère l'instance du ROM depuis les enfants
     useEffect(() => {
-        if (!memoryBus) return;
+        if (!memoryBusInstance) return;
 
-        if (romInstance && !memoryBus.rom) {
-            memoryBus.rom = romInstance;
+        if (romInstance && !memoryBusInstance.rom) {
+            memoryBusInstance.rom = romInstance;
             console.log('ROM monté dans MemoryBus:', romInstance);
         }
-    }, [memoryBus, romInstance]);
+    }, [memoryBusInstance, romInstance]);
 
 
     // Mount RAM - récupère l'instance du RAM depuis les enfants
     useEffect(() => {
-        if (!memoryBus) return;
+        if (!memoryBusInstance) return;
 
-        if (ramInstance && !memoryBus.ram) {
-            memoryBus.ram = ramInstance;
+        if (ramInstance && !memoryBusInstance.ram) {
+            memoryBusInstance.ram = ramInstance;
             console.log('RAM monté dans MemoryBus:', ramInstance);
         }
-    }, [memoryBus, ramInstance]);
+    }, [memoryBusInstance, ramInstance]);
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -106,7 +107,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
         return child;
     });
 
-    if (!memoryBus) {
+    if (!memoryBusInstance) {
         return <>Loading Memory Bus</>;
     }
 
@@ -120,15 +121,15 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
                 {childrenWithProps && (
                     <button
                         className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
-                        onClick={() => setChildrenVisible(b => !b)}
+                        onClick={() => setContentVisible(b => !b)}
                     >
-                        {childrenVisible ? "-" : "+"}
+                        {contentVisible ? "-" : "+"}
                     </button>
                 )}
             </div>
 
             {/* MemoryBus Content */}
-            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
 
                 {/* MemoryBus Children */}
                 {childrenWithProps && (

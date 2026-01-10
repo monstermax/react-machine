@@ -16,9 +16,10 @@ export type CpuProps = {
 export const Cpu: React.FC<CpuProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
-    const [cpu, setCpu] = useState<cpuApi.Cpu | null>(null);
+    const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
-    const [childrenVisible, setChildrenVisible] = useState(true);
+
+    const [contentVisible, setContentVisible] = useState(true);
 
     // UI snapshot state
     const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map(cpuApi.initialRegisters));
@@ -31,7 +32,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     useEffect(() => {
         const _instanciateCpu = () => {
             const cpu = new cpuApi.Cpu;
-            setCpu(cpu);
+            setCpuInstance(cpu);
 
             // Save CPU Ref
             cpuApi.cpuRef.current = cpu;
@@ -43,7 +44,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
             // Handle state updates
             cpu.on('state', (state) => {
-                console.log('CPU state update', state)
+                //console.log('CPU state update', state)
 
                 if (state.clockCycle) {
                     setClockCycle(state.clockCycle)
@@ -51,7 +52,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 if (state.registers) {
                     setRegisters(state.registers)
                 }
-                if (state.paused) {
+                if (state.paused !== undefined) {
                     setPaused(state.paused)
                 }
             })
@@ -64,28 +65,28 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
     // Notifie le parent quand le CPU est créé
     useEffect(() => {
-        if (cpu && onInstanceCreated) {
-            onInstanceCreated(cpu);
+        if (cpuInstance && onInstanceCreated) {
+            onInstanceCreated(cpuInstance);
         }
-    }, [cpu, onInstanceCreated]);
+    }, [cpuInstance, onInstanceCreated]);
 
 
     // Mount Clock - récupère l'instance du Clock depuis les enfants
     useEffect(() => {
-        if (!cpu) return;
+        if (!cpuInstance) return;
 
-        if (clockInstance && !cpu.clock) {
-            cpu.clock = clockInstance;
+        if (clockInstance && !cpuInstance.clock) {
+            cpuInstance.clock = clockInstance;
 
             // Handle state updates
             clockInstance.on('tick', () => {
-                if (cpu.paused) return;
-                cpu.executeCycle()
+                if (cpuInstance.paused) return;
+                cpuInstance.executeCycle()
             })
 
             console.log('Clock monté dans CPU:', clockInstance);
         }
-    }, [cpu, clockInstance]);
+    }, [cpuInstance, clockInstance]);
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -112,40 +113,40 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
 
     const runStep = () => {
-        if (!cpu) return;
+        if (!cpuInstance) return;
 
         console.log(`runStep cycle #${clockCycle + 1}`);
 
-        if (cpu) {
-            cpu.executeCycle();
+        if (cpuInstance) {
+            cpuInstance.executeCycle();
         }
     };
 
 
     const runLoop = () => {
-        if (!cpu) return;
+        if (!cpuInstance) return;
 
-        console.log(`runStep cycle #${clockCycle + 1}`);
+        console.log(`runLoop cycle #${clockCycle + 1}`);
 
-        if (cpu) {
-            cpu.paused = ! cpu.paused;
-            cpu.emit('state', { paused: cpu.paused })
+        if (cpuInstance) {
+            cpuInstance.paused = ! cpuInstance.paused;
+            cpuInstance.emit('state', { paused: cpuInstance.paused })
         }
     };
 
 
     const resetCpu = () => {
-        if (!cpu) return;
+        if (!cpuInstance) return;
 
         console.log('resetCpu');
 
-        if (cpu) {
-            cpu.reset();
+        if (cpuInstance) {
+            cpuInstance.reset();
         }
     };
 
 
-    if (!cpu) {
+    if (!cpuInstance) {
         return <>Loading CPU</>;
     }
 
@@ -159,15 +160,15 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 {true && (
                     <button
                         className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
-                        onClick={() => setChildrenVisible(b => !b)}
+                        onClick={() => setContentVisible(b => !b)}
                     >
-                        {childrenVisible ? "-" : "+"}
+                        {contentVisible ? "-" : "+"}
                     </button>
                 )}
             </div>
 
             {/* CPU Content */}
-            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
 
                 {/* Buttons */}
                 <div className="p-2 rounded bg-background-light-2xl flex gap-2">
@@ -175,14 +176,14 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                         onClick={() => resetCpu()}
                         className="bg-red-900 hover:bg-red-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                     >
-                        Reset
+                        ⟳ Reset
                     </button>
 
                     <button
                         onClick={() => runStep()}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
                     >
-                        Step
+                        ⏭ Step
                     </button>
 
                     <button
@@ -192,7 +193,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                             : "bg-green-900 hover:bg-green-700"
                             }`}
                     >
-                        Loop
+                        {paused ? "▶ Start" : "⏸ Pause"}
                     </button>
                 </div>
 

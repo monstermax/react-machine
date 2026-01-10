@@ -1,22 +1,23 @@
+
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '../api/api';
 import { MemoryBus } from './MemoryBus';
 import { Cpu } from './Cpu';
-import { Devices } from './Devices';
+import { DevicesManager } from './Devices';
 import { os_list } from '@/programs/mini_os';
 import { programs } from '@/lib/programs';
-import type { OsInfo, ProgramInfo, u8 } from '@/types/cpu.types';
+import type { CompiledCode, OsInfo, ProgramInfo, u8 } from '@/types/cpu.types';
 import { MEMORY_MAP } from '@/lib/memory_map';
 import { loadCodeFromFile } from '@/lib/compiler';
 
 
 export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-    const [computer, setComputer] = useState<cpuApi.Computer | null>(null);
+    const [computerInstance, setComputerInstance] = useState<cpuApi.Computer | null>(null);
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
-    //const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
     const [devicesInstance, setDevicesInstance] = useState<cpuApi.IO | null>(null);
+
     const [childrenVisible, setChildrenVisible] = useState(true);
 
     const [selectedOs, setSelectedOs] = useState<string | null>(null);
@@ -32,7 +33,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
     useEffect(() => {
         const _instanciateComputer = () => {
             const computer = new cpuApi.Computer;
-            setComputer(computer);
+            setComputerInstance(computer);
 
             // Save Computer Ref
             cpuApi.computerRef.current = computer;
@@ -51,35 +52,35 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
 
     // Mount CPU - récupère l'instance du CPU depuis les enfants
     useEffect(() => {
-        if (!computer) return;
+        if (!computerInstance) return;
 
-        if (cpuInstance && !computer.cpu) {
-            computer.cpu = cpuInstance;
+        if (cpuInstance && !computerInstance.cpu) {
+            computerInstance.cpu = cpuInstance;
             console.log('CPU monté dans Computer:', cpuInstance);
         }
-    }, [computer, cpuInstance]);
+    }, [computerInstance, cpuInstance]);
 
 
     // Mount MemoryBus - récupère l'instance du MemoryBus depuis les enfants
     useEffect(() => {
-        if (!computer) return;
+        if (!computerInstance) return;
 
-        if (memoryBusInstance && !computer.memoryBus) {
-            computer.memoryBus = memoryBusInstance;
+        if (memoryBusInstance && !computerInstance.memoryBus) {
+            computerInstance.memoryBus = memoryBusInstance;
             console.log('MemoryBus monté dans Computer:', cpuInstance);
         }
-    }, [computer, memoryBusInstance]);
+    }, [computerInstance, memoryBusInstance]);
 
 
     // Mount Devices - récupère l'instance du Devices depuis les enfants
     useEffect(() => {
-        if (!computer?.memoryBus) return;
+        if (!computerInstance?.memoryBus) return;
 
-        if (devicesInstance && !computer.memoryBus.io) {
-            computer.memoryBus.io = devicesInstance;
+        if (devicesInstance && !computerInstance.memoryBus.io) {
+            computerInstance.memoryBus.io = devicesInstance;
             console.log('Devices monté dans MemoryBus via Computer:', devicesInstance);
         }
-    }, [computer, devicesInstance]);
+    }, [computerInstance, devicesInstance]);
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -102,7 +103,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
                         }
                     });
                     break;
-                case Devices:
+                case DevicesManager:
                     return React.cloneElement(childElement, {
                         onInstanceCreated: (instance: cpuApi.IO) => {
                             setDevicesInstance(instance);
@@ -120,8 +121,23 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
     });
 
 
+    const loadOs = async (osName: string) => {
+        loadOsInRam(osName);
+    }
+
+
+    const loadCodeOnDisk = async (diskName: string, code: CompiledCode) => {
+        if (!devicesInstance) return;
+
+        const disk = devicesInstance.devices.get(diskName) as cpuApi.StorageDisk | undefined;
+        if (!disk) return;
+
+        await disk.loadRawData(code);
+    }
+
+
     const loadOsInRam = async (osName: string) => {
-        if (!ramInstance || !computer) return;
+        if (!ramInstance || !computerInstance) return;
 
         const os: OsInfo | null = osName ? os_list[osName] : null;
         if (!os?.filepath) return;
@@ -130,6 +146,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
         const code = await loadCodeFromFile(os.filepath, memoryOffset)
 
         if (os) {
+            loadCodeOnDisk('os_disk', code);
             ramInstance.loadCodeInRam(code, memoryOffset);
 
         } else {
@@ -138,13 +155,13 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
 
         ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
 
-        computer.loadedOs = osName;
-        computer.emit('state', { loadedOs: osName })
+        computerInstance.loadedOs = osName;
+        computerInstance.emit('state', { loadedOs: osName })
     }
 
 
     const loadProgramInRam = async (programName: string) => {
-        if (!ramInstance || !computer) return;
+        if (!ramInstance || !computerInstance) return;
 
         const program: ProgramInfo | null = programName ? programs[programName] : null;
         if (!program?.filepath) return;
@@ -161,13 +178,13 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
 
         ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
 
-        computer.loadedProgram = programName;
-        computer.emit('state', { loadedProgram: programName })
+        computerInstance.loadedProgram = programName;
+        computerInstance.emit('state', { loadedProgram: programName })
 
     }
 
 
-    if (!computer) {
+    if (!computerInstance) {
         return <>Loading Computer</>;
     }
 
@@ -214,12 +231,12 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
 
                             <button
                                 onClick={() => {
-                                    loadOsInRam(selectedOs ?? '');
+                                    loadOs(selectedOs ?? '');
                                 }}
                                 disabled={!selectedOs}
                                 className="bg-blue-900 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                             >
-                                {(computer.loadedOs && computer.loadedOs === selectedOs && !isOsUnloaded) ? "Reload" : "Load"}
+                                {(computerInstance.loadedOs && computerInstance.loadedOs === selectedOs && !isOsUnloaded) ? "Reload" : "Load"}
                             </button>
                         </div>
                     </div>
@@ -251,7 +268,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
                                 disabled={!selectedProgram}
                                 className="bg-blue-900 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                             >
-                                {(computer.loadedProgram && computer.loadedProgram === selectedProgram && !isProgramUnloaded) ? "Reload" : "Load"}
+                                {(computerInstance.loadedProgram && computerInstance.loadedProgram === selectedProgram && !isProgramUnloaded) ? "Reload" : "Load"}
                             </button>
                         </div>
                     </div>

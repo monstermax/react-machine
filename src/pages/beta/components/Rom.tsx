@@ -15,7 +15,8 @@ export type RomProps = {
 export const Rom: React.FC<RomProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
-    const [rom, setRom] = useState<cpuApi.Rom | null>(null);
+    const [romInstance, setRomInstance] = useState<cpuApi.Rom | null>(null);
+
     const [contentVisible, setContentVisible] = useState(true);
 
     // UI snapshot state
@@ -26,7 +27,7 @@ export const Rom: React.FC<RomProps> = (props) => {
     useEffect(() => {
         const _instanciateRom = () => {
             const rom = new cpuApi.Rom(BOOTLOADER)
-            setRom(rom);
+            setRomInstance(rom);
 
             // Handle state updates
             rom.on('state', (state) => {
@@ -43,10 +44,10 @@ export const Rom: React.FC<RomProps> = (props) => {
 
     // Notifie le parent quand le Rom est créé
     useEffect(() => {
-        if (rom && onInstanceCreated) {
-            onInstanceCreated(rom);
+        if (romInstance && onInstanceCreated) {
+            onInstanceCreated(romInstance);
         }
-    }, [rom, onInstanceCreated]);
+    }, [romInstance, onInstanceCreated]);
 
 
     const childrenWithProps = React.Children.map(children, (child) => {

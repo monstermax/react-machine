@@ -4,6 +4,19 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 import * as cpuApi from '../api/api';
 
 
+const frequencies = [
+    { label: "0.1 Hz (slow)", value: 0.1 },
+    { label: "0.5 Hz", value: 0.5 },
+    { label: "1 Hz (default)", value: 1 },
+    { label: "2 Hz", value: 2 },
+    { label: "5 Hz", value: 5 },
+    { label: "10 Hz", value: 10 },
+    { label: "20 Hz", value: 20 },
+    { label: "50 Hz", value: 50 },
+    { label: "100 Hz", value: 100 },
+];
+
+
 export type ClockProps = {
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Clock) => void,
@@ -12,19 +25,29 @@ export type ClockProps = {
 export const Clock: React.FC<ClockProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
-    const [clock, setClock] = useState<cpuApi.Clock | null>(null);
+    const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
+
+    const cpuInstance = cpuApi.cpuRef.current;
+
+    const [frequencyReal, setFrequencyReal] = useState(0)
+    const [lastFrequencyStat, setLastFrequencyStat] = useState<{ timestamp: number, cycles: number } | null>(null)
+    const [triggerFrequencyRefresh, setTriggerFrequencyRefresh] = useState(0)
 
 
     // Instanciate Clock
     useEffect(() => {
         const _instanciateClock = () => {
             const clock = new cpuApi.Clock;
-            setClock(clock);
+            setClockInstance(clock);
 
             // Handle state updates
             clock.on('state', (state) => {
-                console.log('MemoryBus state update', state)
+                if (!clock) return
+                console.log('Clock state update', state)
 
+                if (state.clockFrequency !== undefined) {
+                    clock.clockFrequency = state.clockFrequency
+                }
             })
         }
 
@@ -35,13 +58,66 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
     // Notifie le parent quand le Clock est créé
     useEffect(() => {
-        if (clock && onInstanceCreated) {
-            onInstanceCreated(clock);
+        if (clockInstance && onInstanceCreated) {
+            onInstanceCreated(clockInstance);
         }
-    }, [clock, onInstanceCreated]);
+    }, [clockInstance, onInstanceCreated]);
 
 
-    if (!clock) {
+    // Gestion du timer de control (pour calcul de la frequence reelle)
+    useEffect(() => {
+        //console.log('CTRL TIMER UP')
+        const timerCtrl = setInterval(() => {
+            setTriggerFrequencyRefresh(x => x + 1)
+        }, 100);
+
+        return () => {
+            //console.log('CTRL TIMER DOWN')
+            clearInterval(timerCtrl)
+        };
+    }, []);
+
+
+    // Calculer la frequence reelle
+    useEffect(() => {
+        const updateFrequencyStat = () => {
+            if (!cpuInstance) return;
+
+            const timestamp = Date.now() / 1000;
+            const cyclesNew = cpuInstance.clockCycle;
+
+            if (lastFrequencyStat) {
+                const duration = timestamp - lastFrequencyStat.timestamp;
+                if (duration < 1) return
+
+                const cyclesOld = lastFrequencyStat.cycles;
+                const countDiff = cyclesNew - cyclesOld;
+                const freq = duration ? (countDiff / duration) : 0;
+                //console.log({ duration, countDiff, freq })
+                setFrequencyReal(freq);
+
+            } else {
+                setFrequencyReal(0);
+            }
+
+            setLastFrequencyStat({ timestamp, cycles: cyclesNew })
+        }
+
+        updateFrequencyStat()
+    }, [triggerFrequencyRefresh])
+
+
+    // Change la fréquence de clock
+    const handleChangeFrequency = (frequency: number) => {
+        if (!clockInstance) return;
+        clockInstance.clockFrequency = frequency
+        clockInstance.restart()
+
+        clockInstance.emit('state', { clockFrequency: frequency })
+    }
+
+
+    if (!clockInstance) {
         return <>Loading Clock</>
     }
 
@@ -49,6 +125,24 @@ export const Clock: React.FC<ClockProps> = (props) => {
     return (
         <>
             Clock
+            <div>
+                <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-slate-300">Clock:</label>
+                    <select
+                        value={clockInstance.clockFrequency}
+                        onChange={(e) => handleChangeFrequency(Number(e.target.value))}
+                        className="bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+                        disabled={false}
+                    >
+                        {frequencies.map(({ label, value }) => (
+                            <option key={value} value={value}>
+                                {label}
+                            </option>
+                        ))}
+                    </select>
+                    {frequencyReal.toFixed(1)} Hz
+                </div>
+            </div>
             <div>
                 {children}
             </div>

@@ -26,8 +26,24 @@ export class Clock extends EventEmitter {
 
 
     tick(): void {
-        console.log('Clock tick')
+        //console.log('Clock tick')
         this.emit('tick');
+    }
+
+
+    toggle(): void {
+        if (this.status()) {
+            this.stop()
+
+        } else {
+            this.start()
+        }
+    }
+
+
+    restart(): void {
+        this.stop()
+        this.start()
     }
 
 
@@ -36,12 +52,17 @@ export class Clock extends EventEmitter {
 
         const interval = 1000 / this.clockFrequency;
         this.timer = setInterval(this.tick.bind(this), interval);
+
+        console.log('Clock started')
     }
 
 
     stop(): void {
         if (!this.timer) return;
         clearInterval(this.timer);
+        this.timer = null;
+
+        console.log('Clock stopped')
     }
 
 
@@ -116,7 +137,7 @@ export class Cpu extends EventEmitter {
         if (!this.memoryBus) return;
 
         this.clockCycle++
-        console.log('CPU executeCycle', this.clockCycle)
+        //console.log('CPU executeCycle', this.clockCycle)
 
         // 1. Fetch
         const pc = this.getRegister("PC");
@@ -176,6 +197,7 @@ export class Cpu extends EventEmitter {
             case Opcode.SUB: {
                 const { result, flags } = ALU.sub(this.getRegister("A"), this.getRegister("B"))
                 this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
@@ -183,6 +205,7 @@ export class Cpu extends EventEmitter {
             case Opcode.AND: {
                 const { result, flags } = ALU.and(this.getRegister("A"), this.getRegister("B"))
                 this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
@@ -190,6 +213,7 @@ export class Cpu extends EventEmitter {
             case Opcode.OR: {
                 const { result, flags } = ALU.or(this.getRegister("A"), this.getRegister("B"))
                 this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
@@ -197,6 +221,7 @@ export class Cpu extends EventEmitter {
             case Opcode.XOR: {
                 const { result, flags } = ALU.xor(this.getRegister("A"), this.getRegister("B"))
                 this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
@@ -204,6 +229,7 @@ export class Cpu extends EventEmitter {
             case Opcode.INC_A: {
                 const { result, flags } = ALU.inc(this.getRegister("A"))
                 this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
@@ -211,6 +237,7 @@ export class Cpu extends EventEmitter {
             case Opcode.DEC_A: {
                 const { result, flags } = ALU.dec(this.getRegister("A"))
                 this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
@@ -218,6 +245,7 @@ export class Cpu extends EventEmitter {
             case Opcode.INC_B: {
                 const { result, flags } = ALU.inc(this.getRegister("B"))
                 this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
@@ -225,6 +253,7 @@ export class Cpu extends EventEmitter {
             case Opcode.DEC_B: {
                 const { result, flags } = ALU.dec(this.getRegister("B"))
                 this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
@@ -232,6 +261,7 @@ export class Cpu extends EventEmitter {
             case Opcode.INC_C: {
                 const { result, flags } = ALU.inc(this.getRegister("C"))
                 this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
@@ -239,6 +269,7 @@ export class Cpu extends EventEmitter {
             case Opcode.DEC_C: {
                 const { result, flags } = ALU.dec(this.getRegister("C"))
                 this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
@@ -246,6 +277,7 @@ export class Cpu extends EventEmitter {
             case Opcode.INC_D: {
                 const { result, flags } = ALU.inc(this.getRegister("D"))
                 this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
@@ -253,6 +285,7 @@ export class Cpu extends EventEmitter {
             case Opcode.DEC_D: {
                 const { result, flags } = ALU.dec(this.getRegister("D"))
                 this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }

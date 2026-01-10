@@ -1,6 +1,7 @@
 
 import type { Computer } from "./Computer";
 import type { Cpu } from "./Cpu";
+import type { IO } from "./IO";
 import type { MemoryBus } from "./MemoryBus";
 import type { Ram } from "./Ram";
 

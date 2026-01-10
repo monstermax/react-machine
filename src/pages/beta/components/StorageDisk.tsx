@@ -15,8 +15,9 @@ export type StorageDiskProps = {
 export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
     const { name, children, onInstanceCreated } = props
 
-    const [storageDisk, setStorageDisk] = useState<cpuApi.StorageDisk | null>(null);
-    const [childrenVisible, setChildrenVisible] = useState(true);
+    const [storageDiskInstance, setStorageDiskInstance] = useState<cpuApi.StorageDisk | null>(null);
+
+    const [contentVisible, setContentVisible] = useState(true);
 
     // UI snapshot state
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
@@ -39,7 +40,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
     useEffect(() => {
         const _instanciateStorageDisk = () => {
             const disk = new cpuApi.StorageDisk(name);
-            setStorageDisk(disk);
+            setStorageDiskInstance(disk);
 
             disk.on('state', (state) => {
                 console.log('Disk state update', state)
@@ -57,10 +58,10 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
 
     // Notifie le parent quand le StorageDisk est créé
     useEffect(() => {
-        if (storageDisk && onInstanceCreated) {
-            onInstanceCreated(storageDisk);
+        if (storageDiskInstance && onInstanceCreated) {
+            onInstanceCreated(storageDiskInstance);
         }
-    }, [storageDisk, onInstanceCreated]);
+    }, [storageDiskInstance, onInstanceCreated]);
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -90,15 +91,15 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
                 {childrenWithProps && (
                     <button
                         className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
-                        onClick={() => setChildrenVisible(b => !b)}
+                        onClick={() => setContentVisible(b => !b)}
                     >
-                        {childrenVisible ? "-" : "+"}
+                        {contentVisible ? "-" : "+"}
                     </button>
                 )}
             </div>
 
             {/* StorageDisk Content */}
-            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
 
                 <>
                     <div className="font-mono text-sm space-y-1 max-h-[600px] overflow-y-auto">
@@ -168,7 +169,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
 
 
                 {/* StorageDisk Children */}
-                <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+                <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
                     {childrenWithProps && (
                         <div className="io-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
                             {childrenWithProps}

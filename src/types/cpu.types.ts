@@ -25,8 +25,8 @@ export type Register = Register8 | Register16;
 
 
 export interface Device {
-    read(address: u8): u8;
-    write(address: u8, value: u8): void;
+    read(port: u8): u8;
+    write(port: u8, value: u8): void;
     getSize?(): number;
     reset?(): void;
 }

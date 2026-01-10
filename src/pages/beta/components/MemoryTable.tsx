@@ -60,7 +60,14 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
 
     return (
-        <div className="space-y-2">
+        <div
+            //ref={scrollContainerRef}
+            className="font-mono text-sm space-y-1 max-h-[550px] overflow-y-auto"
+        >
+            <div className="text-xs text-slate-400 mb-2">
+                Total: {storage.size} bytes
+            </div>
+
             {sortedStorage.map(([address, value]) => {
                 const isPC = cpuInstance && (address === pc);
                 const isInstruction = memoryInstructionMap.get(address) ?? false;

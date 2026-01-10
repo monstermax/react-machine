@@ -3,6 +3,8 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 import * as cpuApi from '../api/api';
 import { StorageDisk } from './StorageDisk';
 
+import type { Device, u8 } from '@/types/cpu.types';
+
 
 export type DevicesProps = {
     children?: React.ReactNode,
@@ -10,18 +12,20 @@ export type DevicesProps = {
 }
 
 
-export const Devices: React.FC<DevicesProps> = (props) => {
+export const DevicesManager: React.FC<DevicesProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
-    const [devices, setDevices] = useState<cpuApi.IO | null>(null);
-    //const [devicesIo, setDevicesIo] = useState<Map<u8, Device>>();
+    const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.IO | null>(null); // aka ioInstance
+
+    const [devicesInstances, setDevicesInstances] = useState<Map<string, cpuApi.StorageDisk> | null>(null);
+
     const [childrenVisible, setChildrenVisible] = useState(true);
 
 
     // Instanciate Devices
     useEffect(() => {
         const _instanciateDevices = () => {
-            setDevices(new cpuApi.IO);
+            setDevicesManagerInstance(new cpuApi.IO);
         }
 
         const timer = setTimeout(_instanciateDevices, 100);
@@ -31,10 +35,26 @@ export const Devices: React.FC<DevicesProps> = (props) => {
 
     // Notifie le parent quand le Devices est créé
     useEffect(() => {
-        if (devices && onInstanceCreated) {
-            onInstanceCreated(devices);
+        if (devicesManagerInstance && onInstanceCreated) {
+            onInstanceCreated(devicesManagerInstance);
         }
-    }, [devices, onInstanceCreated]);
+    }, [devicesManagerInstance, onInstanceCreated]);
+
+
+    // Mount Device - récupère l'instance du Device depuis les enfants
+    useEffect(() => {
+        if (!devicesManagerInstance) return;
+
+        console.log('devices detected:', devicesInstances)
+
+        if (devicesInstances) {
+            devicesInstances.forEach((d, key) => {
+                if (! devicesManagerInstance.devices.has(key)) {
+                    devicesManagerInstance.devices.set(key, d)
+                }
+            })
+        }
+    }, [devicesManagerInstance, devicesInstances]);
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -43,6 +63,14 @@ export const Devices: React.FC<DevicesProps> = (props) => {
 
             switch (childElement.type) {
                 case StorageDisk:
+                    return React.cloneElement(childElement, {
+                        onInstanceCreated: (instance: cpuApi.StorageDisk) => {
+                            setDevicesInstances(devicesInstances => {
+                                if (!devicesInstances) devicesInstances = new Map;
+                                return devicesInstances.set(instance.name, instance)
+                            });
+                        }
+                    });
                     break;
 
                 default:
