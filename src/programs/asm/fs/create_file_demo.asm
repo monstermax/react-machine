@@ -18,7 +18,7 @@ MAIN:
     CALL $PLAY_SOUND # Call PLAY_SOUND
 
     # 4. Execute file
-#    CALL $EXECUTE_FILE # Call EXECUTE_FILE
+    CALL $EXECUTE_FILE # Call EXECUTE_FILE
 
     # 5. End
     END:

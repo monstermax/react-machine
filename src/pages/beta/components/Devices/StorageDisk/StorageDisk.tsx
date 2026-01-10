@@ -90,7 +90,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
             loadFromLocalStorage()
         }
 
-        const timer = setTimeout(_load, 500);
+        const timer = setTimeout(_load, 100);
         return () => clearTimeout(timer);
 
     }, [instanciated])
@@ -109,7 +109,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
             saveToLocalStorage()
         }
 
-        const timer = setTimeout(_save, 100);
+        const timer = setTimeout(_save, 1000);
         return () => clearTimeout(timer);
     }, [storage, instanciated])
 
