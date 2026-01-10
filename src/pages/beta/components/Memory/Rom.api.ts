@@ -10,12 +10,15 @@ export class Rom extends EventEmitter {
     public id: number;
     public storage: Map<u16, u8>;
 
+
     constructor(data?: Array<[u16, u8]> | Map<u16, u8>) {
         //console.log(`Initializing ROM`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);
         this.storage = new Map(data ?? []);
+
+        this.emit('state', { storage: new Map(this.storage) })
     }
 
 

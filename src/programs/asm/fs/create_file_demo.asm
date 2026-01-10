@@ -29,7 +29,6 @@ MAIN:
 
 WRITE_FILENAME:
     PUSH_A
-    BREAKPOINT
     MOV_A_IMM 0x54 # "T"
     MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_FILENAME
     MOV_A_IMM 0x45 # "E"
@@ -129,7 +128,6 @@ LOAD_FILE_IN_RAM:
     MOV_D_IMM 0x20    # initialise la position du curseur RAM (ecriture) - high
     CALL $OPEN_FILE # Call OPEN_FILE
 
-    BREAKPOINT
     LOAD_FILE_IN_RAM_LOOP:
         MOV_A_MEM MEMORY_MAP.DATA_DISK_FS_DATA     # Lecture octet sur FS
         MOV_PTR_CD_A     # Ecriture octet dans RAM à 0X2000

@@ -18,6 +18,14 @@ export class Ram extends EventEmitter {
 
         this.id = Math.round(Math.random() * 999_999_999);
         this.storage = new Map(data ?? []);
+
+        this.emit('state', { storage: new Map(this.storage) })
+    }
+
+
+    eraseRam() {
+        this.storage = new Map;
+        this.emit('state', { storage: new Map })
     }
 
 
@@ -28,6 +36,7 @@ export class Ram extends EventEmitter {
 
     write(address: u16, value: u8): void {
         this.storage.set(address, U8(value))
+        this.emit('state', { storage: new Map(this.storage) })
     }
 
 
@@ -37,8 +46,6 @@ export class Ram extends EventEmitter {
         for (const [addr, value] of code.entries()) {
             this.write(U16(memoryOffset + addr), value);
         }
-
-        this.emit('state', { storage: new Map(this.storage) })
     }
 }
 

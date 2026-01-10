@@ -11,6 +11,7 @@ import { MEMORY_MAP } from '@/lib/memory_map';
 import { loadCodeFromFile } from '@/lib/compiler';
 
 import type { CompiledCode, OsInfo, ProgramInfo, u8 } from '@/types/cpu.types';
+import { U16 } from '@/lib/integers';
 
 
 export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
@@ -26,6 +27,8 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
     const [childrenVisible, setChildrenVisible] = useState(true);
     const [selectedOs, setSelectedOs] = useState<string | null>(null);
     const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
+    const [loadedOs, setLoadedOs] = useState<string | null>(null);
+    const [loadedProgram, setLoadedProgram] = useState<string | null>(null);
 
     const isOsUnloaded = false; // TODO
     const isProgramUnloaded = false; // TODO
@@ -44,6 +47,13 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
             computer.on('state', (state) => {
                 //console.log('Computer state update', state)
 
+                if (state.loadedOs !== undefined) {
+                    setLoadedOs(state.loadedOs)
+                }
+
+                if (state.loadedProgram !== undefined) {
+                    setLoadedProgram(state.loadedProgram)
+                }
             })
         }
 
@@ -128,8 +138,10 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
     }
 
 
-    const loadOsInRam = async (osName: string) => {
+    const loadOsInRam = useCallback(async (osName: string) => {
         if (!ramInstance || !computerInstance) return;
+
+        // doublon avec Ram.loadOsInRam
 
         const os: OsInfo | null = osName ? os_list[osName] : null;
         if (!os?.filepath) return;
@@ -145,15 +157,25 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
             ramInstance.write(memoryOffset, 0 as u8);
         }
 
-        ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
+        if (cpuInstance) {
+            const pc = cpuInstance.getRegister('PC');
+
+            if ((pc > MEMORY_MAP.ROM_END)) {
+                cpuInstance.setRegister('PC', MEMORY_MAP.ROM_START);
+            }
+        }
+
+        //ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
 
         computerInstance.loadedOs = osName;
         computerInstance.emit('state', { loadedOs: osName })
-    }
+    }, [ramInstance, computerInstance, cpuInstance])
 
 
-    const loadProgramInRam = async (programName: string) => {
+    const loadProgramInRam = useCallback(async (programName: string) => {
         if (!ramInstance || !computerInstance) return;
+
+        // doublon avec Ram.loadProgramInRam
 
         const program: ProgramInfo | null = programName ? programs[programName] : null;
         if (!program?.filepath && !(program && program.code && program.code.size > 0)) return;
@@ -169,12 +191,86 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
             ramInstance.write(memoryOffset, 0 as u8);
         }
 
-        ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
+        if (cpuInstance) {
+            const pc = cpuInstance.getRegister('PC');
+
+            if (pc >= MEMORY_MAP.PROGRAM_START && pc <= MEMORY_MAP.PROGRAM_END) {
+                cpuInstance.setRegister('PC', MEMORY_MAP.OS_START);
+            }
+        }
+
+        //ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
 
         computerInstance.loadedProgram = programName;
         computerInstance.emit('state', { loadedProgram: programName })
+    }, [cpuInstance, ramInstance, computerInstance])
 
-    }
+
+    const unloadOs = useCallback(() => {
+        // Vide le disk
+
+        if (devicesManagerInstance) {
+            const diskName = 'os_disk';
+            const disk = devicesManagerInstance.getDeviceByName(diskName) as cpuApi.StorageDisk | undefined
+            if (disk && disk.type === 'DiskStorage') {
+                disk.eraseDisk();
+            }
+        }
+
+
+        if (ramInstance) {
+            for (let addr = MEMORY_MAP.OS_START; addr <= MEMORY_MAP.OS_END; addr++) {
+                //ramInstance.storage.set(U16(addr), 0x00 as u8); // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
+                //break;
+                ramInstance.storage.delete(U16(addr)); // le delete est rapide
+            }
+
+            ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
+        }
+
+        if (cpuInstance) {
+            const pc = cpuInstance.getRegister('PC');
+
+            if ((pc > MEMORY_MAP.ROM_END)) {
+                cpuInstance.setRegister('PC', MEMORY_MAP.ROM_START);
+            }
+        }
+
+        setLoadedOs(null);
+    }, [devicesManagerInstance, ramInstance]);
+
+
+    const unloadProgram = useCallback(() => {
+        // Vide le disk
+
+        if (devicesManagerInstance) {
+            const diskName = 'program_disk';
+            const disk = devicesManagerInstance.getDeviceByName(diskName) as cpuApi.StorageDisk | undefined
+            if (disk && disk.type === 'DiskStorage') {
+                disk.eraseDisk();
+            }
+        }
+
+        if (ramInstance) {
+            for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
+                //ramInstance.storage.set(U16(addr), 0x00 as u8); // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
+                //break;
+                ramInstance.storage.delete(U16(addr)); // le delete est rapide
+            }
+
+            ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
+        }
+
+        if (cpuInstance) {
+            const pc = cpuInstance.getRegister('PC');
+
+            if (pc >= MEMORY_MAP.PROGRAM_START && pc <= MEMORY_MAP.PROGRAM_END) {
+                cpuInstance.setRegister('PC', MEMORY_MAP.OS_START);
+            }
+        }
+
+        setLoadedProgram(null);
+    }, [devicesManagerInstance, ramInstance]);
 
 
     if (!computerInstance) {
@@ -217,6 +313,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
                                 </option>
                                 {Object.entries(os_list).map(([key, prog]) => (
                                     <option key={key} value={key}>
+                                        {(key === loadedOs && !isOsUnloaded) ? "* " : ""}
                                         {prog.name} - {prog.description}
                                     </option>
                                 ))}
@@ -227,9 +324,20 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
                                     loadOs(selectedOs ?? '');
                                 }}
                                 disabled={!selectedOs}
-                                className="bg-blue-900 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                                className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${(loadedOs && (loadedOs === selectedOs) && !isOsUnloaded)
+                                    ? "bg-yellow-900 hover:bg-yellow-700"
+                                    : "bg-blue-900 hover:bg-blue-700"
+                                }`}
                             >
-                                {(computerInstance.loadedOs && computerInstance.loadedOs === selectedOs && !isOsUnloaded) ? "Reload" : "Load"}
+                                {(loadedOs && (loadedOs === selectedOs) && !isOsUnloaded) ? "Reload" : "Load"}
+                            </button>
+
+                            <button
+                                onClick={() => { unloadOs() }}
+                                disabled={!loadedOs || isOsUnloaded}
+                                className="ms-auto bg-purple-900 hover:bg-purple-900 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                            >
+                                Unload
                             </button>
                         </div>
                     </div>
@@ -249,6 +357,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
                                 </option>
                                 {Object.entries(programs).map(([key, prog]) => (
                                     <option key={key} value={key}>
+                                        {(key === loadedProgram && !isProgramUnloaded) ? "* " : ""}
                                         {prog.name} - {prog.description}
                                     </option>
                                 ))}
@@ -259,9 +368,20 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
                                     loadProgramInRam(selectedProgram ?? '');
                                 }}
                                 disabled={!selectedProgram}
-                                className="bg-blue-900 hover:bg-blue-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                                className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${(loadedProgram && (loadedProgram === selectedProgram) && !isProgramUnloaded)
+                                    ? "bg-yellow-900 hover:bg-yellow-700"
+                                    : "bg-blue-900 hover:bg-blue-700"
+                                }`}
                             >
-                                {(computerInstance.loadedProgram && computerInstance.loadedProgram === selectedProgram && !isProgramUnloaded) ? "Reload" : "Load"}
+                                {(loadedProgram && (loadedProgram === selectedProgram) && !isProgramUnloaded) ? "Reload" : "Load"}
+                            </button>
+
+                            <button
+                                onClick={() => { unloadProgram() }}
+                                disabled={!loadedProgram || isProgramUnloaded}
+                                className="ms-auto bg-purple-900 hover:bg-purple-900 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                            >
+                                Unload
                             </button>
                         </div>
                     </div>

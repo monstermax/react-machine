@@ -85,6 +85,8 @@ export const Ram: React.FC<RamProps> = (props) => {
     const loadOsInRam = async (osName: string) => {
         if (!ramInstance || !computerInstance) return;
 
+        // doublon avec Computer.loadOsInRam
+
         const os: OsInfo | null = osName ? os_list[osName] : null;
         if (!os?.filepath) return;
 
@@ -98,7 +100,7 @@ export const Ram: React.FC<RamProps> = (props) => {
             ramInstance.write(memoryOffset, 0 as u8);
         }
 
-        ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
+        //ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
 
         computerInstance.loadedOs = osName;
         computerInstance.emit('state', { loadedOs: osName })
@@ -107,6 +109,8 @@ export const Ram: React.FC<RamProps> = (props) => {
 
     const loadProgramInRam = async (programName: string) => {
         if (!ramInstance || !computerInstance) return;
+
+        // doublon avec Computer.loadProgramInRam
 
         const program: ProgramInfo | null = programName ? programs[programName] : null;
         if (!program?.filepath) return;
@@ -121,7 +125,7 @@ export const Ram: React.FC<RamProps> = (props) => {
             ramInstance.write(memoryOffset, 0 as u8);
         }
 
-        ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
+        //ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
 
         computerInstance.loadedProgram = programName;
         computerInstance.emit('state', { loadedProgram: programName })

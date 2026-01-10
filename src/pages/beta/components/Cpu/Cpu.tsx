@@ -20,6 +20,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     // Core
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
+    const ramInstance = cpuApi.ramRef.current;
 
     // UI snapshot state
     const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map(cpuApi.initialRegisters));
@@ -134,6 +135,17 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     };
 
 
+    const resetComputer = () => {
+        if (cpuInstance) {
+            resetCpu()
+        }
+
+        if (ramInstance) {
+            ramInstance.eraseRam()
+        }
+    }
+
+
     const resetCpu = () => {
         if (!cpuInstance) return;
 
@@ -172,7 +184,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 {/* Buttons */}
                 <div className="p-2 rounded bg-background-light-2xl flex gap-2">
                     <button
-                        onClick={() => resetCpu()}
+                        onClick={() => resetComputer()}
                         className="bg-red-900 hover:bg-red-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                     >
                         ⟳ Reset
