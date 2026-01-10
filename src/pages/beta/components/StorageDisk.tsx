@@ -144,10 +144,10 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
                         )}
                     </div>
 
-                    <div className="mt-2 flex gap-4">
+                    <div className="mt-2 flex gap-4 bg-background-light-2xl p-2 rounded">
                         <button
                             onClick={() => setDecodeInstructions(b => !b)}
-                            className="flex gap-2 cursor-pointer px-4 py-2 font-medium transition-colors bg-purple-400"
+                            className="flex gap-2 bg-background-light-xl hover:bg-background-light-xs disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                         >
                             <div>Decode Instructions</div>
                             <div>{decodeInstructions ? "✅" : "❌"}</div>
@@ -155,14 +155,14 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
 
                         <button
                             onClick={() => { if (confirm(`Erase all data on disk ${name}`)) { setStorage(new Map) } }}
-                            className={`cursor-pointer px-4 py-2 font-medium transition-colors bg-red-400`}
+                            className={`cursor-pointer px-2 py-1 font-medium transition-colors rounded bg-red-400`}
                         >
                             Erase Disk
                         </button>
 
                         <button
                             onClick={() => { if (confirm(`Format Disk Filesystem ${name}`)) { /* storageDisk.formatDisk() */ } }}
-                            className={`cursor-pointer px-4 py-2 font-medium transition-colors bg-red-400`}
+                            className={`cursor-pointer px-2 py-1 font-medium transition-colors rounded bg-red-400`}
                         >
                             Format FS
                         </button>

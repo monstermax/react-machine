@@ -188,7 +188,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
                     <button
                         onClick={() => runLoop()}
-                        className={`bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${!paused
+                        className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${!paused
                             ? "bg-yellow-600 hover:bg-yellow-700"
                             : "bg-green-900 hover:bg-green-700"
                             }`}

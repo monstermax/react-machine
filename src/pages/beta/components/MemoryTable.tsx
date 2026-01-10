@@ -145,13 +145,13 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
             <div className="mt-4">
                 <label className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        checked={followInstruction}
-                        onChange={(e) => setFollowInstruction(e.target.checked)}
-                        className="rounded"
-                    />
-                    <span className="text-slate-300">Follow current Instruction</span>
+                    <button
+                        onClick={() => setFollowInstruction(b => !b)}
+                        className="flex gap-2 bg-background-light-xl hover:bg-background-light-xs disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                    >
+                        <div>Follow current Instruction</div>
+                        <div>{followInstruction ? "✅" : "❌"}</div>
+                    </button>
                 </label>
             </div>
         </div>
