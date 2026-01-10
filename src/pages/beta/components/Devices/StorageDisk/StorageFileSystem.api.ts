@@ -689,7 +689,6 @@ export class StorageFileSystem extends EventEmitter {
 
     // Fonction pour ajouter un caractère au nom de fichier
     writeFilenameChar(charCode: u8) {
-        // TODO: a remplacer par une commande
         if (this.filenameIndex < FILENAME_LENGTH) {
             const char = String.fromCharCode(charCode);
             this.filenameBuffer = this.filenameBuffer + char;
