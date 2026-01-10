@@ -136,8 +136,18 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
                                     </span>
                                 </div>
                                 <span className={isInstruction ? "text-pink-400" : "text-green-400"}>
-                                    0x{value.toString(16).padStart(2, "0")}
-                                    {isInstruction && ` (${getOpcodeName(value)})`}
+                                    {isInstruction && (
+                                        <>
+                                            <span className="text-muted-foreground">0x{value.toString(16).padStart(2, "0")}</span>
+                                            <span> {getOpcodeName(value)}</span>
+                                        </>
+                                    )}
+
+                                    {!isInstruction && (
+                                        <>
+                                            0x{value.toString(16).padStart(2, "0")}
+                                        </>
+                                    )}
                                 </span>
                             </div>
                         </div>

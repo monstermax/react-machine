@@ -51,6 +51,8 @@ export const Clock: React.FC<ClockProps> = (props) => {
                     clock.clockFrequency = state.clockFrequency
                 }
             })
+
+            //setInstanciated(true)
         }
 
         const timer = setTimeout(_instanciateClock, 100);

@@ -50,6 +50,8 @@ export const Ram: React.FC<RamProps> = (props) => {
 
             // UI snapshot state
             setStorage(new Map(ram.storage));
+
+            //setInstanciated(true)
         }
 
         const timer = setTimeout(_instanciateRam, 100);
@@ -133,7 +135,7 @@ export const Ram: React.FC<RamProps> = (props) => {
 
 
     return (
-        <div className="ram w-96">
+        <div className="ram w-80">
 
             {/* RAM Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

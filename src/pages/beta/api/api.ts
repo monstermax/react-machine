@@ -18,7 +18,9 @@ export * from '../components/Devices/DevicesManager.api';
 export * from '../components/Devices/StorageDisk/StorageDisk.api';
 export * from '../components/Devices/StorageDisk/StorageFileSystem.api';
 export * from '../components/Devices/LedsDisplay/LedsDisplay.api';
+export * from '../components/Devices/PixelDisplay/PixelDisplay.api';
 export * from '../components/Devices/Buzzer/Buzzer.api';
+export * from '../components/Devices/Rng/Rng.api';
 
 
 export const computerRef = {

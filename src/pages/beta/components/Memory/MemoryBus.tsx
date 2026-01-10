@@ -43,6 +43,8 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
                 console.log('MemoryBus state update', state)
 
             })
+
+            //setInstanciated(true)
         }
 
         const timer = setTimeout(_instanciateMemoryBus, 100);

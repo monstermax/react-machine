@@ -11,6 +11,8 @@ import { StorageDisk } from './beta/components/Devices/StorageDisk/StorageDisk';
 import { Clock } from './beta/components/Cpu/Clock';
 import { LedsDisplay } from './beta/components/Devices/LedsDisplay/LedsDisplay';
 import { Buzzer } from './beta/components/Devices/Buzzer/Buzzer';
+import { PixelDisplay } from './beta/components/Devices/PixelDisplay/PixelDisplay';
+import { Rng } from './beta/components/Devices/Rng/Rng';
 
 
 export const ComputerBeta: React.FC = () => {
@@ -31,7 +33,9 @@ export const ComputerBeta: React.FC = () => {
                     </MemoryBus>
                     <DevicesManager>
                         <LedsDisplay ioPort={3} name="leds_demo" />
+                        <PixelDisplay ioPort={13} name="display_32x32" />
                         <Buzzer ioPort={8} name="buzzer" />
+                        <Rng ioPort={11} name="rng" />
                         <StorageDisk ioPort={0} name="os_disk" open={false} />
                         <StorageDisk ioPort={1} name="program_disk" open={false} />
                         <StorageDisk ioPort={14} name="data_1" persistent />

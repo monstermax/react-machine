@@ -32,7 +32,7 @@ export interface Device {
 }
 
 
-export type IoDeviceType = 'DiskStorage' | 'Display' | 'Audio';
+export type IoDeviceType = 'DiskStorage' | 'Display' | 'Audio' | 'Time';
 
 
 export interface IoDevice {

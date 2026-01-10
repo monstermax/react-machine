@@ -1,3 +1,4 @@
+
 import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '../../api/api';
@@ -9,6 +10,9 @@ import type { Device, IoDevice, u16, u8 } from '@/types/cpu.types';
 
 import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
 import { Buzzer } from './Buzzer/Buzzer';
+
+
+const validDeviceTypes = ['DiskStorage', 'Display', 'Audio', 'Time'];
 
 
 export type DevicesManagerProps = {
@@ -62,6 +66,11 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     const addDevice = useCallback((instance: IoDevice) => {
         if (!devicesManagerInstance) return;
 
+        if (!instance.type || ! (validDeviceTypes.includes(instance.type))) {
+            console.warn(`Device "${instance.name}" has invalid invalid type (${instance.type})`);
+            return
+        }
+
         //console.log('Device created:', instance)
 
         const device = devicesManagerInstance.getDeviceByName(instance.name);
@@ -82,7 +91,7 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
 
         //setDevicesInstances(devicesManagerInstance.devices);
 
-        // DEBUG
+        // DEBUG: preload disk data_2
         if (instance.name === 'data_2') {
             loadDiskDemoProgram('data_2')
         }
@@ -108,15 +117,13 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
 
             switch (childElement.type) {
                 case StorageDisk:
-                    return React.cloneElement(childElement, { onInstanceCreated: addDevice });
-
                 case LedsDisplay:
-                    return React.cloneElement(childElement, { onInstanceCreated: addDevice });
-
                 case Buzzer:
-                    return React.cloneElement(childElement, { onInstanceCreated: addDevice });
+                    //return React.cloneElement(childElement, { onInstanceCreated: addDevice });
 
                 default:
+                    return React.cloneElement(childElement, { onInstanceCreated: addDevice });
+
                     console.log(`Invalid component mounted into Devices : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
                     return null;
 

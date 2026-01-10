@@ -60,6 +60,8 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     setPaused(state.paused)
                 }
             })
+
+            //setInstanciated(true)
         }
 
         const timer = setTimeout(_instanciateCpu, 100);

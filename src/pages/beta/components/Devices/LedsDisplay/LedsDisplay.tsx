@@ -90,7 +90,7 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
 
             {/* Device Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
-                <h2 className="font-bold">Device Leds</h2>
+                <h2 className="font-bold">Leds</h2>
 
                 {true && (
                     <button
@@ -107,11 +107,10 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
 
                 {/* LEDS */}
                 <div className="p-2 rounded bg-background-light-2xl flex gap-4 items-center">
-                    <h3>LEDS</h3>
 
-                    <div className="flex gap-2 ms-auto">
+                    <div className="flex gap-2 mx-auto">
                         {getLeds().map((on, i) => (
-                            <div key={i} className={`w-8 h-8 rounded-full ${on ? 'bg-yellow-500' : 'bg-gray-700'}`} />
+                            <div key={i} className={`w-6 h-6 rounded-full ${on ? 'bg-yellow-500' : 'bg-gray-700'}`} />
                         ))}
                     </div>
                 </div>

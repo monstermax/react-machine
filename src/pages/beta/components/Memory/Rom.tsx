@@ -38,6 +38,8 @@ export const Rom: React.FC<RomProps> = (props) => {
 
             // UI snapshot state
             setStorage(rom.storage);
+
+            //setInstanciated(true)
         }
 
         const timer = setTimeout(_instanciateRom, 100);
@@ -70,7 +72,7 @@ export const Rom: React.FC<RomProps> = (props) => {
     });
 
     return (
-        <div className="rom w-96">
+        <div className="rom w-80">
 
             {/* ROM Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
