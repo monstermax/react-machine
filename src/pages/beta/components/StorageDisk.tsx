@@ -49,6 +49,8 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
                     setStorage(state.storage)
                 }
             })
+
+            console.log(`StorageDisk "${name}" instantiated`)
         }
 
         const timer = setTimeout(_instanciateStorageDisk, 100);

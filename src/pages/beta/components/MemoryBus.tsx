@@ -62,7 +62,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
         if (romInstance && !memoryBusInstance.rom) {
             memoryBusInstance.rom = romInstance;
-            console.log('ROM monté dans MemoryBus:', romInstance);
+            //console.log('ROM monté dans MemoryBus:', romInstance);
         }
     }, [memoryBusInstance, romInstance]);
 
@@ -73,7 +73,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
         if (ramInstance && !memoryBusInstance.ram) {
             memoryBusInstance.ram = ramInstance;
-            console.log('RAM monté dans MemoryBus:', ramInstance);
+            //console.log('RAM monté dans MemoryBus:', ramInstance);
         }
     }, [memoryBusInstance, ramInstance]);
 
@@ -129,7 +129,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
             </div>
 
             {/* MemoryBus Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
 
                 {/* MemoryBus Children */}
                 {childrenWithProps && (

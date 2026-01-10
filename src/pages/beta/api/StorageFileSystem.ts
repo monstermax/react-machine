@@ -12,7 +12,7 @@ export class StorageFileSystem extends EventEmitter {
     private storageDisk: StorageDisk;
 
     constructor(storageDisk: StorageDisk) {
-        console.log(`Initializing StorageFileSystem (${storageDisk.name})`);
+        //console.log(`Initializing StorageFileSystem (${storageDisk.name})`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);

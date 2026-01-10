@@ -1,19 +1,19 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import * as cpuApi from '../api/api';
+import * as cpuApi from './api';
 import { U16, U8 } from "@/lib/integers";
 
 import type { CompiledCode, Device, u8 } from "@/types/cpu.types";
 
 
-export class IO extends EventEmitter {
+export class DevicesManager extends EventEmitter {
     public id: number;
     public devices: Map<string, cpuApi.StorageDisk> = new Map;
 
 
     constructor() {
-        console.log(`Initializing IO`);
+        //console.log(`Initializing DevicesManager`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);

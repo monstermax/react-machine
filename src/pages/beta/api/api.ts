@@ -1,7 +1,7 @@
 
 import type { Computer } from "./Computer";
 import type { Cpu } from "./Cpu";
-import type { IO } from "./IO";
+import type { DevicesManager } from "./DevicesManager";
 import type { MemoryBus } from "./MemoryBus";
 import type { Ram } from "./Ram";
 
@@ -10,10 +10,11 @@ import type { u16, u8 } from "@/types/cpu.types";
 
 export * from './Computer';
 export * from './Cpu';
+export * from './Clock';
 export * from './MemoryBus';
 export * from './Rom';
 export * from './Ram';
-export * from './IO';
+export * from './DevicesManager';
 export * from './StorageDisk';
 export * from './StorageFileSystem';
 
@@ -28,6 +29,10 @@ export const cpuRef = {
 
 export const memoryBusRef = {
     current: null as MemoryBus | null
+};
+
+export const devicesManagerRef = {
+    current: null as DevicesManager | null
 };
 
 export const ramRef = {

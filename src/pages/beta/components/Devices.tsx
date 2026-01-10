@@ -2,20 +2,23 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 
 import * as cpuApi from '../api/api';
 import { StorageDisk } from './StorageDisk';
+import { compileCode } from '@/lib/compiler';
 
-import type { Device, u8 } from '@/types/cpu.types';
+import type { Device, u16, u8 } from '@/types/cpu.types';
+
+import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
 
 
 export type DevicesProps = {
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.IO) => void,
+    onInstanceCreated?: (cpu: cpuApi.DevicesManager) => void,
 }
 
 
 export const DevicesManager: React.FC<DevicesProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
-    const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.IO | null>(null); // aka ioInstance
+    const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null); // aka ioInstance
 
     const [devicesInstances, setDevicesInstances] = useState<Map<string, cpuApi.StorageDisk> | null>(null);
 
@@ -25,7 +28,17 @@ export const DevicesManager: React.FC<DevicesProps> = (props) => {
     // Instanciate Devices
     useEffect(() => {
         const _instanciateDevices = () => {
-            setDevicesManagerInstance(new cpuApi.IO);
+            const devices = new cpuApi.DevicesManager;
+            setDevicesManagerInstance(devices);
+
+            // Save DevicesManager Ref
+            cpuApi.devicesManagerRef.current = devices;
+
+            // Handle state updates
+            devices.on('state', (state) => {
+                //console.log('DevicesManager state update', state)
+
+            });
         }
 
         const timer = setTimeout(_instanciateDevices, 100);
@@ -55,6 +68,30 @@ export const DevicesManager: React.FC<DevicesProps> = (props) => {
             })
         }
     }, [devicesManagerInstance, devicesInstances]);
+
+
+    // Load DataDisk2 on component mount
+    useEffect(() => {
+        if (!devicesManagerInstance) return;
+        if (devicesManagerInstance.devices.size < React.Children.count(children)) return;
+
+        const _load_data_disk_2 = () => {
+            if (!devicesManagerInstance) return;
+            //console.log('useffect', devicesManagerInstance)
+
+            const memoryOffset = 0x2000;
+            const demoProgram = compileCode(ledTestCodeSource, memoryOffset as u16)
+
+            const diskName = 'data_2';
+            const disk = devicesManagerInstance.devices.get(diskName)
+            if (!disk) return
+
+            disk.loadRawData(demoProgram.code)
+        }
+
+        const timer = setTimeout(_load_data_disk_2, 100);
+        return () => clearTimeout(timer);
+    }, [devicesManagerInstance, devicesManagerInstance?.devices.size])
 
 
     const childrenWithProps = React.Children.map(children, (child) => {

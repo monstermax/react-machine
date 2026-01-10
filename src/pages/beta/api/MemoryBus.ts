@@ -6,7 +6,7 @@ import { isIO, isROM, memoryToIOPort } from "@/lib/memory_map";
 
 import type { Rom } from "./Rom";
 import type { Ram } from "./Ram";
-import type { IO } from "./IO";
+import type { DevicesManager } from "./DevicesManager";
 import type { u16, u8 } from "@/types/cpu.types";
 
 
@@ -14,11 +14,11 @@ export class MemoryBus extends EventEmitter {
     public id: number;
     public rom: Rom | null = null;
     public ram: Ram | null = null;
-    public io: IO | null = null;
+    public io: DevicesManager | null = null;
 
 
     constructor() {
-        console.log(`Initializing MemoryBus`);
+        //console.log(`Initializing MemoryBus`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);

@@ -5,7 +5,7 @@ import * as cpuApi from '../api/api';
 
 
 const frequencies = [
-    { label: "0.1 Hz (slow)", value: 0.1 },
+    { label: "0.1 Hz", value: 0.1 },
     { label: "0.5 Hz", value: 0.5 },
     { label: "1 Hz (default)", value: 1 },
     { label: "2 Hz", value: 2 },
@@ -14,6 +14,7 @@ const frequencies = [
     { label: "20 Hz", value: 20 },
     { label: "50 Hz", value: 50 },
     { label: "100 Hz", value: 100 },
+    { label: "150 Hz", value: 150 },
 ];
 
 
@@ -123,10 +124,11 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
 
     return (
-        <>
-            Clock
+        <div className="w-full p-2 rounded bg-background-light-2xl">
+            <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Clock</h3>
+
             <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-1">
                     <label className="text-sm font-medium text-slate-300">Clock:</label>
                     <select
                         value={clockInstance.clockFrequency}
@@ -140,12 +142,14 @@ export const Clock: React.FC<ClockProps> = (props) => {
                             </option>
                         ))}
                     </select>
-                    {frequencyReal.toFixed(1)} Hz
+                    <div className="ms-auto">
+                        ➤ {frequencyReal.toFixed(1)} Hz
+                    </div>
                 </div>
             </div>
             <div>
                 {children}
             </div>
-        </>
+        </div>
     );
 }

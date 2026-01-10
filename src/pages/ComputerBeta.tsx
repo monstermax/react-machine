@@ -1,5 +1,5 @@
 
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import { Computer } from './beta/components/Computer';
 import { Cpu } from './beta/components/Cpu';
@@ -9,6 +9,9 @@ import { Rom } from './beta/components/Rom';
 import { DevicesManager } from './beta/components/Devices';
 import { StorageDisk } from './beta/components/StorageDisk';
 import { Clock } from './beta/components/Clock';
+import { compileCode } from '@/lib/compiler';
+import { devicesManagerRef } from './beta/api/api';
+
 
 
 export const ComputerBeta: React.FC = () => {
@@ -30,6 +33,8 @@ export const ComputerBeta: React.FC = () => {
                     <DevicesManager>
                         <StorageDisk name="os_disk" />
                         <StorageDisk name="program_disk" />
+                        <StorageDisk name="data_1" />
+                        <StorageDisk name="data_2" />
                     </DevicesManager>
                 </Computer>
             </div>

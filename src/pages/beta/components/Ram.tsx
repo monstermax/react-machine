@@ -3,11 +3,12 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 import * as cpuApi from '../api/api';
 import { MemoryTable } from './MemoryTable';
 
-import type { OsInfo, u16, u8 } from '@/types/cpu.types';
+import type { OsInfo, ProgramInfo, u16, u8 } from '@/types/cpu.types';
 import { os_list } from '@/programs/mini_os';
 import { loadCodeFromFile } from '@/lib/compiler';
 import { MEMORY_MAP } from '@/lib/memory_map';
 import { U16 } from '@/lib/integers';
+import { programs } from '@/lib/programs';
 
 
 export type RamProps = {
@@ -83,14 +84,14 @@ export const Ram: React.FC<RamProps> = (props) => {
     const loadOsInRam = async (osName: string) => {
         if (!ramInstance || !computerInstance) return;
 
-        const currentOs: OsInfo | null = osName ? os_list[osName] : null;
-        if (!currentOs?.filepath) return;
+        const os: OsInfo | null = osName ? os_list[osName] : null;
+        if (!os?.filepath) return;
 
         const memoryOffset = MEMORY_MAP.OS_START;
-        const code = await loadCodeFromFile(currentOs.filepath, memoryOffset)
+        const code = await loadCodeFromFile(os.filepath, memoryOffset)
 
-        if (currentOs) {
-            ramInstance.loadCodeInRam(code);
+        if (os) {
+            ramInstance.loadCodeInRam(code, memoryOffset);
 
         } else {
             ramInstance.write(memoryOffset, 0 as u8);
@@ -100,6 +101,29 @@ export const Ram: React.FC<RamProps> = (props) => {
 
         computerInstance.loadedOs = osName;
         computerInstance.emit('state', { loadedOs: osName })
+    }
+
+
+    const loadProgramInRam = async (programName: string) => {
+        if (!ramInstance || !computerInstance) return;
+
+        const program: ProgramInfo | null = programName ? programs[programName] : null;
+        if (!program?.filepath) return;
+
+        const memoryOffset = MEMORY_MAP.PROGRAM_START;
+        const code = await loadCodeFromFile(program.filepath, memoryOffset)
+
+        if (program) {
+            ramInstance.loadCodeInRam(code, memoryOffset);
+
+        } else {
+            ramInstance.write(memoryOffset, 0 as u8);
+        }
+
+        ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
+
+        computerInstance.loadedProgram = programName;
+        computerInstance.emit('state', { loadedProgram: programName })
     }
 
 
@@ -129,7 +153,14 @@ export const Ram: React.FC<RamProps> = (props) => {
                         onClick={() => loadOsInRam('MINI_OS_V1')}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                         >
-                        Load OS
+                        Load Default OS
+                    </button>
+
+                    <button
+                        onClick={() => loadProgramInRam('leds_test_2')}
+                        className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                        >
+                        Load Default Program
                     </button>
                 </div>
 

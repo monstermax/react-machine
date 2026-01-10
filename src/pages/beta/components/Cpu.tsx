@@ -84,7 +84,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 cpuInstance.executeCycle()
             })
 
-            console.log('Clock monté dans CPU:', clockInstance);
+            //console.log('Clock monté dans CPU:', clockInstance);
         }
     }, [cpuInstance, clockInstance]);
 
@@ -168,7 +168,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             </div>
 
             {/* CPU Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
 
                 {/* Buttons */}
                 <div className="p-2 rounded bg-background-light-2xl flex gap-2">
@@ -204,7 +204,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
                 {/* Registers */}
                 <div className="p-2 rounded bg-background-light-2xl">
-                    <h3>Registers</h3>
+                    <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Registers</h3>
 
                     <div className="grid grid-cols-2 space-x-2 space-y-2">
                         {Array.from(registers.entries()).map(([reg, value]) => (
@@ -243,7 +243,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
                 {/* CPU Children */}
                 {childrenWithProps && (
-                    <div className="cpu-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
+                    <div className="cpu-children flex space-x-4 space-y-4">
                         {childrenWithProps}
                     </div>
                 )}

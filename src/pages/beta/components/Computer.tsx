@@ -16,7 +16,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
     const [computerInstance, setComputerInstance] = useState<cpuApi.Computer | null>(null);
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
-    const [devicesInstance, setDevicesInstance] = useState<cpuApi.IO | null>(null);
+    const [devicesInstance, setDevicesInstance] = useState<cpuApi.DevicesManager | null>(null);
 
     const [childrenVisible, setChildrenVisible] = useState(true);
 
@@ -56,7 +56,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
 
         if (cpuInstance && !computerInstance.cpu) {
             computerInstance.cpu = cpuInstance;
-            console.log('CPU monté dans Computer:', cpuInstance);
+            //console.log('CPU monté dans Computer:', cpuInstance);
         }
     }, [computerInstance, cpuInstance]);
 
@@ -67,7 +67,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
 
         if (memoryBusInstance && !computerInstance.memoryBus) {
             computerInstance.memoryBus = memoryBusInstance;
-            console.log('MemoryBus monté dans Computer:', cpuInstance);
+            //console.log('MemoryBus monté dans Computer:', cpuInstance);
         }
     }, [computerInstance, memoryBusInstance]);
 
@@ -78,7 +78,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
 
         if (devicesInstance && !computerInstance.memoryBus.io) {
             computerInstance.memoryBus.io = devicesInstance;
-            console.log('Devices monté dans MemoryBus via Computer:', devicesInstance);
+            //console.log('Devices monté dans MemoryBus via Computer:', devicesInstance);
         }
     }, [computerInstance, devicesInstance]);
 
@@ -105,7 +105,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
                     break;
                 case DevicesManager:
                     return React.cloneElement(childElement, {
-                        onInstanceCreated: (instance: cpuApi.IO) => {
+                        onInstanceCreated: (instance: cpuApi.DevicesManager) => {
                             setDevicesInstance(instance);
                         }
                     });
@@ -170,6 +170,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
         const code = await loadCodeFromFile(program.filepath, MEMORY_MAP.PROGRAM_START)
 
         if (program) {
+            loadCodeOnDisk('program_disk', code);
             ramInstance.loadCodeInRam(code, memoryOffset);
 
         } else {
@@ -206,7 +207,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
             </div>
 
             {/* Computer Content */}
-            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
 
                 <div className="p-2 rounded bg-background-light-2xl flex gap-2 justify-around">
                     <div className="w-5/12 bg-background-light-xl px-2 py-1 rounded flex gap-2 items-center">

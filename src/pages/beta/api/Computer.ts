@@ -3,7 +3,7 @@ import { EventEmitter } from "eventemitter3";
 
 import type { Cpu } from "./Cpu";
 import type { MemoryBus } from "./MemoryBus";
-import type { IO } from "./IO";
+import type { DevicesManager } from "./DevicesManager";
 
 
 export class Computer extends EventEmitter {
@@ -15,7 +15,7 @@ export class Computer extends EventEmitter {
 
 
     constructor() {
-        console.log(`Initializing Computer`);
+        //console.log(`Initializing Computer`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);
