@@ -50,7 +50,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
                 }
             })
 
-            console.log(`StorageDisk "${name}" instantiated`)
+            //console.log(`StorageDisk "${name}" instantiated`)
         }
 
         const timer = setTimeout(_instanciateStorageDisk, 100);
@@ -75,7 +75,6 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
                 default:
                     console.log(`Invalid component mounted into StorageDisk : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
                     return null;
-                    break;
 
             }
         }

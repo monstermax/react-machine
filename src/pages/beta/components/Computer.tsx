@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 import * as cpuApi from '../api/api';
 import { MemoryBus } from './MemoryBus';
 import { Cpu } from './Cpu';
-import { DevicesManager } from './Devices';
+import { DevicesManager } from './DevicesManager';
 import { os_list } from '@/programs/mini_os';
 import { programs } from '@/lib/programs';
 import type { CompiledCode, OsInfo, ProgramInfo, u8 } from '@/types/cpu.types';

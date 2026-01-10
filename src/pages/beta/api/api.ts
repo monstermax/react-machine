@@ -17,6 +17,7 @@ export * from './Ram';
 export * from './DevicesManager';
 export * from './StorageDisk';
 export * from './StorageFileSystem';
+export * from './LedsDisplay';
 
 
 export const computerRef = {

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 import * as cpuApi from '../api/api';
 import { Rom } from './Rom';
 import { Ram } from './Ram';
-import { DevicesManager } from './Devices';
+import { DevicesManager } from './DevicesManager';
 
 
 type MemoryBusProps = {

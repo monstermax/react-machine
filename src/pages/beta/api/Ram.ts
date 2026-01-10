@@ -13,7 +13,7 @@ export class Ram extends EventEmitter {
 
 
     constructor(data?: Array<[u16, u8]> | Map<u16, u8>) {
-        console.log(`Initializing RAM`);
+        //console.log(`Initializing RAM`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);

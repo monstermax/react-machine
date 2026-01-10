@@ -11,7 +11,7 @@ export class Rom extends EventEmitter {
     public storage: Map<u16, u8>;
 
     constructor(data?: Array<[u16, u8]> | Map<u16, u8>) {
-        console.log(`Initializing ROM`);
+        //console.log(`Initializing ROM`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);

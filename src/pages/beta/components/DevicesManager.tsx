@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 
 import * as cpuApi from '../api/api';
 import { StorageDisk } from './StorageDisk';
+import { LedsDisplay } from './LedsDisplay';
 import { compileCode } from '@/lib/compiler';
 
 import type { Device, u16, u8 } from '@/types/cpu.types';
@@ -9,13 +10,13 @@ import type { Device, u16, u8 } from '@/types/cpu.types';
 import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
 
 
-export type DevicesProps = {
+export type DevicesManagerProps = {
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.DevicesManager) => void,
 }
 
 
-export const DevicesManager: React.FC<DevicesProps> = (props) => {
+export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null); // aka ioInstance
@@ -55,10 +56,10 @@ export const DevicesManager: React.FC<DevicesProps> = (props) => {
 
 
     // Mount Device - récupère l'instance du Device depuis les enfants
-    const addDiskStorageDevice = (instance: cpuApi.StorageDisk) => {
+    const addDevice = (instance: cpuApi.StorageDisk) => {
         if (!devicesManagerInstance) return;
 
-        console.log('disk created:', instance)
+        //console.log('Device created:', instance)
 
         if (!devicesManagerInstance.devices.has(instance.name)) {
             devicesManagerInstance.devices.set(instance.name, instance)
@@ -92,7 +93,10 @@ export const DevicesManager: React.FC<DevicesProps> = (props) => {
 
             switch (childElement.type) {
                 case StorageDisk:
-                    return React.cloneElement(childElement, { onInstanceCreated: addDiskStorageDevice });
+                    return React.cloneElement(childElement, { onInstanceCreated: addDevice });
+
+                case LedsDisplay:
+                    return React.cloneElement(childElement, { onInstanceCreated: addDevice });
 
                 default:
                     console.log(`Invalid component mounted into Devices : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
@@ -127,16 +131,14 @@ export const DevicesManager: React.FC<DevicesProps> = (props) => {
             </div>
 
             {/* Devices Content */}
-            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
 
                 {/* Devices Children */}
-                <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
-                    {childrenWithProps && (
-                        <div className="devices-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
-                            {childrenWithProps}
-                        </div>
-                    )}
-                </div>
+                {childrenWithProps && (
+                    <div className="devices-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-2">
+                        {childrenWithProps}
+                    </div>
+                )}
 
             </div>
         </div>

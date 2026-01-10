@@ -6,11 +6,12 @@ import { Cpu } from './beta/components/Cpu';
 import { MemoryBus } from './beta/components/MemoryBus';
 import { Ram } from './beta/components/Ram';
 import { Rom } from './beta/components/Rom';
-import { DevicesManager } from './beta/components/Devices';
+import { DevicesManager } from './beta/components/DevicesManager';
 import { StorageDisk } from './beta/components/StorageDisk';
 import { Clock } from './beta/components/Clock';
 import { compileCode } from '@/lib/compiler';
 import { devicesManagerRef } from './beta/api/api';
+import { LedsDisplay } from './beta/components/LedsDisplay';
 
 
 
@@ -35,6 +36,7 @@ export const ComputerBeta: React.FC = () => {
                         <StorageDisk name="program_disk" />
                         <StorageDisk name="data_1" />
                         <StorageDisk name="data_2" />
+                        <LedsDisplay name="leds_demo" />
                     </DevicesManager>
                 </Computer>
             </div>
