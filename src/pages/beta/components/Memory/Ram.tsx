@@ -40,7 +40,7 @@ export const Ram: React.FC<RamProps> = (props) => {
 
             // Handle state updates
             ram.on('state', (state) => {
-                console.log('RAM state update', state)
+                //console.log('RAM state update', state)
 
                 if (state.storage) {
                     setStorage(state.storage)

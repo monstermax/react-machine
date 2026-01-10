@@ -15,7 +15,7 @@ export class LedsDisplay extends EventEmitter {
 
 
     constructor(name: string, ioPort: u8 | null = null) {
-        console.log(`Initializing LedsDisplay`);
+        //console.log(`Initializing LedsDisplay`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);

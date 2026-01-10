@@ -31,6 +31,7 @@ export const Rom: React.FC<RomProps> = (props) => {
 
             // Handle state updates
             rom.on('state', (state) => {
+                //console.log('ROM state update', state)
             })
 
             // UI snapshot state

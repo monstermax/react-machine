@@ -37,7 +37,7 @@ export class Buzzer extends EventEmitter {
 
 
     constructor(name: string, ioPort: u8 | null = null) {
-        console.log(`Initializing Buzzer`);
+        //console.log(`Initializing Buzzer`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);

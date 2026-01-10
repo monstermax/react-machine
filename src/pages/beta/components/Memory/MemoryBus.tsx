@@ -100,7 +100,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     });
 
     if (!memoryBusInstance) {
-        return <>Loading Memory Bus</>;
+        return <>Loading Memory State</>;
     }
 
     return (
@@ -108,7 +108,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
             {/* MemoryBus Head */}
             <div className="flex bg-background-light-xl p-2 rounded">
-                <h2 className="font-bold">Memory Bus</h2>
+                <h2 className="font-bold">Memory State</h2>
 
                 {childrenWithProps && (
                     <button

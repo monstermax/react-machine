@@ -46,7 +46,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
             setStorageDiskInstance(disk);
 
             disk.on('state', (state) => {
-                console.log('Disk state update', state)
+                //console.log('Disk state update', state)
 
                 if (state.storage) {
                     setStorage(state.storage)

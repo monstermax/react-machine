@@ -61,7 +61,7 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     const addDevice = useCallback((instance: IoDevice) => {
         if (!devicesManagerInstance) return;
 
-        console.log('Device created:', instance)
+        //console.log('Device created:', instance)
 
         const devices = Array.from(devicesManagerInstance.devices.values());
         const device = devices.find(device => device.name === instance.name) as IoDevice | undefined

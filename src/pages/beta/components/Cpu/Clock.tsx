@@ -44,7 +44,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
             // Handle state updates
             clock.on('state', (state) => {
                 if (!clock) return
-                console.log('Clock state update', state)
+                //console.log('Clock state update', state)
 
                 if (state.clockFrequency !== undefined) {
                     clock.clockFrequency = state.clockFrequency

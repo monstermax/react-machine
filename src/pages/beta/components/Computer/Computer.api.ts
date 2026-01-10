@@ -1,9 +1,9 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import type { Cpu } from "../components/Cpu/Cpu.api";
-import type { MemoryBus } from "../components/Memory/MemoryBus.api";
-import type { DevicesManager } from "../components/Devices/DevicesManager.api";
+import type { Cpu } from "../Cpu/Cpu.api";
+import type { MemoryBus } from "../Memory/MemoryBus.api";
+import type { DevicesManager } from "../Devices/DevicesManager.api";
 
 
 export class Computer extends EventEmitter {

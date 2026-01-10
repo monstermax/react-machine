@@ -34,7 +34,7 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
 
             // Handle state updates
             device.on('state', (state) => {
-                console.log('LedsDisplay state update', state)
+                //console.log('LedsDisplay state update', state)
 
                 if (state.leds !== undefined) {
                     setLeds(state.leds)

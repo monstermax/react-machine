@@ -1,10 +1,10 @@
 
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
-import * as cpuApi from '../api/api';
-import { MemoryBus } from './Memory/MemoryBus';
-import { Cpu } from './Cpu/Cpu';
-import { DevicesManager } from './Devices/DevicesManager';
+import * as cpuApi from '../../api/api';
+import { MemoryBus } from '../Memory/MemoryBus';
+import { Cpu } from '../Cpu/Cpu';
+import { DevicesManager } from '../Devices/DevicesManager';
 import { os_list } from '@/programs/mini_os';
 import { programs } from '@/lib/programs';
 import { MEMORY_MAP } from '@/lib/memory_map';
@@ -41,7 +41,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
 
             // Handle state updates
             computer.on('state', (state) => {
-                console.log('Computer state update', state)
+                //console.log('Computer state update', state)
 
             })
         }

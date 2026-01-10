@@ -1,5 +1,5 @@
 
-import type { Computer } from "./Computer.api";
+import type { Computer } from "../components/Computer/Computer.api";
 import type { Cpu } from "../components/Cpu/Cpu.api";
 import type { DevicesManager } from "../components/Devices/DevicesManager.api";
 import type { MemoryBus } from "../components/Memory/MemoryBus.api";
@@ -8,7 +8,7 @@ import type { Ram } from "../components/Memory/Ram.api";
 import type { u16, u8 } from "@/types/cpu.types";
 
 
-export * from './Computer.api';
+export * from '../components/Computer/Computer.api';
 export * from '../components/Cpu/Cpu.api';
 export * from '../components/Cpu/Clock.api';
 export * from '../components/Memory/MemoryBus.api';

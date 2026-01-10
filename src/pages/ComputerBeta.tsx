@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react'
 
-import { Computer } from './beta/components/Computer';
+import { Computer } from './beta/components/Computer/Computer';
 import { Cpu } from './beta/components/Cpu/Cpu';
 import { MemoryBus } from './beta/components/Memory/MemoryBus';
 import { Ram } from './beta/components/Memory/Ram';
@@ -31,11 +31,11 @@ export const ComputerBeta: React.FC = () => {
                     </MemoryBus>
                     <DevicesManager>
                         <LedsDisplay ioPort={3} name="leds_demo" />
+                        <Buzzer ioPort={8} name="buzzer" />
                         <StorageDisk ioPort={0} name="os_disk" />
                         <StorageDisk ioPort={1} name="program_disk" />
                         <StorageDisk ioPort={14} name="data_1" persistent />
                         <StorageDisk ioPort={15} name="data_2" />
-                        <Buzzer ioPort={8} name="buzzer" />
                     </DevicesManager>
                 </Computer>
             </div>
