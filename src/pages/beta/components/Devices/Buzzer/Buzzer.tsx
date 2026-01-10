@@ -18,8 +18,10 @@ export type BuzzerProps = {
 export const Buzzer: React.FC<BuzzerProps> = (props) => {
     const { name, ioPort, children, onInstanceCreated } = props;
 
+    // core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.Buzzer | null>(null);
 
+    // UI
     const [contentVisible, setContentVisible] = useState(true);
 
 

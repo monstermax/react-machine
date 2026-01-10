@@ -12,9 +12,11 @@ import type { u16, u8 } from '@/types/cpu.types';
 export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({ name, storage }) => {
     const cpuInstance = cpuApi.cpuRef.current;
 
+    // UI snapshot state
     const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set);
     const [pc, setPc] = useState<u16>(0 as u16);
 
+    // UI
     const [followInstruction, setFollowInstruction] = useState(true);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const addressRefs = useRef<Map<number, HTMLDivElement>>(new Map());

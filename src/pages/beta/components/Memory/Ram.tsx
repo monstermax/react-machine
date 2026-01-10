@@ -19,14 +19,15 @@ export type RamProps = {
 export const Ram: React.FC<RamProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
+    // Core
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
-
-    const [contentVisible, setContentVisible] = useState(true);
+    const computerInstance = cpuApi.computerRef.current;
 
     // UI snapshot state
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
 
-    const computerInstance = cpuApi.computerRef.current;
+    // UI
+    const [contentVisible, setContentVisible] = useState(true);
 
 
     // Instanciate Ram
@@ -160,14 +161,21 @@ export const Ram: React.FC<RamProps> = (props) => {
                         onClick={() => loadOsInRam('MINI_OS_V1')}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                         >
-                        Load Default OS
+                        Load OS
                     </button>
 
                     <button
                         onClick={() => loadProgramInRam('leds_test_2')}
+                        className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
+                        >
+                        Load LEDs
+                    </button>
+
+                    <button
+                        onClick={() => loadProgramInRam('FS_CREATE_FILE_COMPILED')}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                         >
-                        Load Default Program
+                        Load Test FS
                     </button>
                 </div>
 

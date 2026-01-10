@@ -116,8 +116,19 @@ export class Cpu extends EventEmitter {
                 break;
 
             case Opcode.BREAKPOINT:
-                this.paused = true
-                this.setRegister("PC", (pc + 1) as u16);
+                if (this.currentBreakpoint == pc) {
+                    this.setRegister("PC", (pc + 1) as u16);
+                    this.currentBreakpoint = null;
+
+                } else {
+                    this.paused = true
+                    this.currentBreakpoint = pc;
+
+                    // Update UI State
+                    this.emit('state', {
+                        paused: this.paused,
+                    })
+                }
                 break;
 
             case Opcode.HALT:

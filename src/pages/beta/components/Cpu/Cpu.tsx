@@ -16,16 +16,18 @@ export type CpuProps = {
 export const Cpu: React.FC<CpuProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
+    // Core
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
-
-    const [contentVisible, setContentVisible] = useState(true);
 
     // UI snapshot state
     const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map(cpuApi.initialRegisters));
     const [clockCycle, setClockCycle] = useState(0);
     const [halted, setHalted] = useState(false);
     const [paused, setPaused] = useState(true);
+
+    // UI
+    const [contentVisible, setContentVisible] = useState(true);
 
 
     // Instanciate CPU

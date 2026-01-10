@@ -49,8 +49,8 @@ export class StorageFileSystem extends EventEmitter {
     public id: number;
     private storageDisk: StorageDisk;
     private currentSector: u8 = U8(0)
-    private currentFileHandle: u16 = U16(0)
-    private lastCommandResult: u8 = U8(0)
+    public currentFileHandle: u16 = U16(0)
+    public lastCommandResult: u8 = U8(0)
     private filenameBuffer: string = "";
     private filenameIndex: number = 0;
     private filePointer: u16 = U16(0);  // Position dans le fichier courant

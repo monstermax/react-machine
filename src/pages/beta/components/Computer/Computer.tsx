@@ -14,17 +14,18 @@ import type { CompiledCode, OsInfo, ProgramInfo, u8 } from '@/types/cpu.types';
 
 
 export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+
+    // Core
     const [computerInstance, setComputerInstance] = useState<cpuApi.Computer | null>(null);
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null);
+    const ramInstance = cpuApi.ramRef.current;
 
+    // UI
     const [childrenVisible, setChildrenVisible] = useState(true);
-
     const [selectedOs, setSelectedOs] = useState<string | null>(null);
     const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
-
-    const ramInstance = cpuApi.ramRef.current;
 
     const isOsUnloaded = false; // TODO
     const isProgramUnloaded = false; // TODO

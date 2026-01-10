@@ -18,12 +18,14 @@ export type LedsDisplayProps = {
 export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
     const { name, ioPort, children, onInstanceCreated } = props;
 
+    // Core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.LedsDisplay | null>(null);
-
-    const [contentVisible, setContentVisible] = useState(true);
 
     // UI snapshot state
     const [leds, setLeds] = useState<u8>(0 as u8)
+
+    // UI
+    const [contentVisible, setContentVisible] = useState(true);
 
 
     // Instanciate Device

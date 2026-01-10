@@ -18,25 +18,29 @@ export type StorageDiskProps = {
 export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
     const { name, ioPort, persistent, children, onInstanceCreated } = props
 
+    // Core
     const [storageDiskInstance, setStorageDiskInstance] = useState<cpuApi.StorageDisk | null>(null);
-
-    const [contentVisible, setContentVisible] = useState(true);
 
     // UI snapshot state
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
+
+    // UI
+    const [contentVisible, setContentVisible] = useState(true);
+    const [skipStorageEffect, setSkipStorageEffect] = useState(false);
+    const [initialized, setInitialized] = useState(false)
     const [decodeInstructions, setDecodeInstructions] = useState(true);
 
 
     const sortedDiskData = useMemo(() => {
         return Array.from(storage.entries()).sort(([a], [b]) => a - b)
-    }, [storage]);
+    }, [storageDiskInstance, storage]);
 
 
     const diskInstructionMap = useMemo(() => {
         //console.log('buildMemoryInstructionMap:', name, storage)
         return buildMemoryInstructionMap(storage);
     },
-    [storage]);
+    [storageDiskInstance, storage]);
 
 
     // Instanciate StorageDisk
@@ -46,14 +50,32 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
             setStorageDiskInstance(disk);
 
             disk.on('state', (state) => {
-                //console.log('Disk state update', state)
+                console.log(`Disk ${name} state update`, state)
 
                 if (state.storage) {
                     setStorage(state.storage)
                 }
             })
 
+            if (persistent) {
+                // Load storage
+                const key = `disk_${name}`
+                const storageArrJson = localStorage.getItem(key);
+
+                //console.log(`Loading persistent disk ${name} storage`);
+
+                if (storageArrJson === null || storageArrJson === undefined) {
+                    // No localStorage found
+
+                } else {
+                    const storageArr = JSON.parse(storageArrJson) as [u16, u8][];
+                    setSkipStorageEffect(true);
+                    setStorage(new Map(storageArr))
+                }
+            }
+
             //console.log(`StorageDisk "${name}" instantiated`)
+            setInitialized(true);
         }
 
         const timer = setTimeout(_instanciateStorageDisk, 100);
@@ -67,6 +89,28 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
             onInstanceCreated(storageDiskInstance);
         }
     }, [storageDiskInstance, onInstanceCreated]);
+
+
+    // Save persistent storage
+    useEffect(() => {
+        if (!persistent || !initialized) return;
+
+        const _save = () => {
+            if (skipStorageEffect) {
+                setSkipStorageEffect(false)
+                return;
+            }
+
+            //console.log(`Saving persistent disk ${name} storage`);
+
+            const key = `disk_${name}`
+            const storageArrJson = JSON.stringify(Array.from(storage.entries()))
+            localStorage.setItem(key, storageArrJson)
+        }
+
+        const timer = setTimeout(_save, 500);
+        return () => clearTimeout(timer);
+    }, [storage, initialized])
 
 
     const childrenWithProps = React.Children.map(children, (child) => {

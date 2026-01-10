@@ -26,10 +26,11 @@ export type ClockProps = {
 export const Clock: React.FC<ClockProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
+    // Core
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
-
     const cpuInstance = cpuApi.cpuRef.current;
 
+    // UI
     const [frequencyReal, setFrequencyReal] = useState(0)
     const [lastFrequencyStat, setLastFrequencyStat] = useState<{ timestamp: number, cycles: number } | null>(null)
     const [triggerFrequencyRefresh, setTriggerFrequencyRefresh] = useState(0)

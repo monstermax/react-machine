@@ -15,12 +15,14 @@ export type RomProps = {
 export const Rom: React.FC<RomProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
+    // Core
     const [romInstance, setRomInstance] = useState<cpuApi.Rom | null>(null);
-
-    const [contentVisible, setContentVisible] = useState(true);
 
     // UI snapshot state
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
+
+    // UI
+    const [contentVisible, setContentVisible] = useState(true);
 
 
     // Instanciate Rom

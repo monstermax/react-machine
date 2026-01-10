@@ -20,12 +20,13 @@ export type DevicesManagerProps = {
 export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
+    // Core
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null); // aka ioInstance
-    //const nextDeviceIdRef = useRef<u8>(0 as u8);
-
     //const [devicesInstances, setDevicesInstances] = useState<Map<string, cpuApi.StorageDisk> | null>(null);
 
+    // UI
     const [childrenVisible, setChildrenVisible] = useState(true);
+    //const nextDeviceIdRef = useRef<u8>(0 as u8);
 
 
     // Instanciate Devices
@@ -74,21 +75,21 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
 
         //setDevicesInstances(devicesManagerInstance.devices);
 
+        // DEBUG
         if (instance.name === 'data_2') {
-            loadDiskData2()
+            loadDiskDemoProgram('data_2')
         }
     }, [devicesManagerInstance])
 
 
-    const loadDiskData2 = () => {
+    const loadDiskDemoProgram = (diskName: string) => {
         if (!devicesManagerInstance) return;
 
-        const memoryOffset = 0x2000;
+        const memoryOffset = 0x2000; // adresse mémoire où le code executable sera chargé pour etre executé
         const demoProgram = compileCode(ledTestCodeSource, memoryOffset as u16)
 
         const devices = Array.from(devicesManagerInstance.devices.values());
 
-        const diskName = 'data_2';
         const disk = devices.find(device => device.name === diskName) as cpuApi.StorageDisk | undefined
         if (!disk) return
 

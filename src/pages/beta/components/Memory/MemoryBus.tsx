@@ -15,10 +15,12 @@ type MemoryBusProps = {
 export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
+    // Core
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
     const [romInstance, setRomInstance] = useState<cpuApi.Rom | null>(null);
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
 
+    // UI
     const [contentVisible, setContentVisible] = useState(true);
 
 
