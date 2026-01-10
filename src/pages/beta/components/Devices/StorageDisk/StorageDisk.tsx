@@ -92,7 +92,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
             <div className="w-full flex bg-background-light-xl p-2 rounded">
                 <h2 className="font-bold">Storage Disk "{name}"</h2>
 
-                {childrenWithProps && (
+                {true && (
                     <button
                         className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
                         onClick={() => setContentVisible(b => !b)}
