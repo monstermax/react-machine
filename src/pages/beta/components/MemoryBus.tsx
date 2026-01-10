@@ -56,26 +56,28 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     }, [memoryBusInstance, onInstanceCreated]);
 
 
-    // Mount ROM - récupère l'instance du ROM depuis les enfants
-    useEffect(() => {
+    const addRom = (romInstance: cpuApi.Rom) => {
         if (!memoryBusInstance) return;
 
         if (romInstance && !memoryBusInstance.rom) {
             memoryBusInstance.rom = romInstance;
             //console.log('ROM monté dans MemoryBus:', romInstance);
         }
-    }, [memoryBusInstance, romInstance]);
+
+        setRomInstance(romInstance);
+    }
 
 
-    // Mount RAM - récupère l'instance du RAM depuis les enfants
-    useEffect(() => {
+    const addRam = (ramInstance: cpuApi.Ram) => {
         if (!memoryBusInstance) return;
 
         if (ramInstance && !memoryBusInstance.ram) {
             memoryBusInstance.ram = ramInstance;
             //console.log('RAM monté dans MemoryBus:', ramInstance);
         }
-    }, [memoryBusInstance, ramInstance]);
+
+        setRamInstance(ramInstance)
+    }
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -84,24 +86,14 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
             switch (childElement.type) {
                 case Rom:
-                    return React.cloneElement(childElement, {
-                        onInstanceCreated: (instance: cpuApi.Rom) => {
-                            setRomInstance(instance);
-                        }
-                    });
-                    break;
+                    return React.cloneElement(childElement, { onInstanceCreated: addRom });
+
                 case Ram:
-                    return React.cloneElement(childElement, {
-                        onInstanceCreated: (instance: cpuApi.Ram) => {
-                            setRamInstance(instance);
-                        }
-                    });
-                    break;
+                    return React.cloneElement(childElement, { onInstanceCreated: addRam });
 
                 default:
                     console.log(`Invalid component mounted into MemoryBus :`, (childElement.type as JSXElementConstructor<any>).name);
                     return null;
-                    break;
             }
         }
         return child;

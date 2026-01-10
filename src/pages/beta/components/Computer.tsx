@@ -50,37 +50,40 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
     }, []);
 
 
-    // Mount CPU - récupère l'instance du CPU depuis les enfants
-    useEffect(() => {
+    const addCpu = (cpuInstance: cpuApi.Cpu) => {
         if (!computerInstance) return;
 
         if (cpuInstance && !computerInstance.cpu) {
             computerInstance.cpu = cpuInstance;
             //console.log('CPU monté dans Computer:', cpuInstance);
         }
-    }, [computerInstance, cpuInstance]);
+
+        setCpuInstance(cpuInstance);
+    }
 
 
-    // Mount MemoryBus - récupère l'instance du MemoryBus depuis les enfants
-    useEffect(() => {
+    const addMemoryBus = (memoryBusInstance: cpuApi.MemoryBus) => {
         if (!computerInstance) return;
 
         if (memoryBusInstance && !computerInstance.memoryBus) {
             computerInstance.memoryBus = memoryBusInstance;
-            //console.log('MemoryBus monté dans Computer:', cpuInstance);
+            //console.log('MemoryBus monté dans Computer:', memoryBusInstance);
         }
-    }, [computerInstance, memoryBusInstance]);
+
+        setMemoryBusInstance(memoryBusInstance);
+    }
 
 
-    // Mount Devices - récupère l'instance du Devices depuis les enfants
-    useEffect(() => {
+    const addDevicesManager = (devicesManagerInstance: cpuApi.DevicesManager) => {
         if (!computerInstance?.memoryBus) return;
 
         if (devicesInstance && !computerInstance.memoryBus.io) {
             computerInstance.memoryBus.io = devicesInstance;
             //console.log('Devices monté dans MemoryBus via Computer:', devicesInstance);
         }
-    }, [computerInstance, devicesInstance]);
+
+        setDevicesInstance(devicesManagerInstance);
+    }
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -89,32 +92,17 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
 
             switch (childElement.type) {
                 case Cpu:
-                    return React.cloneElement(childElement, {
-                        onInstanceCreated: (instance: cpuApi.Cpu) => {
-                            setCpuInstance(instance);
-                        }
-                    });
-                    break;
+                    return React.cloneElement(childElement, { onInstanceCreated: addCpu });
 
                 case MemoryBus:
-                    return React.cloneElement(childElement, {
-                        onInstanceCreated: (instance: cpuApi.MemoryBus) => {
-                            setMemoryBusInstance(instance);
-                        }
-                    });
-                    break;
+                    return React.cloneElement(childElement, { onInstanceCreated: addMemoryBus });
+
                 case DevicesManager:
-                    return React.cloneElement(childElement, {
-                        onInstanceCreated: (instance: cpuApi.DevicesManager) => {
-                            setDevicesInstance(instance);
-                        }
-                    });
-                    break;
+                    return React.cloneElement(childElement, { onInstanceCreated: addDevicesManager });
 
                 default:
                     console.log(`Invalid component mounted into Computer : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
                     return null;
-                    break;
             }
         }
         return child;

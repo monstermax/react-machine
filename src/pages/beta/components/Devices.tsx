@@ -20,7 +20,7 @@ export const DevicesManager: React.FC<DevicesProps> = (props) => {
 
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null); // aka ioInstance
 
-    const [devicesInstances, setDevicesInstances] = useState<Map<string, cpuApi.StorageDisk> | null>(null);
+    //const [devicesInstances, setDevicesInstances] = useState<Map<string, cpuApi.StorageDisk> | null>(null);
 
     const [childrenVisible, setChildrenVisible] = useState(true);
 
@@ -55,43 +55,35 @@ export const DevicesManager: React.FC<DevicesProps> = (props) => {
 
 
     // Mount Device - récupère l'instance du Device depuis les enfants
-    useEffect(() => {
+    const addDiskStorageDevice = (instance: cpuApi.StorageDisk) => {
         if (!devicesManagerInstance) return;
 
-        console.log('devices detected:', devicesInstances)
+        console.log('disk created:', instance)
 
-        if (devicesInstances) {
-            devicesInstances.forEach((d, key) => {
-                if (! devicesManagerInstance.devices.has(key)) {
-                    devicesManagerInstance.devices.set(key, d)
-                }
-            })
+        if (!devicesManagerInstance.devices.has(instance.name)) {
+            devicesManagerInstance.devices.set(instance.name, instance)
         }
-    }, [devicesManagerInstance, devicesInstances]);
+
+        //setDevicesInstances(devicesManagerInstance.devices);
+
+        if (instance.name === 'data_2') {
+            loadDiskData2()
+        }
+    }
 
 
-    // Load DataDisk2 on component mount
-    useEffect(() => {
+    const loadDiskData2 = () => {
         if (!devicesManagerInstance) return;
-        if (devicesManagerInstance.devices.size < React.Children.count(children)) return;
 
-        const _load_data_disk_2 = () => {
-            if (!devicesManagerInstance) return;
-            //console.log('useffect', devicesManagerInstance)
+        const memoryOffset = 0x2000;
+        const demoProgram = compileCode(ledTestCodeSource, memoryOffset as u16)
 
-            const memoryOffset = 0x2000;
-            const demoProgram = compileCode(ledTestCodeSource, memoryOffset as u16)
+        const diskName = 'data_2';
+        const disk = devicesManagerInstance.devices.get(diskName)
+        if (!disk) return
 
-            const diskName = 'data_2';
-            const disk = devicesManagerInstance.devices.get(diskName)
-            if (!disk) return
-
-            disk.loadRawData(demoProgram.code)
-        }
-
-        const timer = setTimeout(_load_data_disk_2, 100);
-        return () => clearTimeout(timer);
-    }, [devicesManagerInstance, devicesManagerInstance?.devices.size])
+        disk.loadRawData(demoProgram.code)
+    }
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -100,25 +92,21 @@ export const DevicesManager: React.FC<DevicesProps> = (props) => {
 
             switch (childElement.type) {
                 case StorageDisk:
-                    return React.cloneElement(childElement, {
-                        onInstanceCreated: (instance: cpuApi.StorageDisk) => {
-                            setDevicesInstances(devicesInstances => {
-                                if (!devicesInstances) devicesInstances = new Map;
-                                return devicesInstances.set(instance.name, instance)
-                            });
-                        }
-                    });
-                    break;
+                    return React.cloneElement(childElement, { onInstanceCreated: addDiskStorageDevice });
 
                 default:
                     console.log(`Invalid component mounted into Devices : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
                     return null;
-                    break;
 
             }
         }
         return child;
     });
+
+
+    if (! devicesManagerInstance) {
+        return <>Loading Devices</>
+    }
 
 
     return (

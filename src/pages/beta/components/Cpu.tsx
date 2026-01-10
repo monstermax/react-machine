@@ -72,7 +72,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
 
     // Mount Clock - récupère l'instance du Clock depuis les enfants
-    useEffect(() => {
+    const addClock = (clockInstance: cpuApi.Clock) => {
         if (!cpuInstance) return;
 
         if (clockInstance && !cpuInstance.clock) {
@@ -86,7 +86,9 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
             //console.log('Clock monté dans CPU:', clockInstance);
         }
-    }, [cpuInstance, clockInstance]);
+
+        setClockInstance(clockInstance);
+    }
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -95,17 +97,11 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
             switch (childElement.type) {
                 case Clock:
-                    return React.cloneElement(childElement, {
-                        onInstanceCreated: (instance: cpuApi.Clock) => {
-                            setClockInstance(instance);
-                        }
-                    });
-                    break;
+                    return React.cloneElement(childElement, { onInstanceCreated: addClock });
 
                 default:
                     console.log(`Invalid component mounted into Cpu : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
                     return null;
-                    break;
             }
         }
         return child;
@@ -202,52 +198,65 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     CPU Cycle #{clockCycle}
                 </div>
 
-                {/* Registers */}
-                <div className="p-2 rounded bg-background-light-2xl">
-                    <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Registers</h3>
-
-                    <div className="grid grid-cols-2 space-x-2 space-y-2">
-                        {Array.from(registers.entries()).map(([reg, value]) => (
-                            <div
-                                key={reg}
-                                className={`flex w-full h-full border justify-between px-2 pt-2 rounded ${(reg === "PC")
-                                    ? "bg-blue-900/50"
-                                    : (reg === "A" && halted)
-                                        ? "bg-green-900/50 border border-green-500"
-                                        : "bg-slate-900/50"
-                                    }`}
-                            >
-                                <span className="text-cyan-400">{reg}:</span>
-                                <span className="text-green-400 ps-4 min-w-24 text-right">
-                                    {value} (0x{value.toString(16).padStart(
-                                        (reg === "PC" || reg === "SP" ? 4 : 2),  // 4 digits pour PC/SP, 2 pour les autres
-                                        "0"
-                                    )})
-                                    {/* reg === "FLAGS" && ` [Z:${cpu.getFlag('zero') ? 1 : 0} C:${cpu.getFlag('carry') ? 1 : 0}]` */}
-                                </span>
-                            </div>
-                        ))}
-
-                        <div className="flex w-full h-full justify-between px-2 pt-2 rounded bg-slate-900/50 border border-red-500/30">
-                            <span className="text-red-400">Status:</span>
-                            <span className={halted ? "text-red-400" : "text-green-400"}>
-                                {halted ? "HALTED" : "RUNNING"}
-                            </span>
-                        </div>
-                        <div className="flex w-full h-full justify-between px-2 pt-2 rounded bg-slate-900/50 border border-cyan-500/30">
-                            <span className="text-cyan-400">Clock:</span>
-                            <span className="text-green-400">{clockCycle} cycles</span>
-                        </div>
-                    </div>
-                </div>
-
                 {/* CPU Children */}
                 {childrenWithProps && (
                     <div className="cpu-children flex space-x-4 space-y-4">
                         {childrenWithProps}
                     </div>
                 )}
+
+                {/* Registers */}
+                <Registers
+                    halted={halted}
+                    clockCycle={clockCycle}
+                    registers={registers}
+                />
             </div>
         </div>
     );
 };
+
+
+const Registers: React.FC<{ halted: boolean, clockCycle: number, registers: Map<string, u8 | u16> }> = (props) => {
+    const { halted, clockCycle, registers } = props;
+
+    return (
+        <div className="p-2 rounded bg-background-light-2xl">
+            <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Registers</h3>
+
+            <div className="grid grid-cols-2 space-x-2 space-y-2">
+                {Array.from(registers.entries()).map(([reg, value]) => (
+                    <div
+                        key={reg}
+                        className={`flex w-full h-full border justify-between px-2 pt-2 rounded ${(reg === "PC")
+                            ? "bg-blue-900/50"
+                            : (reg === "A" && halted)
+                                ? "bg-green-900/50 border border-green-500"
+                                : "bg-slate-900/50"
+                            }`}
+                    >
+                        <span className="text-cyan-400">{reg}:</span>
+                        <span className="text-green-400 ps-4 min-w-24 text-right">
+                            {value} (0x{value.toString(16).padStart(
+                                (reg === "PC" || reg === "SP" ? 4 : 2),  // 4 digits pour PC/SP, 2 pour les autres
+                                "0"
+                            )})
+                            {/* reg === "FLAGS" && ` [Z:${cpu.getFlag('zero') ? 1 : 0} C:${cpu.getFlag('carry') ? 1 : 0}]` */}
+                        </span>
+                    </div>
+                ))}
+
+                <div className="flex w-full h-full justify-between px-2 pt-2 rounded bg-slate-900/50 border border-red-500/30">
+                    <span className="text-red-400">Status:</span>
+                    <span className={halted ? "text-red-400" : "text-green-400"}>
+                        {halted ? "HALTED" : "RUNNING"}
+                    </span>
+                </div>
+                <div className="flex w-full h-full justify-between px-2 pt-2 rounded bg-slate-900/50 border border-cyan-500/30">
+                    <span className="text-cyan-400">Clock:</span>
+                    <span className="text-green-400">{clockCycle} cycles</span>
+                </div>
+            </div>
+        </div>
+    );
+}
