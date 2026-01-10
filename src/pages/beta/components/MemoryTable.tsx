@@ -99,7 +99,7 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
             <div
                 ref={scrollContainerRef}
-                className="font-mono text-sm space-y-1 max-h-[550px] overflow-y-auto"
+                className="font-mono text-sm space-y-1 h-[400px] overflow-y-auto"
             >
 
                 {sortedStorage.map(([address, value]) => {

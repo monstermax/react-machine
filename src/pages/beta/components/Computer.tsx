@@ -16,7 +16,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
     const [computerInstance, setComputerInstance] = useState<cpuApi.Computer | null>(null);
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
-    const [devicesInstance, setDevicesInstance] = useState<cpuApi.DevicesManager | null>(null);
+    const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null);
 
     const [childrenVisible, setChildrenVisible] = useState(true);
 
@@ -77,12 +77,12 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
     const addDevicesManager = (devicesManagerInstance: cpuApi.DevicesManager) => {
         if (!computerInstance?.memoryBus) return;
 
-        if (devicesInstance && !computerInstance.memoryBus.io) {
-            computerInstance.memoryBus.io = devicesInstance;
+        if (devicesManagerInstance && !computerInstance.memoryBus.io) {
+            computerInstance.memoryBus.io = devicesManagerInstance;
             //console.log('Devices monté dans MemoryBus via Computer:', devicesInstance);
         }
 
-        setDevicesInstance(devicesManagerInstance);
+        setDevicesManagerInstance(devicesManagerInstance);
     }
 
 
@@ -115,10 +115,14 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
 
 
     const loadCodeOnDisk = async (diskName: string, code: CompiledCode) => {
-        if (!devicesInstance) return;
+        if (!devicesManagerInstance) return;
 
-        const disk = devicesInstance.devices.get(diskName) as cpuApi.StorageDisk | undefined;
+        const devices = Array.from(devicesManagerInstance.devices.values());
+
+        const disk = devices.find(device => device.name === diskName) as cpuApi.StorageDisk | undefined
         if (!disk) return;
+
+        if (disk.type !== 'DiskStorage') return;
 
         await disk.loadRawData(code);
     }

@@ -147,6 +147,13 @@ export const Ram: React.FC<RamProps> = (props) => {
             {/* RAM Content */}
             <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
 
+                {/* Storage */}
+                <div className="p-2 rounded bg-background-light-2xl">
+                    <h3>RAM Storage</h3>
+
+                    <MemoryTable name="ram" storage={storage} />
+                </div>
+
                 {/* Buttons */}
                 <div className="p-2 rounded bg-background-light-2xl flex gap-2">
                     <button
@@ -162,13 +169,6 @@ export const Ram: React.FC<RamProps> = (props) => {
                         >
                         Load Default Program
                     </button>
-                </div>
-
-                {/* Storage */}
-                <div className="p-2 rounded bg-background-light-2xl">
-                    <h3>RAM Storage</h3>
-
-                    <MemoryTable name="ram" storage={storage} />
                 </div>
 
                 {/* RAM Children */}

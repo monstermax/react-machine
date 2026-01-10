@@ -22,18 +22,33 @@ export class LedsDisplay extends EventEmitter {
 
 
     read(port: u8): u8 {
-        return U8(0)
+        switch (port) {
+            case 0x00:
+                return this.leds;
+                break;
+        }
+
+        return 0 as u8;
     }
 
 
     write(port: u8, value: u8): void {
-
+        switch (port) {
+            case 0x00:
+                this.leds = U8(value);
+                break;
+        }
     }
 
 
     getLeds(): u8[] {
         // Retourne un tableau de bits pour l'affichage UI
         return Array.from({ length: 8 }, (_, i) => ((this.leds >> i) & 1) as u8);
+    }
+
+
+    reset(): void {
+        this.leds = U8(0);
     }
 
 }

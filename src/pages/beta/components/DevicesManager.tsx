@@ -60,10 +60,11 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
         if (!devicesManagerInstance) return;
 
         //console.log('Device created:', instance)
+        const deviceCount = devicesManagerInstance.devices.size as u8
 
-        if (!devicesManagerInstance.devices.has(instance.name)) {
-            devicesManagerInstance.devices.set(instance.name, instance)
-        }
+        //if (!devicesManagerInstance.devices.has(instance.name)) {
+            devicesManagerInstance.devices.set(deviceCount, instance)
+        //}
 
         //setDevicesInstances(devicesManagerInstance.devices);
 
@@ -79,8 +80,10 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
         const memoryOffset = 0x2000;
         const demoProgram = compileCode(ledTestCodeSource, memoryOffset as u16)
 
+        const devices = Array.from(devicesManagerInstance.devices.values());
+
         const diskName = 'data_2';
-        const disk = devicesManagerInstance.devices.get(diskName)
+        const disk = devices.find(device => device.name === diskName) as cpuApi.StorageDisk | undefined
         if (!disk) return
 
         disk.loadRawData(demoProgram.code)

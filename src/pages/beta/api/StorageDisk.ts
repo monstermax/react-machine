@@ -4,14 +4,16 @@ import { EventEmitter } from "eventemitter3";
 import { U16, U8 } from "@/lib/integers";
 import { StorageFileSystem } from "./StorageFileSystem";
 
-import type { CompiledCode, u16, u8 } from "@/types/cpu.types";
+import type { CompiledCode, IoDeviceType, u16, u8 } from "@/types/cpu.types";
 
 
 export class StorageDisk extends EventEmitter {
     public id: number;
     public name: string;
+    public type: IoDeviceType;
     public storage: Map<u16, u8> = new Map;
     private fs: StorageFileSystem;
+
 
     constructor(name: string) {
         //console.log(`Initializing StorageDisk`);
@@ -19,6 +21,7 @@ export class StorageDisk extends EventEmitter {
 
         this.id = Math.round(Math.random() * 999_999_999);
         this.name = name;
+        this.type = 'DiskStorage';
         this.fs = new StorageFileSystem(this);
     }
 

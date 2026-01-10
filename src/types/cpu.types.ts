@@ -32,6 +32,19 @@ export interface Device {
 }
 
 
+export type IoDeviceType = 'DiskStorage' | 'Display';
+
+
+export interface IoDevice {
+    name: string;
+    type: IoDeviceType;
+    read(port: u8): u8;
+    write(port: u8, value: u8): void;
+    getSize?(): number;
+    reset?(): void;
+}
+
+
 
 export type OsInfo = {
     name: string,
