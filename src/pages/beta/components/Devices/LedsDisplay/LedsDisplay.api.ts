@@ -3,21 +3,25 @@ import { EventEmitter } from "eventemitter3";
 
 import { U16, U8 } from "@/lib/integers";
 
-import type { u16, u8 } from "@/types/cpu.types";
+import type { IoDeviceType, u16, u8 } from "@/types/cpu.types";
 
 
 export class LedsDisplay extends EventEmitter {
     public id: number;
     public name: string;
+    public type: IoDeviceType;
+    public ioPort: u8;
     private leds: u8 = 0 as u8;
 
 
-    constructor(name: string) {
+    constructor(name: string, ioPort: u8 | null = null) {
         console.log(`Initializing LedsDisplay`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);
         this.name = name;
+        this.type = 'Display';
+        this.ioPort = ioPort ?? 0 as u8; // TODO: find free io port
     }
 
 
@@ -36,6 +40,7 @@ export class LedsDisplay extends EventEmitter {
         switch (port) {
             case 0x00:
                 this.leds = U8(value);
+                this.emit('state', { leds: this.leds })
                 break;
         }
     }

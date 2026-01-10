@@ -2,17 +2,14 @@
 import React, { useEffect } from 'react'
 
 import { Computer } from './beta/components/Computer';
-import { Cpu } from './beta/components/Cpu';
-import { MemoryBus } from './beta/components/MemoryBus';
-import { Ram } from './beta/components/Ram';
-import { Rom } from './beta/components/Rom';
-import { DevicesManager } from './beta/components/DevicesManager';
-import { StorageDisk } from './beta/components/StorageDisk';
-import { Clock } from './beta/components/Clock';
-import { compileCode } from '@/lib/compiler';
-import { devicesManagerRef } from './beta/api/api';
-import { LedsDisplay } from './beta/components/LedsDisplay';
-
+import { Cpu } from './beta/components/Cpu/Cpu';
+import { MemoryBus } from './beta/components/Memory/MemoryBus';
+import { Ram } from './beta/components/Memory/Ram';
+import { Rom } from './beta/components/Memory/Rom';
+import { DevicesManager } from './beta/components/Devices/DevicesManager';
+import { StorageDisk } from './beta/components/Devices/StorageDisk/StorageDisk';
+import { Clock } from './beta/components/Cpu/Clock';
+import { LedsDisplay } from './beta/components/Devices/LedsDisplay/LedsDisplay';
 
 
 export const ComputerBeta: React.FC = () => {
@@ -32,11 +29,11 @@ export const ComputerBeta: React.FC = () => {
                         <Ram />
                     </MemoryBus>
                     <DevicesManager>
-                        <StorageDisk name="os_disk" />
-                        <StorageDisk name="program_disk" />
-                        <StorageDisk name="data_1" />
-                        <StorageDisk name="data_2" />
-                        <LedsDisplay name="leds_demo" />
+                        <LedsDisplay ioPort={3} name="leds_demo" />
+                        <StorageDisk ioPort={0} name="os_disk" />
+                        <StorageDisk ioPort={1} name="program_disk" />
+                        <StorageDisk ioPort={14} name="data_1" />
+                        <StorageDisk ioPort={15} name="data_2" />
                     </DevicesManager>
                 </Computer>
             </div>

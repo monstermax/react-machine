@@ -1,19 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
-import * as cpuApi from '../api/api';
+import * as cpuApi from '../../../api/api';
 import type { u16, u8 } from '@/types/cpu.types';
 import { buildMemoryInstructionMap, getOpcodeName } from '@/lib/instructions';
+import { U8 } from '@/lib/integers';
 
 
 export type StorageDiskProps = {
     name: string;
+    ioPort: number;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.StorageDisk) => void,
 }
 
 
 export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
-    const { name, children, onInstanceCreated } = props
+    const { name, ioPort, children, onInstanceCreated } = props
 
     const [storageDiskInstance, setStorageDiskInstance] = useState<cpuApi.StorageDisk | null>(null);
 
@@ -39,7 +41,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
     // Instanciate StorageDisk
     useEffect(() => {
         const _instanciateStorageDisk = () => {
-            const disk = new cpuApi.StorageDisk(name);
+            const disk = new cpuApi.StorageDisk(name, U8(ioPort));
             setStorageDiskInstance(disk);
 
             disk.on('state', (state) => {

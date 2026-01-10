@@ -2,7 +2,7 @@
 import { EventEmitter } from "eventemitter3";
 
 import { U16, U8 } from "@/lib/integers";
-import { StorageFileSystem } from "./StorageFileSystem";
+import { StorageFileSystem } from "./StorageFileSystem.api";
 
 import type { CompiledCode, IoDeviceType, u16, u8 } from "@/types/cpu.types";
 
@@ -11,11 +11,12 @@ export class StorageDisk extends EventEmitter {
     public id: number;
     public name: string;
     public type: IoDeviceType;
+    public ioPort: u8;
     public storage: Map<u16, u8> = new Map;
     private fs: StorageFileSystem;
 
 
-    constructor(name: string) {
+    constructor(name: string, ioPort: u8 | null = null) {
         //console.log(`Initializing StorageDisk`);
         super();
 
@@ -23,6 +24,7 @@ export class StorageDisk extends EventEmitter {
         this.name = name;
         this.type = 'DiskStorage';
         this.fs = new StorageFileSystem(this);
+        this.ioPort = ioPort ?? 0 as u8; // TODO: find free io port
     }
 
 

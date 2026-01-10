@@ -1,7 +1,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor } from 'react'
 
-import * as cpuApi from '../api/api';
+import * as cpuApi from '../../api/api';
 import { isROM } from '@/lib/memory_map';
 import { buildMemoryInstructionMap, getOpcodeName } from '@/lib/instructions';
 import { U16 } from '@/lib/integers';

@@ -1,36 +1,44 @@
 
-import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
+import React, { useCallback, useEffect, useState, type JSXElementConstructor } from 'react'
 
-import * as cpuApi from '../api/api';
+import * as cpuApi from '../../../api/api';
 
 import type { u16, u8 } from '@/types/cpu.types';
+import { U8 } from '@/lib/integers';
 
 
 export type LedsDisplayProps = {
     name: string;
+    ioPort: number;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.LedsDisplay) => void,
 }
 
+
 export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
-    const { name, children, onInstanceCreated } = props;
+    const { name, ioPort, children, onInstanceCreated } = props;
 
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.LedsDisplay | null>(null);
 
     const [contentVisible, setContentVisible] = useState(true);
 
     // UI snapshot state
-    const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
+    const [leds, setLeds] = useState<u8>(0 as u8)
 
 
     // Instanciate Device
     useEffect(() => {
         const _instanciateDevice = () => {
-            const device = new cpuApi.LedsDisplay(name)
+            const device = new cpuApi.LedsDisplay(name, U8(ioPort))
             setDeviceInstance(device);
 
             // Handle state updates
             device.on('state', (state) => {
+                console.log('LedsDisplay state update', state)
+
+                if (state.leds !== undefined) {
+                    setLeds(state.leds)
+                }
             })
         }
 
@@ -47,6 +55,11 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
     }, [deviceInstance, onInstanceCreated]);
 
 
+    const getLeds = useCallback((): u8[] => {
+        return Array.from({ length: 8 }, (_, i) => ((leds >> i) & 1) as u8);
+    }, [leds])
+
+
     const childrenWithProps = React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
             const childElement = child as React.ReactElement<any>;
@@ -56,7 +69,6 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
                 default:
                     console.log(`Invalid component mounted into Device LedsDisplay : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
                     return null;
-                    break;
 
             }
         }
@@ -64,7 +76,7 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
     });
 
 
-    if (! deviceInstance) {
+    if (!deviceInstance) {
         return (
             <>Loading Leds</>
         )
@@ -96,7 +108,7 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
                     <h3>LEDS</h3>
 
                     <div className="flex gap-2 ms-auto">
-                        {deviceInstance.getLeds().map((on, i) => (
+                        {getLeds().map((on, i) => (
                             <div key={i} className={`w-8 h-8 rounded-full ${on ? 'bg-yellow-500' : 'bg-gray-700'}`} />
                         ))}
                     </div>

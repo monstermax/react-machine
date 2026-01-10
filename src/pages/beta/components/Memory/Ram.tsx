@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
-import * as cpuApi from '../api/api';
+import * as cpuApi from '../../api/api';
 import { MemoryTable } from './MemoryTable';
 
 import type { OsInfo, ProgramInfo, u16, u8 } from '@/types/cpu.types';

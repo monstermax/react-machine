@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
-import * as cpuApi from '../api/api';
+import * as cpuApi from '../../api/api';
 import { Rom } from './Rom';
 import { Ram } from './Ram';
-import { DevicesManager } from './DevicesManager';
+import { DevicesManager } from '../Devices/DevicesManager';
 
 
 type MemoryBusProps = {

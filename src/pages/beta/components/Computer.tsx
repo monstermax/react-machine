@@ -2,14 +2,15 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '../api/api';
-import { MemoryBus } from './MemoryBus';
-import { Cpu } from './Cpu';
-import { DevicesManager } from './DevicesManager';
+import { MemoryBus } from './Memory/MemoryBus';
+import { Cpu } from './Cpu/Cpu';
+import { DevicesManager } from './Devices/DevicesManager';
 import { os_list } from '@/programs/mini_os';
 import { programs } from '@/lib/programs';
-import type { CompiledCode, OsInfo, ProgramInfo, u8 } from '@/types/cpu.types';
 import { MEMORY_MAP } from '@/lib/memory_map';
 import { loadCodeFromFile } from '@/lib/compiler';
+
+import type { CompiledCode, OsInfo, ProgramInfo, u8 } from '@/types/cpu.types';
 
 
 export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children }) => {

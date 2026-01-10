@@ -3,7 +3,7 @@ import { EventEmitter } from "eventemitter3";
 
 import { U16, U8 } from "@/lib/integers";
 
-import type { StorageDisk } from "./StorageDisk";
+import type { StorageDisk } from "./StorageDisk.api";
 
 
 

@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor } from 'react'
 
-import * as cpuApi from '../api/api';
-import { StorageDisk } from './StorageDisk';
-import { LedsDisplay } from './LedsDisplay';
+import * as cpuApi from '../../api/api';
+import { StorageDisk } from './StorageDisk/StorageDisk';
+import { LedsDisplay } from './LedsDisplay/LedsDisplay';
 import { compileCode } from '@/lib/compiler';
 
-import type { Device, u16, u8 } from '@/types/cpu.types';
+import type { Device, IoDevice, u16, u8 } from '@/types/cpu.types';
 
 import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
 
@@ -20,6 +20,7 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     const { children, onInstanceCreated } = props;
 
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null); // aka ioInstance
+    //const nextDeviceIdRef = useRef<u8>(0 as u8);
 
     //const [devicesInstances, setDevicesInstances] = useState<Map<string, cpuApi.StorageDisk> | null>(null);
 
@@ -56,22 +57,26 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
 
 
     // Mount Device - récupère l'instance du Device depuis les enfants
-    const addDevice = (instance: cpuApi.StorageDisk) => {
+    const addDevice = useCallback((instance: IoDevice) => {
         if (!devicesManagerInstance) return;
 
-        //console.log('Device created:', instance)
-        const deviceCount = devicesManagerInstance.devices.size as u8
+        console.log('Device created:', instance)
 
-        //if (!devicesManagerInstance.devices.has(instance.name)) {
-            devicesManagerInstance.devices.set(deviceCount, instance)
-        //}
+        const devices = Array.from(devicesManagerInstance.devices.values());
+        const device = devices.find(device => device.name === instance.name) as IoDevice | undefined
+
+        if (!device) {
+            devicesManagerInstance.devices.set(instance.ioPort, instance)
+            //devicesManagerInstance.devices.set(nextDeviceIdRef.current, instance)
+            //nextDeviceIdRef.current = nextDeviceIdRef.current + 1 as u8
+        }
 
         //setDevicesInstances(devicesManagerInstance.devices);
 
         if (instance.name === 'data_2') {
             loadDiskData2()
         }
-    }
+    }, [devicesManagerInstance])
 
 
     const loadDiskData2 = () => {

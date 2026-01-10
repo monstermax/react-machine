@@ -4,9 +4,9 @@ import { EventEmitter } from "eventemitter3";
 import { U16, U8 } from "@/lib/integers";
 import { isIO, isROM, memoryToIOPort } from "@/lib/memory_map";
 
-import type { Rom } from "./Rom";
-import type { Ram } from "./Ram";
-import type { DevicesManager } from "./DevicesManager";
+import type { Rom } from "./Rom.api";
+import type { Ram } from "./Ram.api";
+import type { DevicesManager } from "../Devices/DevicesManager.api";
 import type { u16, u8 } from "@/types/cpu.types";
 
 

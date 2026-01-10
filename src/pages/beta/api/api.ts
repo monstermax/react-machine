@@ -1,23 +1,23 @@
 
-import type { Computer } from "./Computer";
-import type { Cpu } from "./Cpu";
-import type { DevicesManager } from "./DevicesManager";
-import type { MemoryBus } from "./MemoryBus";
-import type { Ram } from "./Ram";
+import type { Computer } from "./Computer.api";
+import type { Cpu } from "../components/Cpu/Cpu.api";
+import type { DevicesManager } from "../components/Devices/DevicesManager.api";
+import type { MemoryBus } from "../components/Memory/MemoryBus.api";
+import type { Ram } from "../components/Memory/Ram.api";
 
 import type { u16, u8 } from "@/types/cpu.types";
 
 
-export * from './Computer';
-export * from './Cpu';
-export * from './Clock';
-export * from './MemoryBus';
-export * from './Rom';
-export * from './Ram';
-export * from './DevicesManager';
-export * from './StorageDisk';
-export * from './StorageFileSystem';
-export * from './LedsDisplay';
+export * from './Computer.api';
+export * from '../components/Cpu/Cpu.api';
+export * from '../components/Cpu/Clock.api';
+export * from '../components/Memory/MemoryBus.api';
+export * from '../components/Memory/Rom.api';
+export * from '../components/Memory/Ram.api';
+export * from '../components/Devices/DevicesManager.api';
+export * from '../components/Devices/StorageDisk/StorageDisk.api';
+export * from '../components/Devices/StorageDisk/StorageFileSystem.api';
+export * from '../components/Devices/LedsDisplay/LedsDisplay.api';
 
 
 export const computerRef = {

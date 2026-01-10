@@ -1,7 +1,7 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import * as cpuApi from './api';
+import * as cpuApi from '../../api/api';
 import { U16, U8 } from "@/lib/integers";
 
 import type { CompiledCode, IoDevice, u8 } from "@/types/cpu.types";
@@ -50,7 +50,7 @@ export class DevicesManager extends EventEmitter {
             return;
         }
 
-        console.warn(`Write to unknown I/O port 0xFF${ioPort.toString(16).padStart(2, '0')}`);
+        console.warn(`Write to unknown I/O port 0xFF${ioPort.toString(16).padStart(2, '0')} (port ${devicePort})`);
     }
 
 }

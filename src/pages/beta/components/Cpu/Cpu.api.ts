@@ -3,11 +3,11 @@ import { EventEmitter } from "eventemitter3";
 
 import { U16, U8 } from "@/lib/integers";
 import { Opcode } from "@/lib/instructions";
-import { initialRegisters } from "./api";
+import { initialRegisters } from "../../api/api";
 import { MEMORY_MAP } from "@/lib/memory_map";
 
-import type { MemoryBus } from "./MemoryBus";
-import type { Clock } from "./Clock";
+import type { MemoryBus } from "../Memory/MemoryBus.api";
+import type { Clock } from "./Clock.api";
 import type { Register, Register16, u16, u8 } from "@/types/cpu.types";
 
 
