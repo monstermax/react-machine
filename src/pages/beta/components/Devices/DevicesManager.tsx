@@ -8,6 +8,7 @@ import { compileCode } from '@/lib/compiler';
 import type { Device, IoDevice, u16, u8 } from '@/types/cpu.types';
 
 import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
+import { Buzzer } from './Buzzer/Buzzer';
 
 
 export type DevicesManagerProps = {
@@ -104,6 +105,9 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
                     return React.cloneElement(childElement, { onInstanceCreated: addDevice });
 
                 case LedsDisplay:
+                    return React.cloneElement(childElement, { onInstanceCreated: addDevice });
+
+                case Buzzer:
                     return React.cloneElement(childElement, { onInstanceCreated: addDevice });
 
                 default:

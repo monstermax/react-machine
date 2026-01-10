@@ -28,6 +28,13 @@ export class StorageDisk extends EventEmitter {
     }
 
 
+    formatDisk() {
+        this.fs.initializeFileSystem(true);
+
+        this.emit('state', { storage: this.storage })
+    }
+
+
     loadRawData = async (data: CompiledCode) => {
         this.storage = new Map(data);
 

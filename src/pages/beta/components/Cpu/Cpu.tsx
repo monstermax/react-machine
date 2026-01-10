@@ -176,6 +176,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     </button>
 
                     <button
+                        disabled={!paused}
                         onClick={() => runStep()}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
                     >

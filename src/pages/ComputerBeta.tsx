@@ -10,6 +10,7 @@ import { DevicesManager } from './beta/components/Devices/DevicesManager';
 import { StorageDisk } from './beta/components/Devices/StorageDisk/StorageDisk';
 import { Clock } from './beta/components/Cpu/Clock';
 import { LedsDisplay } from './beta/components/Devices/LedsDisplay/LedsDisplay';
+import { Buzzer } from './beta/components/Devices/Buzzer/Buzzer';
 
 
 export const ComputerBeta: React.FC = () => {
@@ -32,8 +33,9 @@ export const ComputerBeta: React.FC = () => {
                         <LedsDisplay ioPort={3} name="leds_demo" />
                         <StorageDisk ioPort={0} name="os_disk" />
                         <StorageDisk ioPort={1} name="program_disk" />
-                        <StorageDisk ioPort={14} name="data_1" />
+                        <StorageDisk ioPort={14} name="data_1" persistent />
                         <StorageDisk ioPort={15} name="data_2" />
+                        <Buzzer ioPort={8} name="buzzer" />
                     </DevicesManager>
                 </Computer>
             </div>

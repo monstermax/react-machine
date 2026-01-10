@@ -157,10 +157,10 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
         if (!ramInstance || !computerInstance) return;
 
         const program: ProgramInfo | null = programName ? programs[programName] : null;
-        if (!program?.filepath) return;
+        if (!program?.filepath && !(program && program.code && program.code.size > 0)) return;
 
         const memoryOffset = MEMORY_MAP.PROGRAM_START;
-        const code = await loadCodeFromFile(program.filepath, MEMORY_MAP.PROGRAM_START)
+        const code = program.code.size ? program.code : await loadCodeFromFile(program.filepath as string, MEMORY_MAP.PROGRAM_START)
 
         if (program) {
             loadCodeOnDisk('program_disk', code);

@@ -9,13 +9,14 @@ import { U8 } from '@/lib/integers';
 export type StorageDiskProps = {
     name: string;
     ioPort: number;
+    persistent?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.StorageDisk) => void,
 }
 
 
 export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
-    const { name, ioPort, children, onInstanceCreated } = props
+    const { name, ioPort, persistent, children, onInstanceCreated } = props
 
     const [storageDiskInstance, setStorageDiskInstance] = useState<cpuApi.StorageDisk | null>(null);
 
@@ -162,7 +163,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
                         </button>
 
                         <button
-                            onClick={() => { if (confirm(`Format Disk Filesystem ${name}`)) { /* storageDisk.formatDisk() */ } }}
+                            onClick={() => { if (confirm(`Format Disk Filesystem ${name}`)) { if (storageDiskInstance) {storageDiskInstance.formatDisk()} } }}
                             className={`cursor-pointer px-2 py-1 font-medium transition-colors rounded bg-red-400`}
                         >
                             Format FS
