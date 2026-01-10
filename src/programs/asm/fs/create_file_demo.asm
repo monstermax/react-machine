@@ -6,12 +6,13 @@
 PROGRAM_START:
 
 MAIN:
+
     # 1. Create file
     CALL $CREATE_COMMAND # Call CREATE_COMMAND
     JZ $END # Si échec, halt
 
     # 2. Write content
-#    CALL $WRITE_FILE_CONTENT # Call WRITE_FILE_CONTENT
+    CALL $WRITE_FILE_CONTENT # Call WRITE_FILE_CONTENT
 
     # 3. Play sound
     CALL $PLAY_SOUND # Call PLAY_SOUND
@@ -28,6 +29,7 @@ MAIN:
 
 WRITE_FILENAME:
     PUSH_A
+    BREAKPOINT
     MOV_A_IMM 0x54 # "T"
     MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_FILENAME
     MOV_A_IMM 0x45 # "E"
@@ -90,6 +92,7 @@ WRITE_FILE_CONTENT:
     WRITE_FILE_CONTENT_LOOP:
         PUSH_A
         MOV_D_MEM MEMORY_MAP.DATA_DISK_2_DATA # Read dataDisk2 (raw)
+
         MOV_MEM_D MEMORY_MAP.DATA_DISK_FS_DATA # Write dataDisk (fs)
 
         INC_B   # update position du curseur

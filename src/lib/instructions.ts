@@ -11,6 +11,7 @@ import type { u16, u8 } from "@/types/cpu.types";
 export enum Opcode {
     // Contrôle
     NOP = 0x00,
+    BREAKPOINT_JS = 0x0C,
     BREAKPOINT = 0x0D,
     SYSCALL = 0x0E,
     HALT = 0x0F,
@@ -152,7 +153,8 @@ export const getOpcodeName = (opcode: u8): string => {
         // Contrôle
         case Opcode.NOP: return "NOP";
         case Opcode.SYSCALL: return "SYSCALL";
-        case Opcode.BREAKPOINT: return "BREAKPOINT";
+        case Opcode.BREAKPOINT: return "BREAKPOINT ASM";
+        case Opcode.BREAKPOINT_JS: return "BREAKPOINT JS";
         case Opcode.HALT: return "HALT";
 
         // ALU

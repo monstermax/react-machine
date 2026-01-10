@@ -14,7 +14,7 @@ import { Buzzer } from './beta/components/Devices/Buzzer/Buzzer';
 
 
 export const ComputerBeta: React.FC = () => {
-    console.log('RENDER ComputerBeta')
+    //console.log('RENDER ComputerBeta')
 
     return (
         <div className="text-white">
@@ -35,7 +35,7 @@ export const ComputerBeta: React.FC = () => {
                         <StorageDisk ioPort={0} name="os_disk" open={false} />
                         <StorageDisk ioPort={1} name="program_disk" open={false} />
                         <StorageDisk ioPort={14} name="data_1" persistent />
-                        <StorageDisk ioPort={15} name="data_2" />
+                        <StorageDisk ioPort={15} name="data_2" open={false} />
                     </DevicesManager>
                 </Computer>
             </div>

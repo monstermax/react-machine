@@ -13,7 +13,7 @@ export class Clock extends EventEmitter {
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);
-        this.start();
+        //this.start();
     }
 
 
@@ -46,6 +46,7 @@ export class Clock extends EventEmitter {
         this.timer = setInterval(this.tick.bind(this), interval);
 
         console.log('Clock started')
+        this.tick()
     }
 
 

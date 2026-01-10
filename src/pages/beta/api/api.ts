@@ -42,6 +42,16 @@ export const ramRef = {
 };
 
 
+// DEBUG
+if (true) {
+    (window as any).computerRef = computerRef;
+    (window as any).cpuRef = cpuRef;
+    (window as any).memoryBusRef = memoryBusRef;
+    (window as any).devicesManagerRef = devicesManagerRef;
+    (window as any).ramRef = ramRef;
+}
+
+
 
 export const initialRegisters = [
         ["A", 0 as u8],      // Register A

@@ -1,7 +1,7 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import { U16, U8 } from "@/lib/integers";
+import { toHex, U16, U8 } from "@/lib/integers";
 import { Opcode } from "@/lib/instructions";
 import { initialRegisters } from "../../api/api";
 import { MEMORY_MAP } from "@/lib/memory_map";
@@ -72,16 +72,40 @@ export class Cpu extends EventEmitter {
     }
 
 
+    setPaused(paused: boolean) {
+        this.paused = paused;
+
+        if (this.clock) {
+            if (this.paused) {
+                this.clock.stop()
+
+            } else {
+                this.clock.start()
+            }
+
+        }
+    }
+
+
+    togglePaused() {
+        this.setPaused(!this.paused);
+    }
+
+
     executeCycle() {
         if (!this.memoryBus) return;
 
         // 1. Fetch
         const pc = this.getRegister("PC");
 
+        //if (this.currentBreakpoint) {
+        //    console.log('this.currentBreakpoint:', this.currentBreakpoint)
+        //    debugger;
+        //}
 
         // Handle manual breakpoints
         if (this.currentBreakpoint === null && this.breakpoints.has(pc) && !this.paused) {
-            this.paused = true;
+            this.setPaused(true);
             this.currentBreakpoint = pc;
             // TODO: petit bug à corriger. si on step jusqu'a un breakpoint. quand on redémarrage il toussote
 
@@ -91,9 +115,6 @@ export class Cpu extends EventEmitter {
             })
 
             return;
-
-        } else {
-            this.currentBreakpoint = null;
         }
 
         // Handle Threads
@@ -137,6 +158,11 @@ export class Cpu extends EventEmitter {
                 this.handleSyscall(pc);
                 break;
 
+            case Opcode.BREAKPOINT_JS:
+                debugger;
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
             case Opcode.BREAKPOINT:
                 if (this.currentBreakpoint === pc) {
                     this.currentBreakpoint = null;
@@ -146,7 +172,7 @@ export class Cpu extends EventEmitter {
                     this.currentBreakpoint = pc;
 
                     if (!this.paused) {
-                        this.paused = true
+                        this.setPaused(true);
 
                         // Update UI State
                         this.emit('state', {
@@ -763,7 +789,7 @@ export class Cpu extends EventEmitter {
         this.halted = false;
         this.clockCycle = 0;
         this.registers = new Map(initialRegisters);
-        //this.paused = true;
+        //this.setPaused(true);
         this.interruptsEnabled = false;
         this.inInterruptHandler = false;
         this.currentBreakpoint = null;

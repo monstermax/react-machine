@@ -58,20 +58,27 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     }, [devicesManagerInstance, onInstanceCreated]);
 
 
-    // Mount Device - récupère l'instance du Device depuis les enfants
+    // Mount Device - récupère les instances de Device depuis les enfants
     const addDevice = useCallback((instance: IoDevice) => {
         if (!devicesManagerInstance) return;
 
         //console.log('Device created:', instance)
 
-        const devices = Array.from(devicesManagerInstance.devices.values());
-        const device = devices.find(device => device.name === instance.name) as IoDevice | undefined
+        const device = devicesManagerInstance.getDeviceByName(instance.name);
 
-        if (!device) {
-            devicesManagerInstance.devices.set(instance.ioPort, instance)
-            //devicesManagerInstance.devices.set(nextDeviceIdRef.current, instance)
-            //nextDeviceIdRef.current = nextDeviceIdRef.current + 1 as u8
+        if (device) {
+            console.warn(`Device "${instance.name}" already exist`);
+            return
         }
+
+        if (devicesManagerInstance.devices.has(instance.ioPort)) {
+            console.warn(`Device "${instance.name}" wants an occuped ioPort`);
+            return
+        }
+
+        devicesManagerInstance.devices.set(instance.ioPort, instance)
+        //devicesManagerInstance.devices.set(nextDeviceIdRef.current, instance)
+        //nextDeviceIdRef.current = nextDeviceIdRef.current + 1 as u8
 
         //setDevicesInstances(devicesManagerInstance.devices);
 
@@ -88,9 +95,7 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
         const memoryOffset = 0x2000; // adresse mémoire où le code executable sera chargé pour etre executé
         const demoProgram = compileCode(ledTestCodeSource, memoryOffset as u16)
 
-        const devices = Array.from(devicesManagerInstance.devices.values());
-
-        const disk = devices.find(device => device.name === diskName) as cpuApi.StorageDisk | undefined
+        const disk = devicesManagerInstance.getDeviceByName(diskName) as cpuApi.StorageDisk | undefined
         if (!disk) return
 
         disk.loadRawData(demoProgram.code)

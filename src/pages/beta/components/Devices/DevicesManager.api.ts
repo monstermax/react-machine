@@ -24,6 +24,13 @@ export class DevicesManager extends EventEmitter {
     }
 
 
+    getDeviceByName(deviceName: string): IoDevice | undefined {
+        const devices = Array.from(this.devices.values());
+        const device = devices.find(device => device.name === deviceName) as IoDevice | undefined
+        return device;
+    }
+
+
     read(ioPort: u8): u8 {
         const deviceId = U8(Math.floor(ioPort / DEVICE_PORT_SIZE));
         const devicePort = U8(ioPort % DEVICE_PORT_SIZE);

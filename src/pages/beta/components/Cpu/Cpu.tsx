@@ -8,13 +8,14 @@ import type { u16, u8 } from '@/types/cpu.types';
 
 
 export type CpuProps = {
+    threads?: number,
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Cpu) => void,
 }
 
 
 export const Cpu: React.FC<CpuProps> = (props) => {
-    const { children, onInstanceCreated } = props;
+    const { threads: threadsCount, children, onInstanceCreated } = props;
 
     // Core
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
@@ -52,7 +53,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     setClockCycle(state.clockCycle)
                 }
                 if (state.registers) {
-                    setRegisters(state.registers)
+                    setRegisters(new Map(state.registers))
                 }
                 if (state.paused !== undefined) {
                     setPaused(state.paused)
@@ -127,7 +128,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
         console.log(`runLoop cycle #${clockCycle + 1}`);
 
         if (cpuInstance) {
-            cpuInstance.paused = ! cpuInstance.paused;
+            cpuInstance.togglePaused();
             cpuInstance.emit('state', { paused: cpuInstance.paused })
         }
     };
@@ -149,7 +150,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     }
 
     return (
-        <div className="cpu w-96">
+        <div className="cpu w-120">
 
             {/* CPU Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
@@ -211,6 +212,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 {/* Registers */}
                 <Registers
                     halted={halted}
+                    paused={paused}
                     clockCycle={clockCycle}
                     registers={registers}
                 />
@@ -220,8 +222,8 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 };
 
 
-const Registers: React.FC<{ halted: boolean, clockCycle: number, registers: Map<string, u8 | u16> }> = (props) => {
-    const { halted, clockCycle, registers } = props;
+const Registers: React.FC<{ halted: boolean, paused: boolean, clockCycle: number, registers: Map<string, u8 | u16> }> = (props) => {
+    const { halted, paused, clockCycle, registers } = props;
 
     return (
         <div className="p-2 rounded bg-background-light-2xl">
@@ -244,15 +246,15 @@ const Registers: React.FC<{ halted: boolean, clockCycle: number, registers: Map<
                                 (reg === "PC" || reg === "SP" ? 4 : 2),  // 4 digits pour PC/SP, 2 pour les autres
                                 "0"
                             )})
-                            {/* reg === "FLAGS" && ` [Z:${cpu.getFlag('zero') ? 1 : 0} C:${cpu.getFlag('carry') ? 1 : 0}]` */}
+                            {reg === "FLAGS" && ` [Z:${(!!(value & 0b10)) ? 1 : 0} C:${(!!(value & 0b01)) ? 1 : 0}]`}
                         </span>
                     </div>
                 ))}
 
                 <div className="flex w-full h-full justify-between px-2 pt-2 rounded bg-slate-900/50 border border-red-500/30">
                     <span className="text-red-400">Status:</span>
-                    <span className={halted ? "text-red-400" : "text-green-400"}>
-                        {halted ? "HALTED" : "RUNNING"}
+                    <span className={halted ? "text-red-400" : (paused ? "text-slate-400" : "text-yellow-400")}>
+                        {halted ? "HALTED" : (paused ? "PAUSED" : "RUNNING")}
                     </span>
                 </div>
                 <div className="flex w-full h-full justify-between px-2 pt-2 rounded bg-slate-900/50 border border-cyan-500/30">

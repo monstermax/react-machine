@@ -119,9 +119,7 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
     const loadCodeOnDisk = async (diskName: string, code: CompiledCode) => {
         if (!devicesManagerInstance) return;
 
-        const devices = Array.from(devicesManagerInstance.devices.values());
-
-        const disk = devices.find(device => device.name === diskName) as cpuApi.StorageDisk | undefined
+        const disk = devicesManagerInstance.getDeviceByName(diskName) as cpuApi.StorageDisk | undefined
         if (!disk) return;
 
         if (disk.type !== 'DiskStorage') return;
@@ -140,8 +138,8 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
         const code = await loadCodeFromFile(os.filepath, memoryOffset)
 
         if (os) {
-            loadCodeOnDisk('os_disk', code);
-            ramInstance.loadCodeInRam(code, memoryOffset);
+            loadCodeOnDisk('os_disk', code); // load on disk too (for debug)
+            ramInstance.loadCodeInRam(code, memoryOffset); // load in ram
 
         } else {
             ramInstance.write(memoryOffset, 0 as u8);
@@ -164,8 +162,8 @@ export const Computer: React.FC<{ children?: React.ReactNode }> = ({ children })
         const code = program.code.size ? program.code : await loadCodeFromFile(program.filepath as string, MEMORY_MAP.PROGRAM_START)
 
         if (program) {
-            loadCodeOnDisk('program_disk', code);
-            ramInstance.loadCodeInRam(code, memoryOffset);
+            loadCodeOnDisk('program_disk', code); // load on disk too (for debug)
+            ramInstance.loadCodeInRam(code, memoryOffset); // load in ram
 
         } else {
             ramInstance.write(memoryOffset, 0 as u8);

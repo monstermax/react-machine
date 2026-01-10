@@ -44,12 +44,12 @@ export const Ram: React.FC<RamProps> = (props) => {
                 //console.log('RAM state update', state)
 
                 if (state.storage) {
-                    setStorage(state.storage)
+                    setStorage(new Map(state.storage))
                 }
             })
 
             // UI snapshot state
-            setStorage(ram.storage);
+            setStorage(new Map(ram.storage));
         }
 
         const timer = setTimeout(_instanciateRam, 100);

@@ -29,6 +29,13 @@ export class StorageDisk extends EventEmitter {
     }
 
 
+    eraseDisk() {
+        this.storage = new Map;
+
+        this.emit('state', { storage: this.storage })
+    }
+
+
     formatDisk() {
         this.fs.initializeFileSystem(true);
 
