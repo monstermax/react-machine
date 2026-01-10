@@ -32,8 +32,8 @@ export const ComputerBeta: React.FC = () => {
                     <DevicesManager>
                         <LedsDisplay ioPort={3} name="leds_demo" />
                         <Buzzer ioPort={8} name="buzzer" />
-                        <StorageDisk ioPort={0} name="os_disk" />
-                        <StorageDisk ioPort={1} name="program_disk" />
+                        <StorageDisk ioPort={0} name="os_disk" open={false} />
+                        <StorageDisk ioPort={1} name="program_disk" open={false} />
                         <StorageDisk ioPort={14} name="data_1" persistent />
                         <StorageDisk ioPort={15} name="data_2" />
                     </DevicesManager>

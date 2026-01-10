@@ -91,25 +91,13 @@ export class Cpu extends EventEmitter {
             })
 
             return;
-        }
-
-        this.currentBreakpoint = null;
-
-        /*
-        if (this.currentBreakpoint == pc) {
-            this.setRegister("PC", (pc + 1) as u16);
-            this.currentBreakpoint = null;
 
         } else {
-            this.paused = true
-            this.currentBreakpoint = pc;
-
-            // Update UI State
-            this.emit('state', {
-                paused: this.paused,
-            })
+            this.currentBreakpoint = null;
         }
-        */
+
+        // Handle Threads
+        // Handle Interrupts
 
         const instruction = this.memoryBus.readMemory(pc);
         this.setRegister("IR", instruction);
