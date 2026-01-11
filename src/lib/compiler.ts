@@ -65,7 +65,7 @@ export async function preCompileCode(inputCode: string, memoryOffset: u16=0 as u
     //console.log('compile stage1:', stage1)
 
     const stage2: PreCompiledCode = await preCompileStage2(stage1, memoryOffset, linesOffset)
-    console.log('compile stage2:', stage2)
+    //console.log('compile stage2:', stage2)
 
     return stage2;
 }
@@ -192,7 +192,6 @@ async function preCompileStage2(stage1: {opcode: string, value: string, comment:
 
     }
 
-    console.log('stage2Step1:', stage2Step1)
 
     for (const filePath of includedFiles) {
         const lastLineRef = stage2Step1.at(-1);
@@ -203,8 +202,6 @@ async function preCompileStage2(stage1: {opcode: string, value: string, comment:
         const preCompiled: PreCompiledCode = await preCompileFile(filePath, memoryOffsetTmp, U16(linesOffset + lastLine + 1));
         stage2Step1.push(...preCompiled)
     }
-
-    console.log('stage2Step1:', stage2Step1)
 
 
     // Résolution des adresses de CALL/JMP relatives (labels)
