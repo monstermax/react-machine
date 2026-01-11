@@ -58,16 +58,17 @@ export const Rng: React.FC<RngProps> = (props) => {
     }, [rngInstance, onInstanceCreated]);
 
 
-    if (hidden) return null;
-
-
     if (!rngInstance) {
-        return <>Loading Rng</>
+        if (hidden) return null;
+
+        return (
+            <>Loading Rng</>
+        )
     }
 
 
     return (
-        <div className="w-full rounded bg-background-light-2xl">
+        <div className={`w-full rounded bg-background-light-2xl ${hidden ? "hidden" : ""}`}>
             <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">RNG</h3>
 
             <div>

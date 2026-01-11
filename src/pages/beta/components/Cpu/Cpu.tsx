@@ -9,6 +9,7 @@ import { useComputer } from '../Computer/Computer';
 
 
 export type CpuProps = {
+    hidden?: boolean,
     threads?: number,
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Cpu) => void,
@@ -16,7 +17,7 @@ export type CpuProps = {
 
 
 export const Cpu: React.FC<CpuProps> = (props) => {
-    const { threads: threadsCount, children, onInstanceCreated } = props;
+    const { hidden, threads: threadsCount, children, onInstanceCreated } = props;
     const { cpuRef, ramRef, memoryBusRef, devicesManagerRef } = useComputer();
 
     // Core
@@ -171,7 +172,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     }
 
     return (
-        <div className="cpu w-120">
+        <div className={`cpu w-120 ${hidden ? "hidden" : ""}`}>
 
             {/* CPU Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
@@ -219,9 +220,11 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 </div>
 
                 {/* Cycles */}
+                {/*
                 <div className="p-2 rounded bg-background-light-2xl">
                     CPU Cycle #{clockCycle}
                 </div>
+                */}
 
                 {/* CPU Children */}
                 {childrenWithProps && (
@@ -247,7 +250,7 @@ const Registers: React.FC<{ halted: boolean, paused: boolean, clockCycle: number
     const { halted, paused, clockCycle, registers } = props;
 
     return (
-        <div className="p-2 rounded bg-background-light-2xl">
+        <div className={`p-2 rounded bg-background-light-2xl`}>
             <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Registers</h3>
 
             <div className="grid grid-cols-2 space-x-2 space-y-2">

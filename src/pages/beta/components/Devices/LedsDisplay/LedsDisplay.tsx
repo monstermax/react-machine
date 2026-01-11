@@ -8,6 +8,7 @@ import { U8 } from '@/lib/integers';
 
 
 export type LedsDisplayProps = {
+    hidden?: boolean;
     name: string;
     ioPort: number;
     children?: React.ReactNode,
@@ -16,7 +17,7 @@ export type LedsDisplayProps = {
 
 
 export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
-    const { name, ioPort, children, onInstanceCreated } = props;
+    const { hidden, name, ioPort, children, onInstanceCreated } = props;
 
     // Core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.LedsDisplay | null>(null);
@@ -86,7 +87,7 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
 
 
     return (
-        <div className="device w-full">
+        <div className={`device w-full ${hidden ? "hidden" : ""}`}>
 
             {/* Device Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

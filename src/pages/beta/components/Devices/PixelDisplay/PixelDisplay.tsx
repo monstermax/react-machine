@@ -11,6 +11,7 @@ import type { IoDevice, u8 } from "@/types/cpu.types";
 export type PixelDisplayProps = {
     name: string;
     ioPort: number;
+    hidden?: boolean;
     width?: number;
     height?: number;
     children?: React.ReactNode,
@@ -19,7 +20,7 @@ export type PixelDisplayProps = {
 
 
 export const PixelDisplay: React.FC<PixelDisplayProps> = (props) => {
-    const { name, ioPort, width=32, height=32, children, onInstanceCreated } = props;
+    const { hidden, name, ioPort, width=32, height=32, children, onInstanceCreated } = props;
 
     // Core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.PixelDisplay | null>(null);
@@ -116,7 +117,7 @@ export const PixelDisplay: React.FC<PixelDisplayProps> = (props) => {
 
 
     return (
-        <div className="device w-full">
+        <div className={`device w-full ${hidden ? "hidden" : ""}`}>
 
             {/* Device Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

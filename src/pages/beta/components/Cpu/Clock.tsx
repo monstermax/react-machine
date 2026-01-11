@@ -21,14 +21,14 @@ const frequencies = [
 
 export type ClockProps = {
     frequency?: number;
+    hidden?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Clock) => void,
 }
 
 export const Clock: React.FC<ClockProps> = (props) => {
+    const { hidden, frequency: initialFrequency, children, onInstanceCreated } = props;
     const { cpuRef } = useComputer();
-
-    const { frequency: initialFrequency, children, onInstanceCreated } = props;
 
     // Core
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
@@ -134,7 +134,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
 
     return (
-        <div className="w-full p-2 rounded bg-background-light-2xl">
+        <div className={`w-full p-2 rounded bg-background-light-2xl ${hidden ? "hidden" : ""}`}>
             <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Clock</h3>
 
             <div>

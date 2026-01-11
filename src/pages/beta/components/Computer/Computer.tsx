@@ -8,7 +8,7 @@ import { ComputerContainer } from './ComputerContainer';
 const ComputerContext = createContext<ComputerContextType | undefined>(undefined);
 
 
-export function Computer({ children }: { children: React.ReactNode }) {
+export const Computer: React.FC<{ hidden?: boolean, children: React.ReactNode }> = ({ hidden, children }) => {
     const computerRef = useRef<cpuApi.Computer | null>(null)
     const cpuRef = useRef<cpuApi.Cpu | null>(null)
     const memoryBusRef = useRef<cpuApi.MemoryBus | null>(null)
@@ -27,7 +27,7 @@ export function Computer({ children }: { children: React.ReactNode }) {
 
     return (
         <ComputerContext.Provider value={computerState}>
-            <ComputerContainer>
+            <ComputerContainer hidden={hidden}>
                 {children}
             </ComputerContainer>
         </ComputerContext.Provider>

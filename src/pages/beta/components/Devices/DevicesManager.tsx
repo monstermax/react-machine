@@ -17,13 +17,14 @@ const validDeviceTypes = ['DiskStorage', 'Display', 'Audio', 'Time', 'Random'];
 
 
 export type DevicesManagerProps = {
+    hidden?: boolean
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.DevicesManager) => void,
 }
 
 
 export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
-    const { children, onInstanceCreated } = props;
+    const { hidden, children, onInstanceCreated } = props;
     const { devicesManagerRef } = useComputer();
 
     // Core
@@ -141,7 +142,7 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
 
 
     return (
-        <div className="devices min-w-48 grow">
+        <div className={`devices min-w-48 grow ${hidden ? "hidden" : ""}`}>
 
             {/* Devices Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

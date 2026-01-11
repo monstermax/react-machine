@@ -7,9 +7,10 @@ import { U8 } from '@/lib/integers';
 
 
 export type StorageDiskProps = {
-    data?: Map<u16, u8> | [u16, u8][];
     name: string;
     ioPort: number;
+    hidden?: boolean;
+    data?: Map<u16, u8> | [u16, u8][];
     persistent?: boolean;
     size?: number;
     open?: boolean;
@@ -19,7 +20,7 @@ export type StorageDiskProps = {
 
 
 export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
-    const { name, ioPort, persistent, open, data, size: maxSize, children, onInstanceCreated } = props
+    const { hidden, name, ioPort, persistent, open, data, size: maxSize, children, onInstanceCreated } = props
 
     // Core
     const [storageDiskInstance, setStorageDiskInstance] = useState<cpuApi.StorageDisk | null>(null);
@@ -168,7 +169,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
 
 
     return (
-        <div className="storage-disk">
+        <div className={`storage-disk ${hidden ? "hidden" : ""}`}>
 
             {/* StorageDisk Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

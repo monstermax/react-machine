@@ -27,17 +27,17 @@ export const ComputerBeta: React.FC = () => {
             </h1>
 
             <div>
-                <Computer>
-                    <Cpu threads={1}>
+                <Computer >
+                    <Cpu threads={1} >
                         <Clock frequency={10} />
                     </Cpu>
 
-                    <MemoryBus>
+                    <MemoryBus >
                         <Rom data={BOOTLOADER} />
                         <Ram />
                     </MemoryBus>
 
-                    <DevicesManager>
+                    <DevicesManager >
                         {/* Display */}
                         <LedsDisplay ioPort={3} name="leds_demo" />
                         <PixelDisplay ioPort={13} name="display_32x32" />

@@ -52,9 +52,9 @@ export const Buzzer: React.FC<BuzzerProps> = (props) => {
     }, [deviceInstance, onInstanceCreated]);
 
 
-    if (hidden) return null;
-
     if (!deviceInstance) {
+        if (hidden) return null;
+
         return (
             <>Loading Buzzer</>
         )
@@ -62,7 +62,7 @@ export const Buzzer: React.FC<BuzzerProps> = (props) => {
 
 
     return (
-        <div className="w-full p-0 rounded bg-background-light-2xl">
+        <div className={`w-full p-0 rounded bg-background-light-2xl ${hidden ? "hidden" : ""}`}>
             <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Buzzer</h3>
 
             <div>

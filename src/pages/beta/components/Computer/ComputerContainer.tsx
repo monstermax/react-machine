@@ -15,8 +15,8 @@ import { useComputer } from './Computer';
 import type { CompiledCode, OsInfo, ProgramInfo, u8 } from '@/types/cpu.types';
 
 
-export const ComputerContainer: React.FC<{ children?: React.ReactNode }> = (props) => {
-    const { children } = props;
+export const ComputerContainer: React.FC<{ hidden?: boolean, children?: React.ReactNode }> = (props) => {
+    const { hidden, children } = props;
     const { computerRef, ramRef } = useComputer();
 
     // Core
@@ -280,8 +280,9 @@ export const ComputerContainer: React.FC<{ children?: React.ReactNode }> = (prop
         return <>Loading Computer</>;
     }
 
+
     return (
-        <div className="computer bg-background-light-2xl m-2 p-1 rounded">
+        <div className={`computer bg-background-light-2xl m-2 p-1 rounded ${hidden ? "hidden" : ""}`}>
 
             {/* Computer Head */}
             <div className="w-full flex bg-background-light p-2 rounded">

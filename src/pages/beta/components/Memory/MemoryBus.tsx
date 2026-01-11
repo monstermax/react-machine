@@ -8,13 +8,14 @@ import { useComputer } from '../Computer/Computer';
 
 
 type MemoryBusProps = {
+    hidden?: boolean
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.MemoryBus) => void,
 
 }
 
 export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
-    const { children, onInstanceCreated } = props;
+    const { hidden, children, onInstanceCreated } = props;
     const { cpuRef, memoryBusRef } = useComputer();
 
     // Core
@@ -110,7 +111,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     }
 
     return (
-        <div className="memory-bus min-w-48 grow">
+        <div className={`memory-bus min-w-48 grow ${hidden ? "hidden" : ""}`}>
 
             {/* MemoryBus Head */}
             <div className="flex bg-background-light-xl p-2 rounded">
