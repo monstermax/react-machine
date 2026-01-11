@@ -19,18 +19,20 @@ const frequencies = [
 
 
 export type ClockProps = {
+    frequency?: number;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Clock) => void,
 }
 
 export const Clock: React.FC<ClockProps> = (props) => {
-    const { children, onInstanceCreated } = props;
+    const { frequency: initialFrequency, children, onInstanceCreated } = props;
 
     // Core
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
     const cpuInstance = cpuApi.cpuRef.current;
 
     // UI
+    const [clockFrequency, setClockFrequency] = useState(initialFrequency)
     const [frequencyReal, setFrequencyReal] = useState(0)
     const [lastFrequencyStat, setLastFrequencyStat] = useState<{ timestamp: number, cycles: number } | null>(null)
     const [triggerFrequencyRefresh, setTriggerFrequencyRefresh] = useState(0)
@@ -39,7 +41,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
     // Instanciate Clock
     useEffect(() => {
         const _instanciateClock = () => {
-            const clock = new cpuApi.Clock;
+            const clock = new cpuApi.Clock(initialFrequency ?? 1);
             setClockInstance(clock);
 
             // Handle state updates
@@ -48,9 +50,11 @@ export const Clock: React.FC<ClockProps> = (props) => {
                 //console.log('Clock state update', state)
 
                 if (state.clockFrequency !== undefined) {
-                    clock.clockFrequency = state.clockFrequency
+                    setClockFrequency(state.clockFrequency)
                 }
             })
+
+            setClockFrequency(clock.clockFrequency)
 
             //setInstanciated(true)
         }
@@ -134,7 +138,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
                 <div className="flex items-center gap-2 px-1">
                     <label className="text-sm font-medium text-slate-300">Clock:</label>
                     <select
-                        value={clockInstance.clockFrequency}
+                        value={clockFrequency}
                         onChange={(e) => handleChangeFrequency(Number(e.target.value))}
                         className="bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white text-sm"
                         disabled={false}

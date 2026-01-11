@@ -9,23 +9,48 @@ import { MEMORY_MAP } from "@/lib/memory_map";
 
 export class Ram extends EventEmitter {
     public id: number;
-    public storage: Map<u16, u8>;
+    public storage: Map<u16, u8> = new Map;
+    private maxSize: number;
 
 
-    constructor(data?: Array<[u16, u8]> | Map<u16, u8>) {
+    constructor(data?: Array<[u16, u8]> | Map<u16, u8>, maxSize=0xFFFF) {
         //console.log(`Initializing RAM`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);
-        this.storage = new Map(data ?? []);
+        this.maxSize = maxSize;
 
-        this.emit('state', { storage: new Map(this.storage) })
+        if (data) {
+            this.loadRawData(new Map(data));
+        }
+
+        this.emit('state', { maxSize })
+    }
+
+
+    loadRawData = async (data: CompiledCode) => {
+        this.storage = new Map(data);
+
+        if (this.storage.size > this.maxSize) {
+            console.warn(`RAM overloaded`);
+            this.deleteOverload()
+        }
+
+        this.emit('state', { storage: this.storage })
+    }
+
+
+    deleteOverload() {
+        while (this.storage.size > this.maxSize) {
+            const key = this.storage.keys().next();
+            if (key.done) break;
+            this.storage.delete(key.value)
+        }
     }
 
 
     eraseRam() {
-        this.storage = new Map;
-        this.emit('state', { storage: new Map })
+        this.loadRawData(new Map);
     }
 
 
@@ -36,6 +61,12 @@ export class Ram extends EventEmitter {
 
     write(address: u16, value: u8): void {
         this.storage.set(address, U8(value))
+
+        if (this.storage.size > this.maxSize) {
+            this.storage.delete(address)
+            console.warn(`RAM overloaded`);
+        }
+
         this.emit('state', { storage: new Map(this.storage) })
     }
 

@@ -9,18 +9,19 @@ import { U8 } from '@/lib/integers';
 export type RngProps = {
     name: string;
     ioPort: number;
+    hidden?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Rng) => void,
 }
 
 export const Rng: React.FC<RngProps> = (props) => {
-    const { name, ioPort, children, onInstanceCreated } = props;
+    const { name, ioPort, hidden, children, onInstanceCreated } = props;
 
     // Core
     const [rngInstance, setRngInstance] = useState<cpuApi.Rng | null>(null);
 
     // UI
-    //const [frequencyReal, setFrequencyReal] = useState(0)
+    const [seed, setSeed] = useState(0)
 
 
     // Instanciate Rng
@@ -34,12 +35,14 @@ export const Rng: React.FC<RngProps> = (props) => {
                 if (!rng) return
                 //console.log('Rng state update', state)
 
-                //if (state.clockFrequency !== undefined) {
-                //    rng.clockFrequency = state.clockFrequency
-                //}
+                if (state.seed !== undefined) {
+                    setSeed(state.seed)
+                }
             })
 
             //setInstanciated(true)
+
+            setSeed(rng.seed)
         }
 
         const timer = setTimeout(_instanciateRng, 100);
@@ -55,17 +58,21 @@ export const Rng: React.FC<RngProps> = (props) => {
     }, [rngInstance, onInstanceCreated]);
 
 
+    if (hidden) return null;
+
+
     if (!rngInstance) {
         return <>Loading Rng</>
     }
 
 
     return (
-        <div className="w-full p-2 rounded bg-background-light-2xl">
+        <div className="w-full rounded bg-background-light-2xl">
             <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">RNG</h3>
 
             <div>
                 <div className="flex items-center gap-2 px-1">
+                    Seed: {seed}
                 </div>
             </div>
 

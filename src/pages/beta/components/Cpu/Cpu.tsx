@@ -21,6 +21,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
     const ramInstance = cpuApi.ramRef.current;
+    const devicesManagerInstance = cpuApi.devicesManagerRef.current;
 
     // UI snapshot state
     const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map(cpuApi.initialRegisters));
@@ -140,6 +141,10 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     const resetComputer = () => {
         if (cpuInstance) {
             resetCpu()
+        }
+
+        if (devicesManagerInstance) {
+            devicesManagerInstance.reset()
         }
 
         if (ramInstance) {

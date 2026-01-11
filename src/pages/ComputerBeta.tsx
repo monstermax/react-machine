@@ -13,6 +13,7 @@ import { LedsDisplay } from './beta/components/Devices/LedsDisplay/LedsDisplay';
 import { Buzzer } from './beta/components/Devices/Buzzer/Buzzer';
 import { PixelDisplay } from './beta/components/Devices/PixelDisplay/PixelDisplay';
 import { Rng } from './beta/components/Devices/Rng/Rng';
+import { BOOTLOADER } from '@/programs/bootloader';
 
 
 export const ComputerBeta: React.FC = () => {
@@ -24,22 +25,32 @@ export const ComputerBeta: React.FC = () => {
 
             <div>
                 <Computer>
-                    <Cpu>
-                        <Clock />
+                    <Cpu threads={1}>
+                        <Clock frequency={10} />
                     </Cpu>
+
                     <MemoryBus>
-                        <Rom />
+                        <Rom data={BOOTLOADER} />
                         <Ram />
                     </MemoryBus>
+
                     <DevicesManager>
+                        {/* Display */}
                         <LedsDisplay ioPort={3} name="leds_demo" />
                         <PixelDisplay ioPort={13} name="display_32x32" />
-                        <Buzzer ioPort={8} name="buzzer" />
-                        <Rng ioPort={11} name="rng" />
+
+                        {/* Autio */}
+                        <Buzzer ioPort={8} name="buzzer" hidden />
+
+                        {/* Random */}
+                        <Rng ioPort={11} name="rng" hidden />
+
+                        {/* Storage */}
                         <StorageDisk ioPort={0} name="os_disk" open={false} />
                         <StorageDisk ioPort={1} name="program_disk" open={false} />
                         <StorageDisk ioPort={14} name="data_1" persistent />
                         <StorageDisk ioPort={15} name="data_2" open={false} />
+
                     </DevicesManager>
                 </Computer>
             </div>

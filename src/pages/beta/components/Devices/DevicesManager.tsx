@@ -12,7 +12,7 @@ import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
 import { Buzzer } from './Buzzer/Buzzer';
 
 
-const validDeviceTypes = ['DiskStorage', 'Display', 'Audio', 'Time'];
+const validDeviceTypes = ['DiskStorage', 'Display', 'Audio', 'Time', 'Random'];
 
 
 export type DevicesManagerProps = {

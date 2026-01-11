@@ -14,10 +14,11 @@ export class StorageDisk extends EventEmitter {
     public ioPort: u8;
     public currentAddress: u16 = U16(0);
     public storage: Map<u16, u8> = new Map;
+    public maxSize: number;
     private fs: StorageFileSystem;
 
 
-    constructor(name: string, ioPort: u8 | null = null) {
+    constructor(name: string, ioPort: u8 | null = null, data?: Array<[u16, u8]> | Map<u16, u8>, maxSize=0xFFFF) {
         //console.log(`Initializing StorageDisk`);
         super();
 
@@ -26,13 +27,18 @@ export class StorageDisk extends EventEmitter {
         this.type = 'DiskStorage';
         this.fs = new StorageFileSystem(this);
         this.ioPort = ioPort ?? 0 as u8; // TODO: find free io port
+        this.maxSize = maxSize;
+
+        if (data) {
+            this.loadRawData(new Map(data))
+        }
+
+        this.emit('state', { maxSize })
     }
 
 
     eraseDisk() {
-        this.storage = new Map;
-
-        this.emit('state', { storage: this.storage })
+        this.loadRawData(new Map);
     }
 
 
@@ -46,7 +52,21 @@ export class StorageDisk extends EventEmitter {
     loadRawData = async (data: CompiledCode) => {
         this.storage = new Map(data);
 
+        if (this.storage.size > this.maxSize) {
+            console.warn(`Disk ${this.name} overloaded`);
+            this.deleteOverload()
+        }
+
         this.emit('state', { storage: this.storage })
+    }
+
+
+    deleteOverload() {
+        while (this.storage.size > this.maxSize) {
+            const key = this.storage.keys().next();
+            if (key.done) break;
+            this.storage.delete(key.value)
+        }
     }
 
 
@@ -99,6 +119,12 @@ export class StorageDisk extends EventEmitter {
             // ===== MODE RAW =====
             case 0: // DISK_DATA - écrire byte à l'adresse courante
                 this.storage.set(this.currentAddress, value);
+
+                if (this.storage.size > this.maxSize) {
+                    this.storage.delete(this.currentAddress)
+                    console.warn(`Disk ${this.name} overloaded`);
+                }
+
                 this.currentAddress = U16(this.currentAddress + 1);
                 this.emit('state', { storage: this.storage })
                 break;

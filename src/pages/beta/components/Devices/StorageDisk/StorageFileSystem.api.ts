@@ -129,6 +129,11 @@ export class StorageFileSystem extends EventEmitter {
     // Écrire un octet à une adresse
     writeByte(address: u16, value: u8) {
         this.storageDisk.storage.set(address, value)
+
+        if (this.storageDisk.storage.size > this.storageDisk.maxSize) {
+            this.storageDisk.storage.delete(address)
+            console.warn(`Disk ${this.storageDisk.name} overloaded`);
+        }
     }
 
 

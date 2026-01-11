@@ -2,22 +2,24 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 
 import * as cpuApi from '../../api/api';
 import { MemoryTable } from './MemoryTable';
-
-import type { OsInfo, ProgramInfo, u16, u8 } from '@/types/cpu.types';
 import { os_list } from '@/programs/mini_os';
 import { loadCodeFromFile } from '@/lib/compiler';
 import { MEMORY_MAP } from '@/lib/memory_map';
 import { U16 } from '@/lib/integers';
 import { programs } from '@/lib/programs';
 
+import type { OsInfo, ProgramInfo, u16, u8 } from '@/types/cpu.types';
+
 
 export type RamProps = {
+    data?: Map<u16, u8> | [u16, u8][];
+    size?: number;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Ram) => void,
 }
 
 export const Ram: React.FC<RamProps> = (props) => {
-    const { children, onInstanceCreated } = props;
+    const { data, size: maxSize, children, onInstanceCreated } = props;
 
     // Core
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
@@ -33,7 +35,7 @@ export const Ram: React.FC<RamProps> = (props) => {
     // Instanciate Ram
     useEffect(() => {
         const _instanciateRam = () => {
-            const ram = new cpuApi.Ram;
+            const ram = new cpuApi.Ram(data, maxSize);
             setRamInstance(ram);
 
             // Save RamBus Ref
@@ -49,7 +51,7 @@ export const Ram: React.FC<RamProps> = (props) => {
             })
 
             // UI snapshot state
-            setStorage(new Map(ram.storage));
+            ram.emit('state', { storage: new Map(ram.storage) })
 
             //setInstanciated(true)
         }

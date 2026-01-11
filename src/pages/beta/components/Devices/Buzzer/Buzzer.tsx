@@ -10,13 +10,14 @@ import { U8 } from '@/lib/integers';
 export type BuzzerProps = {
     name: string;
     ioPort: number;
+    hidden?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Buzzer) => void,
 }
 
 
 export const Buzzer: React.FC<BuzzerProps> = (props) => {
-    const { name, ioPort, children, onInstanceCreated } = props;
+    const { name, ioPort, hidden, children, onInstanceCreated } = props;
 
     // core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.Buzzer | null>(null);
@@ -49,6 +50,15 @@ export const Buzzer: React.FC<BuzzerProps> = (props) => {
             onInstanceCreated(deviceInstance);
         }
     }, [deviceInstance, onInstanceCreated]);
+
+
+    if (hidden) return null;
+
+    if (!deviceInstance) {
+        return (
+            <>Loading Buzzer</>
+        )
+    }
 
 
     return (

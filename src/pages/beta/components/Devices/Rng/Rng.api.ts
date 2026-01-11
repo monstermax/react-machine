@@ -27,7 +27,7 @@ export class Rng extends EventEmitter {
     public name: string;
     public type: IoDeviceType;
     public ioPort: u8;
-    private seed: number;
+    public seed: number;
 
 
     constructor(name: string, ioPort: u8 | null = null) {
@@ -36,7 +36,7 @@ export class Rng extends EventEmitter {
 
         this.id = Math.round(Math.random() * 999_999_999);
         this.name = name;
-        this.type = 'Time';
+        this.type = 'Random';
         this.ioPort = ioPort ?? 0 as u8; // TODO: find free io port
 
         this.seed = Date.now();

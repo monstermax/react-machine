@@ -1,19 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '../../api/api';
-import { BOOTLOADER } from '@/programs/bootloader';
 import { MemoryTable } from './MemoryTable';
 
 import type { u16, u8 } from '@/types/cpu.types';
 
 
 export type RomProps = {
+    data?: Map<u16, u8> | [u16, u8][];
+    size?: number;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Rom) => void,
 }
 
 export const Rom: React.FC<RomProps> = (props) => {
-    const { children, onInstanceCreated } = props;
+    const { data, size: maxSize, children, onInstanceCreated } = props;
 
     // Core
     const [romInstance, setRomInstance] = useState<cpuApi.Rom | null>(null);
@@ -28,7 +29,7 @@ export const Rom: React.FC<RomProps> = (props) => {
     // Instanciate Rom
     useEffect(() => {
         const _instanciateRom = () => {
-            const rom = new cpuApi.Rom(BOOTLOADER)
+            const rom = new cpuApi.Rom(data, maxSize)
             setRomInstance(rom);
 
             // Handle state updates

@@ -4,15 +4,16 @@ import { EventEmitter } from "eventemitter3";
 
 export class Clock extends EventEmitter {
     public id: number;
-    public clockFrequency: number = 1;
+    public clockFrequency: number;
     private timer: NodeJS.Timeout | null = null;
 
 
-    constructor() {
+    constructor(initialFrequency=1) {
         //console.log(`Initializing Clock`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);
+        this.clockFrequency = initialFrequency;
         //this.start();
     }
 

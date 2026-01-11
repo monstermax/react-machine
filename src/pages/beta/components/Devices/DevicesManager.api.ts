@@ -1,10 +1,9 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import * as cpuApi from '../../api/api';
 import { U16, U8 } from "@/lib/integers";
 
-import type { CompiledCode, IoDevice, u8 } from "@/types/cpu.types";
+import type { IoDevice, u8 } from "@/types/cpu.types";
 
 
 // Device Map: commence à 0xFF00, chaque device a 16 ports (0xFF00-0xFF0F, 0xFF10-0xFF1F, etc.)
@@ -60,5 +59,13 @@ export class DevicesManager extends EventEmitter {
         console.warn(`Write to unknown I/O port 0xFF${ioPort.toString(16).padStart(2, '0')} (port ${devicePort})`);
     }
 
+
+    reset(): void {
+        this.devices.forEach(device => {
+            if (device.reset) {
+                device.reset();
+            }
+        })
+    }
 }
 
