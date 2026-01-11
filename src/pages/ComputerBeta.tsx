@@ -59,7 +59,7 @@ export const ComputerBeta: React.FC = () => {
                         <PixelDisplay ioPort={0x0D} name="display_32x32" />
                         <SevenSegmentDisplay ioPort={0x06} name="7-segment" hidden />
 
-                        {/* Autio */}
+                        {/* Audio */}
                         <Buzzer ioPort={0x08} name="buzzer" hidden />
 
                         {/* Random */}
