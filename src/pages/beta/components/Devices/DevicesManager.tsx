@@ -84,7 +84,8 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
         }
 
         if (devicesManagerInstance.devices.has(instance.ioPort)) {
-            console.warn(`Device "${instance.name}" wants an occuped ioPort`);
+            const used = devicesManagerInstance.devices.get(instance.ioPort);
+            console.warn(`Device "${instance.name}" wants an occuped ioPort (used by ${used?.name})`);
             return
         }
 

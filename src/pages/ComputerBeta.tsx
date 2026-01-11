@@ -36,7 +36,7 @@ export const ComputerBeta: React.FC = () => {
                 <Computer >
                     <Cpu threads={1} >
                         <Clock frequency={10} />
-                        <Interrupt hidden />
+                        <Interrupt ioPort={4} hidden={false} />
                         {/* <Controls /> */}
                         {/* <Registers /> */}
                     </Cpu>

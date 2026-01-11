@@ -157,7 +157,7 @@ export class Buzzer extends EventEmitter {
     reset(): void {
         this.stopSound();
         this.frequency = 440;
-        console.log("🔊 Buzzer: Reset");
+        //console.log("🔊 Buzzer: Reset");
     }
 
 
