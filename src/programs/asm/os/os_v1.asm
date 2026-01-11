@@ -12,6 +12,7 @@ MAIN:
         JZ $WAIT_FOR_PROGRAM # Si = 0, boucler
 
     RUN_PROGRAM:
+        CALL $LEDS_OFF
         CALL MEMORY_MAP.PROGRAM_START # Lance le programme
 
     PROGRAM_RETURN:
