@@ -1,5 +1,6 @@
 
 import React, { useEffect } from 'react'
+import { Link } from 'wouter';
 
 import { Computer } from './beta/components/Computer/Computer';
 import { Cpu } from './beta/components/Cpu/Cpu';
@@ -21,7 +22,9 @@ export const ComputerBeta: React.FC = () => {
 
     return (
         <div className="text-white">
-            <h1 className="px-4 py-1 bg-background-light font-bold text-xl mb-4">Computer Simulator</h1>
+            <h1 className="px-4 py-1 bg-background-light font-bold text-xl mb-4">
+                <Link to="/">Computer Simulator</Link>
+            </h1>
 
             <div>
                 <Computer>

@@ -55,18 +55,18 @@ export const Home: React.FC = () => {
                     </ul>
 
                     <div className="flex flex-col gap-4">
-                        <Link to="/cpu">
-                            <button className="px-16 py-8 bg-stone-900 text-amber-50 text-xl font-bold hover:bg-stone-800 transition-colors w-full">
-                                Start Machine
-                            </button>
+                        <Link to="/cpu" className="px-16 py-8 bg-stone-900 text-amber-50 text-xl font-bold hover:bg-stone-800 transition-colors w-full">
+                            Start Machine
+                        </Link>
+
+                        <Link to="/cpu-beta" className="px-16 py-8 bg-stone-900 text-amber-50 text-xl font-bold hover:bg-stone-800 transition-colors w-full">
+                            Start Machine (beta)
                         </Link>
                     </div>
 
                     <div className="flex flex-col gap-4">
-                        <Link to="/compiler">
-                            <button className="px-16 py-8 bg-stone-900 text-amber-50 text-xl font-bold hover:bg-stone-800 transition-colors w-full">
-                                Compile Code
-                            </button>
+                        <Link to="/compiler" className="px-16 py-8 bg-stone-900 text-amber-50 text-xl font-bold hover:bg-stone-800 transition-colors w-full">
+                            Compile Code
                         </Link>
                     </div>
                 </div>
