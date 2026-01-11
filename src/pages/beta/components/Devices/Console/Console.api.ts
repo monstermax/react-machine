@@ -4,8 +4,6 @@ import { EventEmitter } from "eventemitter3";
 import type { IoDeviceType, u8 } from "@/types/cpu.types";
 
 
-const MAX_CONSOLE_LINES = 100; // Nombre maximum de lignes dans le buffer
-
 
 export class Console extends EventEmitter {
     public id: number;
@@ -16,10 +14,11 @@ export class Console extends EventEmitter {
     public width: number;
     public height: number;
     public lines: string[] = [];
-    public currentLine: string = "";
+    public currentLine: string;
+    public maxLines: number;
 
 
-    constructor(name: string, ioPort: u8 | null = null, width=30, height=15) {
+    constructor(name: string, ioPort: u8 | null = null, width=30, height=15, maxLines=100) {
         //console.log(`Initializing Console`);
         super();
 
@@ -30,6 +29,8 @@ export class Console extends EventEmitter {
 
         this.width = width;
         this.height = height;
+        this.maxLines = maxLines;
+        this.currentLine = "";
     }
 
 
@@ -50,8 +51,8 @@ export class Console extends EventEmitter {
                     this.lines.push(this.currentLine)
 
                     // Limiter le nombre de lignes
-                    if (this.lines.length > MAX_CONSOLE_LINES) {
-                        this.lines = this.lines.slice(-MAX_CONSOLE_LINES);
+                    if (this.lines.length > this.maxLines) {
+                        this.lines = this.lines.slice(-this.maxLines);
                         return;
                     }
 

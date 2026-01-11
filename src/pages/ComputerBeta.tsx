@@ -48,7 +48,7 @@ export const ComputerBeta: React.FC = () => {
 
                     <DevicesManager >
                         {/* Console */}
-                        <Console ioPort={0x07} name="console" />
+                        <Console ioPort={0x07} name="console" height={6} />
 
                         {/* Input */}
                         <Keyboard ioPort={0x05} name="keyboard" />
