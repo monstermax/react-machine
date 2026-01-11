@@ -158,6 +158,13 @@ export const programs: Record<string, ProgramInfo> = {
         ] as [u16, u8][]),
     },
 
+    hello_world_2: {
+        name: "Hello World (liveCompiled)",
+        description: "Affiche 'Hello World!' dans la console",
+        code: new Map(),
+        filepath: 'console/console_hello.asm',
+    },
+
     hello_world: {
         name: "Hello World",
         description: "Affiche 'Hello World!' dans la console",
@@ -172,79 +179,92 @@ export const programs: Record<string, ProgramInfo> = {
             [0x03, Opcode.MOV_A_IMM],
             [0x04, 0x48], // 'H'
             [0x05, Opcode.MOV_MEM_A],
-            [0x06, 0x70], [0x07, 0xFF],
+            [0x06, 0x70],
+            [0x07, 0xFF],
 
             // e
             [0x08, Opcode.MOV_A_IMM],
             [0x09, 0x65], // 'e'
             [0x0A, Opcode.MOV_MEM_A],
-            [0x0B, 0x70], [0x0C, 0xFF],
+            [0x0B, 0x70],
+            [0x0C, 0xFF],
 
             // l
             [0x0D, Opcode.MOV_A_IMM],
             [0x0E, 0x6C], // 'l'
             [0x0F, Opcode.MOV_MEM_A],
-            [0x10, 0x70], [0x11, 0xFF],
+            [0x10, 0x70],
+            [0x11, 0xFF],
 
             // l
             [0x12, Opcode.MOV_A_IMM],
             [0x13, 0x6C], // 'l'
             [0x14, Opcode.MOV_MEM_A],
-            [0x15, 0x70], [0x16, 0xFF],
+            [0x15, 0x70],
+            [0x16, 0xFF],
 
             // o
             [0x17, Opcode.MOV_A_IMM],
             [0x18, 0x6F], // 'o'
             [0x19, Opcode.MOV_MEM_A],
-            [0x1A, 0x70], [0x1B, 0xFF],
+            [0x1A, 0x70],
+            [0x1B, 0xFF],
 
             // (space)
             [0x1C, Opcode.MOV_A_IMM],
             [0x1D, 0x20], // ' '
             [0x1E, Opcode.MOV_MEM_A],
-            [0x1F, 0x70], [0x20, 0xFF],
+            [0x1F, 0x70],
+            [0x20, 0xFF],
 
             // W
             [0x21, Opcode.MOV_A_IMM],
             [0x22, 0x57], // 'W'
             [0x23, Opcode.MOV_MEM_A],
-            [0x24, 0x70], [0x25, 0xFF],
+            [0x24, 0x70],
+            [0x25, 0xFF],
 
             // o
             [0x26, Opcode.MOV_A_IMM],
             [0x27, 0x6F], // 'o'
             [0x28, Opcode.MOV_MEM_A],
-            [0x29, 0x70], [0x2A, 0xFF],
+            [0x29, 0x70],
+            [0x2A, 0xFF],
 
             // r
             [0x2B, Opcode.MOV_A_IMM],
             [0x2C, 0x72], // 'r'
             [0x2D, Opcode.MOV_MEM_A],
-            [0x2E, 0x70], [0x2F, 0xFF],
+            [0x2E, 0x70],
+            [0x2F, 0xFF],
 
             // l
             [0x30, Opcode.MOV_A_IMM],
             [0x31, 0x6C], // 'l'
             [0x32, Opcode.MOV_MEM_A],
-            [0x33, 0x70], [0x34, 0xFF],
+            [0x33, 0x70],
+            [0x34, 0xFF],
 
             // d
             [0x35, Opcode.MOV_A_IMM],
             [0x36, 0x64], // 'd'
             [0x37, Opcode.MOV_MEM_A],
-            [0x38, 0x70], [0x39, 0xFF],
+            [0x38, 0x70],
+            [0x39, 0xFF],
 
             // !
             [0x3A, Opcode.MOV_A_IMM],
             [0x3B, 0x21], // '!'
             [0x3C, Opcode.MOV_MEM_A],
-            [0x3D, 0x70], [0x3E, 0xFF],
+            [0x3D, 0x70],
+            [0x3E, 0xFF],
 
             // Newline
             [0x3F, Opcode.MOV_A_IMM],
             [0x40, 0x0A], // '\n'
             [0x41, Opcode.MOV_MEM_A],
-            [0x42, 0x70], [0x43, 0xFF],
+            [0x42, 0x70],
+            [0x43, 0xFF],
 
             // HALT
             [0x44, Opcode.HALT],
@@ -274,14 +294,16 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Afficher chiffre
             [0x09, Opcode.MOV_MEM_A],
-            [0x0A, 0x70], [0x0B, 0xFF],     // CONSOLE_CHAR
+            [0x0A, 0x70],
+            [0x0B, 0xFF],     // CONSOLE_CHAR
 
             // Afficher newline
             [0x0C, Opcode.PUSH_A],           // Sauvegarder A (le chiffre)
             [0x0D, Opcode.MOV_A_IMM],
             [0x0E, 0x0A],                   // '\n'
             [0x0F, Opcode.MOV_MEM_A],
-            [0x10, 0x70], [0x11, 0xFF],     // CONSOLE_CHAR
+            [0x10, 0x70],
+            [0x11, 0xFF],     // CONSOLE_CHAR
             [0x12, Opcode.POP_A],           // Restaurer A
 
             // Incrémenter C
@@ -295,7 +317,8 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Si C != 10, continuer (A != 0 car zero flag = false)
             [0x18, Opcode.JNZ],
-            [0x19, 0x05], [0x1A, 0x02],     // Retour à 0x0205
+            [0x19, 0x05],
+            [0x1A, 0x02],     // Retour à 0x0205
 
             // Fini
             [0x1B, Opcode.HALT],
@@ -318,20 +341,35 @@ export const programs: Record<string, ProgramInfo> = {
             [0x07, 0xFF], // LCD_COMMAND
 
             // "Hello" ligne 1
-            [0x08, Opcode.MOV_A_IMM], [0x09, 0x48], // 'H'
-            [0x0A, Opcode.MOV_MEM_A], [0x0B, 0xA0], [0x0C, 0xFF],
+            [0x08, Opcode.MOV_A_IMM],
+            [0x09, 0x48], // 'H'
+            [0x0A, Opcode.MOV_MEM_A],
+            [0x0B, 0xA0],
+            [0x0C, 0xFF],
 
-            [0x0D, Opcode.MOV_A_IMM], [0x0E, 0x65], // 'e'
-            [0x0F, Opcode.MOV_MEM_A], [0x10, 0xA0], [0x11, 0xFF],
+            [0x0D, Opcode.MOV_A_IMM],
+            [0x0E, 0x65], // 'e'
+            [0x0F, Opcode.MOV_MEM_A],
+            [0x10, 0xA0],
+            [0x11, 0xFF],
 
-            [0x12, Opcode.MOV_A_IMM], [0x13, 0x6C], // 'l'
-            [0x14, Opcode.MOV_MEM_A], [0x15, 0xA0], [0x16, 0xFF],
+            [0x12, Opcode.MOV_A_IMM],
+            [0x13, 0x6C], // 'l'
+            [0x14, Opcode.MOV_MEM_A],
+            [0x15, 0xA0],
+            [0x16, 0xFF],
 
-            [0x17, Opcode.MOV_A_IMM], [0x18, 0x6C], // 'l'
-            [0x19, Opcode.MOV_MEM_A], [0x1A, 0xA0], [0x1B, 0xFF],
+            [0x17, Opcode.MOV_A_IMM],
+            [0x18, 0x6C], // 'l'
+            [0x19, Opcode.MOV_MEM_A],
+            [0x1A, 0xA0],
+            [0x1B, 0xFF],
 
-            [0x1C, Opcode.MOV_A_IMM], [0x1D, 0x6F], // 'o'
-            [0x1E, Opcode.MOV_MEM_A], [0x1F, 0xA0], [0x20, 0xFF],
+            [0x1C, Opcode.MOV_A_IMM],
+            [0x1D, 0x6F], // 'o'
+            [0x1E, Opcode.MOV_MEM_A],
+            [0x1F, 0xA0],
+            [0x20, 0xFF],
 
             // Position curseur ligne 2 (row 1, col 0 = 16)
             [0x21, Opcode.MOV_A_IMM],
@@ -341,23 +379,41 @@ export const programs: Record<string, ProgramInfo> = {
             [0x25, 0xFF], // LCD_CURSOR
 
             // "World!" ligne 2
-            [0x26, Opcode.MOV_A_IMM], [0x27, 0x57], // 'W'
-            [0x28, Opcode.MOV_MEM_A], [0x29, 0xA0], [0x2A, 0xFF],
+            [0x26, Opcode.MOV_A_IMM],
+            [0x27, 0x57], // 'W'
+            [0x28, Opcode.MOV_MEM_A],
+            [0x29, 0xA0],
+            [0x2A, 0xFF],
 
-            [0x2B, Opcode.MOV_A_IMM], [0x2C, 0x6F], // 'o'
-            [0x2D, Opcode.MOV_MEM_A], [0x2E, 0xA0], [0x2F, 0xFF],
+            [0x2B, Opcode.MOV_A_IMM],
+            [0x2C, 0x6F], // 'o'
+            [0x2D, Opcode.MOV_MEM_A],
+            [0x2E, 0xA0],
+            [0x2F, 0xFF],
 
-            [0x30, Opcode.MOV_A_IMM], [0x31, 0x72], // 'r'
-            [0x32, Opcode.MOV_MEM_A], [0x33, 0xA0], [0x34, 0xFF],
+            [0x30, Opcode.MOV_A_IMM],
+            [0x31, 0x72], // 'r'
+            [0x32, Opcode.MOV_MEM_A],
+            [0x33, 0xA0],
+            [0x34, 0xFF],
 
-            [0x35, Opcode.MOV_A_IMM], [0x36, 0x6C], // 'l'
-            [0x37, Opcode.MOV_MEM_A], [0x38, 0xA0], [0x39, 0xFF],
+            [0x35, Opcode.MOV_A_IMM],
+            [0x36, 0x6C], // 'l'
+            [0x37, Opcode.MOV_MEM_A],
+            [0x38, 0xA0],
+            [0x39, 0xFF],
 
-            [0x3A, Opcode.MOV_A_IMM], [0x3B, 0x64], // 'd'
-            [0x3C, Opcode.MOV_MEM_A], [0x3D, 0xA0], [0x3E, 0xFF],
+            [0x3A, Opcode.MOV_A_IMM],
+            [0x3B, 0x64], // 'd'
+            [0x3C, Opcode.MOV_MEM_A],
+            [0x3D, 0xA0],
+            [0x3E, 0xFF],
 
-            [0x3F, Opcode.MOV_A_IMM], [0x40, 0x21], // '!'
-            [0x41, Opcode.MOV_MEM_A], [0x42, 0xA0], [0x43, 0xFF],
+            [0x3F, Opcode.MOV_A_IMM],
+            [0x40, 0x21], // '!'
+            [0x41, Opcode.MOV_MEM_A],
+            [0x42, 0xA0],
+            [0x43, 0xFF],
 
             [0x44, Opcode.SYSCALL],
             [0x45, 0],
@@ -556,7 +612,8 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Set COLOR = 1
             [0x0D, Opcode.PUSH_A],
-            [0x0E, Opcode.MOV_A_IMM], [0x0F, 0x01],
+            [0x0E, Opcode.MOV_A_IMM],
+            [0x0F, 0x01],
             [0x10, Opcode.MOV_MEM_A],
             [0x11, 0xD2], // PIXEL_COLOR - low
             [0x12, 0xFF], // PIXEL_COLOR - high
@@ -589,15 +646,24 @@ export const programs: Record<string, ProgramInfo> = {
             [0x04, 5],  // X = 5
 
             // LOOP_HAUT @ 0x05:
-            [0x05, Opcode.MOV_MEM_A], [0x06, 0xD0], [0x07, 0xFF], // PIXEL_X
-            [0x08, Opcode.MOV_B_IMM], [0x09, 5],   // Y = 5
-            [0x0A, Opcode.MOV_MEM_B], [0x0B, 0xD1], [0x0C, 0xFF], // PIXEL_Y
-            [0x0D, Opcode.MOV_B_IMM], [0x0E, 1],   // Couleur = 1
-            [0x0F, Opcode.MOV_MEM_B], [0x10, 0xD2], [0x11, 0xFF], // PIXEL_COLOR
+            [0x05, Opcode.MOV_MEM_A],
+            [0x06, 0xD0],
+            [0x07, 0xFF], // PIXEL_X
+            [0x08, Opcode.MOV_B_IMM],
+            [0x09, 5],   // Y = 5
+            [0x0A, Opcode.MOV_MEM_B],
+            [0x0B, 0xD1],
+            [0x0C, 0xFF], // PIXEL_Y
+            [0x0D, Opcode.MOV_B_IMM],
+            [0x0E, 1],   // Couleur = 1
+            [0x0F, Opcode.MOV_MEM_B],
+            [0x10, 0xD2],
+            [0x11, 0xFF], // PIXEL_COLOR
 
             [0x12, Opcode.INC_A],                  // X++
             [0x13, Opcode.PUSH_A],                 // Sauver A
-            [0x14, Opcode.MOV_B_IMM], [0x15, 15],  // Comparer avec 15
+            [0x14, Opcode.MOV_B_IMM],
+            [0x15, 15],  // Comparer avec 15
             [0x16, Opcode.SUB],                    // A = A - 15
             [0x17, Opcode.POP_A],                  // Restaurer A
             [0x18, Opcode.JNZ],
@@ -610,15 +676,18 @@ export const programs: Record<string, ProgramInfo> = {
 
             // LOOP_BAS @ 0x1D:
             [0x1D, Opcode.MOV_MEM_A],
-            [0x1E, 0xD0], [0x1F, 0xFF], // PIXEL_X
+            [0x1E, 0xD0],
+            [0x1F, 0xFF], // PIXEL_X
             [0x20, Opcode.MOV_B_IMM],
             [0x21, 14],  // Y = 14
             [0x22, Opcode.MOV_MEM_B],
-            [0x23, 0xD1], [0x24, 0xFF], // PIXEL_Y
+            [0x23, 0xD1],
+            [0x24, 0xFF], // PIXEL_Y
             [0x25, Opcode.MOV_B_IMM],
             [0x26, 1],
             [0x27, Opcode.MOV_MEM_B],
-            [0x28, 0xD2], [0x29, 0xFF], // PIXEL_COLOR
+            [0x28, 0xD2],
+            [0x29, 0xFF], // PIXEL_COLOR
 
             [0x2A, Opcode.INC_A],
             [0x2B, Opcode.PUSH_A],
@@ -660,14 +729,23 @@ export const programs: Record<string, ProgramInfo> = {
             [0x4A, high16(MEMORY_MAP.PROGRAM_START + 0x35 as u16)],
 
             // === CÔTÉ DROIT (X=14, Y=6 à 13) ===
-            [0x4B, Opcode.MOV_A_IMM], [0x4C, 6],  // Y = 6
+            [0x4B, Opcode.MOV_A_IMM],
+            [0x4C, 6],  // Y = 6
 
             // LOOP_DROIT @ 0x4D:
-            [0x4D, Opcode.MOV_B_IMM], [0x4E, 14],  // X = 14
-            [0x4F, Opcode.MOV_MEM_B], [0x50, 0xD0], [0x51, 0xFF], // PIXEL_X
-            [0x52, Opcode.MOV_MEM_A], [0x53, 0xD1], [0x54, 0xFF], // PIXEL_Y
-            [0x55, Opcode.MOV_B_IMM], [0x56, 1],
-            [0x57, Opcode.MOV_MEM_B], [0x58, 0xD2], [0x59, 0xFF], // PIXEL_COLOR
+            [0x4D, Opcode.MOV_B_IMM],
+            [0x4E, 14],  // X = 14
+            [0x4F, Opcode.MOV_MEM_B],
+            [0x50, 0xD0],
+            [0x51, 0xFF], // PIXEL_X
+            [0x52, Opcode.MOV_MEM_A],
+            [0x53, 0xD1],
+            [0x54, 0xFF], // PIXEL_Y
+            [0x55, Opcode.MOV_B_IMM],
+            [0x56, 1],
+            [0x57, Opcode.MOV_MEM_B],
+            [0x58, 0xD2],
+            [0x59, 0xFF], // PIXEL_COLOR
 
             [0x5A, Opcode.INC_A],
             [0x5B, Opcode.PUSH_A],

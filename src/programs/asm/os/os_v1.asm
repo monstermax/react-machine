@@ -13,9 +13,11 @@ MAIN:
 
     RUN_PROGRAM:
         CALL $LEDS_OFF
+        SET_FREQ 10
         CALL MEMORY_MAP.PROGRAM_START # Lance le programme
 
     PROGRAM_RETURN:
+        SET_FREQ 5
         MOV_A_IMM 0x00
         MOV_MEM_A MEMORY_MAP.PROGRAM_START # Unload Program
 

@@ -361,6 +361,11 @@ export const useCpu = (memoryHook: MemoryHook, ioHook: IOHook): CpuHook => {
                 handleSyscall(pc);
                 break;
 
+            case Opcode.GET_FREQ:
+            case Opcode.SET_FREQ:
+                setRegister("PC", (pc + 2) as u16);
+                break;
+
             case Opcode.BREAKPOINT:
                 setCpuPaused(true);
                 clockHook.pausedRef.current = true

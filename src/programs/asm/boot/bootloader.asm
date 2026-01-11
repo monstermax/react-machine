@@ -3,6 +3,7 @@ INIT:
 
 MAIN:
     SET_SP MEMORY_MAP.STACK_END # Initialiser le Stack Pointer
+    SET_FREQ 5
 
     RESET_LEDS:
         MOV_B_IMM 0x00
@@ -26,6 +27,7 @@ MAIN:
         MOV_A_IMM 0x00
         MOV_MEM_A MEMORY_MAP.LEDS_BASE # Eteint les LED
 
+        #SET_FREQ 10
         CALL MEMORY_MAP.OS_START # Lance l'OS
 
     OS_RETURN:

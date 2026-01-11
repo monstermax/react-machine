@@ -1,10 +1,13 @@
 
 
+# Switch-ON All LEDs
 LEDS_ON:
     MOV_A_IMM 0xFF
     MOV_MEM_A MEMORY_MAP.LEDS_BASE
     RET
 
+
+# Switch-OFF All LEDs
 LEDS_OFF:
     MOV_A_IMM 0x00
     MOV_MEM_A MEMORY_MAP.LEDS_BASE

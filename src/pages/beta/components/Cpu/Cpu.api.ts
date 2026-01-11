@@ -37,6 +37,7 @@ export class Cpu extends EventEmitter {
     private currentBreakpoint: number | null = null;
     private interruptsEnabled: boolean = false;
     private inInterruptHandler: boolean = false;
+    private status: 'ready' | 'executingCycle' = "ready";
 
 
     constructor() {
@@ -108,6 +109,9 @@ export class Cpu extends EventEmitter {
 
     executeCycle() {
         if (!this.memoryBus || this.halted) return;
+        if (this.status !== 'ready') return;
+
+        this.status = 'executingCycle';
 
         // 1. Fetch
         const pc = this.getRegister("PC");
@@ -162,6 +166,9 @@ export class Cpu extends EventEmitter {
             clockCycle: this.clockCycle,
             //registers: this.registers,
         })
+
+
+        this.status = 'ready';
     }
 
 
@@ -176,6 +183,21 @@ export class Cpu extends EventEmitter {
 
             case Opcode.SYSCALL:
                 this.handleSyscall(pc);
+                break;
+
+            case Opcode.GET_FREQ:
+                this.setRegister("A", U8(this.clock?.clockFrequency ?? 0));
+                break;
+
+            case Opcode.SET_FREQ:
+                if (this.clock) {
+                    this.clock.clockFrequency = this.readMem8(pc);
+                    this.clock.restart()
+
+                    // Update UI State
+                    this.clock.emit('state', { clockFrequency: this.clock.clockFrequency, })
+                }
+                this.setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.BREAKPOINT_JS:
@@ -195,9 +217,7 @@ export class Cpu extends EventEmitter {
                         this.setPaused(true);
 
                         // Update UI State
-                        this.emit('state', {
-                            paused: this.paused,
-                        })
+                        this.emit('state', { paused: this.paused, })
                     }
                 }
                 break;
