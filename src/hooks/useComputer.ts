@@ -10,8 +10,7 @@ import { os_list } from "@/programs/mini_os";
 import { programs } from "@/lib/programs";
 import { mapAddress16, MEMORY_MAP } from "@/lib/memory_map";
 import { U16 } from "@/lib/integers";
-import { programs as displayPrograms } from "@/programs/display";
-import { compileCode, loadCodeFromFile } from "@/lib/compiler";
+import { compileCode, compileFile } from "@/lib/compiler";
 
 import type { OsInfo, ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
@@ -98,9 +97,9 @@ export const useComputer = (): ComputerHook => {
     useEffect(() => {
         const memoryOffset = 0x2000;
 
-        const _load_data_disk_2 = () => {
-            const demoProgram = compileCode(ledTestCodeSource, memoryOffset as u16)
-            ioHook.dataDisk2.setStorage(demoProgram.code)
+        const _load_data_disk_2 = async () => {
+            const demoProgramCompiled = await compileCode(ledTestCodeSource, memoryOffset as u16)
+            ioHook.dataDisk2.setStorage(demoProgramCompiled.code)
         }
 
         const timer = setTimeout(_load_data_disk_2, 100);
@@ -142,8 +141,8 @@ export const useComputer = (): ComputerHook => {
 
 
         if (os.filepath) {
-            loadCodeFromFile(os.filepath, MEMORY_MAP.OS_START)
-                .then(code => {
+            compileFile(os.filepath, MEMORY_MAP.OS_START)
+                .then(({code}) => {
                     //console.log('OS code:', code)
                     ioHook.osDisk.setStorage(code)
                     setLoadedOs(osName);
@@ -169,8 +168,8 @@ export const useComputer = (): ComputerHook => {
         }
 
         if (program.filepath) {
-            loadCodeFromFile(program.filepath, MEMORY_MAP.PROGRAM_START)
-                .then(code => {
+            compileFile(program.filepath, MEMORY_MAP.PROGRAM_START)
+                .then(({code}) => {
                     //console.log('Program code:', code)
 
                     // Charger le programme sur le disk (overwrite full disk)

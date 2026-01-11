@@ -5,9 +5,9 @@ MAIN:
     SET_SP MEMORY_MAP.STACK_END # Initialiser le Stack Pointer
 
     RESET_LEDS:
-    MOV_B_IMM 0x00
-    MOV_MEM_B MEMORY_MAP.LEDS_BASE # Eteint les LED
-    INC_B
+        MOV_B_IMM 0x00
+        MOV_MEM_B MEMORY_MAP.LEDS_BASE # Eteint les LED
+        INC_B
 
     WAIT_FOR_OS:
         MOV_MEM_B MEMORY_MAP.LEDS_BASE # Allume les LED

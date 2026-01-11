@@ -66,6 +66,8 @@ export type ProgramInfo = {
 export type PreCompiledCode = [line: u16, code: string, comment?: string, labels?: string[]][];
 
 export type CompiledCode = Map<u16, u8>;
+export type CompiledCodeComments = [line: u16, comment: string][];
+export type CompiledCodeLabels = [line: u16, labels: string[]][];
 
 
 type ProcessControlBlock = { // cf https://youtu.be/M9HHWFp84f0?t=499

@@ -8,7 +8,7 @@ import { DevicesManager } from '../Devices/DevicesManager';
 import { os_list } from '@/programs/mini_os';
 import { programs } from '@/lib/programs';
 import { MEMORY_MAP } from '@/lib/memory_map';
-import { loadCodeFromFile } from '@/lib/compiler';
+import { compileFile } from '@/lib/compiler';
 import { U16 } from '@/lib/integers';
 import { useComputer } from './Computer';
 
@@ -150,7 +150,7 @@ export const ComputerContainer: React.FC<{ hidden?: boolean, children?: React.Re
         if (!os?.filepath) return;
 
         const memoryOffset = MEMORY_MAP.OS_START;
-        const code = await loadCodeFromFile(os.filepath, memoryOffset)
+        const { code } = await compileFile(os.filepath, memoryOffset)
 
         if (os) {
             loadCodeOnDisk('os_disk', code); // load on disk too (for debug)
@@ -184,7 +184,7 @@ export const ComputerContainer: React.FC<{ hidden?: boolean, children?: React.Re
         if (!program?.filepath && !(program && program.code && program.code.size > 0)) return;
 
         const memoryOffset = MEMORY_MAP.PROGRAM_START;
-        const code = program.code.size ? program.code : await loadCodeFromFile(program.filepath as string, MEMORY_MAP.PROGRAM_START)
+        const { code } = program.code.size ? program : await compileFile(program.filepath as string, MEMORY_MAP.PROGRAM_START)
 
         if (program) {
             loadCodeOnDisk('program_disk', code); // load on disk too (for debug)

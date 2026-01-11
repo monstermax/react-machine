@@ -134,12 +134,12 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
 
     return (
-        <div className={`w-full p-2 rounded bg-background-light-2xl ${hidden ? "hidden" : ""}`}>
+        <div className={`w-full p-2 rounded bg-background-light-2xl space-y-2 ${hidden ? "hidden" : ""}`}>
             <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Clock</h3>
 
             <div>
                 <div className="flex items-center gap-2 px-1">
-                    <label className="text-sm font-medium text-slate-300">Clock:</label>
+                    <label className="text-sm font-medium text-slate-300">Freq.:</label>
                     <select
                         value={clockFrequency}
                         onChange={(e) => handleChangeFrequency(Number(e.target.value))}
@@ -152,11 +152,13 @@ export const Clock: React.FC<ClockProps> = (props) => {
                             </option>
                         ))}
                     </select>
-                    <div className="ms-auto">
-                        ➤ {frequencyReal.toFixed(1)} Hz
-                    </div>
                 </div>
             </div>
+
+            <div className="">
+                Current: {frequencyReal.toFixed(1)} Hz
+            </div>
+
             <div>
                 {children}
             </div>

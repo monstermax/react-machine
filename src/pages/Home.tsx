@@ -32,7 +32,7 @@ export const Home: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                         
                     </div>
                 </div>

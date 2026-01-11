@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 
-import { compileCode, compileDemo, decompileCode, decompileDemo, preCompileCode } from "@/lib/compiler";
+import { compileCode, decompileCode, preCompileCode } from "@/lib/compiler";
 import { toHex, U16 } from "@/lib/integers";
 import { MEMORY_MAP } from "@/lib/memory_map";
 
@@ -13,36 +13,36 @@ type DisplayMode = "array" | "readable" | "editable";
 
 
 const demoSourceCode = `
-:INIT
-SET_SP MEMORY_MAP.STACK_END # Init Stack
+INIT:
+    SET_SP MEMORY_MAP.STACK_END # Init Stack
 
-MOV_A_IMM 0x01 # clear LCD
-MOV_MEM_A MEMORY_MAP.LCD_COMMAND # clear LCD
+    MOV_A_IMM 0x01 # clear LCD
+    MOV_MEM_A MEMORY_MAP.LCD_COMMAND # clear LCD
 
-:START
-CALL $LEDS_ON # Go to LEDS_ON
-MOV_A_IMM 0x0f # A = Delay counter for WAIT_LOOP
-CALL $WAIT_LOOP # Go to WAIT_LOOP
-CALL $LEDS_OFF # Go to LEDS_OFF
-JMP $END # Go to END
+START:
+    CALL $LEDS_ON # Go to LEDS_ON
+    MOV_A_IMM 0x0f # A = Delay counter for WAIT_LOOP
+    CALL $WAIT_LOOP # Go to WAIT_LOOP
+    CALL $LEDS_OFF # Go to LEDS_OFF
+    JMP $END # Go to END
 
-:LEDS_ON
-MOV_A_IMM 0xff
-MOV_MEM_A MEMORY_MAP.LEDS_BASE
-RET
+LEDS_ON:
+    MOV_A_IMM 0xff
+    MOV_MEM_A MEMORY_MAP.LEDS_BASE
+    RET
 
-:LEDS_OFF
-MOV_A_IMM 0x00
-MOV_MEM_A MEMORY_MAP.LEDS_BASE
-RET
+LEDS_OFF:
+    MOV_A_IMM 0x00
+    MOV_MEM_A MEMORY_MAP.LEDS_BASE
+    RET
 
-:WAIT_LOOP
-DEC_A
-JNZ $WAIT_LOOP # Go to WAIT_LOOP
-RET
+WAIT_LOOP:
+    DEC_A
+    JNZ $WAIT_LOOP # Go to WAIT_LOOP
+    RET
 
-:END
-SYSCALL 0
+END:
+    SYSCALL 0
 
 `
 
@@ -94,13 +94,13 @@ export const CompilePage: React.FC = () => {
 
 
 
-    const handleCompile = () => {
+    const handleCompile = async () => {
         try {
-            const result: PreCompiledCode = preCompileCode(sourceCode, compileMemoryOffsetUint);
+            const result: PreCompiledCode = await preCompileCode(sourceCode, compileMemoryOffsetUint);
 
-            const result2 = compileCode(sourceCode, compileMemoryOffsetUint);
+            //const result2 = await compileCode(sourceCode, compileMemoryOffsetUint);
             //const { code, comments, labels } = result2;
-            console.log('result2:', result2)
+            //console.log('result2:', result2)
 
             setCompiledCode(result);
 
@@ -263,7 +263,7 @@ export const CompilePage: React.FC = () => {
                     />
                     <div className="mt-3 flex gap-2">
                         <button
-                            onClick={handleCompile}
+                            onClick={() => handleCompile()}
                             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
                         >
                             Compile

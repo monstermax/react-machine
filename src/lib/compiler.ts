@@ -1,107 +1,43 @@
 
 import { MEMORY_MAP } from './memory_map';
 import { getInstructionLength } from './instructions';
-import { high16, low16, toHex } from './integers';
+import { high16, low16, toHex, U16 } from './integers';
 import { Opcode } from './instructions';
 
-import type { CompiledCode, PreCompiledCode, u16, u8 } from '../types/cpu.types';
+import type { CompiledCode, CompiledCodeComments, CompiledCodeLabels, PreCompiledCode, u16, u8 } from '../types/cpu.types';
 
 
-const codeStr: string = `
-:INIT
-SET_SP MEMORY_MAP.STACK_END
-MOV_A_IMM 0x01 # Commande clear
-MOV_MEM_A MEMORY_MAP.LCD_COMMAND
-
-:START
-CALL $LEDS_ON
-MOV_A_IMM 0x0f
-CALL $WAIT_LOOP
-CALL $LEDS_OFF
-JMP END
-
-:LEDS_ON
-MOV_A_IMM 0xff
-MOV_MEM_A MEMORY_MAP.LEDS_BASE
-RET
-
-:LEDS_OFF
-MOV_A_IMM 0x00
-MOV_MEM_A MEMORY_MAP.LEDS_BASE
-RET
-
-:WAIT_LOOP
-DEC_A
-JNZ $WAIT_LOOP
-RET
-
-:END
-SYSCALL 0
-`;
-
-
-const codeAsm: PreCompiledCode = [
-    [1, 'Opcode.SET_SP'],
-    [2, '0xff'],
-    [3, '0xfe'],
-    [4, 'Opcode.MOV_A_IMM'],
-    [5, '0x1'],
-    [6, 'Opcode.MOV_MEM_A'],
-    [7, '0xa1'],
-    [8, '0xff'],
-    [9, 'Opcode.MOV_D_IMM'],
-    [10, '0x0'],
-    [11, 'Opcode.MOV_A_IMM'],
-    [12, '0x2'],
-    [13, 'Opcode.MOV_MEM_A'],
-    [14, '0xa1'],
-    [15, '0xff'],
-    [16, 'Opcode.JMP'],
-    [17, '0x0'],
-    [18, '0x5']
-] as [u16, string][];
-
-
-
-export function loadCode(sourceCode: string, memoryOffset: u16=0 as u16) {
-    const code = compileCode(sourceCode, memoryOffset).code;
-    return code;
-}
-
-
-export async function loadCodeFromFile(sourceFile: string, memoryOffset: u16=0 as u16) {
+export async function loadSourceCodeFromFile(sourceFile: string): Promise<string> {
     const sourceCodeModule = sourceFile.endsWith('.ts')
         ? await import(`../programs/asm/${sourceFile}`)
         : await import(`../programs/asm/${sourceFile}?raw`);
     const sourceCode = sourceCodeModule.default;
-    const code = loadCode(sourceCode, memoryOffset);
-    return code;
+    return sourceCode;
+    //const compiled = compileCode(sourceCode, memoryOffset);
+    //return compiled;
 }
 
 
-export function compileDemo() {
-    return compileCode(codeStr)
+export async function compileDemo() {
+    return await compileCode(demoCodeSource)
 }
 
 export function decompileDemo() {
-    return decompileCode(codeAsm)
+    return decompileCode(demoCodeAsm)
 }
 
 
-export function preCompileCode(inputCode: string, memoryOffset: u16=0 as u16): PreCompiledCode {
-    const stage1 = compileStage1(inputCode)
-    //console.log('compile stage1:', stage1)
-
-    const stage2 = compileStage2(stage1, memoryOffset)
-    //console.log('compile stage2:', stage2)
-
-    return stage2;
+export async function compileFile(filePath: string, memoryOffset: u16=0 as u16): Promise<{ code: CompiledCode, comments: CompiledCodeComments, labels: CompiledCodeLabels }> {
+    const sourceCode = await loadSourceCodeFromFile(filePath);
+    const compiled = await compileCode(sourceCode, memoryOffset);
+    return compiled
 }
 
-export function compileCode(inputCode: string, memoryOffset: u16=0 as u16): { code: CompiledCode, comments: [line: u16, comment: string][], labels: [line: u16, label: string[]][] } {
-    const stage2 = preCompileCode(inputCode, memoryOffset)
 
-    const codeArr = stage2.map(codeParts => {
+export async function compileCode(inputCode: string, memoryOffset: u16=0 as u16): Promise<{ code: CompiledCode, comments: CompiledCodeComments, labels: CompiledCodeLabels }> {
+    const stage2: PreCompiledCode = await preCompileCode(inputCode, memoryOffset)
+
+    const codeArr: [line: u16, code: u8][] = stage2.map(codeParts => {
         const val = [
             codeParts[0],
             (new Function('Opcode', 'return ' + codeParts[1]))(Opcode),
@@ -110,25 +46,32 @@ export function compileCode(inputCode: string, memoryOffset: u16=0 as u16): { co
     });
 
     const code: CompiledCode = new Map<u16, u8>(codeArr);
-
-    const comments = stage2.map(codeParts => [codeParts[0], codeParts[2]] as [line: u16, comment: string]);
-    const labels = stage2.map(codeParts => [codeParts[0], codeParts[3]] as [line: u16, labels: string[]]);
+    const comments: CompiledCodeComments = stage2.map(codeParts => [codeParts[0], codeParts[2]] as [line: u16, comment: string]);
+    const labels  : CompiledCodeLabels = stage2.map(codeParts => [codeParts[0], codeParts[3]] as [line: u16, labels: string[]]);
 
     return { code, comments, labels };
 }
 
 
-export function decompileCode(inputCode: PreCompiledCode): string {
-    const stage1 = decompileStage1(inputCode);
-    //console.log('decompile stage1:', stage1)
+export async function preCompileFile(filePath: string, memoryOffset: u16=0 as u16, linesOffset: u16=0 as u16): Promise<PreCompiledCode> {
+    const sourceCode = await loadSourceCodeFromFile(filePath);
+    const preCompiled = await preCompileCode(sourceCode, memoryOffset, linesOffset);
+    return preCompiled;
+}
 
-    const stage2 = decompileStage2(stage1);
-    //console.log('decompile stage2:', stage2)
+
+export async function preCompileCode(inputCode: string, memoryOffset: u16=0 as u16, linesOffset: u16=0 as u16): Promise<PreCompiledCode> {
+    const stage1 = preCompileStage1(inputCode)
+    //console.log('compile stage1:', stage1)
+
+    const stage2: PreCompiledCode = await preCompileStage2(stage1, memoryOffset, linesOffset)
+    console.log('compile stage2:', stage2)
+
     return stage2;
 }
 
 
-function compileStage1(code: string): {opcode: string, value: string, comment: string}[] {
+function preCompileStage1(code: string): {opcode: string, value: string, comment: string}[] {
 
     /* == INPUT ==
     :INIT
@@ -160,7 +103,7 @@ function compileStage1(code: string): {opcode: string, value: string, comment: s
     for (const line of step1) {
         const partsComment = line.split('#');
         const instructionLine = partsComment.shift()?.trim() || '';
-        const comment = partsComment.join('#');
+        const comment = partsComment.join('#').trim();
 
         const partsTmp = instructionLine.split(' ');
         const parts = {
@@ -179,10 +122,12 @@ function compileStage1(code: string): {opcode: string, value: string, comment: s
 }
 
 
-function compileStage2(stage1: {opcode: string, value: string, comment: string}[], memoryOffset: u16): PreCompiledCode {
-    const step1: [line: number, opcode: string, labels: string[], comment: string][] = [];
-    let asmLineNum = 0;
+async function preCompileStage2(stage1: {opcode: string, value: string, comment: string}[], memoryOffset: u16, linesOffset: u16): Promise<PreCompiledCode> {
+    const stage2Step1: PreCompiledCode = [];
+    let asmLineNum = linesOffset as u16;
     let currentLabels: string[] = [];
+    const includedFiles: string[] = []
+
 
     for (const lineParts of stage1) {
         const { opcode, value, comment } = lineParts;
@@ -192,14 +137,25 @@ function compileStage2(stage1: {opcode: string, value: string, comment: string}[
             continue;
         }
 
-        const lineInstruction: [line: number, opcode: string, labels: string[], comment: string] = [
+        if (opcode.startsWith('@')) {
+            // Command (TODO)
+            const command = opcode.slice(1)
+            //console.log({command, value, comment})
+
+            if (command === 'include') {
+                includedFiles.push(value);
+            }
+            continue;
+        }
+
+        const lineInstruction: PreCompiledCode[number] = [
             asmLineNum,
             `Opcode.${opcode}`,
-            currentLabels,
             comment,
+            currentLabels,
         ]
 
-        step1.push(lineInstruction)
+        stage2Step1.push(lineInstruction)
         asmLineNum++;
         currentLabels = [];
 
@@ -209,9 +165,9 @@ function compileStage2(stage1: {opcode: string, value: string, comment: string}[
 
         if (value.startsWith('$')) {
             const labelName = value.slice(1);
-            step1.push([asmLineNum, '$' + labelName + '$low', [], ''])
+            stage2Step1.push([asmLineNum, '$' + labelName + '$low', '', []])
             asmLineNum++;
-            step1.push([asmLineNum, '$' + labelName + '$high', [], ''])
+            stage2Step1.push([asmLineNum, '$' + labelName + '$high', '', []])
             asmLineNum++;
             continue;
         }
@@ -223,30 +179,45 @@ function compileStage2(stage1: {opcode: string, value: string, comment: string}[
                 ? low16(Number(value) as u16)
                 : high16(Number(evaluatedValue) as u16);
 
-            const lineParam: [number, string, string[], string] = [
+            const lineParam: PreCompiledCode[number] = [
                 asmLineNum,
                 toHex(asmLineValue),
-                [],
                 '',
+                [],
             ]
 
-            step1.push(lineParam)
+            stage2Step1.push(lineParam)
             asmLineNum++;
         }
 
     }
 
+    console.log('stage2Step1:', stage2Step1)
 
-    const stage2: PreCompiledCode = step1.map(item => {
+    for (const filePath of includedFiles) {
+        const lastLineRef = stage2Step1.at(-1);
+        if (!lastLineRef) break;
+
+        const lastLine = lastLineRef[0];
+        const memoryOffsetTmp = memoryOffset + lastLine + 1 as u16;
+        const preCompiled: PreCompiledCode = await preCompileFile(filePath, memoryOffsetTmp, U16(linesOffset + lastLine + 1));
+        stage2Step1.push(...preCompiled)
+    }
+
+    console.log('stage2Step1:', stage2Step1)
+
+
+    // Résolution des adresses de CALL/JMP relatives (labels)
+    const stage2Step2: PreCompiledCode = stage2Step1.map(item => {
         let line = item[0] as u16;
         let value = item[1];
-        let labels = item[2];
-        let comment = item[3];
+        let comment = item[2];
+        let labels = item[3];
 
         if (value.startsWith('$')) {
             const parts = value.split('$');
             const [_, labelName, weight] = parts;
-            const labelInstruction = step1.find(item => item[2].includes(labelName))
+            const labelInstruction = stage2Step1.find(item => item[3] && item[3].includes(labelName))
 
             if (! labelInstruction) {
                 throw new Error(`Instruction not found for label ${labelName}`)
@@ -261,7 +232,7 @@ function compileStage2(stage1: {opcode: string, value: string, comment: string}[
             value = toHex(valueInt);
         }
 
-        const _stage2: [line: u16, value: string, comment: string, labels: string[]] = [
+        const _stage2: PreCompiledCode[number] = [
             line,
             value,
             comment,
@@ -271,6 +242,18 @@ function compileStage2(stage1: {opcode: string, value: string, comment: string}[
         return _stage2
     });
 
+
+    return stage2Step2;
+}
+
+
+
+export function decompileCode(inputCode: PreCompiledCode): string {
+    const stage1 = decompileStage1(inputCode);
+    //console.log('decompile stage1:', stage1)
+
+    const stage2 = decompileStage2(stage1);
+    //console.log('decompile stage2:', stage2)
     return stage2;
 }
 
@@ -410,4 +393,60 @@ function replaceMemoryMapAddresses(parts: {opcode: string, value: string, commen
 
 
 
+
+
+
+const demoCodeSource: string = `
+:INIT
+SET_SP MEMORY_MAP.STACK_END
+MOV_A_IMM 0x01 # Commande clear
+MOV_MEM_A MEMORY_MAP.LCD_COMMAND
+
+:START
+CALL $LEDS_ON
+MOV_A_IMM 0x0f
+CALL $WAIT_LOOP
+CALL $LEDS_OFF
+JMP END
+
+:LEDS_ON
+MOV_A_IMM 0xff
+MOV_MEM_A MEMORY_MAP.LEDS_BASE
+RET
+
+:LEDS_OFF
+MOV_A_IMM 0x00
+MOV_MEM_A MEMORY_MAP.LEDS_BASE
+RET
+
+:WAIT_LOOP
+DEC_A
+JNZ $WAIT_LOOP
+RET
+
+:END
+SYSCALL 0
+`;
+
+
+const demoCodeAsm: PreCompiledCode = [
+    [1, 'Opcode.SET_SP'],
+    [2, '0xff'],
+    [3, '0xfe'],
+    [4, 'Opcode.MOV_A_IMM'],
+    [5, '0x1'],
+    [6, 'Opcode.MOV_MEM_A'],
+    [7, '0xa1'],
+    [8, '0xff'],
+    [9, 'Opcode.MOV_D_IMM'],
+    [10, '0x0'],
+    [11, 'Opcode.MOV_A_IMM'],
+    [12, '0x2'],
+    [13, 'Opcode.MOV_MEM_A'],
+    [14, '0xa1'],
+    [15, '0xff'],
+    [16, 'Opcode.JMP'],
+    [17, '0x0'],
+    [18, '0x5']
+] as [u16, string][];
 

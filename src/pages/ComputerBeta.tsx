@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'wouter';
 
 import { Computer } from './beta/components/Computer/Computer';
@@ -14,17 +14,37 @@ import { LedsDisplay } from './beta/components/Devices/LedsDisplay/LedsDisplay';
 import { Buzzer } from './beta/components/Devices/Buzzer/Buzzer';
 import { PixelDisplay } from './beta/components/Devices/PixelDisplay/PixelDisplay';
 import { Rng } from './beta/components/Devices/Rng/Rng';
-import { BOOTLOADER } from '@/programs/bootloader';
+//import { BOOTLOADER } from '@/programs/bootloader';
 import { Rtc } from './beta/components/Devices/Rtc/Rtc';
 import { LcdDisplay } from './beta/components/Devices/LcdDisplay/LcdDisplay';
 import { Console } from './beta/components/Devices/Console/Console';
 import { SevenSegmentDisplay } from './beta/components/Devices/7SegmentsDisplay/7SegmentsDisplay';
 import { Keyboard } from './beta/components/Devices/Keyboard/Keyboard';
 import { Interrupt } from './beta/components/Cpu/Interrupt';
+import { compileCode } from '@/lib/compiler';
+import { MEMORY_MAP } from '@/lib/memory_map';
+
+import BootloaderSourceCode from '@/programs/asm/boot/bootloader.asm?raw'
+import type { u16, u8 } from '@/types/cpu.types';
 
 
 export const ComputerBeta: React.FC = () => {
     //console.log('RENDER ComputerBeta')
+
+    const [bootloader, setBootloader] = useState<Map<u16, u8>>(new Map);
+
+    // Load BOOTLOADER
+    useEffect(() => {
+        const _compile = async () => {
+            const compiled = await compileCode(BootloaderSourceCode, MEMORY_MAP.ROM_START);
+            const BOOTLOADER: Map<u16, u8> = compiled.code;
+            setBootloader(BOOTLOADER)
+        }
+
+        const timer = setTimeout(_compile, 100)
+        return () => clearTimeout(timer);
+    }, [])
+
 
     return (
         <div className="text-white">
@@ -42,22 +62,22 @@ export const ComputerBeta: React.FC = () => {
                     </Cpu>
 
                     <MemoryBus >
-                        <Rom data={BOOTLOADER} />
+                        <Rom data={bootloader} />
                         <Ram />
                     </MemoryBus>
 
                     <DevicesManager >
                         {/* Console */}
-                        <Console ioPort={0x07} name="console" height={6} />
-
-                        {/* Input */}
-                        <Keyboard ioPort={0x05} name="keyboard" />
+                        <Console ioPort={0x07} name="console" />
 
                         {/* Display */}
                         <LedsDisplay ioPort={0x03} name="leds" />
                         <LcdDisplay ioPort={0x0A} name="lcd" />
                         <PixelDisplay ioPort={0x0D} name="display_32x32" />
                         <SevenSegmentDisplay ioPort={0x06} name="7-segment" hidden />
+
+                        {/* Input */}
+                        <Keyboard ioPort={0x05} name="keyboard" />
 
                         {/* Audio */}
                         <Buzzer ioPort={0x08} name="buzzer" hidden />

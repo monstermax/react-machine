@@ -1,17 +1,34 @@
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { BOOTLOADER } from "@/programs/bootloader";
+//import { BOOTLOADER } from "@/programs/bootloader";
 import { toHex } from "@/lib/integers";
+import { compileCode } from "@/lib/compiler";
+import { MEMORY_MAP } from "@/lib/memory_map";
 
 import type { u16, u8 } from "@/types/cpu.types";
+
+import BootloaderSourceCode from '@/programs/asm/boot/bootloader.asm?raw'
 
 
 export const useRom = (): RomHook => {
     //console.log('RENDER ComputerPage.useComputer.useRom')
 
     // ROM est immuable, initialisée avec le bootloader
-    const [storage] = useState<Map<u16, u8>>(BOOTLOADER);
+    const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
+
+
+    // Load BOOTLOADER
+    useEffect(() => {
+        const _compile = async () => {
+            const compiled = await compileCode(BootloaderSourceCode, MEMORY_MAP.ROM_START);
+            const BOOTLOADER: Map<u16, u8> = compiled.code;
+            setStorage(BOOTLOADER)
+        }
+
+        const timer = setTimeout(_compile, 100)
+        return () => clearTimeout(timer);
+    }, [])
 
 
     const read = useCallback((address: u16): u8 => {

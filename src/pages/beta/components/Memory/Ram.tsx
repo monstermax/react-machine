@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 import * as cpuApi from '../../api/api';
 import { MemoryTable } from './MemoryTable';
 import { os_list } from '@/programs/mini_os';
-import { loadCodeFromFile } from '@/lib/compiler';
+import { compileFile } from '@/lib/compiler';
 import { MEMORY_MAP } from '@/lib/memory_map';
 import { U16 } from '@/lib/integers';
 import { programs } from '@/lib/programs';
@@ -97,7 +97,7 @@ export const Ram: React.FC<RamProps> = (props) => {
         if (!os?.filepath) return;
 
         const memoryOffset = MEMORY_MAP.OS_START;
-        const code = await loadCodeFromFile(os.filepath, memoryOffset)
+        const { code } = await compileFile(os.filepath, memoryOffset)
 
         if (os) {
             ramInstance.loadCodeInRam(code, memoryOffset);
@@ -122,7 +122,7 @@ export const Ram: React.FC<RamProps> = (props) => {
         if (!program?.filepath) return;
 
         const memoryOffset = MEMORY_MAP.PROGRAM_START;
-        const code = await loadCodeFromFile(program.filepath, memoryOffset)
+        const { code } = await compileFile(program.filepath, memoryOffset)
 
         if (program) {
             ramInstance.loadCodeInRam(code, memoryOffset);

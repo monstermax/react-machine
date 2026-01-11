@@ -15,6 +15,6 @@ import BootloaderSourceCode from '@/programs/asm/boot/bootloader.asm?raw'
 // Bootloader ROM : Initialise le système et saute à l'OS
 
 
-export const BOOTLOADER: Map<u16, u8> = compileCode(BootloaderSourceCode, MEMORY_MAP.ROM_START).code;
+//export const BOOTLOADER: Map<u16, u8> = compileCode(BootloaderSourceCode, MEMORY_MAP.ROM_START).code;
 
 

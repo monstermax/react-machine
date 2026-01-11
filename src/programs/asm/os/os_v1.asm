@@ -1,7 +1,12 @@
 
+@include os/lib_os_v1.asm
+
+
 OS_START:
 
 MAIN:
+    CALL $LEDS_ON
+
     WAIT_FOR_PROGRAM:
         MOV_A_MEM MEMORY_MAP.PROGRAM_START
         JZ $WAIT_FOR_PROGRAM # Si = 0, boucler

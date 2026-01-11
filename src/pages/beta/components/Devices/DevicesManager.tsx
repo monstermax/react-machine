@@ -102,16 +102,16 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     }, [devicesManagerInstance])
 
 
-    const loadDiskDemoProgram = (diskName: string) => {
+    const loadDiskDemoProgram = async (diskName: string) => {
         if (!devicesManagerInstance) return;
 
         const memoryOffset = 0x2000; // adresse mémoire où le code executable sera chargé pour etre executé
-        const demoProgram = compileCode(ledTestCodeSource, memoryOffset as u16)
+        const demoProgramCompiled = await compileCode(ledTestCodeSource, memoryOffset as u16)
 
         const disk = devicesManagerInstance.getDeviceByName(diskName) as cpuApi.StorageDisk | undefined
         if (!disk) return
 
-        disk.loadRawData(demoProgram.code)
+        disk.loadRawData(demoProgramCompiled.code)
     }
 
 

@@ -1,8 +1,4 @@
 
-
-import { MEMORY_MAP } from "../lib/memory_map";
-import { compileCode } from "@/lib/compiler";
-
 import type { OsInfo, u16, u8 } from "@/types/cpu.types";
 
 
@@ -11,7 +7,7 @@ import type { OsInfo, u16, u8 } from "@/types/cpu.types";
 export const MINI_OS_V1: OsInfo = {
     name: "Mini OS",
     description: "Attend qu'un programme soit chargé en RAM, puis l'exécute",
-    filepath: 'boot/os_v1.asm',
+    filepath: 'os/os_v1.asm',
 };
 
 
@@ -21,7 +17,7 @@ export const MINI_OS_V1: OsInfo = {
 export const MINI_OS_V2: OsInfo = {
     name: "Mini OS (v2)",
     description: "Menu avec console et choix au clavier",
-    filepath: 'boot/os_v2.asm',
+    filepath: 'os/os_v2.asm',
 };
 
 
