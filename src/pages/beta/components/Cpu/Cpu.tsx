@@ -6,6 +6,7 @@ import { Clock } from './Clock';
 
 import type { u16, u8 } from '@/types/cpu.types';
 import { useComputer } from '../Computer/Computer';
+import { Interrupt } from './Interrupt';
 
 
 export type CpuProps = {
@@ -23,6 +24,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     // Core
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
+    const [interruptInstance, setInterruptInstance] = useState<cpuApi.Interrupt | null>(null);
     const ramInstance = ramRef.current;
     const devicesManagerInstance = devicesManagerRef.current;
 
@@ -57,9 +59,15 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 if (state.clockCycle) {
                     setClockCycle(state.clockCycle)
                 }
+
                 if (state.registers) {
                     setRegisters(new Map(state.registers))
                 }
+
+                if (state.halted !== undefined) {
+                    setHalted(state.halted)
+                }
+
                 if (state.paused !== undefined) {
                     setPaused(state.paused)
                 }
@@ -101,6 +109,24 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     }
 
 
+    // Mount Interrupt - récupère l'instance du Interrupt depuis les enfants
+    const addInterrupt = (interruptInstance: cpuApi.Interrupt) => {
+        if (!cpuInstance) return;
+
+        if (interruptInstance && !cpuInstance.interrupt) {
+            cpuInstance.interrupt = interruptInstance;
+
+            //console.log('interrupt monté dans CPU:', interruptInstance);
+
+            if (devicesManagerInstance) {
+                devicesManagerInstance.devices.set(interruptInstance.ioPort, interruptInstance)
+            }
+        }
+
+        setInterruptInstance(interruptInstance);
+    }
+
+
     const childrenWithProps = React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
             const childElement = child as React.ReactElement<any>;
@@ -108,6 +134,9 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             switch (childElement.type) {
                 case Clock:
                     return React.cloneElement(childElement, { onInstanceCreated: addClock });
+
+                case Interrupt:
+                    return React.cloneElement(childElement, { onInstanceCreated: addInterrupt });
 
                 default:
                     console.log(`Invalid component mounted into Cpu : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
@@ -201,7 +230,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     </button>
 
                     <button
-                        disabled={!paused}
+                        disabled={!paused || halted}
                         onClick={() => runStep()}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
                     >
@@ -209,6 +238,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     </button>
 
                     <button
+                        disabled={halted}
                         onClick={() => runLoop()}
                         className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${!paused
                             ? "bg-yellow-600 hover:bg-yellow-700"

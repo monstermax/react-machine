@@ -13,7 +13,7 @@ import type { Device, IoDevice, u16, u8 } from '@/types/cpu.types';
 import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
 
 
-const validDeviceTypes = ['DiskStorage', 'Display', 'Audio', 'Time', 'Random'];
+const validDeviceTypes = ['Input', 'DiskStorage', 'Display', 'Audio', 'Time', 'Random', 'Interrupt'];
 
 
 export type DevicesManagerProps = {

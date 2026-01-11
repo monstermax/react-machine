@@ -8,6 +8,7 @@ import { MEMORY_MAP } from "@/lib/memory_map";
 import type { MemoryBus } from "../Memory/MemoryBus.api";
 import type { Clock } from "./Clock.api";
 import type { Register, Register16, u16, u8 } from "@/types/cpu.types";
+import type { Interrupt } from "./Interrupt.api";
 
 
 export const initialRegisters = [
@@ -26,6 +27,7 @@ export const initialRegisters = [
 export class Cpu extends EventEmitter {
     public id: number;
     public memoryBus: MemoryBus | null = null;
+    public interrupt: Interrupt | null = null;
     public registers: Map<string, u8 | u16> = new Map;
     public clock: Clock | null = null;
     public breakpoints: Set<number> = new Set;
@@ -105,7 +107,7 @@ export class Cpu extends EventEmitter {
 
 
     executeCycle() {
-        if (!this.memoryBus) return;
+        if (!this.memoryBus || this.halted) return;
 
         // 1. Fetch
         const pc = this.getRegister("PC");
@@ -129,8 +131,16 @@ export class Cpu extends EventEmitter {
             return;
         }
 
+        this.clockCycle++
+
         // Handle Threads
-        // Handle Interrupts
+
+        // Handle Interrupts - Vérifier les interruptions AVANT de fetch
+        if (this.interrupt && this.interruptsEnabled && !this.inInterruptHandler && this.interrupt.hasPendingInterrupt()) {
+            this.handleInterrupt();
+            return; // On saute l'exécution normale ce cycle
+        }
+
 
         const instruction = this.memoryBus.readMemory(pc);
         this.setRegister("IR", instruction);
@@ -140,8 +150,6 @@ export class Cpu extends EventEmitter {
 
         // 3. Execute
 
-        this.clockCycle++
-        //console.log('CPU executeCycle', this.clockCycle)
 
         this.executeOpcode(pc, opcode);
 
@@ -196,6 +204,7 @@ export class Cpu extends EventEmitter {
 
             case Opcode.HALT:
                 this.halted = true;
+                this.emit('state', { halted: this.halted });
                 break;
 
             // ===== ALU INSTRUCTIONS =====
@@ -742,6 +751,49 @@ export class Cpu extends EventEmitter {
         // Réactiver interruptions
         this.interruptsEnabled = true;
         this.inInterruptHandler = false;
+    }
+
+
+    handleInterrupt() {
+        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+        if (!this.interrupt) throw new Error("Missing Interrupt")
+
+        const irq = this.interrupt.getPendingIRQ();
+        if (irq === null) return;
+
+        console.log(`🎯 Handling IRQ ${irq}, handlerAddr = ${this.interrupt.handlerAddr.toString(16)}`);
+
+        // 1. Désactiver interruptions
+        this.interruptsEnabled = false;
+        this.inInterruptHandler = true;
+
+        // 2. Sauvegarder contexte sur la pile
+        const sp = this.getRegister("SP");
+        const pc = this.getRegister("PC");
+        const flags = this.getRegister("FLAGS");
+
+        // PUSH Flags
+        this.memoryBus.writeMemory(sp, flags);
+        this.setRegister("SP", (sp - 1) as u16);
+
+        // PUSH PC (little-endian)
+        this.memoryBus.writeMemory((sp - 1) as u16, ((pc >> 8) & 0xFF) as u8); // High byte
+        this.memoryBus.writeMemory((sp - 2) as u16, (pc & 0xFF) as u8);      // Low byte
+        this.setRegister("SP", (sp - 3) as u16);
+
+        // 3. Acquitter l'interruption
+        this.interrupt.acknowledgeInterrupt(irq);
+
+        // 4. Sauter au handler
+        let handlerAddress = this.interrupt.handlerAddr;
+        if (handlerAddress === 0) {
+            // Vecteur par défaut: 0x0040 + irq*4
+            handlerAddress = (0x0040 + (irq * 4)) as u16;
+        }
+
+        this.setRegister("PC", handlerAddress);
+
+        console.log(`🔄 Interruption IRQ${irq} -> Handler 0x${handlerAddress.toString(16)}`);
     }
 
 

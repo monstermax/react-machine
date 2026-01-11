@@ -9,7 +9,7 @@ import { U8 } from '@/lib/integers';
 
 export type BuzzerProps = {
     name: string;
-    ioPort: number;
+    ioPort: number | u8 | null;
     hidden?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Buzzer) => void,
@@ -29,12 +29,12 @@ export const Buzzer: React.FC<BuzzerProps> = (props) => {
     // Instanciate Device
     useEffect(() => {
         const _instanciateDevice = () => {
-            const device = new cpuApi.Buzzer(name, U8(ioPort))
+            const device = new cpuApi.Buzzer(name, ioPort as u8 | null)
             setDeviceInstance(device);
 
             // Handle state updates
             device.on('state', (state) => {
-                console.log('Buzzer state update', state)
+                //console.log('Buzzer state update', state)
 
             })
         }

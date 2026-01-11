@@ -10,7 +10,7 @@ import type { IoDevice, u8 } from "@/types/cpu.types";
 
 export type PixelDisplayProps = {
     name: string;
-    ioPort: number;
+    ioPort: number | u8 | null;
     hidden?: boolean;
     width?: number;
     height?: number;
@@ -41,12 +41,12 @@ export const PixelDisplay: React.FC<PixelDisplayProps> = (props) => {
         const _instanciateDevice = () => {
             if (instanciated) return;
 
-            const device = new cpuApi.PixelDisplay(name, U8(ioPort))
+            const device = new cpuApi.PixelDisplay(name, ioPort as u8 | null, width, height)
             setDeviceInstance(device);
 
             // Handle state updates
             device.on('state', (state) => {
-                console.log('PixelDisplay state update', state)
+                //console.log('PixelDisplay state update', state)
 
                 if (state.pixels !== undefined) {
                     setPixels(state.pixels)
@@ -171,21 +171,17 @@ export const PixelDisplay: React.FC<PixelDisplayProps> = (props) => {
                     </div>
                 </div>
 
-                <div className="flex">
+                <div className="flex gap-4">
+                    <div className="mt-3 text-xs text-slate-400 p-2 bg-slate-900/30 rounded">
+                        Cursor: X={currentX}, Y={currentY}
+                    </div>
+
                     <button
                         onClick={handleClear}
                         className="ms-auto cursor-pointer bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition-colors"
                     >
                         Clear
                     </button>
-                </div>
-
-                <div className="mt-3 text-xs text-slate-400 p-2 bg-slate-900/30 rounded">
-                    <div>📍 I/O: 0xFFD0-0xFFD2 (Device 0x0D)</div>
-                    <div>📊 Cursor: X={currentX}, Y={currentY}</div>
-                    <div className="mt-1 text-slate-500">
-                        Write X, Y, then COLOR (0=black, 1=white)
-                    </div>
                 </div>
 
             </div>

@@ -7,23 +7,24 @@ import type { u16, u8 } from '@/types/cpu.types';
 import { U8 } from '@/lib/integers';
 
 
-export type LedsDisplayProps = {
+export type KeyboardProps = {
     name: string;
     ioPort: number | u8 | null;
     hidden?: boolean;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.LedsDisplay) => void,
+    onInstanceCreated?: (cpu: cpuApi.Keyboard) => void,
 }
 
 
-export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
+export const Keyboard: React.FC<KeyboardProps> = (props) => {
     const { hidden, name, ioPort, children, onInstanceCreated } = props;
 
     // Core
-    const [deviceInstance, setDeviceInstance] = useState<cpuApi.LedsDisplay | null>(null);
+    const [deviceInstance, setDeviceInstance] = useState<cpuApi.Keyboard | null>(null);
 
     // UI snapshot state
-    const [leds, setLeds] = useState<u8>(0 as u8)
+    const [lastChar, setLastChar] = useState<u8>(0 as u8)
+    const [hasChar, setHasChar] = useState<boolean>(true)
 
     // UI
     const [contentVisible, setContentVisible] = useState(true);
@@ -32,16 +33,21 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
     // Instanciate Device
     useEffect(() => {
         const _instanciateDevice = () => {
-            const device = new cpuApi.LedsDisplay(name, ioPort as u8 | null)
+            const device = new cpuApi.Keyboard(name, ioPort as u8 | null)
             setDeviceInstance(device);
 
             // Handle state updates
             device.on('state', (state) => {
-                //console.log('LedsDisplay state update', state)
+                //console.log('Keyboard state update', state)
 
-                if (state.leds !== undefined) {
-                    setLeds(state.leds)
+                if (state.lastChar !== undefined) {
+                    setLastChar(state.lastChar)
                 }
+
+                if (state.hasChar !== undefined) {
+                    setHasChar(state.hasChar)
+                }
+
             })
         }
 
@@ -58,11 +64,6 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
     }, [deviceInstance, onInstanceCreated]);
 
 
-    const getLeds = useCallback((): u8[] => {
-        return Array.from({ length: 8 }, (_, i) => ((leds >> i) & 1) as u8);
-    }, [leds])
-
-
     const childrenWithProps = React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
             const childElement = child as React.ReactElement<any>;
@@ -70,7 +71,7 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
             switch (childElement.type) {
 
                 default:
-                    console.log(`Invalid component mounted into Device LedsDisplay : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
+                    console.log(`Invalid component mounted into Device Keyboard : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
                     return null;
 
             }
@@ -81,7 +82,7 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
 
     if (!deviceInstance) {
         return (
-            <>Loading Leds</>
+            <>Loading Keyboard</>
         )
     }
 
@@ -91,7 +92,7 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
 
             {/* Device Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
-                <h2 className="font-bold">Leds</h2>
+                <h2 className="font-bold">Keyboard</h2>
 
                 {true && (
                     <button
@@ -106,13 +107,38 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
             {/* Device Content */}
             <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
 
-                {/* LEDS */}
-                <div className="p-2 rounded bg-background-light-2xl flex gap-4 items-center">
-
-                    <div className="flex gap-2 mx-auto">
-                        {getLeds().map((on, i) => (
-                            <div key={i} className={`w-6 h-6 rounded-full ${on ? 'bg-yellow-500' : 'bg-gray-700'}`} />
-                        ))}
+                {/* Keyboard */}
+                <div>
+                    {/* Status */}
+                    <div className="grid grid-cols-2 gap-4 p-3 bg-slate-900/50 rounded">
+                        <div>
+                            <div className="text-xs text-slate-400 mb-1">Last Char:</div>
+                            <div className="text-2xl font-mono text-green-400">
+                                {lastChar > 0 ? (
+                                    <>
+                                        '{String.fromCharCode(lastChar)}'
+                                        <span className="text-sm text-slate-400 ml-2">
+                                            (0x{lastChar.toString(16).padStart(2, '0')})
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="text-slate-600">--</span>
+                                )}
+                            </div>
+                        </div>
+                        <div>
+                            <div className="text-xs text-slate-400 mb-1">Status:</div>
+                            <div className="flex items-center gap-2 mt-2">
+                                <div 
+                                    className={`w-4 h-4 rounded-full ${
+                                        hasChar ? 'bg-green-500 animate-pulse' : 'bg-slate-700'
+                                    }`}
+                                />
+                                <span className="text-sm text-slate-300">
+                                    {hasChar ? 'Char Available' : 'Waiting'}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

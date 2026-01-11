@@ -4,11 +4,13 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 import * as cpuApi from '../../../api/api';
 import { U8 } from '@/lib/integers';
 
+import type { u8 } from '@/types/cpu.types';
+
 
 
 export type RngProps = {
     name: string;
-    ioPort: number;
+    ioPort: number | u8 | null;
     hidden?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Rng) => void,
@@ -27,7 +29,7 @@ export const Rng: React.FC<RngProps> = (props) => {
     // Instanciate Rng
     useEffect(() => {
         const _instanciateRng = () => {
-            const rng = new cpuApi.Rng(name, U8(ioPort));
+            const rng = new cpuApi.Rng(name, ioPort as u8 | null);
             setRngInstance(rng);
 
             // Handle state updates

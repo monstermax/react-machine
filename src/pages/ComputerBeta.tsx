@@ -15,6 +15,12 @@ import { Buzzer } from './beta/components/Devices/Buzzer/Buzzer';
 import { PixelDisplay } from './beta/components/Devices/PixelDisplay/PixelDisplay';
 import { Rng } from './beta/components/Devices/Rng/Rng';
 import { BOOTLOADER } from '@/programs/bootloader';
+import { Rtc } from './beta/components/Devices/Rtc/Rtc';
+import { LcdDisplay } from './beta/components/Devices/LcdDisplay/LcdDisplay';
+import { Console } from './beta/components/Devices/Console/Console';
+import { SevenSegmentDisplay } from './beta/components/Devices/7SegmentsDisplay/7SegmentsDisplay';
+import { Keyboard } from './beta/components/Devices/Keyboard/Keyboard';
+import { Interrupt } from './beta/components/Cpu/Interrupt';
 
 
 export const ComputerBeta: React.FC = () => {
@@ -30,6 +36,9 @@ export const ComputerBeta: React.FC = () => {
                 <Computer >
                     <Cpu threads={1} >
                         <Clock frequency={10} />
+                        <Interrupt hidden />
+                        {/* <Controls /> */}
+                        {/* <Registers /> */}
                     </Cpu>
 
                     <MemoryBus >
@@ -38,21 +47,30 @@ export const ComputerBeta: React.FC = () => {
                     </MemoryBus>
 
                     <DevicesManager >
+                        {/* Console */}
+                        <Console ioPort={0x07} name="console" />
+
+                        {/* Input */}
+                        <Keyboard ioPort={0x05} name="keyboard" />
+
                         {/* Display */}
-                        <LedsDisplay ioPort={3} name="leds_demo" />
-                        <PixelDisplay ioPort={13} name="display_32x32" />
+                        <LedsDisplay ioPort={0x03} name="leds" />
+                        <LcdDisplay ioPort={0x0A} name="lcd" />
+                        <PixelDisplay ioPort={0x0D} name="display_32x32" />
+                        <SevenSegmentDisplay ioPort={0x06} name="7-segment" hidden />
 
                         {/* Autio */}
-                        <Buzzer ioPort={8} name="buzzer" hidden />
+                        <Buzzer ioPort={0x08} name="buzzer" hidden />
 
                         {/* Random */}
-                        <Rng ioPort={11} name="rng" hidden />
+                        <Rng ioPort={0x0B} name="rng" hidden />
+                        <Rtc ioPort={0x0C} name="rtc" hidden />
 
                         {/* Storage */}
-                        <StorageDisk ioPort={0} name="os_disk" open={false} />
-                        <StorageDisk ioPort={1} name="program_disk" open={false} />
-                        <StorageDisk ioPort={14} name="data_1" persistent />
-                        <StorageDisk ioPort={15} name="data_2" open={false} />
+                        <StorageDisk ioPort={0x00} name="os_disk" open={false} />
+                        <StorageDisk ioPort={0x01} name="program_disk" open={false} />
+                        <StorageDisk ioPort={0x0E} name="data_1" persistent />
+                        <StorageDisk ioPort={0x0F} name="data_2" open={false} />
 
                     </DevicesManager>
                 </Computer>

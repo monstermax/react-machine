@@ -8,7 +8,7 @@ import { U8 } from '@/lib/integers';
 
 export type StorageDiskProps = {
     name: string;
-    ioPort: number;
+    ioPort: u8 | number | null;
     hidden?: boolean;
     data?: Map<u16, u8> | [u16, u8][];
     persistent?: boolean;
@@ -53,7 +53,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
         const _instanciateStorageDisk = () => {
             if (instanciated) return;
 
-            const disk = new cpuApi.StorageDisk(name, U8(ioPort), data, maxSize);
+            const disk = new cpuApi.StorageDisk(name, ioPort as u8 | null, data, maxSize);
             setStorageDiskInstance(disk);
 
             disk.on('state', (state) => {
