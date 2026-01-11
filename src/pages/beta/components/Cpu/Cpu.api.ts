@@ -3,12 +3,24 @@ import { EventEmitter } from "eventemitter3";
 
 import { toHex, U16, U8 } from "@/lib/integers";
 import { Opcode } from "@/lib/instructions";
-import { initialRegisters } from "../../api/api";
 import { MEMORY_MAP } from "@/lib/memory_map";
 
 import type { MemoryBus } from "../Memory/MemoryBus.api";
 import type { Clock } from "./Clock.api";
 import type { Register, Register16, u16, u8 } from "@/types/cpu.types";
+
+
+export const initialRegisters = [
+        ["A", 0 as u8],      // Register A
+        ["B", 0 as u8],      // Register B
+        ["C", 0 as u8],      // Register C
+        ["D", 0 as u8],      // Register D
+        ["PC", 0 as u16],    // Program Counter
+        ["IR", 0 as u8],     // Instruction Register
+        ["SP", 0 as u16],    // Stack Pointer
+        ["FLAGS", 0 as u8],  // Bit 0: Carry, Bit 1: Zero
+    ] as [string, u8 | u16][]
+;
 
 
 export class Cpu extends EventEmitter {

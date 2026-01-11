@@ -5,12 +5,16 @@ import * as cpuApi from '../../api/api';
 import { isROM } from '@/lib/memory_map';
 import { buildMemoryInstructionMap, getOpcodeName } from '@/lib/instructions';
 import { U16 } from '@/lib/integers';
+import { useComputer } from '../Computer/Computer';
 
 import type { u16, u8 } from '@/types/cpu.types';
 
 
 export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({ name, storage }) => {
-    const cpuInstance = cpuApi.cpuRef.current;
+    const { cpuRef } = useComputer();
+
+    // Core
+    const cpuInstance = cpuRef.current;
 
     // UI snapshot state
     const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set);

@@ -1,18 +1,17 @@
 
+import { useEffect, useState } from "react";
 import { Route, Switch } from "wouter";
 import { useSearch } from 'wouter/use-browser-location';
 import { Toaster } from "react-hot-toast";
 
+import { Home } from "@/pages/Home";
+import { ComputerPage } from "./pages/ComputerPage";
+import { CompilePage } from "./pages/CompilePage";
+import { ComputerBeta } from "./pages/ComputerBeta";
+import NotFound from "@/pages/NotFound";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-import { Home } from "@/pages/Home";
-import { ComputerPage } from "./pages/Computer";
-import { CompilePage } from "./pages/CompilePage";
-import NotFound from "@/pages/NotFound";
-
 import '@/App.css';
-import { useEffect, useState } from "react";
-import { ComputerBeta } from "./pages/ComputerBeta";
 
 
 function App() {

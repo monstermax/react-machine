@@ -4,6 +4,7 @@ import * as cpuApi from '../../api/api';
 import { Rom } from './Rom';
 import { Ram } from './Ram';
 import { DevicesManager } from '../Devices/DevicesManager';
+import { useComputer } from '../Computer/Computer';
 
 
 type MemoryBusProps = {
@@ -14,6 +15,7 @@ type MemoryBusProps = {
 
 export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     const { children, onInstanceCreated } = props;
+    const { cpuRef, memoryBusRef } = useComputer();
 
     // Core
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
@@ -31,11 +33,11 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
             setMemoryBusInstance(memoryBus);
 
             // Save MemoryBus Ref
-            cpuApi.memoryBusRef.current = memoryBus;
+            memoryBusRef.current = memoryBus;
 
             // Attach MemoryBus to CPU
-            if (cpuApi.cpuRef.current) {
-                cpuApi.cpuRef.current.memoryBus = memoryBus;
+            if (cpuRef.current) {
+                cpuRef.current.memoryBus = memoryBus;
             }
 
             // Handle state updates

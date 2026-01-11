@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '../../api/api';
+import { useComputer } from '../Computer/Computer';
 
 
 const frequencies = [
@@ -25,11 +26,13 @@ export type ClockProps = {
 }
 
 export const Clock: React.FC<ClockProps> = (props) => {
+    const { cpuRef } = useComputer();
+
     const { frequency: initialFrequency, children, onInstanceCreated } = props;
 
     // Core
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
-    const cpuInstance = cpuApi.cpuRef.current;
+    const cpuInstance = cpuRef.current;
 
     // UI
     const [clockFrequency, setClockFrequency] = useState(initialFrequency)

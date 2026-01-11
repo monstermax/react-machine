@@ -5,11 +5,12 @@ import * as cpuApi from '../../api/api';
 import { StorageDisk } from './StorageDisk/StorageDisk';
 import { LedsDisplay } from './LedsDisplay/LedsDisplay';
 import { compileCode } from '@/lib/compiler';
+import { Buzzer } from './Buzzer/Buzzer';
+import { useComputer } from '../Computer/Computer';
 
 import type { Device, IoDevice, u16, u8 } from '@/types/cpu.types';
 
 import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
-import { Buzzer } from './Buzzer/Buzzer';
 
 
 const validDeviceTypes = ['DiskStorage', 'Display', 'Audio', 'Time', 'Random'];
@@ -23,6 +24,7 @@ export type DevicesManagerProps = {
 
 export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     const { children, onInstanceCreated } = props;
+    const { devicesManagerRef } = useComputer();
 
     // Core
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null); // aka ioInstance
@@ -40,7 +42,7 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
             setDevicesManagerInstance(devices);
 
             // Save DevicesManager Ref
-            cpuApi.devicesManagerRef.current = devices;
+            devicesManagerRef.current = devices;
 
             // Handle state updates
             devices.on('state', (state) => {

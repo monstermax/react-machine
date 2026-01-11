@@ -1,13 +1,4 @@
 
-import type { Computer } from "../components/Computer/Computer.api";
-import type { Cpu } from "../components/Cpu/Cpu.api";
-import type { DevicesManager } from "../components/Devices/DevicesManager.api";
-import type { MemoryBus } from "../components/Memory/MemoryBus.api";
-import type { Ram } from "../components/Memory/Ram.api";
-
-import type { u16, u8 } from "@/types/cpu.types";
-
-
 export * from '../components/Computer/Computer.api';
 export * from '../components/Cpu/Cpu.api';
 export * from '../components/Cpu/Clock.api';
@@ -21,49 +12,4 @@ export * from '../components/Devices/LedsDisplay/LedsDisplay.api';
 export * from '../components/Devices/PixelDisplay/PixelDisplay.api';
 export * from '../components/Devices/Buzzer/Buzzer.api';
 export * from '../components/Devices/Rng/Rng.api';
-
-
-export const computerRef = {
-    current: null as Computer | null
-};
-
-export const cpuRef = {
-    current: null as Cpu | null
-};
-
-export const memoryBusRef = {
-    current: null as MemoryBus | null
-};
-
-export const devicesManagerRef = {
-    current: null as DevicesManager | null
-};
-
-export const ramRef = {
-    current: null as Ram | null
-};
-
-
-// DEBUG
-if (true) {
-    (window as any).computerRef = computerRef;
-    (window as any).cpuRef = cpuRef;
-    (window as any).memoryBusRef = memoryBusRef;
-    (window as any).devicesManagerRef = devicesManagerRef;
-    (window as any).ramRef = ramRef;
-}
-
-
-
-export const initialRegisters = [
-        ["A", 0 as u8],      // Register A
-        ["B", 0 as u8],      // Register B
-        ["C", 0 as u8],      // Register C
-        ["D", 0 as u8],      // Register D
-        ["PC", 0 as u16],    // Program Counter
-        ["IR", 0 as u8],     // Instruction Register
-        ["SP", 0 as u16],    // Stack Pointer
-        ["FLAGS", 0 as u8],  // Bit 0: Carry, Bit 1: Zero
-    ] as [string, u8 | u16][]
-;
 

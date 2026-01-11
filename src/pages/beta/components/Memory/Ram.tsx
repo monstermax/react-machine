@@ -7,6 +7,7 @@ import { loadCodeFromFile } from '@/lib/compiler';
 import { MEMORY_MAP } from '@/lib/memory_map';
 import { U16 } from '@/lib/integers';
 import { programs } from '@/lib/programs';
+import { useComputer } from '../Computer/Computer';
 
 import type { OsInfo, ProgramInfo, u16, u8 } from '@/types/cpu.types';
 
@@ -20,10 +21,11 @@ export type RamProps = {
 
 export const Ram: React.FC<RamProps> = (props) => {
     const { data, size: maxSize, children, onInstanceCreated } = props;
+    const { computerRef, ramRef } = useComputer();
 
     // Core
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
-    const computerInstance = cpuApi.computerRef.current;
+    const computerInstance = computerRef.current;
 
     // UI snapshot state
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
@@ -39,7 +41,7 @@ export const Ram: React.FC<RamProps> = (props) => {
             setRamInstance(ram);
 
             // Save RamBus Ref
-            cpuApi.ramRef.current = ram;
+            ramRef.current = ram;
 
             // Handle state updates
             ram.on('state', (state) => {

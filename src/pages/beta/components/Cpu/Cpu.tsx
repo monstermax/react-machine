@@ -5,6 +5,7 @@ import * as cpuApi from '../../api/api';
 import { Clock } from './Clock';
 
 import type { u16, u8 } from '@/types/cpu.types';
+import { useComputer } from '../Computer/Computer';
 
 
 export type CpuProps = {
@@ -16,12 +17,13 @@ export type CpuProps = {
 
 export const Cpu: React.FC<CpuProps> = (props) => {
     const { threads: threadsCount, children, onInstanceCreated } = props;
+    const { cpuRef, ramRef, memoryBusRef, devicesManagerRef } = useComputer();
 
     // Core
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
-    const ramInstance = cpuApi.ramRef.current;
-    const devicesManagerInstance = cpuApi.devicesManagerRef.current;
+    const ramInstance = ramRef.current;
+    const devicesManagerInstance = devicesManagerRef.current;
 
     // UI snapshot state
     const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map(cpuApi.initialRegisters));
@@ -40,11 +42,11 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             setCpuInstance(cpu);
 
             // Save CPU Ref
-            cpuApi.cpuRef.current = cpu;
+            cpuRef.current = cpu;
 
             // Attach MemoryBus to CPU
-            if (cpuApi.memoryBusRef.current) {
-                cpuApi.cpuRef.current.memoryBus = cpuApi.memoryBusRef.current;
+            if (memoryBusRef.current) {
+                cpuRef.current.memoryBus = memoryBusRef.current;
             }
 
             // Handle state updates
