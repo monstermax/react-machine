@@ -1,5 +1,4 @@
 
-@include os/os_v1_lib.asm
 @include os/devices/console/console_hello_world.asm
 @include os/devices/led/led.lib.asm
 

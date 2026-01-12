@@ -1,4 +1,5 @@
 
+@include os/time/wait_loop.lib.asm
 @include os/devices/led/led.lib.asm
 
 
@@ -12,17 +13,10 @@ MAIN:
     START:
         CALL $LEDS_ON # Go to LEDS_ON
         MOV_A_IMM 0x0F # A = Delay counter for WAIT_LOOP
-        CALL $WAIT_LOOP # Go to WAIT_LOOP
+        CALL $WAIT_LOOP() # Go to WAIT_LOOP
         CALL $LEDS_OFF # Go to LEDS_OFF
         JMP $END # Go to END
 
     END:
     #SYSCALL 0x00
     RET
-
-
-WAIT_LOOP:
-    DEC_A
-    JNZ $WAIT_LOOP
-    RET
-
