@@ -90,6 +90,8 @@ export const ComputerBeta: React.FC = () => {
                         <StorageDisk ioPort={0x0E} name="data_1" persistent />
                         <StorageDisk ioPort={0x0F} name="data_2" open={false} />
 
+                        {/* <IDE /> adapter la page de compilation en composant Device + permettre l'execution du code */}
+
                         {/* <Gpu /> */}
                         {/* <Network /> */}
 
