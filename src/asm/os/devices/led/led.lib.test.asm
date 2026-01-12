@@ -1,6 +1,7 @@
 
 @include os/devices/led/led.lib.asm
 
+
 PROGRAM_START:
 INIT:
 
@@ -20,18 +21,8 @@ MAIN:
     RET
 
 
-LEDS_ON:
-    MOV_A_IMM 0xFF
-    MOV_MEM_A @LEDS_BASE
-    RET
-
 WAIT_LOOP:
     DEC_A
     JNZ $WAIT_LOOP
-    RET
-
-LEDS_OFF:
-    MOV_A_IMM 0x00
-    MOV_MEM_A @LEDS_BASE
     RET
 
