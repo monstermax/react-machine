@@ -133,7 +133,8 @@ async function preCompileStage2(stage1: {opcode: string, value: string, comment:
         const { opcode, value, comment } = lineParts;
 
         if (opcode.endsWith(':')) {
-            currentLabels.push(opcode.slice(0, -1))
+            const labelName = opcode.slice(0, -1);
+            currentLabels.push(labelName)
             continue;
         }
 
@@ -163,6 +164,8 @@ async function preCompileStage2(stage1: {opcode: string, value: string, comment:
         const opCodeValue = Opcode[opcode as keyof typeof Opcode] as u8;
         const instructionArgsCount = getInstructionLength(opCodeValue) - 1;
 
+
+        // Jump ou Call vers un label
         if (value.startsWith('$')) {
             const labelName = value.slice(1);
             stage2Step1.push([asmLineNum, '$' + labelName + '$low', '', []])
@@ -172,6 +175,8 @@ async function preCompileStage2(stage1: {opcode: string, value: string, comment:
             continue;
         }
 
+
+        // Parcours de arguments de l'opcode (1 ou 2 lignes suivantes)
         for (let i = 1; i <= instructionArgsCount; i++) {
             const evaluatedValue = Number(value);
 
@@ -193,13 +198,18 @@ async function preCompileStage2(stage1: {opcode: string, value: string, comment:
     }
 
 
+    // Inclusion des fichiers @include
     for (const filePath of includedFiles) {
-        const lastLineRef = stage2Step1.at(-1);
-        if (!lastLineRef) break;
+        const preCompiled: PreCompiledCode = await preCompileFile(filePath, memoryOffset, U16(asmLineNum));
+        const lastLine = preCompiled.at(-1);
 
-        const lastLine = lastLineRef[0];
-        const memoryOffsetTmp = memoryOffset + lastLine + 1 as u16;
-        const preCompiled: PreCompiledCode = await preCompileFile(filePath, memoryOffsetTmp, U16(linesOffset + lastLine + 1));
+        if (!lastLine) {
+            console.log("Erreur compilation include");
+            break;
+        }
+
+        asmLineNum = U16(lastLine[0] + 2);
+
         stage2Step1.push(...preCompiled)
     }
 

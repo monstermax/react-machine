@@ -3,20 +3,18 @@
 @include os/devices/led/led.lib.asm
 
 
-PROGRAM_START:
-INIT:
-
 MAIN:
-    MOV_A_IMM 0x01
-    MOV_MEM_A @LCD_COMMAND # Clear LCD Screen
 
-    START:
+    SHOW_LEDS:
         CALL $LEDS_ON # Go to LEDS_ON
+
+    WAIT_DELAY:
         MOV_A_IMM 0x0F # A = Delay counter for WAIT_LOOP
         CALL $WAIT_LOOP() # Go to WAIT_LOOP
+
+    HIDE_LEDS:
         CALL $LEDS_OFF # Go to LEDS_OFF
         JMP $END # Go to END
 
     END:
-    #SYSCALL 0x00
-    RET
+        RET
