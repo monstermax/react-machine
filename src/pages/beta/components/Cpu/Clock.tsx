@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '../../api/api';
-import { useComputer } from '../Computer/Computer';
+import { useComputer } from '../Computer/ComputerContext';
 
 
 const frequencies = [

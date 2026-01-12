@@ -4,7 +4,7 @@ import * as cpuApi from '../../api/api';
 import { Rom } from './Rom';
 import { Ram } from './Ram';
 import { DevicesManager } from '../Devices/DevicesManager';
-import { useComputer } from '../Computer/Computer';
+import { useComputer } from '../Computer/ComputerContext';
 
 
 type MemoryBusProps = {

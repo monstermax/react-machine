@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'wouter';
 
-import { Computer } from './beta/components/Computer/Computer';
+import { Computer } from './beta/components/Computer/ComputerContext';
 import { Cpu } from './beta/components/Cpu/Cpu';
 import { MemoryBus } from './beta/components/Memory/MemoryBus';
 import { Ram } from './beta/components/Memory/Ram';
@@ -14,7 +14,6 @@ import { LedsDisplay } from './beta/components/Devices/LedsDisplay/LedsDisplay';
 import { Buzzer } from './beta/components/Devices/Buzzer/Buzzer';
 import { PixelDisplay } from './beta/components/Devices/PixelDisplay/PixelDisplay';
 import { Rng } from './beta/components/Devices/Rng/Rng';
-//import { BOOTLOADER } from '@/programs/bootloader';
 import { Rtc } from './beta/components/Devices/Rtc/Rtc';
 import { LcdDisplay } from './beta/components/Devices/LcdDisplay/LcdDisplay';
 import { Console } from './beta/components/Devices/Console/Console';
@@ -24,7 +23,7 @@ import { Interrupt } from './beta/components/Cpu/Interrupt';
 import { compileCode } from '@/lib/compiler';
 import { MEMORY_MAP } from '@/lib/memory_map';
 
-import BootloaderSourceCode from '@/asm/boot/bootloader.asm?raw'
+import BootloaderSourceCode from '@/asm/bootloader/bootloader_v1.asm?raw'
 import type { u16, u8 } from '@/types/cpu.types';
 
 
@@ -37,8 +36,7 @@ export const ComputerBeta: React.FC = () => {
     useEffect(() => {
         const _compile = async () => {
             const compiled = await compileCode(BootloaderSourceCode, MEMORY_MAP.ROM_START);
-            const BOOTLOADER: Map<u16, u8> = compiled.code;
-            setBootloader(BOOTLOADER)
+            setBootloader(compiled.code)
         }
 
         const timer = setTimeout(_compile, 100)
@@ -54,11 +52,11 @@ export const ComputerBeta: React.FC = () => {
 
             <div>
                 <Computer >
-                    <Cpu threads={1} >
-                        <Clock frequency={10} />
-                        <Interrupt ioPort={4} hidden={false} />
+                    <Cpu threads={1}>
                         {/* <Controls /> */}
+                        <Clock frequency={10} />
                         {/* <Registers /> */}
+                        <Interrupt ioPort={4} hidden={false} />
                     </Cpu>
 
                     <MemoryBus >
@@ -91,6 +89,9 @@ export const ComputerBeta: React.FC = () => {
                         <StorageDisk ioPort={0x01} name="program_disk" open={false} />
                         <StorageDisk ioPort={0x0E} name="data_1" persistent />
                         <StorageDisk ioPort={0x0F} name="data_2" open={false} />
+
+                        {/* <Gpu /> */}
+                        {/* <Network /> */}
 
                     </DevicesManager>
                 </Computer>

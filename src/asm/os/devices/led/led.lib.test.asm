@@ -1,4 +1,6 @@
 
+@include os/devices/led/led.lib.asm
+
 PROGRAM_START:
 INIT:
 

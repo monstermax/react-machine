@@ -10,7 +10,7 @@ import { programs } from '@/lib/programs';
 import { MEMORY_MAP } from '@/lib/memory_map';
 import { compileFile } from '@/lib/compiler';
 import { U16 } from '@/lib/integers';
-import { useComputer } from './Computer';
+import { useComputer } from './ComputerContext';
 
 import type { CompiledCode, OsInfo, ProgramInfo, u8 } from '@/types/cpu.types';
 

@@ -6,11 +6,11 @@ import { StorageDisk } from './StorageDisk/StorageDisk';
 import { LedsDisplay } from './LedsDisplay/LedsDisplay';
 import { compileCode } from '@/lib/compiler';
 import { Buzzer } from './Buzzer/Buzzer';
-import { useComputer } from '../Computer/Computer';
+import { useComputer } from '../Computer/ComputerContext';
 
 import type { Device, IoDevice, u16, u8 } from '@/types/cpu.types';
 
-import ledTestCodeSource from '@/asm/devices/led/led_test.asm?raw'
+import ledTestCodeSource from '@/asm/os/devices/led/led.lib.test.asm?raw'
 
 
 const validDeviceTypes = ['Input', 'DiskStorage', 'Display', 'Audio', 'Time', 'Random', 'Interrupt'];

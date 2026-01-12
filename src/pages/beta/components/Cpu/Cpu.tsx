@@ -5,7 +5,7 @@ import * as cpuApi from '../../api/api';
 import { Clock } from './Clock';
 
 import type { u16, u8 } from '@/types/cpu.types';
-import { useComputer } from '../Computer/Computer';
+import { useComputer } from '../Computer/ComputerContext';
 import { Interrupt } from './Interrupt';
 
 

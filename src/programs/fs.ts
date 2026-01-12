@@ -16,8 +16,8 @@ export const FS_CREATE_FILE_COMPILED: ProgramInfo = {
     name: "FS: Create File (liveCompiled ts)",
     description: "Créer fichier TEST.TXT avec contenu",
     code: new Map,
-    filepath: 'fs/create_file_demo.asm',
-    //filepath: 'fs/create_file_demo.asm.ts',
+    filepath: 'misc/fs/create_file_demo.asm',
+    //filepath: 'misc/fs/create_file_demo.asm.ts',
 };
 
 
@@ -613,7 +613,7 @@ export const DISK_SIZE: ProgramInfo = {
     name: "Disk size",
     description: "Affiche la taille d'un disque",
     code: new Map,
-    filepath: 'fs/disk_size.asm',
+    filepath: 'misc/fs/disk_size.asm',
 };
 
 

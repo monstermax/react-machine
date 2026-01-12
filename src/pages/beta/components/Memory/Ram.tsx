@@ -7,7 +7,7 @@ import { compileFile } from '@/lib/compiler';
 import { MEMORY_MAP } from '@/lib/memory_map';
 import { U16 } from '@/lib/integers';
 import { programs } from '@/lib/programs';
-import { useComputer } from '../Computer/Computer';
+import { useComputer } from '../Computer/ComputerContext';
 
 import type { OsInfo, ProgramInfo, u16, u8 } from '@/types/cpu.types';
 

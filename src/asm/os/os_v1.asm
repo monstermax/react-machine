@@ -1,18 +1,22 @@
 
-@include os/lib_os_v1.asm
+@include os/os_v1_lib.asm
 
 
 OS_START:
 
 MAIN:
-    CALL $LEDS_ON
+    CALL $LEDS_ON # Allume les LEDs
+    CALL $CONSOLE_HELLO_WORLD # Affiche Hello World sur la console
 
     WAIT_FOR_PROGRAM:
         MOV_A_MEM MEMORY_MAP.PROGRAM_START
         JZ $WAIT_FOR_PROGRAM # Si = 0, boucler
 
+    # Programme trouvé
+
+    CALL $LEDS_OFF # Eteint les LEDs
+
     RUN_PROGRAM:
-        CALL $LEDS_OFF
         SET_FREQ 10
         CALL MEMORY_MAP.PROGRAM_START # Lance le programme
 

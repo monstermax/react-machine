@@ -1,14 +1,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-//import { BOOTLOADER } from "@/programs/bootloader";
 import { toHex } from "@/lib/integers";
 import { compileCode } from "@/lib/compiler";
 import { MEMORY_MAP } from "@/lib/memory_map";
 
 import type { u16, u8 } from "@/types/cpu.types";
 
-import BootloaderSourceCode from '@/asm/boot/bootloader.asm?raw'
+import BootloaderSourceCode from '@/asm/bootloader/bootloader_v1.asm?raw'
 
 
 export const useRom = (): RomHook => {

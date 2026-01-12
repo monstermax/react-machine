@@ -5,7 +5,7 @@ import * as cpuApi from '../../api/api';
 import { isROM } from '@/lib/memory_map';
 import { buildMemoryInstructionMap, getOpcodeName } from '@/lib/instructions';
 import { U16 } from '@/lib/integers';
-import { useComputer } from '../Computer/Computer';
+import { useComputer } from '../Computer/ComputerContext';
 
 import type { u16, u8 } from '@/types/cpu.types';
 

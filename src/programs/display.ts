@@ -11,7 +11,7 @@ export const programs: Record<string, ProgramInfo> = {
         name: "LED TEST (liveCompiled)",
         description: "Allume les LEDs",
         code: new Map,
-        filepath: 'devices/led/led_test.asm',
+        filepath: 'os/devices/led/led.lib.test.asm',
     },
     leds_test: {
         name: "LED TEST",
@@ -159,7 +159,7 @@ export const programs: Record<string, ProgramInfo> = {
         name: "Hello World (liveCompiled)",
         description: "Affiche 'Hello World!' dans la console",
         code: new Map(),
-        filepath: 'console/console_hello.asm',
+        filepath: 'misc/console/console_hello.asm',
     },
 
     hello_world: {
