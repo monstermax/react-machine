@@ -4,7 +4,7 @@ import { compileCode } from "@/lib/compiler";
 
 import type { u16, u8 } from "@/types/cpu.types";
 
-import BootloaderSourceCode from '@/programs/asm/boot/bootloader.asm?raw'
+import BootloaderSourceCode from '@/asm/boot/bootloader.asm?raw'
 
 
 // TODO: bootloader v2 qui copie le contenu de osDisk en RAM puis boot dessus

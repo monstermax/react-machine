@@ -43,6 +43,7 @@ export class StorageDisk extends EventEmitter {
 
 
     formatDisk() {
+        this.eraseDisk();
         this.fs.initializeFileSystem(true);
 
         this.emit('state', { storage: this.storage })

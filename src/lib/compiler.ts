@@ -9,8 +9,8 @@ import type { CompiledCode, CompiledCodeComments, CompiledCodeLabels, PreCompile
 
 export async function loadSourceCodeFromFile(sourceFile: string): Promise<string> {
     const sourceCodeModule = sourceFile.endsWith('.ts')
-        ? await import(`../programs/asm/${sourceFile}`)
-        : await import(`../programs/asm/${sourceFile}?raw`);
+        ? await import(`../asm/${sourceFile}`)
+        : await import(`../asm/${sourceFile}?raw`);
     const sourceCode = sourceCodeModule.default;
     return sourceCode;
     //const compiled = compileCode(sourceCode, memoryOffset);

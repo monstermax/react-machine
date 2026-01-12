@@ -24,7 +24,7 @@ import { Interrupt } from './beta/components/Cpu/Interrupt';
 import { compileCode } from '@/lib/compiler';
 import { MEMORY_MAP } from '@/lib/memory_map';
 
-import BootloaderSourceCode from '@/programs/asm/boot/bootloader.asm?raw'
+import BootloaderSourceCode from '@/asm/boot/bootloader.asm?raw'
 import type { u16, u8 } from '@/types/cpu.types';
 
 

@@ -8,7 +8,7 @@ import { MEMORY_MAP } from "@/lib/memory_map";
 
 import type { u16, u8 } from "@/types/cpu.types";
 
-import BootloaderSourceCode from '@/programs/asm/boot/bootloader.asm?raw'
+import BootloaderSourceCode from '@/asm/boot/bootloader.asm?raw'
 
 
 export const useRom = (): RomHook => {

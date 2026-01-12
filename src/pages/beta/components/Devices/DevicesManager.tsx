@@ -10,7 +10,7 @@ import { useComputer } from '../Computer/Computer';
 
 import type { Device, IoDevice, u16, u8 } from '@/types/cpu.types';
 
-import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
+import ledTestCodeSource from '@/asm/devices/led/led_test.asm?raw'
 
 
 const validDeviceTypes = ['Input', 'DiskStorage', 'Display', 'Audio', 'Time', 'Random', 'Interrupt'];

@@ -5,9 +5,6 @@ import { MEMORY_MAP } from "@/lib/memory_map";
 
 import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
-//import ledTestCodeSource from '@/programs/asm/devices/led/led_test.asm?raw'
-
-
 
 export const programs: Record<string, ProgramInfo> = {
     leds_test_2: {
