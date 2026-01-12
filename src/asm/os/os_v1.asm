@@ -11,7 +11,7 @@ MAIN:
     CALL $CONSOLE_HELLO_WORLD # Affiche Hello World sur la console
 
     WAIT_FOR_PROGRAM:
-        MOV_A_MEM MEMORY_MAP.PROGRAM_START
+        MOV_A_MEM @PROGRAM_START
         JZ $WAIT_FOR_PROGRAM # Si = 0, boucler
 
     # Programme trouvé
@@ -20,12 +20,12 @@ MAIN:
 
     RUN_PROGRAM:
         SET_FREQ 10
-        CALL MEMORY_MAP.PROGRAM_START # Lance le programme
+        CALL @PROGRAM_START # Lance le programme
 
     PROGRAM_RETURN:
         SET_FREQ 5
         MOV_A_IMM 0x00
-        MOV_MEM_A MEMORY_MAP.PROGRAM_START # Unload Program
+        MOV_MEM_A @PROGRAM_START # Unload Program
 
         JMP $WAIT_FOR_PROGRAM # Retour à WAIT_FOR_PROGRAM
 

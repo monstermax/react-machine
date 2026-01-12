@@ -350,6 +350,8 @@ function replaceMemoryMapAddresses(parts: {opcode: string, value: string, commen
 
     let valuePart = parts.value;
 
+    valuePart = valuePart.replace('@', 'MEMORY_MAP.');
+
     if (valuePart && valuePart.includes('MEMORY_MAP.')) {
         // Recherche de toutes les références MEMORY_MAP dans la chaîne
         const regex = /MEMORY_MAP\.(\w+)/g;

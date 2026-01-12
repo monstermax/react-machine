@@ -30,21 +30,21 @@ MAIN:
 WRITE_FILENAME:
     PUSH_A
     MOV_A_IMM 0x54 # "T"
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_FILENAME
+    MOV_MEM_A @DATA_DISK_FS_FILENAME
     MOV_A_IMM 0x45 # "E"
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_FILENAME
+    MOV_MEM_A @DATA_DISK_FS_FILENAME
     MOV_A_IMM 0x53 # "S"
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_FILENAME
+    MOV_MEM_A @DATA_DISK_FS_FILENAME
     MOV_A_IMM 0x54 # "T"
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_FILENAME
+    MOV_MEM_A @DATA_DISK_FS_FILENAME
     MOV_A_IMM 0x2E # "."
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_FILENAME
+    MOV_MEM_A @DATA_DISK_FS_FILENAME
     MOV_A_IMM 0x54 # "T"
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_FILENAME
+    MOV_MEM_A @DATA_DISK_FS_FILENAME
     MOV_A_IMM 0x58 # "X"
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_FILENAME
+    MOV_MEM_A @DATA_DISK_FS_FILENAME
     MOV_A_IMM 0x54 # "T"
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_FILENAME
+    MOV_MEM_A @DATA_DISK_FS_FILENAME
     POP_A
     RET
 
@@ -53,8 +53,8 @@ CREATE_COMMAND:
     PUSH_A
     CALL $WRITE_FILENAME # Call WRITE_FILENAME
     MOV_A_IMM 0x91 # Commande CREATE
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_COMMAND
-    MOV_A_MEM MEMORY_MAP.DATA_DISK_FS_COMMAND # Vérifier résultat
+    MOV_MEM_A @DATA_DISK_FS_COMMAND
+    MOV_A_MEM @DATA_DISK_FS_COMMAND # Vérifier résultat
     POP_A
     RET
 
@@ -63,7 +63,7 @@ OPEN_FILE:
     PUSH_A
     CALL $WRITE_FILENAME # Call WRITE_FILENAME
     MOV_A_IMM 0x92 # Command OPEN
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_COMMAND
+    MOV_MEM_A @DATA_DISK_FS_COMMAND
     POP_A
     RET
 
@@ -71,7 +71,7 @@ OPEN_FILE:
 CLOSE_FILE:
     PUSH_A
     MOV_A_IMM 0x93 # Command CLOSE
-    MOV_MEM_A MEMORY_MAP.DATA_DISK_FS_COMMAND
+    MOV_MEM_A @DATA_DISK_FS_COMMAND
     POP_A
     RET
 
@@ -81,21 +81,21 @@ WRITE_FILE_CONTENT:
 
     READ_DISK_SIZE:
         #MOV_A_IMM 0x26 # initialise la taille du contenu a lire (hardcodé)
-        MOV_A_MEM MEMORY_MAP.DATA_DISK_2_SIZE_LOW  # Lit la taille du disque - A = low byte DATA_DISK_2_SIZE
-        MOV_C_MEM MEMORY_MAP.DATA_DISK_2_SIZE_HIGH # Lit la taille du disque - C = low byte DATA_DISK_2_SIZE
+        MOV_A_MEM @DATA_DISK_2_SIZE_LOW  # Lit la taille du disque - A = low byte DATA_DISK_2_SIZE
+        MOV_C_MEM @DATA_DISK_2_SIZE_HIGH # Lit la taille du disque - C = low byte DATA_DISK_2_SIZE
 
     MOV_B_IMM 0x00 # initialise la position du curseur
-    MOV_MEM_B MEMORY_MAP.DATA_DISK_2_ADDR_LOW   # initialise position dans le contenu à parcourir - low
-    MOV_MEM_B MEMORY_MAP.DATA_DISK_2_ADDR_HIGH  # initialise position dans le contenu à parcourir - high
+    MOV_MEM_B @DATA_DISK_2_ADDR_LOW   # initialise position dans le contenu à parcourir - low
+    MOV_MEM_B @DATA_DISK_2_ADDR_HIGH  # initialise position dans le contenu à parcourir - high
 
     WRITE_FILE_CONTENT_LOOP:
         PUSH_A
-        MOV_D_MEM MEMORY_MAP.DATA_DISK_2_DATA # Read dataDisk2 (raw)
+        MOV_D_MEM @DATA_DISK_2_DATA # Read dataDisk2 (raw)
 
-        MOV_MEM_D MEMORY_MAP.DATA_DISK_FS_DATA # Write dataDisk (fs)
+        MOV_MEM_D @DATA_DISK_FS_DATA # Write dataDisk (fs)
 
         INC_B   # update position du curseur
-        MOV_MEM_B MEMORY_MAP.DATA_DISK_2_ADDR_LOW   # update position dans le contenu à parcourir - low
+        MOV_MEM_B @DATA_DISK_2_ADDR_LOW   # update position dans le contenu à parcourir - low
 
         SUB
         POP_A
@@ -108,9 +108,9 @@ WRITE_FILE_CONTENT:
 PLAY_SOUND:
     PUSH_A
     MOV_A_IMM 45 # Fréquence = 440 Hz → valeur ≈ (440-100)/7.45 ≈ 45
-    MOV_MEM_A MEMORY_MAP.BUZZER_FREQ
+    MOV_MEM_A @BUZZER_FREQ
     MOV_A_IMM 50 # Durée = 500ms → 500/10 = 50
-    MOV_MEM_A MEMORY_MAP.BUZZER_DURATION # déclenche le son
+    MOV_MEM_A @BUZZER_DURATION # déclenche le son
     POP_A
     RET
 
@@ -120,7 +120,7 @@ LOAD_FILE_IN_RAM:
 
     READ_DISK_SIZE:
         #MOV_B_IMM 0x25    # initialise la taille du contenu a lire (hardcodé)
-        MOV_B_MEM MEMORY_MAP.DATA_DISK_2_SIZE_LOW  # Lit la taille du disque - low byte dans B
+        MOV_B_MEM @DATA_DISK_2_SIZE_LOW  # Lit la taille du disque - low byte dans B
         # TODO: lire la taille du fichier FS
 
     #MOV_B_IMM 0x00    # initialise la position du curseur FS (lecture) - B = position FS
@@ -129,7 +129,7 @@ LOAD_FILE_IN_RAM:
     CALL $OPEN_FILE # Call OPEN_FILE
 
     LOAD_FILE_IN_RAM_LOOP:
-        MOV_A_MEM MEMORY_MAP.DATA_DISK_FS_DATA     # Lecture octet sur FS
+        MOV_A_MEM @DATA_DISK_FS_DATA     # Lecture octet sur FS
         MOV_PTR_CD_A     # Ecriture octet dans RAM à 0X2000
 
         INC_C   # update position du curseur RAM - low
