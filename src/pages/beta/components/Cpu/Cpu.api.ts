@@ -11,6 +11,10 @@ import type { Register, Register16, u16, u8 } from "@/types/cpu.types";
 import type { Interrupt } from "./Interrupt.api";
 
 
+// Adresses: 16 bits
+// Data: 8 bits
+
+
 export const initialRegisters = [
         ["A", 0 as u8],      // Register A
         ["B", 0 as u8],      // Register B

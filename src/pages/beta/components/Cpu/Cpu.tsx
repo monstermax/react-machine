@@ -12,13 +12,14 @@ import { Interrupt } from './Interrupt';
 export type CpuProps = {
     hidden?: boolean,
     threads?: number,
+    type?: string,
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Cpu) => void,
 }
 
 
 export const Cpu: React.FC<CpuProps> = (props) => {
-    const { hidden, threads: threadsCount, children, onInstanceCreated } = props;
+    const { hidden, threads: threadsCount, type: cpuType, children, onInstanceCreated } = props;
     const { cpuRef, ramRef, memoryBusRef, devicesManagerRef } = useComputer();
 
     // Core
@@ -41,6 +42,11 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     // Instanciate CPU
     useEffect(() => {
         const _instanciateCpu = () => {
+
+            //if (cpuType === 'Z80') {
+            //    const cpu = new cpuApi.CpuZ80;
+            //}
+
             const cpu = new cpuApi.Cpu;
             setCpuInstance(cpu);
 
