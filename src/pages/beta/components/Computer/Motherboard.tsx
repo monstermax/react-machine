@@ -35,7 +35,11 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
     // Instanciate MotherBoard
     useEffect(() => {
         if (!computerRef) return;
-        if (motherBoardRef.current) return;
+
+        if (motherBoardRef.current) {
+            setMotherBoardInstance(motherBoardRef.current);
+            return;
+        }
 
         const _instanciateMotherBoard = () => {
             const motherBoardInstance = new cpuApi.Motherboard;

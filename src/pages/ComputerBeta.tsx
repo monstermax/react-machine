@@ -53,7 +53,7 @@ export const ComputerBeta: React.FC = () => {
             </h1>
 
             <div>
-                <Computer >
+                <Computer>
                     <Motherboard>
                         <Cpu>
                             <Clock frequency={10} />
