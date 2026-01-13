@@ -1,7 +1,9 @@
 
 @include os/memory/malloc.lib.asm
+@include os/arithmetic/math2.lib.asm
 
-@define8 ASCII_EOF 0x0A
+
+@define8 ASCII_EOL 0x0A
 @define8 ASCII_SPACE 0x20
 @define8 ASCII_EXCLAM 0x21
 
@@ -60,20 +62,27 @@
 @define8 ASCII_z 0x7A
 
 
-#TEXT_DEMO:
-#    DB YOP "YoP!"
+TEXT_DEMO:
+    .string "Demo:OK"
 
-#CONSOLE_PRINT_STRING_DEMO:
-#    MOV_C_IMM <$TEXT
-#    MOV_D_IMM >$TEXT
-#    MOV_B_IMM 0x04
-#    CALL $CONSOLE_PRINT_STRING()
-#    RET
+
+CONSOLE_PRINT_STRING_DEMO_2():
+    BREAKPOINT
+    MOV_C_IMM <$TEXT_DEMO
+    MOV_D_IMM >$TEXT_DEMO
+    MOV_B_IMM 0x08
+    CALL $CONSOLE_PRINT_STRING()
+    RET
+
+
+STR_YOP:
+    .string "YooP"
 
 
 CONSOLE_PRINT_STRING_DEMO():
-    # Allouer 4 bytes pour "YOP!"
-    MOV_A_IMM 0x04
+    # Allouer 5 bytes pour "YOP!\n"
+    MOV_A_IMM 0x05
+    PUSH_A
     CALL $MALLOC()
     # C:D = adresse du buffer
 
@@ -90,26 +99,18 @@ CONSOLE_PRINT_STRING_DEMO():
     MOV_A_IMM $ASCII_EXCLAM
     CALL $WRITE_CHAR_AND_INC # !
 
-    # Reculer pointeur au début (soustraire 4)
-    MOV_A_IMM 0x04
-    CALL $SUB16_CD_A
+    MOV_A_IMM $ASCII_EOL
+    CALL $WRITE_CHAR_AND_INC # EOL
+
+    # Reculer pointeur au début (soustraire 5)
+    POP_A
+    PUSH_A
+    CALL $SUB16_CD_A()
 
     # Afficher
-    MOV_B_IMM 0x04
+    POP_B
     CALL $CONSOLE_PRINT_STRING()
     RET
-
-
-# Helper: C:D -= A
-SUB16_CD_A:
-    PUSH_A
-    MOV_BA
-    MOV_AC
-    SUB         # A = C - B
-    MOV_CA
-    POP_A
-    RET
-
 
 
 
@@ -132,9 +133,6 @@ CONSOLE_PRINT_STRING():
         JNZ $DEQUEUE
 
     CONSOLE_PRINT_STRING_END:
-        MOV_A_IMM $ASCII_EOF
-        MOV_MEM_A @CONSOLE_CHAR
-
         RET
 
 
@@ -159,7 +157,7 @@ CONSOLE_PRINT_OK():
     MOV_A_IMM $ASCII_K        # K
     MOV_MEM_A @CONSOLE_CHAR
 
-    MOV_A_IMM $ASCII_EOF      # \n
+    MOV_A_IMM $ASCII_EOL      # \n
     MOV_MEM_A @CONSOLE_CHAR
 
     RET
@@ -172,7 +170,7 @@ CONSOLE_PRINT_KO():
     MOV_A_IMM $ASCII_O        # O
     MOV_MEM_A @CONSOLE_CHAR
 
-    MOV_A_IMM $ASCII_EOF      # \n
+    MOV_A_IMM $ASCII_EOL      # \n
     MOV_MEM_A @CONSOLE_CHAR
 
     RET
@@ -218,7 +216,7 @@ CONSOLE_PRINT_START_PROGRAM():
     MOV_A_IMM $ASCII_M        # M
     MOV_MEM_A @CONSOLE_CHAR
 
-    MOV_A_IMM $ASCII_EOF      # \n
+    MOV_A_IMM $ASCII_EOL      # \n
     MOV_MEM_A @CONSOLE_CHAR
 
     RET
@@ -261,7 +259,7 @@ CONSOLE_PRINT_STOP_PROGRAM():
     MOV_A_IMM $ASCII_M        # M
     MOV_MEM_A @CONSOLE_CHAR
 
-    MOV_A_IMM $ASCII_EOF      # \n
+    MOV_A_IMM $ASCII_EOL      # \n
     MOV_MEM_A @CONSOLE_CHAR
 
     RET
@@ -283,7 +281,7 @@ CONSOLE_PRINT_ERROR():
     MOV_A_IMM $ASCII_R        # R
     MOV_MEM_A @CONSOLE_CHAR
 
-    MOV_A_IMM $ASCII_EOF      # \n
+    MOV_A_IMM $ASCII_EOL      # \n
     MOV_MEM_A @CONSOLE_CHAR
 
     RET
@@ -328,7 +326,7 @@ CONSOLE_PRINT_HELLO_WORLD():
     MOV_A_IMM $ASCII_EXCLAM # !
     MOV_MEM_A @CONSOLE_BASE
 
-    MOV_A_IMM $ASCII_EOF # EOF
+    MOV_A_IMM $ASCII_EOL # EOF
     MOV_MEM_A @CONSOLE_BASE
 
     RET

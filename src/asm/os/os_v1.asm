@@ -10,18 +10,23 @@
 OS_START:
 
 MAIN:
+    SET_FREQ 20
     CALL $MALLOC_INIT()
 
-#    CALL $LEDS_ON # Allume les LEDs
+    CALL $LEDS_ON # Allume les LEDs
 
-    CALL $CONSOLE_PRINT_STRING_DEMO()
+    #CALL $CONSOLE_PRINT_STRING_DEMO_2()
+    #CALL $CONSOLE_PRINT_STRING_DEMO()
 #    CALL $CONSOLE_PRINT_HELLO_WORLD() # Affiche Hello World sur la console
+
+    SET_FREQ 5
 
     WAIT_FOR_PROGRAM:
         MOV_A_MEM @PROGRAM_START
         JZ $WAIT_FOR_PROGRAM # Si = 0, boucler
 
     # Programme trouvé
+    SET_FREQ 20
 
     CALL $LEDS_OFF # Eteint les LEDs
 

@@ -96,16 +96,16 @@ export const CompilePage: React.FC = () => {
 
     const handleCompile = async () => {
         try {
-            const result: PreCompiledCode = await preCompileCode(sourceCode, compileMemoryOffsetUint);
+            const result = await preCompileCode(sourceCode, compileMemoryOffsetUint);
 
             //const result2 = await compileCode(sourceCode, compileMemoryOffsetUint);
             //const { code, comments, labels } = result2;
             //console.log('result2:', result2)
 
-            setCompiledCode(result);
+            setCompiledCode(result.code);
 
             // Initialiser le contenu éditable
-            setEditableCode(formatCompiledCodeArray(result));
+            setEditableCode(formatCompiledCodeArray(result.code));
             setEditError("");
 
         } catch (error) {

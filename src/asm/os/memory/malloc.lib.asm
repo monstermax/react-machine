@@ -1,4 +1,6 @@
 
+@include os/arithmetic/math.lib.asm
+
 
 # ============================================
 # MALLOC - Allouer de la mémoire dynamique
@@ -21,7 +23,7 @@ MALLOC():
 
     # ÉTAPE 3: Avancer le heap pointer de A bytes
     # (pour que le prochain malloc commence après)
-    CALL $ADD16_CD_A    # C:D = C:D + A
+    CALL $ADD16_CD_A()    # C:D = C:D + A
 
     # ÉTAPE 4: Écrire le nouveau heap pointer en mémoire
     MOV_MEM_C @MALLOC_HEAP_PTR_LOW    # Écrire nouveau low byte
@@ -52,32 +54,4 @@ MALLOC_INIT():
 
     RET
 
-
-
-
-# ADD16_CD_A: Additionner A à C:D (16-bit)
-# Input:  C:D = valeur 16-bit, A = valeur 8-bit à ajouter
-# Output: C:D = C:D + A
-# Flags:  Carry si overflow
-
-ADD16_CD_A:
-    # Sauvegarder A
-    PUSH_A
-
-    # Additionner A à C (low byte)
-    MOV_BA              # B = A
-    MOV_AC              # A = C
-    ADD                 # A = A + B (A = C + size)
-    MOV_CA              # C = résultat low
-
-    # Si carry, incrémenter D (high byte)
-    JNC $ADD16_CD_A_END
-    INC_D
-
-
-
-ADD16_CD_A_END:
-    # Restaurer A
-    POP_A
-    RET
 

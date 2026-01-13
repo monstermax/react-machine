@@ -37,10 +37,10 @@ export async function compileFile(filePath: string, memoryOffset: u16 = 0 as u16
 export async function compileCode(inputCode: string, memoryOffset: u16 = 0 as u16): Promise<{ code: CompiledCode, comments: CompiledCodeComments, labels: CompiledCodeLabels }> {
 
     // Compile le code (au format PreCompiledCode)
-    const stage2: PreCompiledCode = await preCompileCode(inputCode, memoryOffset)
+    const stage2: { code: PreCompiledCode, includedFiles: string[] } = await preCompileCode(inputCode, memoryOffset)
 
     // Converti en format final (CompiledCode + CompiledCodeComments + CompiledCodeLabels)
-    const codeArr: [line: u16, code: u8][] = stage2.map(codeParts => {
+    const codeArr: [line: u16, code: u8][] = stage2.code.map(codeParts => {
         const val = [
             codeParts[0],
             (new Function('Opcode', 'return ' + codeParts[1]))(Opcode),
@@ -49,26 +49,26 @@ export async function compileCode(inputCode: string, memoryOffset: u16 = 0 as u1
     });
 
     const code: CompiledCode = new Map<u16, u8>(codeArr);
-    const comments: CompiledCodeComments = stage2.map(codeParts => [codeParts[0], codeParts[2]] as [line: u16, comment: string]);
-    const labels: CompiledCodeLabels = stage2.map(codeParts => [codeParts[0], codeParts[3]] as [line: u16, labels: string[]]);
+    const comments: CompiledCodeComments = stage2.code.map(codeParts => [codeParts[0], codeParts[2]] as [line: u16, comment: string]);
+    const labels: CompiledCodeLabels = stage2.code.map(codeParts => [codeParts[0], codeParts[3]] as [line: u16, labels: string[]]);
 
     return { code, comments, labels };
 }
 
 
-export async function preCompileFile(filePath: string, memoryOffset: u16 = 0 as u16, linesOffset: u16 = 0 as u16): Promise<PreCompiledCode> {
+export async function preCompileFile(filePath: string, memoryOffset: u16 = 0 as u16, linesOffset: u16 = 0 as u16, preIncludedFiles: string[]=[], preCodeLabels: Map<string, u16>=new Map): Promise<{ code: PreCompiledCode, includedFiles: string[], codeLabels: Map<string, u16> }> {
     const sourceCode = await loadSourceCodeFromFile(filePath);
-    const preCompiled = await preCompileCode(sourceCode, memoryOffset, linesOffset);
+    const preCompiled = await preCompileCode(sourceCode, memoryOffset, linesOffset, preIncludedFiles, preCodeLabels);
     return preCompiled;
 }
 
 
-export async function preCompileCode(inputCode: string, memoryOffset: u16 = 0 as u16, linesOffset: u16 = 0 as u16): Promise<PreCompiledCode> {
+export async function preCompileCode(inputCode: string, memoryOffset: u16 = 0 as u16, linesOffset: u16 = 0 as u16, preIncludedFiles: string[]=[], preCodeLabels: Map<string, u16>=new Map): Promise<{ code: PreCompiledCode, includedFiles: string[], codeLabels: Map<string, u16> }> {
 
     const preCompiledStage1 = preCompileStage1(inputCode)
     //console.log('compile preCompiledStage1:', preCompiledStage1)
 
-    const preCompiled: PreCompiledCode = await preCompileStage2(preCompiledStage1, memoryOffset, linesOffset)
+    const preCompiled: { code: PreCompiledCode, includedFiles: string[], codeLabels: Map<string, u16> } = await preCompileStage2(preCompiledStage1, memoryOffset, linesOffset, preIncludedFiles, preCodeLabels)
     //console.log('compile preCompiled:', preCompiled)
 
     return preCompiled;
@@ -77,32 +77,16 @@ export async function preCompileCode(inputCode: string, memoryOffset: u16 = 0 as
 
 function preCompileStage1(code: string): { opcode: string, params: string[], comment: string }[] {
 
-    /* == INPUT ==
-    :INIT
-    SET_SP MEMORY_MAP.STACK_END
-    MOV_A_IMM 0x01 # Commande clear
-    MOV_MEM_A MEMORY_MAP.LCD_COMMAND
-    */
-
-    /* == OUTPUT ==
-    [
-      [ '0001', 'SET_SP', '0xfeff' ],
-      [ '0002', 'MOV_A_IMM', '0x01' ],
-    ]
-    */
-
-
+    // Step 1 : String to Lines Array + Discard empty lines + Discard comment lines
     const step1: string[] = code
         .split('\n') // split lines
         .filter(line => line.trim() && !line.trim().startsWith('#')) // discard empty lines
-    //.map(line => line.split('#')[0]?.split('//')[0]?.trim().replace(/\s+/g, ' ') ?? '') // remove comments
-    /*
-        const step2 = step1
-            .map(line => line.split(' '))
-            .map(parts => [...parts.slice(0, 1), parts.slice(1).join(' ').trim()]) // merge arguments
-    */
 
-    const step2: { opcode: string, params: string[], comment: string }[] = [];
+
+    type Stage1Line = { opcode: string, params: string[], comment: string };
+
+    // Step 2: Parse Each line at format : { opcode: string, params: string[], comment: string }
+    const step2: Stage1Line[] = [];
 
     for (const line of step1) {
         const partsComment = line.split('#');
@@ -115,33 +99,61 @@ function preCompileStage1(code: string): { opcode: string, params: string[], com
             opcode: partsTmp[0] || -1,
             params: partsTmp.slice(1).join(' ').trim().split(' '),
             comment,
-        } as { opcode: string, params: string[], comment: string }
+        } as Stage1Line
 
         step2.push(parts);
     }
 
-    const step3: { opcode: string, params: string[], comment: string }[] = step2
+    // Step3: Replace MemoryMapAddresses (16bit or 8bit using "<" or ">" modifier)
+    const step3: Stage1Line[] = step2
         .map(replaceMemoryMapAddresses)
 
     return step3;
 }
 
 
-function pushString(str: string): PreCompiledCode {
-    debugger;
-    const result: PreCompiledCode = [];
+function pushString(str: string, asmLineNum: u16): PreCompiledCode {
+    const linesInstructions: PreCompiledCode = [];
 
-    return result;
+    for (const char of str.split('')) {
+
+        const lineInstruction: PreCompiledCode[number] = [
+            asmLineNum,
+            toHex(char.charCodeAt(0)),
+            char,
+            [],
+        ];
+
+        linesInstructions.push(lineInstruction);
+
+        asmLineNum++;
+    }
+
+    if (true) {
+        const lineInstruction: PreCompiledCode[number] = [
+            asmLineNum,
+            toHex('\n'.charCodeAt(0)),
+            '\n',
+            [],
+        ];
+
+        linesInstructions.push(lineInstruction);
+
+        asmLineNum++;
+    }
+
+    return linesInstructions;
 }
 
 
-async function preCompileStage2(stage1: { opcode: string, params: string[], comment: string }[], memoryOffset: u16, linesOffset: u16): Promise<PreCompiledCode> {
+async function preCompileStage2(stage1: { opcode: string, params: string[], comment: string }[], memoryOffset: u16, linesOffset: u16, preIncludedFiles: string[]=[], preCodeLabels: Map<string, u16>=new Map): Promise<{ code: PreCompiledCode, includedFiles: string[], codeLabels: Map<string, u16> }> {
     const stage2Step1: PreCompiledCode = [];
     let asmLineNum = linesOffset as u16;
     let currentLabels: string[] = [];
     const includedFiles: string[] = []
     const defines: Map<string, { bytes: number, value: string }> = new Map
-    const strings: Map<string, string> = new Map
+    const strings: Map<string, u16> = new Map
+    const codeLabels: Map<string, u16> = new Map;
 
 
     for (const lineParts of stage1) {
@@ -152,14 +164,41 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
         // 1. Decodage de l'instruction
 
         if (opcode === 'DB') {
+            //currentLabels = [];
+            //strings.set(value0, params[1]);
+            debugger;
+            continue;
+        }
+
+        if (opcode.startsWith('.')) {
+            if (opcode === '.string') {
+                const currentLabel = currentLabels.at(-1);
+
+                if (! currentLabel) {
+                    throw new Error(`Label not found for string "${currentLabel}"`)
+                }
+
+                const stringValue = value0.slice(1, -1);
+
+                const linesInstructions: PreCompiledCode = pushString(stringValue, asmLineNum);
+                stage2Step1.push(...linesInstructions)
+
+                strings.set(currentLabel, U16(memoryOffset + asmLineNum));
+                asmLineNum = U16(asmLineNum + linesInstructions.length);
+            }
+
             currentLabels = [];
-            strings.set(value0, params[1]);
             continue;
         }
 
         if (opcode.endsWith(':')) {
             // Declare new Label
             const labelName = opcode.slice(0, -1);
+
+            if (preCodeLabels.get(labelName) || codeLabels.get(labelName)) {
+                throw new Error(`Duplicate Label "${labelName}"`)
+            }
+
             currentLabels.push(labelName)
             continue;
         }
@@ -171,7 +210,9 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
 
             // Include file
             if (command === 'include') {
-                includedFiles.push(value0);
+                if (!preIncludedFiles.includes(value0)) {
+                    includedFiles.push(value0);
+                }
             }
 
             // Define constant
@@ -180,10 +221,14 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
             }
             if (command === 'define16') {
                 defines.set(value0, { bytes: 16, value: params[1] });
-                //if (valueTmp === 'HEAP_PTR') debugger
             }
 
             continue;
+        }
+
+
+        for (const label of currentLabels) {
+            codeLabels.set(label, asmLineNum);
         }
 
 
@@ -210,8 +255,13 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
 
         let weight: 'low' | 'high' | null = null;
         if (value0.startsWith('<') || value0.startsWith('>')) {
+            weight = value0.startsWith('<')
+                ? 'low'
+                : 'high';
+
             value0 = value0.slice(1);
         }
+
 
         if (value0.startsWith('$')) {
             value0 = value0.slice(1);
@@ -253,12 +303,51 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
 
 
             // Check If Strings
-            const str = strings.get(value0);
+            const stringLine = strings.get(value0);
 
-            if (str !== undefined) {
-                const linesInstructions: PreCompiledCode = pushString(str);
-                stage2Step1.push(...linesInstructions)
-                asmLineNum = U16(asmLineNum + linesInstructions.length);
+            if (stringLine !== undefined) {
+                //debugger
+
+                if (weight === 'low') {
+                    const lineInstruction: PreCompiledCode[number] = [
+                        asmLineNum,
+                        toHex(low16(stringLine)),
+                        `Address of String $${value0} (low)`,
+                        [],
+                    ];
+                    stage2Step1.push(lineInstruction)
+                    asmLineNum = U16(asmLineNum + 1);
+
+                } else if (weight === 'high') {
+                    const lineInstruction: PreCompiledCode[number] = [
+                        asmLineNum,
+                        toHex(high16(stringLine)),
+                        `Address of String $${value0} (high)`,
+                        [],
+                    ];
+                    stage2Step1.push(lineInstruction)
+                    asmLineNum = U16(asmLineNum + 1);
+
+                } else {
+                    const lineInstruction1: PreCompiledCode[number] = [
+                        asmLineNum,
+                        toHex(low16(stringLine)),
+                        `Address of String $${value0} (low)`,
+                        [],
+                    ];
+                    stage2Step1.push(lineInstruction1)
+                    asmLineNum = U16(asmLineNum + 1);
+
+                    const lineInstruction2: PreCompiledCode[number] = [
+                        asmLineNum,
+                        toHex(high16(stringLine)),
+                        `Address of String $${value0} (high)`,
+                        [],
+                    ];
+                    stage2Step1.push(lineInstruction2)
+                    asmLineNum = U16(asmLineNum + 1);
+                }
+
                 continue;
             }
 
@@ -289,14 +378,20 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
     }
 
 
-    const debugData = stage2Step1.filter(s => s[1].includes('HEAP_PTR'))
-    if (debugData.length) debugger
-
 
     // Inclusion des fichiers @include
+    const postIncludedFiles: string[] = [];
+    const postCodeLabels: Map<string, u16> = new Map;
     for (const filePath of includedFiles) {
-        const preCompiled: PreCompiledCode = await preCompileFile(filePath, memoryOffset, U16(asmLineNum));
-        const lastLine = preCompiled.at(-1);
+        const tmpIncludedFiles = [...preIncludedFiles, ...includedFiles, ...postIncludedFiles];
+        const tmpCodeLabels = new Map([...preCodeLabels, ...codeLabels, ...postCodeLabels]);
+        const preCompiled: { code: PreCompiledCode, includedFiles: string[], codeLabels: Map<string, u16> } = await preCompileFile(filePath, memoryOffset, U16(asmLineNum), tmpIncludedFiles, tmpCodeLabels);
+
+        const lastLine = preCompiled.code.at(-1);
+
+        postIncludedFiles.push(...preCompiled.includedFiles)
+
+        preCompiled.codeLabels.forEach((line, label) => postCodeLabels.set(label, line))
 
         if (!lastLine) {
             console.log("Erreur compilation include");
@@ -305,12 +400,15 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
 
         asmLineNum = U16(lastLine[0] + 2);
 
-        stage2Step1.push(...preCompiled)
+        stage2Step1.push(...preCompiled.code)
     }
+
+    includedFiles.push(...postIncludedFiles);
 
 
     // Detection des doublons de labels
-    const uniqueLabels = new Set<string>;
+    const uniqueLabels = new Set<string>(preCodeLabels.keys());
+
     for (const item of stage2Step1) {
         let labels = item[3];
         if (!labels) continue;
@@ -388,7 +486,75 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
     });
 
 
-    return stage2Step2;
+    return { code: stage2Step2, includedFiles, codeLabels };
+}
+
+
+function replaceMemoryMapAddresses(lineParts: { opcode: string, params: string[], comment: string }): { opcode: string, params: string[], comment: string } {
+    let valueParts = lineParts.params;
+
+    for (let i = 0; i < valueParts.length; i++) {
+        let valuePart = valueParts[i];
+        let weight: 'low' | 'high' | null = null;
+
+        // Modifier (low/high)
+        if (valuePart.startsWith('<')) {
+            weight = 'low'
+            valuePart = valuePart.slice(1);
+
+        } else if (valuePart.startsWith('>')) {
+            weight = 'high'
+            valuePart = valuePart.slice(1);
+
+        }
+
+        // Convert "@" alias to "MEMORY_MAP." javascript variable
+        valuePart = valuePart.replace('@', 'MEMORY_MAP.');
+
+        if (valuePart !== '' && valuePart.includes('MEMORY_MAP.')) {
+            // Recherche de toutes les références MEMORY_MAP dans la chaîne
+            const regex = /MEMORY_MAP\.(\w+)/g;
+            let match;
+            let result = valuePart;
+
+            while ((match = regex.exec(valuePart)) !== null) {
+                const fullAddressName = match[0];
+                const addressKey = match[1];
+
+                if (addressKey && (addressKey in MEMORY_MAP)) {
+                    const memValue = MEMORY_MAP[addressKey as keyof typeof MEMORY_MAP];
+                    result = result.replace(fullAddressName, memValue.toString());
+
+                } else {
+                    console.warn(`Bad substitution`);
+                    break;
+                }
+            }
+
+
+            // Évaluer l'expression mathématique, pour obtenir la valeur numérique (d'une string hexa, de "MEMORY_MAP.*", d'un number, ou d'une expression javascript combinant toutes ces possibilités)
+            try {
+                const evaluatedValue = new Function("MEMORY_MAP", "return " + result)(MEMORY_MAP);
+                valuePart = toHex(evaluatedValue);
+
+                if (weight === 'low') valuePart = low16(Number(valuePart) as u16).toString()
+                if (weight === 'high') valuePart = high16(Number(valuePart) as u16).toString()
+
+                valueParts[i] = valuePart;
+
+            } catch (e) {
+                debugger
+                console.warn(`Could not evaluate expression: ${result}`);
+            }
+        }
+
+    }
+
+    return {
+        opcode: lineParts.opcode,
+        params: valueParts,
+        comment: lineParts.comment,
+    };
 }
 
 
@@ -488,76 +654,6 @@ function decompileStage2(inputCode: { line: string, opcode: string, value: strin
     }
 
     return outputCode.trim();
-}
-
-
-function replaceMemoryMapAddresses(parts: { opcode: string, params: string[], comment: string }): { opcode: string, params: string[], comment: string } {
-    //if (parts.value) {
-    //    return parts;
-    //}
-
-    let valueParts = parts.params;
-
-    for (let i = 0; i < valueParts.length; i++) {
-        let valuePart = valueParts[i];
-        let weight: 'low' | 'high' | null = null;
-
-        if (valuePart.startsWith('<')) {
-            weight = 'low'
-            valuePart = valuePart.slice(1);
-
-        } else if (valuePart.startsWith('>')) {
-            weight = 'high'
-            valuePart = valuePart.slice(1);
-
-        }
-
-        valuePart = valuePart.replace('@', 'MEMORY_MAP.');
-
-        if (valuePart && valuePart.includes('MEMORY_MAP.')) {
-            // Recherche de toutes les références MEMORY_MAP dans la chaîne
-            const regex = /MEMORY_MAP\.(\w+)/g;
-            let match;
-            let result = valuePart;
-
-            while ((match = regex.exec(valuePart)) !== null) {
-                const fullAddressName = match[0];
-                const addressKey = match[1];
-
-                if (addressKey && (addressKey in MEMORY_MAP)) {
-                    const memValue = MEMORY_MAP[addressKey as keyof typeof MEMORY_MAP];
-                    result = result.replace(fullAddressName, memValue.toString());
-
-                } else {
-                    console.warn(`Bad substitution`);
-                    break;
-                }
-            }
-            //console.log('result:', result)
-
-            // Évaluer l'expression mathématique complète
-            try {
-                const evaluatedValue = new Function("MEMORY_MAP", "return " + result)(MEMORY_MAP);
-                valuePart = toHex(evaluatedValue);
-
-                if (weight === 'low') valuePart = low16(Number(valuePart) as u16).toString()
-                if (weight === 'high') valuePart = high16(Number(valuePart) as u16).toString()
-
-                valueParts[i] = valuePart;
-
-            } catch (e) {
-                debugger
-                console.warn(`Could not evaluate expression: ${result}`);
-            }
-        }
-
-    }
-
-    return {
-        opcode: parts.opcode,
-        params: valueParts,
-        comment: parts.comment,
-    };
 }
 
 
