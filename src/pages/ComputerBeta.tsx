@@ -4,10 +4,10 @@ import { Link } from 'wouter';
 
 import { Computer } from './beta/components/Computer/ComputerContext';
 import { Cpu } from './beta/components/Cpu/Cpu';
-import { MemoryBus } from './beta/components/Memory/MemoryBus';
+import { Memory, MemoryBus } from './beta/components/Memory/MemoryBus';
 import { Ram } from './beta/components/Memory/Ram';
 import { Rom } from './beta/components/Memory/Rom';
-import { DevicesManager } from './beta/components/Devices/DevicesManager';
+import { Devices, DevicesManager } from './beta/components/Devices/DevicesManager';
 import { StorageDisk } from './beta/components/Devices/StorageDisk/StorageDisk';
 import { Clock } from './beta/components/Cpu/Clock';
 import { LedsDisplay } from './beta/components/Devices/LedsDisplay/LedsDisplay';
@@ -25,6 +25,8 @@ import { MEMORY_MAP } from '@/lib/memory_map';
 
 import BootloaderSourceCode from '@/asm/bootloader/bootloader_v1.asm?raw'
 import type { u16, u8 } from '@/types/cpu.types';
+import { Motherboard } from './beta/components/Computer/Motherboard';
+import { ComputerControls } from './beta/components/Computer/ComputerContainer';
 
 
 export const ComputerBeta: React.FC = () => {
@@ -52,19 +54,21 @@ export const ComputerBeta: React.FC = () => {
 
             <div>
                 <Computer >
-                    <Cpu threads={1}>
-                        {/* <Controls /> */}
-                        <Clock frequency={10} />
-                        {/* <Registers /> */}
-                        <Interrupt ioPort={4} hidden={false} />
-                    </Cpu>
+                    <Motherboard>
+                        <Cpu>
+                            <Clock frequency={10} />
+                            {/* <Registers /> */}
+                            <Interrupt ioPort={4} hidden={false} />
+                        </Cpu>
 
-                    <MemoryBus >
-                        <Rom data={bootloader} />
-                        <Ram />
-                    </MemoryBus>
+                        <Memory >
+                            <Rom data={bootloader} />
+                            <Ram />
+                            {/* <Io /> */}
+                        </Memory>
+                    </Motherboard>
 
-                    <DevicesManager >
+                    <Devices >
                         {/* Console */}
                         <Console ioPort={0x07} name="console" />
 
@@ -95,10 +99,13 @@ export const ComputerBeta: React.FC = () => {
                         {/* <Gpu /> */}
                         {/* <Network /> */}
 
-                    </DevicesManager>
+                    </Devices>
                 </Computer>
             </div>
         </div>
     );
 }
+
+
+
 

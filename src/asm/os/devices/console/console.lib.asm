@@ -63,13 +63,13 @@
 
 
 TEXT_DEMO:
-    .string "Demo:OK"
+    .string "Welcome_on_OS_v1"
 
 
 CONSOLE_PRINT_STRING_DEMO_2():
     MOV_C_IMM <$TEXT_DEMO
     MOV_D_IMM >$TEXT_DEMO
-    MOV_B_IMM 0x08
+    MOV_B_IMM 0x11
     CALL $CONSOLE_PRINT_STRING()
     RET
 

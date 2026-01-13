@@ -1,15 +1,14 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import type { Cpu } from "../Cpu/Cpu.api";
-import type { MemoryBus } from "../Memory/MemoryBus.api";
-import type { DevicesManager } from "../Devices/DevicesManager.api";
+import * as cpuApi from '../../api/api';
 
 
 export class Computer extends EventEmitter {
     public id: number;
-    public cpu: Cpu | null = null;
-    public memoryBus: MemoryBus | null = null;
+    public motherboard: cpuApi.Motherboard | null = null;
+    //public cpu: Cpu | null = null;
+    //public memoryBus: MemoryBus | null = null;
     public loadedOs: string | null = null;
     public loadedProgram: string | null = null;
 

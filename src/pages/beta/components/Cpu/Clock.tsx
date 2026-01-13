@@ -32,6 +32,8 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
     // Core
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
+
+    // Core Dependencies
     const cpuInstance = cpuRef.current;
 
     // UI
@@ -57,6 +59,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
                 }
             })
 
+            // Emit initial state
             setClockFrequency(clock.clockFrequency)
 
             //setInstanciated(true)

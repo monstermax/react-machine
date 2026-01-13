@@ -1,6 +1,7 @@
 
 // Computer
 export * from '../components/Computer/Computer.api';
+export * from '../components/Computer/Motherboard.api';
 
 // CPU
 export * from '../components/Cpu/Cpu.api';

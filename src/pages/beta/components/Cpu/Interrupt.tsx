@@ -26,7 +26,6 @@ export const Interrupt: React.FC<InterruptProps> = (props) => {
 
     // Core
     const [interruptInstance, setInterruptInstance] = useState<cpuApi.Interrupt | null>(null);
-    const cpuInstance = cpuRef.current;
 
     // UI
     const [enabled, setEnabled] = useState(0 as u8);      // IRQs activées
@@ -62,6 +61,10 @@ export const Interrupt: React.FC<InterruptProps> = (props) => {
                     setHandlerAddr(state.handlerAddr)
                 }
             })
+
+            // Emit initial state
+            // TODO
+
 
             //setInstanciated(true)
         }

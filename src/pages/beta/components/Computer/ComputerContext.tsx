@@ -10,6 +10,7 @@ const ComputerContext = createContext<ComputerContextType | undefined>(undefined
 
 export const Computer: React.FC<{ hidden?: boolean, children: React.ReactNode }> = ({ hidden, children }) => {
     const computerRef = useRef<cpuApi.Computer | null>(null)
+    const motherboardRef = useRef<cpuApi.Motherboard | null>(null)
     const cpuRef = useRef<cpuApi.Cpu | null>(null)
     const memoryBusRef = useRef<cpuApi.MemoryBus | null>(null)
     const devicesManagerRef = useRef<cpuApi.DevicesManager | null>(null)
@@ -18,6 +19,7 @@ export const Computer: React.FC<{ hidden?: boolean, children: React.ReactNode }>
 
     const computerState: ComputerContextType = {
         computerRef,
+        motherboardRef,
         cpuRef,
         memoryBusRef,
         devicesManagerRef,
@@ -37,6 +39,7 @@ export const Computer: React.FC<{ hidden?: boolean, children: React.ReactNode }>
 
 interface ComputerContextType {
     computerRef: React.RefObject<cpuApi.Computer | null>;
+    motherboardRef: React.RefObject<cpuApi.Motherboard | null>;
     cpuRef: React.RefObject<cpuApi.Cpu | null>;
     memoryBusRef: React.RefObject<cpuApi.MemoryBus | null>;
     devicesManagerRef: React.RefObject<cpuApi.DevicesManager | null>;

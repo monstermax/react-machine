@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '../../api/api';
+import { useComputer } from '../Computer/ComputerContext';
 import { MemoryTable } from './MemoryTable';
 
 import type { u16, u8 } from '@/types/cpu.types';
@@ -15,9 +16,13 @@ export type RomProps = {
 
 export const Rom: React.FC<RomProps> = (props) => {
     const { data, size: maxSize, children, onInstanceCreated } = props;
+        const { memoryBusRef } = useComputer();
 
     // Core
     const [romInstance, setRomInstance] = useState<cpuApi.Rom | null>(null);
+
+    // Core Dependencies
+    const memoryBusInstance = memoryBusRef.current;
 
     // UI snapshot state
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
@@ -28,16 +33,22 @@ export const Rom: React.FC<RomProps> = (props) => {
 
     // Instanciate Rom
     useEffect(() => {
+        if (!memoryBusInstance) return;
+        //if (romRef.current) return;
+
         const _instanciateRom = () => {
             const rom = new cpuApi.Rom(data, maxSize)
             setRomInstance(rom);
+
+            // Save RamBus Ref
+            //romRef.current = rom;
 
             // Handle state updates
             rom.on('state', (state) => {
                 //console.log('ROM state update', state)
             })
 
-            // UI snapshot state
+            // Emit initial state
             setStorage(rom.storage);
 
             //setInstanciated(true)
@@ -45,7 +56,7 @@ export const Rom: React.FC<RomProps> = (props) => {
 
         const timer = setTimeout(_instanciateRom, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [memoryBusInstance]);
 
 
     // Notifie le parent quand le Rom est créé

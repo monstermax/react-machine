@@ -21,11 +21,14 @@ export type RamProps = {
 
 export const Ram: React.FC<RamProps> = (props) => {
     const { data, size: maxSize, children, onInstanceCreated } = props;
-    const { computerRef, ramRef } = useComputer();
+    const { computerRef, memoryBusRef, ramRef } = useComputer();
 
     // Core
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
+
+    // Core Dependencies
     const computerInstance = computerRef.current;
+    const memoryBusInstance = memoryBusRef.current;
 
     // UI snapshot state
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
@@ -36,6 +39,9 @@ export const Ram: React.FC<RamProps> = (props) => {
 
     // Instanciate Ram
     useEffect(() => {
+        if (!memoryBusInstance) return;
+        if (ramRef.current) return;
+
         const _instanciateRam = () => {
             const ram = new cpuApi.Ram(data, maxSize);
             setRamInstance(ram);
@@ -52,7 +58,7 @@ export const Ram: React.FC<RamProps> = (props) => {
                 }
             })
 
-            // UI snapshot state
+            // Emit initial state
             ram.emit('state', { storage: new Map(ram.storage) })
 
             //setInstanciated(true)
@@ -60,7 +66,7 @@ export const Ram: React.FC<RamProps> = (props) => {
 
         const timer = setTimeout(_instanciateRam, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [memoryBusInstance]);
 
 
     // Notifie le parent quand le Ram est créé

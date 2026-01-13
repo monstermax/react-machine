@@ -25,31 +25,44 @@ export type DevicesManagerProps = {
 
 export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     const { hidden, children, onInstanceCreated } = props;
-    const { devicesManagerRef } = useComputer();
+    const { devicesManagerRef, motherboardRef, memoryBusRef } = useComputer();
 
     // Core
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null); // aka ioInstance
-    //const [devicesInstances, setDevicesInstances] = useState<Map<string, cpuApi.StorageDisk> | null>(null);
+
+    // Core Dependencies
+    const motherboardInstance = motherboardRef.current;
+    const memoryBusInstance = memoryBusRef.current;
 
     // UI
     const [childrenVisible, setChildrenVisible] = useState(true);
-    //const nextDeviceIdRef = useRef<u8>(0 as u8);
 
 
     // Instanciate Devices
     useEffect(() => {
         const _instanciateDevices = () => {
-            const devices = new cpuApi.DevicesManager;
-            setDevicesManagerInstance(devices);
+            const devicesManagerInstance = new cpuApi.DevicesManager;
+            setDevicesManagerInstance(devicesManagerInstance);
 
             // Save DevicesManager Ref
-            devicesManagerRef.current = devices;
+            devicesManagerRef.current = devicesManagerInstance;
+
+            // Connect DevicesManager to MemoryBus
+            if (memoryBusInstance && !memoryBusInstance.io) {
+                memoryBusInstance.io = devicesManagerInstance;
+                //console.log('DevicesManager connecté à MemoryBus:', devicesManagerInstance);
+            }
 
             // Handle state updates
-            devices.on('state', (state) => {
+            devicesManagerInstance.on('state', (state) => {
                 //console.log('DevicesManager state update', state)
 
             });
+
+            // Emit initial state
+            // TODO
+
+            //setInstanciated(true)
         }
 
         const timer = setTimeout(_instanciateDevices, 100);
@@ -120,10 +133,6 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
             const childElement = child as React.ReactElement<any>;
 
             switch (childElement.type) {
-                case StorageDisk:
-                case LedsDisplay:
-                case Buzzer:
-                    //return React.cloneElement(childElement, { onInstanceCreated: addDevice });
 
                 default:
                     return React.cloneElement(childElement, { onInstanceCreated: addDevice });
@@ -174,4 +183,6 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     );
 }
 
+
+export const Devices = DevicesManager;
 

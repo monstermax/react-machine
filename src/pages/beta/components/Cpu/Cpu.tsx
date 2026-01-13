@@ -20,12 +20,18 @@ export type CpuProps = {
 
 export const Cpu: React.FC<CpuProps> = (props) => {
     const { hidden, threads: threadsCount, type: cpuType, children, onInstanceCreated } = props;
-    const { cpuRef, ramRef, memoryBusRef, devicesManagerRef } = useComputer();
+    const { computerRef, motherboardRef, cpuRef, ramRef, memoryBusRef, devicesManagerRef } = useComputer();
 
     // Core
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
+
+    // Core Children
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
     const [interruptInstance, setInterruptInstance] = useState<cpuApi.Interrupt | null>(null);
+
+    // Core Dependencies
+    const computerInstance = computerRef.current;
+    const motherboardInstance = motherboardRef.current;
     const ramInstance = ramRef.current;
     const devicesManagerInstance = devicesManagerRef.current;
 
@@ -41,6 +47,9 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
     // Instanciate CPU
     useEffect(() => {
+        if (!motherboardInstance) return;
+        if (cpuRef.current) return;
+
         const _instanciateCpu = () => {
 
             //if (cpuType === 'Z80') {
@@ -53,7 +62,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             // Save CPU Ref
             cpuRef.current = cpu;
 
-            // Attach MemoryBus to CPU
+            // Connect MemoryBus to CPU
             if (memoryBusRef.current) {
                 cpuRef.current.memoryBus = memoryBusRef.current;
             }
@@ -79,6 +88,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 }
             })
 
+            // Emit initial state
             cpu.emit('state', { registers: cpu.registers })
 
             //setInstanciated(true)
@@ -86,7 +96,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
         const timer = setTimeout(_instanciateCpu, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [motherboardInstance]);
 
 
     // Notifie le parent quand le CPU est créé
