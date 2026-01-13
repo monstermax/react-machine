@@ -1,3 +1,7 @@
+# Author: yomax
+# Date: 2026-01
+# Name: os_v1
+# Description: OS for React Machine (v1)
 
 @include os/devices/console/console_hello_world.asm
 @include os/devices/led/led.lib.asm

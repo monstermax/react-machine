@@ -1,3 +1,7 @@
+# Author: yomax
+# Date: 2026-01
+# Name: os_v2
+# Description: OS for React Machine (v2)
 
 OS_START:
 
