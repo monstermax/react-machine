@@ -68,6 +68,11 @@ export const Console: React.FC<ConsoleProps> = (props) => {
                     setCurrentLine(state.currentLine)
                 }
             })
+
+            // Emit initial state
+            // TODO
+
+            //setInstanciated(true)
         }
 
         const timer = setTimeout(_instanciateDevice, 100);
