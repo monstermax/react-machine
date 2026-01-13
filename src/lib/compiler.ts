@@ -93,11 +93,12 @@ function preCompileStage1(code: string): { opcode: string, params: string[], com
         const instructionLine = partsComment[0]?.trim() || '';
         const comment = partsComment.slice(1)?.join('#').trim() || '';
 
-        const partsTmp = instructionLine.split(' ');
+        //const partsTmp = instructionLine.split(' ');
+        const partsTmp = splitSpaceSafe(instructionLine);
 
         const parts = {
             opcode: partsTmp[0] || -1,
-            params: partsTmp.slice(1).join(' ').trim().split(' '),
+            params: partsTmp.slice(1),
             comment,
         } as Stage1Line
 
@@ -109,6 +110,25 @@ function preCompileStage1(code: string): { opcode: string, params: string[], com
         .map(replaceMemoryMapAddresses)
 
     return step3;
+}
+
+
+function splitSpaceSafe(str: string) {
+    if (!str.includes('"')) {
+        const splitted = str.split(' ');
+        return splitted;
+    }
+
+    const parts = str.split('"');
+    const [strPre, strIn, strPost] = parts;
+
+    const markerString = '__string_replacement__'
+    const strTmp = [strPre, markerString, strPost].join('');
+
+    const splitted = strTmp.split(' ');
+
+    const splittedSafe = splitted.map(s => s.replace(markerString, `"${strIn}"`));
+    return splittedSafe;
 }
 
 
@@ -129,11 +149,26 @@ function pushString(str: string, asmLineNum: u16): PreCompiledCode {
         asmLineNum++;
     }
 
+    // Append EOL
     if (true) {
         const lineInstruction: PreCompiledCode[number] = [
             asmLineNum,
             toHex('\n'.charCodeAt(0)),
             '\n',
+            [],
+        ];
+
+        linesInstructions.push(lineInstruction);
+
+        asmLineNum++;
+    }
+
+    // Append EOF
+    if (true) {
+        const lineInstruction: PreCompiledCode[number] = [
+            asmLineNum,
+            '0x00',
+            '\\0',
             [],
         ];
 
@@ -162,13 +197,6 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
 
 
         // 1. Decodage de l'instruction
-
-        if (opcode === 'DB') {
-            //currentLabels = [];
-            //strings.set(value0, params[1]);
-            debugger;
-            continue;
-        }
 
         if (opcode.startsWith('.')) {
             if (opcode === '.string') {
@@ -246,6 +274,12 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
 
         const opCodeValue = Opcode[opcode as keyof typeof Opcode] as u8;
 
+        const instructionArgsCount = getInstructionLength(opCodeValue) - 1;
+
+        if (instructionArgsCount === 0) {
+            continue;
+        }
+
 
         // 2. Decodage des paramètres
 
@@ -254,12 +288,14 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
 
 
         let weight: 'low' | 'high' | null = null;
-        if (value0.startsWith('<') || value0.startsWith('>')) {
-            weight = value0.startsWith('<')
-                ? 'low'
-                : 'high';
+        if (value0 !== undefined) {
+            if (value0.startsWith('<') || value0.startsWith('>')) {
+                weight = value0.startsWith('<')
+                    ? 'low'
+                    : 'high';
 
-            value0 = value0.slice(1);
+                value0 = value0.slice(1);
+            }
         }
 
 
@@ -356,7 +392,6 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
 
 
         // Parcours des arguments de l'opcode (1 ou 2 lignes suivantes)
-        const instructionArgsCount = getInstructionLength(opCodeValue) - 1;
 
         for (let i = 1; i <= instructionArgsCount; i++) {
 
@@ -466,7 +501,6 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
                 codeOrValue = toHex(valueInt);
 
             } else if (valueTmp.startsWith('@')) {
-                debugger
                 valueTmp = valueTmp.slice(1);
 
             } else {

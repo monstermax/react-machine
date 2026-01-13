@@ -7,6 +7,17 @@
 @define8 ASCII_SPACE 0x20
 @define8 ASCII_EXCLAM 0x21
 
+@define8 ASCII_0 0x30
+@define8 ASCII_1 0x31
+@define8 ASCII_2 0x32
+@define8 ASCII_3 0x33
+@define8 ASCII_4 0x34
+@define8 ASCII_5 0x35
+@define8 ASCII_6 0x36
+@define8 ASCII_7 0x37
+@define8 ASCII_8 0x38
+@define8 ASCII_9 0x39
+
 @define8 ASCII_A 0x41
 @define8 ASCII_B 0x42
 @define8 ASCII_C 0x43
@@ -63,22 +74,29 @@
 
 
 TEXT_DEMO:
-    .string "Welcome_on_OS_v1"
-
-
-CONSOLE_PRINT_STRING_DEMO_2():
-    MOV_C_IMM <$TEXT_DEMO
-    MOV_D_IMM >$TEXT_DEMO
-    MOV_B_IMM 0x11
-    CALL $CONSOLE_PRINT_STRING()
-    RET
-
+    .string "Welcome on OS v1"
 
 STR_YOP:
     .string "YooP"
 
 
+
 CONSOLE_PRINT_STRING_DEMO():
+    MOV_C_IMM <$TEXT_DEMO
+    MOV_D_IMM >$TEXT_DEMO
+    CALL $CONSOLE_PRINT_STRING()
+    RET
+
+
+CONSOLE_PRINT_SIZED_STRING_DEMO():
+    MOV_C_IMM <$TEXT_DEMO
+    MOV_D_IMM >$TEXT_DEMO
+    MOV_B_IMM 0x11
+    CALL $CONSOLE_PRINT_SIZED_STRING()
+    RET
+
+
+CONSOLE_PRINT_SIZED_ALLOC_STRING_DEMO():
     # Allouer 5 bytes pour "YOP!\n"
     MOV_A_IMM 0x05
     PUSH_A
@@ -108,14 +126,41 @@ CONSOLE_PRINT_STRING_DEMO():
 
     # Afficher
     POP_B
-    CALL $CONSOLE_PRINT_STRING()
+    CALL $CONSOLE_PRINT_SIZED_STRING()
     RET
 
 
 
+CONSOLE_PRINT_STRING():
+    CONSOLE_PRINT_STRING_LOOP:
+        # Lire caractère depuis buffer
+        MOV_A_PTR_CD
+
+        # Vérifier si \0 (fin de string)
+        MOV_AB              # B = A (sauvegarder le caractère)
+        MOV_A_IMM 0x00      # A = 0
+        SUB                 # A = B - 0 (set zero flag si B = 0)
+        JZ $CONSOLE_PRINT_STRING_END             # Si \0, terminer
+
+        # Afficher le caractère
+        MOV_BA              # A = B (restaurer)
+        MOV_MEM_A @CONSOLE_CHAR
+
+        # Incrémenter pointeur C:D
+        INC_C
+        JNC $CONSOLE_PRINT_STRING_LOOP
+        INC_D
+        JMP $CONSOLE_PRINT_STRING_LOOP
+
+    CONSOLE_PRINT_STRING_END:
+        #MOV_A_IMM $ASCII_EOL
+        #MOV_MEM_A @CONSOLE_CHAR # EOL
+        RET
+
+
 # Affiche une string depuis un buffer mémoire
 # Input: C:D = adresse du buffer, B = taille
-CONSOLE_PRINT_STRING():
+CONSOLE_PRINT_SIZED_STRING():
     DEQUEUE:
         # Lire caractère depuis buffer
         MOV_A_PTR_CD
@@ -131,7 +176,7 @@ CONSOLE_PRINT_STRING():
         DEC_B
         JNZ $DEQUEUE
 
-    CONSOLE_PRINT_STRING_END:
+    CONSOLE_PRINT_SIZED_STRING_END:
         RET
 
 
