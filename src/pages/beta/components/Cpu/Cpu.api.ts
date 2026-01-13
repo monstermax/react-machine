@@ -121,7 +121,8 @@ export class Cpu extends BaseCpu {
 
         // Handle manual breakpoints
         if (this.currentBreakpoint === pc) {
-            this.currentBreakpoint = null;
+            debugger
+            //this.currentBreakpoint = null;
         }
 
         if (this.currentBreakpoint === null && this.breakpoints.has(pc) && !this.paused) {
@@ -136,6 +137,11 @@ export class Cpu extends BaseCpu {
 
             this.status = 'ready';
             return;
+        }
+
+        if (this.currentBreakpoint === pc) {
+            //this.currentBreakpoint = null;
+            debugger
         }
 
         this.clockCycle++
@@ -191,6 +197,7 @@ export class Cpu extends BaseCpu {
 
             case Opcode.GET_FREQ:
                 this.setRegister("A", U8(this.clock?.clockFrequency ?? 0));
+                this.setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.SET_FREQ:

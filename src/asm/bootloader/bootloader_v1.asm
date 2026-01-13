@@ -1,6 +1,6 @@
 
-@define INITIAL_FREQ 0x05
-@define LEDS_STATE_ALL_OFF 0x00
+@define8 INITIAL_FREQ 0x05
+@define8 LEDS_STATE_ALL_OFF 0x00
 
 
 INIT:

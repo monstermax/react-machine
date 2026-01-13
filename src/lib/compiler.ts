@@ -1,7 +1,7 @@
 
 import { MEMORY_MAP } from './memory_map';
 import { getInstructionLength } from './instructions';
-import { high16, low16, toHex, U16 } from './integers';
+import { high16, low16, toHex, U16, U8 } from './integers';
 import { Opcode } from './instructions';
 
 import type { CompiledCode, CompiledCodeComments, CompiledCodeLabels, PreCompiledCode, u16, u8 } from '../types/cpu.types';
@@ -140,18 +140,20 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
     let asmLineNum = linesOffset as u16;
     let currentLabels: string[] = [];
     const includedFiles: string[] = []
-    const defines: Map<string, string> = new Map
+    const defines: Map<string, { bytes: number, value: string }> = new Map
     const strings: Map<string, string> = new Map
 
 
     for (const lineParts of stage1) {
         const { opcode, params, comment } = lineParts;
+        let value0 = params[0];
+
 
         // 1. Decodage de l'instruction
 
         if (opcode === 'DB') {
             currentLabels = [];
-            strings.set(params[0], params[1]);
+            strings.set(value0, params[1]);
             continue;
         }
 
@@ -169,13 +171,16 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
 
             // Include file
             if (command === 'include') {
-                includedFiles.push(params[0]);
+                includedFiles.push(value0);
             }
 
             // Define constant
-            if (command === 'define') {
-                defines.set(params[0], params[1]);
-                //if (params[0] === 'HEAP_PTR') debugger
+            if (command === 'define8') {
+                defines.set(value0, { bytes: 8, value: params[1] });
+            }
+            if (command === 'define16') {
+                defines.set(value0, { bytes: 16, value: params[1] });
+                //if (valueTmp === 'HEAP_PTR') debugger
             }
 
             continue;
@@ -202,37 +207,56 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
         // Jump ou Call vers un label
         const isJump = [Opcode.CALL, Opcode.JMP, Opcode.JC, Opcode.JNC, Opcode.JNZ, Opcode.JZ].includes(opCodeValue);
 
-        if (params[0].startsWith('$')) {
-            const labelName = params[0].slice(1);
+
+        let weight: 'low' | 'high' | null = null;
+        if (value0.startsWith('<') || value0.startsWith('>')) {
+            value0 = value0.slice(1);
+        }
+
+        if (value0.startsWith('$')) {
+            value0 = value0.slice(1);
 
             // Check If Jump
             if (isJump) {
+                const labelName = value0;
 
                 // Low byte
                 //stage2Step1.push([asmLineNum, '$' + labelName + '$low', '', []])
-                stage2Step1.push([asmLineNum, '$<' + labelName, '', []])
+                stage2Step1.push([asmLineNum, '<$' + labelName, '', []])
                 asmLineNum++;
 
                 // High byte
                 //stage2Step1.push([asmLineNum, '$' + labelName + '$high', '', []])
-                stage2Step1.push([asmLineNum, '$>' + labelName, '', []])
+                stage2Step1.push([asmLineNum, '>$' + labelName, '', []])
                 asmLineNum++;
                 continue;
             }
 
-            // Check If Define
-            const defineValue = defines.get(labelName)
 
-            if (defineValue !== undefined) {
-                //if (labelName === 'HEAP_PTR') debugger
-                stage2Step1.push([asmLineNum, defineValue, '', []])
-                asmLineNum = U16(asmLineNum + 2);
+            // Check If Define
+            const define = defines.get(value0)
+
+            if (define !== undefined) {
+                 if (define.bytes >= 16) {
+                    stage2Step1.push([asmLineNum, low16(Number(define.value) as u16).toString(), '', []])
+                    asmLineNum = U16(asmLineNum + 1);
+                    stage2Step1.push([asmLineNum, high16(Number(define.value) as u16).toString(), '', []])
+                    asmLineNum = U16(asmLineNum + 1);
+
+                } else if (define.bytes >= 8) {
+                    stage2Step1.push([asmLineNum, U8(Number(define.value)).toString(), '', []])
+                    asmLineNum = U16(asmLineNum + 1);
+                }
+
                 continue;
             }
 
+
             // Check If Strings
-            if (strings.has(labelName)) {
-                const linesInstructions: PreCompiledCode = pushString(strings.get(labelName) ?? '');
+            const str = strings.get(value0);
+
+            if (str !== undefined) {
+                const linesInstructions: PreCompiledCode = pushString(str);
                 stage2Step1.push(...linesInstructions)
                 asmLineNum = U16(asmLineNum + linesInstructions.length);
                 continue;
@@ -248,8 +272,8 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
         for (let i = 1; i <= instructionArgsCount; i++) {
 
             const asmLineValue = (i === 1)
-                ? low16(Number(params[0]) as u16)
-                : high16(Number(params[0]) as u16);
+                ? low16(Number(value0) as u16)
+                : high16(Number(value0) as u16);
 
             const lineParam: PreCompiledCode[number] = [
                 asmLineNum,
@@ -263,6 +287,10 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
         }
 
     }
+
+
+    const debugData = stage2Step1.filter(s => s[1].includes('HEAP_PTR'))
+    if (debugData.length) debugger
 
 
     // Inclusion des fichiers @include
@@ -304,21 +332,25 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
         let comment = item[2];
         let labels = item[3];
 
-        if (codeOrValue.startsWith('$')) {
-            let valueTmp = codeOrValue.slice(1);
+        let weight: 'low' | 'high' | null = null;
+        let valueTmp = codeOrValue;
 
-            if (valueTmp.startsWith('<') || valueTmp.startsWith('>')) {
-                // Address (low/high)
-                let weight: 'low' | 'high' | null = null
 
-                if (valueTmp.startsWith('<')) {
-                    valueTmp = valueTmp.slice(1)
-                    weight = 'low'
+        if (valueTmp.startsWith('<') || valueTmp.startsWith('>')) {
+            // Address (low/high)
 
-                } else if (valueTmp.startsWith('>')) {
-                    valueTmp = valueTmp.slice(1)
-                    weight = 'high'
-                }
+            if (valueTmp.startsWith('<')) {
+                valueTmp = valueTmp.slice(1)
+                weight = 'low'
+
+            } else if (valueTmp.startsWith('>')) {
+                valueTmp = valueTmp.slice(1)
+                weight = 'high'
+            }
+
+
+            if (valueTmp.startsWith('$')) {
+                valueTmp = valueTmp.slice(1);
 
                 const labelName = valueTmp;
                 const labelInstruction = stage2Step1.find(item => item[3] && item[3].includes(labelName))
@@ -335,9 +367,14 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
 
                 codeOrValue = toHex(valueInt);
 
+            } else if (valueTmp.startsWith('@')) {
+                debugger
+                valueTmp = valueTmp.slice(1);
+
             } else {
                 throw new Error(`Action not found for label ${valueTmp}`)
             }
+
         }
 
         const _stage2: PreCompiledCode[number] = [
@@ -463,6 +500,17 @@ function replaceMemoryMapAddresses(parts: { opcode: string, params: string[], co
 
     for (let i = 0; i < valueParts.length; i++) {
         let valuePart = valueParts[i];
+        let weight: 'low' | 'high' | null = null;
+
+        if (valuePart.startsWith('<')) {
+            weight = 'low'
+            valuePart = valuePart.slice(1);
+
+        } else if (valuePart.startsWith('>')) {
+            weight = 'high'
+            valuePart = valuePart.slice(1);
+
+        }
 
         valuePart = valuePart.replace('@', 'MEMORY_MAP.');
 
@@ -489,8 +537,11 @@ function replaceMemoryMapAddresses(parts: { opcode: string, params: string[], co
 
             // Évaluer l'expression mathématique complète
             try {
-                const evaluatedValue = new Function("return " + result)();
+                const evaluatedValue = new Function("MEMORY_MAP", "return " + result)(MEMORY_MAP);
                 valuePart = toHex(evaluatedValue);
+
+                if (weight === 'low') valuePart = low16(Number(valuePart) as u16).toString()
+                if (weight === 'high') valuePart = high16(Number(valuePart) as u16).toString()
 
                 valueParts[i] = valuePart;
 

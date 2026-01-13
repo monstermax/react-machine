@@ -45,7 +45,9 @@ export const MEMORY_MAP = createMemoryMap({
     PROGRAM_END: 0xFCFF,
 
     // MALLOC (0xFD00-0xFDFF) - 256 bytes
-    MALLOC_START: 0xFD00,
+    MALLOC_HEAP_PTR_LOW: 0xFD00,
+    MALLOC_HEAP_PTR_HIGH: 0xFD01,
+    MALLOC_DATA_START: 0xFD02,
     MALLOC_END: 0xFDFF,
 
     // STACK (0xFE00-0xFEFF) - 256 bytes
