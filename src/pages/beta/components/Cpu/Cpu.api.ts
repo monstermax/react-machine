@@ -121,7 +121,7 @@ export class Cpu extends BaseCpu {
 
         // Handle manual breakpoints
         if (this.currentBreakpoint === pc) {
-            debugger
+            //debugger
             //this.currentBreakpoint = null;
         }
 
@@ -141,7 +141,7 @@ export class Cpu extends BaseCpu {
 
         if (this.currentBreakpoint === pc) {
             //this.currentBreakpoint = null;
-            debugger
+            //debugger
         }
 
         this.clockCycle++
