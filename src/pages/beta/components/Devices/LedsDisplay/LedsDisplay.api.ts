@@ -54,6 +54,7 @@ export class LedsDisplay extends EventEmitter {
 
     reset(): void {
         this.leds = U8(0);
+        this.emit('state', { leds: this.leds })
     }
 
 }
