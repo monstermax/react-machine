@@ -30,7 +30,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     const devicesManagerInstance = devicesManagerRef.current;
 
     // UI snapshot state
-    const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map(cpuApi.initialRegisters));
+    const [registers, setRegisters] = useState<Map<string, u8 | u16>>(new Map);
     const [clockCycle, setClockCycle] = useState(0);
     const [halted, setHalted] = useState(false);
     const [paused, setPaused] = useState(true);
@@ -78,6 +78,8 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     setPaused(state.paused)
                 }
             })
+
+            cpu.emit('state', { registers: cpu.registers })
 
             //setInstanciated(true)
         }

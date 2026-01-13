@@ -1,4 +1,7 @@
 
+@include os/devices/console/console.lib.asm
+
+
 OS_START:
 
 SET_FREQ 50
@@ -58,21 +61,30 @@ DISPATCH:
         POP_A
         JMP $CALL_PRINT_MENU # Go to Menu
 
+
 RUN_PRINT_INFO:
-    CALL $PRINT_INFO()
+    CALL $CONSOLE_PRINT_OK()
     SET_FREQ 5
     JMP $WAIT_KEY
+
+
+CALL_PROGRAM_NOT_FOUND:
+    CALL $CONSOLE_PRINT_ERROR()
+    JMP $WAIT_KEY # Go to WAIT KEY
+
 
 RUN_PROGRAM:
     POP_A
     MOV_A_MEM @PROGRAM_START
-    JZ $PROGRAM_NOT_FOUND
+    JZ $CALL_PROGRAM_NOT_FOUND
 
-    CALL $PRINT_INFO() # display OK
+    CALL $CONSOLE_PRINT_START_PROGRAM() # display START PROGRAM
     SET_FREQ 10
     CALL @PROGRAM_START
     SET_FREQ 50
+    CALL $CONSOLE_PRINT_STOP_PROGRAM() # display STOP PROGRAM
     JMP $CLEAR_CONSOLE
+
 
 PRINT_MENU:
     MOV_A_IMM 0x4F                      # O
@@ -130,24 +142,3 @@ PRINT_MENU:
     MOV_A_IMM 0x20                      # space
     MOV_MEM_A @CONSOLE_CHAR
     RET
-
-PROGRAM_NOT_FOUND:
-    MOV_A_IMM 0x4B                      # K
-    MOV_MEM_A @CONSOLE_CHAR
-    MOV_A_IMM 0x4F                      # O
-    MOV_MEM_A @CONSOLE_CHAR
-    MOV_A_IMM 0x0A                      # \n
-    MOV_MEM_A @CONSOLE_CHAR
-    JMP $WAIT_KEY # Go to WAIT KEY
-
-PRINT_INFO():
-    POP_A
-    PUSH_A
-    MOV_A_IMM 0x4F                      # O
-    MOV_MEM_A @CONSOLE_CHAR
-    MOV_A_IMM 0x4B                      # K
-    MOV_MEM_A @CONSOLE_CHAR
-    MOV_A_IMM 0x0A                      # \n
-    MOV_MEM_A @CONSOLE_CHAR
-    RET
-

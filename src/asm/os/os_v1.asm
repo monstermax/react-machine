@@ -1,5 +1,5 @@
 
-@include os/devices/console/console_hello_world.asm
+@include os/devices/console/console.lib.asm
 @include os/devices/led/led.lib.asm
 
 
@@ -7,7 +7,8 @@ OS_START:
 
 MAIN:
     CALL $LEDS_ON # Allume les LEDs
-    CALL $CONSOLE_HELLO_WORLD # Affiche Hello World sur la console
+    CALL $CONSOLE_PRINT_STRING_DEMO()
+    CALL $CONSOLE_PRINT_HELLO_WORLD() # Affiche Hello World sur la console
 
     WAIT_FOR_PROGRAM:
         MOV_A_MEM @PROGRAM_START

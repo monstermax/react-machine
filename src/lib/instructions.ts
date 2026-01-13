@@ -119,6 +119,36 @@ export enum Opcode {
     MOV_PTR_CD_B = 0xAB,  // [C:D] = B
 }
 
+/*
+# Instruction à ajouter
+- CMP A, B (comparer sans modifier A)
+- SHL/SHR (shifts)
+- NEG (negate)
+- DJNZ (decrement and jump if not zero - super utile pour les loops)
+
+# I/O
+SYSCALL 0x01  # print_char(A) - Afficher caractère
+SYSCALL 0x02  # read_char() -> A - Lire caractère
+SYSCALL 0x03  # print_string(C:D) - Afficher string
+SYSCALL 0x04  # clear_screen()
+
+# Fichiers
+SYSCALL 0x10  # open(C:D=filename, A=mode) -> A=handle
+SYSCALL 0x11  # read(A=handle) -> B=byte
+SYSCALL 0x12  # write(A=handle, B=byte)
+SYSCALL 0x13  # close(A=handle)
+SYSCALL 0x14  # delete(C:D=filename)
+
+# Processus
+SYSCALL 0x20  # exit(A=code)
+SYSCALL 0x21  # sleep(A=ticks)
+SYSCALL 0x22  # get_time() -> C:D=timestamp
+
+# Mémoire
+SYSCALL 0x30  # malloc(C:D=size) -> C:D=ptr
+SYSCALL 0x31  # free(C:D=ptr)
+*/
+
 
 // Instructions avec 1 opérande 8-bit
 export const INSTRUCTIONS_WITH_OPERAND = [

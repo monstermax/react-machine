@@ -40,9 +40,13 @@ export const MEMORY_MAP = createMemoryMap({
     OS_START: 0x0500,
     OS_END: 0x0FFF,
 
-    // PROGRAM + DATA (0x1000-0xFDFF) - ~60KB
+    // PROGRAM + DATA (0x1000-0xFCFF) - ~60KB
     PROGRAM_START: 0x1000,
-    PROGRAM_END: 0xFDFF,
+    PROGRAM_END: 0xFCFF,
+
+    // MALLOC (0xFD00-0xFDFF) - 256 bytes
+    MALLOC_START: 0xFD00,
+    MALLOC_END: 0xFDFF,
 
     // STACK (0xFE00-0xFEFF) - 256 bytes
     STACK_START: 0xFE00,

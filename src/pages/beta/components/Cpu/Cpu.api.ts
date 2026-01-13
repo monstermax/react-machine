@@ -9,6 +9,8 @@ import type { MemoryBus } from "../Memory/MemoryBus.api";
 import type { Clock } from "./Clock.api";
 import type { Register, Register16, u16, u8 } from "@/types/cpu.types";
 import type { Interrupt } from "./Interrupt.api";
+import type { ICpu } from "./ICpu";
+import { BaseCpu } from "./BaseCpu.api";
 
 
 // Adresses: 16 bits
@@ -28,20 +30,27 @@ export const initialRegisters = [
 ;
 
 
-export class Cpu extends EventEmitter {
+export class Cpu extends BaseCpu {
+    // Identification
+    public type = "simple";
+    public architecture: ICpu["architecture"] = "8bit";
     public id: number;
-    public memoryBus: MemoryBus | null = null;
-    public interrupt: Interrupt | null = null;
-    public registers: Map<string, u8 | u16> = new Map;
-    public clock: Clock | null = null;
-    public breakpoints: Set<number> = new Set;
+
+    // État
     public halted: boolean = false;
     public paused: boolean = true;
     public clockCycle: number = 0;
+    public registers: Map<string, u8 | u16> = new Map;
+    public breakpoints: Set<number> = new Set;
+
+    // Composants
+    public memoryBus: MemoryBus | null = null;
+    public interrupt: Interrupt | null = null;
+    public clock: Clock | null = null;
+
     private currentBreakpoint: number | null = null;
     private interruptsEnabled: boolean = false;
     private inInterruptHandler: boolean = false;
-    private status: 'ready' | 'executingCycle' = "ready";
 
 
     constructor() {
@@ -80,6 +89,11 @@ export class Cpu extends EventEmitter {
     }
 
 
+    getAllRegisters(): Map<string, u8 | u16> {
+        return new Map(this.registers);
+    }
+
+
     getFlag(flag: 'zero' | 'carry'): boolean {
         const flags = this.getRegister("FLAGS");
         return flag === 'zero' ? !!(flags & 0b10) : !!(flags & 0b01);
@@ -88,26 +102,6 @@ export class Cpu extends EventEmitter {
 
     setFlags(zero: boolean, carry: boolean): void {
         this.setRegister('FLAGS', ((zero ? 0b10 : 0) | (carry ? 0b01 : 0)) as u8)
-    }
-
-
-    setPaused(paused: boolean) {
-        this.paused = paused;
-
-        if (this.clock) {
-            if (this.paused) {
-                this.clock.stop()
-
-            } else {
-                this.clock.start()
-            }
-
-        }
-    }
-
-
-    togglePaused() {
-        this.setPaused(!this.paused);
     }
 
 
@@ -126,6 +120,10 @@ export class Cpu extends EventEmitter {
         //}
 
         // Handle manual breakpoints
+        if (this.currentBreakpoint === pc) {
+            this.currentBreakpoint = null;
+        }
+
         if (this.currentBreakpoint === null && this.breakpoints.has(pc) && !this.paused) {
             this.setPaused(true);
             this.currentBreakpoint = pc;
@@ -136,6 +134,7 @@ export class Cpu extends EventEmitter {
                 paused: this.paused,
             })
 
+            this.status = 'ready';
             return;
         }
 
@@ -146,6 +145,7 @@ export class Cpu extends EventEmitter {
         // Handle Interrupts - Vérifier les interruptions AVANT de fetch
         if (this.interrupt && this.interruptsEnabled && !this.inInterruptHandler && this.interrupt.hasPendingInterrupt()) {
             this.handleInterrupt();
+            this.status = 'ready';
             return; // On saute l'exécution normale ce cycle
         }
 
@@ -507,7 +507,7 @@ export class Cpu extends EventEmitter {
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            // ===== MOV register-immediate (set flags) =====
+            // ===== MOV register-immediate (set flags) ===== => TODO: ne pas modifier les flags
             case Opcode.MOV_A_IMM:  // MOV A, imm8
                 const immA = this.memoryBus.readMemory((pc + 1) as u16);
                 this.setRegister("A", immA);
@@ -536,7 +536,7 @@ export class Cpu extends EventEmitter {
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
 
-            // ===== MOV memory-register (set flags) =====
+            // ===== MOV memory-register (set flags) ===== => TODO: ne pas modifier les flags
             case Opcode.MOV_A_MEM:  // MOV A, [addr16]
                 const addrA = this.readMem16(pc);
                 const memValueA = this.memoryBus.readMemory(addrA);
@@ -594,7 +594,7 @@ export class Cpu extends EventEmitter {
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
-            case Opcode.MOV_A_PTR_CD:  // MOV A, *[C:D]
+            case Opcode.MOV_A_PTR_CD:  // MOV A, *[C:D] => TODO: ne pas modifier les flags
                 const ptrCD_LoadA = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
                 const valuePtr_A = this.memoryBus.readMemory(ptrCD_LoadA);
                 this.setRegister("A", valuePtr_A);
@@ -602,7 +602,7 @@ export class Cpu extends EventEmitter {
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.MOV_B_PTR_CD:  // MOV B, *[C:D]
+            case Opcode.MOV_B_PTR_CD:  // MOV B, *[C:D] => TODO: ne pas modifier les flags
                 const ptrCD_LoadB = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
                 const valuePtr_B = this.memoryBus.readMemory(ptrCD_LoadB);
                 this.setRegister("B", valuePtr_B);
@@ -876,13 +876,13 @@ export class Cpu extends EventEmitter {
     reset() {
         this.halted = false;
         this.clockCycle = 0;
-        this.registers = new Map(initialRegisters);
         //this.setPaused(true);
+
+        this.registers = new Map(initialRegisters);
+
         this.interruptsEnabled = false;
         this.inInterruptHandler = false;
         this.currentBreakpoint = null;
-        //this.uiFrequency = 1;
-        //this.lastUiSync = null;
 
         // Update UI State
         this.emit('state', {

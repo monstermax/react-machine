@@ -159,7 +159,7 @@ export const programs: Record<string, ProgramInfo> = {
         name: "Hello World (liveCompiled)",
         description: "Affiche 'Hello World!' dans la console",
         code: new Map(),
-        filepath: 'os/devices/console/console_hello_world.asm',
+        filepath: 'os/devices/console/console.lib.asm',
     },
 
     hello_world: {
