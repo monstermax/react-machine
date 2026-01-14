@@ -27,17 +27,27 @@ export class MemoryBus extends EventEmitter {
 
     readMemory(address: u16): u8 {
         // ROM read
-        if (this.rom && isROM(address)) {
-            const value = this.rom.read(address);
-            //console.log(`Read Memory (ROM) @address ${toHex(address)} = ${toHex(value)}`)
-            return value;
+        if (isROM(address)) {
+            if (this.rom) {
+                const value = this.rom.read(address);
+                //console.log(`Read Memory (ROM) @address ${toHex(address)} = ${toHex(value)}`)
+                return value;
+            }
+
+            console.warn(`No ROM detected`);
+            return 0 as u8
         }
 
         // I/O read - déléguer au gestionnaire I/O
-        if (this.io && isIO(address)) {
-            const value = this.io.read(memoryToIOPort(address));
-            //console.log(`Read Memory (IO) @address ${toHex(address)} = ${toHex(value)}`)
-            return value;
+        if (isIO(address)) {
+            if (this.io) {
+                const value = this.io.read(memoryToIOPort(address));
+                //console.log(`Read Memory (IO) @address ${toHex(address)} = ${toHex(value)}`)
+                return value;
+            }
+
+            console.warn(`No IO detected`);
+            return 0 as u8
         }
 
         // RAM read
@@ -47,6 +57,7 @@ export class MemoryBus extends EventEmitter {
             return value;
         }
 
+        console.warn(`No RAM detected`);
         return U8(0)
     }
 
@@ -59,17 +70,25 @@ export class MemoryBus extends EventEmitter {
         }
 
         // I/O write - déléguer au gestionnaire I/O
-        if (this.io && isIO(address)) {
-            //console.log(`Write Memory (IO) @address ${toHex(address)} = ${toHex(value)}`)
-            this.io.write(memoryToIOPort(address), value);
-            return;
+        if (isIO(address)) {
+            if (this.io) {
+                //console.log(`Write Memory (IO) @address ${toHex(address)} = ${toHex(value)}`)
+                this.io.write(memoryToIOPort(address), value);
+                return;
+            }
+
+            console.warn(`No IO detected`);
+            return
         }
 
         // RAM write
         if (this.ram) {
             //console.log(`Write Memory (RAM) @address ${toHex(address)} = ${toHex(value)}`)
             this.ram.write(address, value)
+            return;
         }
+
+        console.warn(`No RAM detected`);
     }
 
 }

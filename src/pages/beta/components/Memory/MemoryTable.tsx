@@ -37,31 +37,38 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
     // Breakpoints
     useEffect(() => {
-        setBreakpoints(cpuInstance?.breakpoints ?? new Set);
+        if (!cpuInstance) return;
 
-        if (cpuInstance) {
-            cpuInstance.on('state', (state) => {
-                if (state.breakpoints) {
-                    setBreakpoints(new Set(state.breakpoints))
+        setBreakpoints(cpuInstance.breakpoints ?? new Set);
+
+        // CPU State updates
+        cpuInstance.on('state', (state) => {
+            if (state.breakpoints) {
+                setBreakpoints(new Set(state.breakpoints))
+            }
+        });
+
+        // CPU CORES State updates
+        let lastCommits: Map<number, number | null> = new Map;
+        for (const core of cpuInstance.cores) {
+            const coreIdx = core.idx;
+
+            core.on('state', (state) => {
+                //console.log('update', Object.keys(state))
+
+                if (state.registers) {
+                    const pc = state.registers.get('PC');
+
+                    // TODO: mettre un delai sur cet update
+
+                    setCoresPc(o => {
+                        const n = new Map(o);
+                        n.set(coreIdx, pc);
+                        return n;
+                    })
                 }
             });
 
-            for (const core of cpuInstance.cores) {
-                core.on('state', (state) => {
-                    const coreIdx = state.idx;
-
-                    if (state.registers) {
-                        const pc = state.registers.get('PC');
-
-                        setCoresPc(o => {
-                            const n = new Map(o);
-                            n.set(coreIdx, pc);
-                            return n;
-                        })
-                    }
-                });
-
-            }
         }
     }, [cpuInstance])
 

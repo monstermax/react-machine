@@ -944,7 +944,7 @@ export class Cpu extends BaseCpu {
 
             core.on('state', (state) => {
                 const coreIdx = state.idx;
-                console.log('CPU CORE state:', state)
+                //console.log('CPU CORE state:', state)
 
                 if (state.coreHalted !== undefined) {
                     const haltCpuIfAllCoresHalted = false;

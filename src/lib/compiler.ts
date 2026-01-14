@@ -132,7 +132,7 @@ function splitSpaceSafe(str: string) {
 }
 
 
-function pushString(str: string, asmLineNum: u16): PreCompiledCode {
+function pushString(str: string, asmLineNum: u16, appendEol=true, appendEof=true): PreCompiledCode {
     const linesInstructions: PreCompiledCode = [];
 
     for (const char of str.split('')) {
@@ -150,7 +150,7 @@ function pushString(str: string, asmLineNum: u16): PreCompiledCode {
     }
 
     // Append EOL
-    if (true) {
+    if (appendEol) {
         const lineInstruction: PreCompiledCode[number] = [
             asmLineNum,
             toHex('\n'.charCodeAt(0)),
@@ -164,7 +164,7 @@ function pushString(str: string, asmLineNum: u16): PreCompiledCode {
     }
 
     // Append EOF
-    if (true) {
+    if (appendEof) {
         const lineInstruction: PreCompiledCode[number] = [
             asmLineNum,
             '0x00',
@@ -199,7 +199,7 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
         // 1. Decodage de l'instruction
 
         if (opcode.startsWith('.')) {
-            if (opcode === '.string') {
+            if (opcode === '.string' || opcode === '.ascii') {
                 const currentLabel = currentLabels.at(-1);
 
                 if (! currentLabel) {
@@ -207,8 +207,9 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
                 }
 
                 const stringValue = value0.slice(1, -1);
+                const appendEol = (opcode === '.string');
 
-                const linesInstructions: PreCompiledCode = pushString(stringValue, asmLineNum);
+                const linesInstructions: PreCompiledCode = pushString(stringValue, asmLineNum, appendEol);
                 stage2Step1.push(...linesInstructions)
 
                 strings.set(currentLabel, U16(memoryOffset + asmLineNum));

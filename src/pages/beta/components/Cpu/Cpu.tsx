@@ -47,8 +47,6 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
     const coresIds = useMemo(() => {
         const _coresIds = Array.from(coresHalted.keys());
-console.log('halted:', coresHalted)
-console.log('_coresIds:', _coresIds)
         return _coresIds;
     }, [coresHalted])
 
@@ -86,6 +84,7 @@ console.log('_coresIds:', _coresIds)
             // Handle CORES state updates
             for (let i=0; i<cpuInstance.cores.length; i++) {
                 const core = cpuInstance.cores[i];
+                //const coreIdx = core.idx;
 
                 core.on('state', (state) => {
                     const coreIdx = state.idx;
@@ -140,7 +139,7 @@ console.log('_coresIds:', _coresIds)
             }
 
 
-            console.log('CPU initialized', cpuInstance.cores)
+            //console.log('CPU initialized', cpuInstance.cores)
 
             //setInstanciated(true)
         }
