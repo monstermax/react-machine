@@ -16,8 +16,7 @@ MAIN:
     CALL $LEDS_ON # Allume les LEDs
 
     CALL $CONSOLE_PRINT_STRING_DEMO_2()
-    #CALL $CONSOLE_PRINT_STRING_DEMO()
-#    CALL $CONSOLE_PRINT_HELLO_WORLD() # Affiche Hello World sur la console
+    #CALL $CONSOLE_PRINT_STRING_DEMO() # Affiche Un message sur la console
 
     SET_FREQ 5
 
