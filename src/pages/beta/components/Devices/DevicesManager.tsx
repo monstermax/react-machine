@@ -25,13 +25,13 @@ export type DevicesManagerProps = {
 
 export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     const { hidden, children, onInstanceCreated } = props;
-    const { devicesManagerRef, motherboardRef, memoryBusRef } = useComputer();
+    const { computerRef, devicesManagerRef, memoryBusRef } = useComputer();
 
     // Core
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null); // aka ioInstance
 
     // Core Dependencies
-    const motherboardInstance = motherboardRef.current;
+    const computerInstance = computerRef.current;
     const memoryBusInstance = memoryBusRef.current;
 
     // UI
@@ -40,6 +40,13 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
 
     // Instanciate Devices
     useEffect(() => {
+        if (!computerInstance) return;
+
+        if (devicesManagerRef.current) {
+            setDevicesManagerInstance(devicesManagerRef.current);
+            return;
+        }
+
         const _instanciateDevices = () => {
             const devicesManagerInstance = new cpuApi.DevicesManager;
             setDevicesManagerInstance(devicesManagerInstance);
@@ -67,7 +74,7 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
 
         const timer = setTimeout(_instanciateDevices, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [computerInstance]);
 
 
     // Notifie le parent quand le Devices est créé

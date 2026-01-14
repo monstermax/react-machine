@@ -5,6 +5,7 @@ import * as cpuApi from '../../../api/api';
 
 import type { u16, u8 } from '@/types/cpu.types';
 import { U8 } from '@/lib/integers';
+import { useComputer } from '../../Computer/ComputerContext';
 
 
 export type ConsoleProps = {
@@ -20,9 +21,13 @@ export type ConsoleProps = {
 
 export const Console: React.FC<ConsoleProps> = (props) => {
     const { hidden, name, ioPort, width = 35, height = 15, children, onInstanceCreated } = props;
+    const { devicesManagerRef } = useComputer();
 
     // Core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.Console | null>(null);
+
+    // Core Dependencies
+    const devicesManagerInstance = devicesManagerRef.current;
 
     // UI snapshot state
     const [lines, setLines] = useState<string[]>([])
@@ -35,6 +40,18 @@ export const Console: React.FC<ConsoleProps> = (props) => {
 
     // Instanciate Device
     useEffect(() => {
+        if (!devicesManagerInstance) return;
+
+        if (ioPort !== undefined && devicesManagerInstance.devices.has(ioPort as u8)) {
+            // test
+            const deviceInstance = devicesManagerInstance.devices.get(ioPort as u8) as cpuApi.Console | null
+
+            if (deviceInstance) {
+                setDeviceInstance(deviceInstance);
+            }
+            return
+        }
+
         const _instanciateDevice = () => {
             const device = new cpuApi.Console(name, ioPort as u8 | null, width, height)
             setDeviceInstance(device);
@@ -51,11 +68,16 @@ export const Console: React.FC<ConsoleProps> = (props) => {
                     setCurrentLine(state.currentLine)
                 }
             })
+
+            // Emit initial state
+            // TODO
+
+            //setInstanciated(true)
         }
 
         const timer = setTimeout(_instanciateDevice, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [devicesManagerInstance]);
 
 
     // Notifie le parent quand le Device est créé

@@ -38,4 +38,5 @@ export * from '../components/Devices/Rng/Rng.api';
 
 // Time
 export * from '../components/Devices/Rtc/Rtc.api';
+export * from '../components/Devices/Timer/Timer.api';
 

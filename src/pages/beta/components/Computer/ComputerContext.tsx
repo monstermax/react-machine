@@ -8,7 +8,10 @@ import { ComputerContainer } from './ComputerContainer';
 const ComputerContext = createContext<ComputerContextType | undefined>(undefined);
 
 
-export const Computer: React.FC<{ hidden?: boolean, children: React.ReactNode }> = ({ hidden, children }) => {
+export type ViewType = 'hidden' | 'closed' | 'open_simple' | 'open_advanced'
+
+
+export const Computer: React.FC<{ view?: ViewType, children: React.ReactNode }> = ({ view='open_advanced', children }) => {
     const computerRef = useRef<cpuApi.Computer | null>(null)
     const motherboardRef = useRef<cpuApi.Motherboard | null>(null)
     const cpuRef = useRef<cpuApi.Cpu | null>(null)
@@ -29,7 +32,7 @@ export const Computer: React.FC<{ hidden?: boolean, children: React.ReactNode }>
 
     return (
         <ComputerContext.Provider value={computerState}>
-            <ComputerContainer hidden={hidden}>
+            <ComputerContainer view={view}>
                 {children}
             </ComputerContainer>
         </ComputerContext.Provider>

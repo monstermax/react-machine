@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'wouter';
 
+import { compileCode } from '@/lib/compiler';
+import { MEMORY_MAP } from '@/lib/memory_map';
+
 import { Computer } from './beta/components/Computer/ComputerContext';
 import { Cpu } from './beta/components/Cpu/Cpu';
 import { Memory, MemoryBus } from './beta/components/Memory/MemoryBus';
@@ -20,13 +23,13 @@ import { Console } from './beta/components/Devices/Console/Console';
 import { SevenSegmentDisplay } from './beta/components/Devices/7SegmentsDisplay/7SegmentsDisplay';
 import { Keyboard } from './beta/components/Devices/Keyboard/Keyboard';
 import { Interrupt } from './beta/components/Cpu/Interrupt';
-import { compileCode } from '@/lib/compiler';
-import { MEMORY_MAP } from '@/lib/memory_map';
-
-import BootloaderSourceCode from '@/asm/bootloader/bootloader_v1.asm?raw'
-import type { u16, u8 } from '@/types/cpu.types';
 import { Motherboard } from './beta/components/Computer/Motherboard';
 import { ComputerControls } from './beta/components/Computer/ComputerContainer';
+import { Timer } from './beta/components/Devices/Timer/Timer';
+
+import type { u16, u8 } from '@/types/cpu.types';
+
+import BootloaderSourceCode from '@/asm/bootloader/bootloader_v1.asm?raw'
 
 
 export const ComputerBeta: React.FC = () => {
@@ -53,7 +56,7 @@ export const ComputerBeta: React.FC = () => {
             </h1>
 
             <div>
-                <Computer >
+                <Computer>
                     <Motherboard>
                         <Cpu>
                             <Clock frequency={10} />
@@ -87,6 +90,7 @@ export const ComputerBeta: React.FC = () => {
                         {/* Random */}
                         <Rng ioPort={0x0B} name="rng" hidden />
                         <Rtc ioPort={0x0C} name="rtc" hidden />
+                        <Timer ioPort={0x02} name="timer" hidden />
 
                         {/* Storage */}
                         <StorageDisk ioPort={0x00} name="os_disk" open={false} />
