@@ -38,3 +38,12 @@
 - charger le contenu du disk Data1 dans un fichier du filesytem du disk Data2
 - charger le contenu du fichier en RAM (à l'adresse PROGRAM_START ?)
 - executer le code du fichier
+
+
+
+# Memoire
+- pagination (repartir l'espace memoire en pages)
+
+
+# Multi coeurs
+- HALT arrete uniquement le coeur. Il reste à l'ecoute des interruptions (timer, device, ...)

@@ -247,10 +247,10 @@ export const ComputerControls: React.FC<ComputerControls> = (props) => {
         }
 
         if (cpuInstance) {
-            const pc = cpuInstance.getRegister('PC');
+            const pc = cpuInstance.cores[0].getRegister('PC');
 
             if ((pc > MEMORY_MAP.ROM_END)) {
-                cpuInstance.setRegister('PC', MEMORY_MAP.ROM_START);
+                cpuInstance.cores[0].setRegister('PC', MEMORY_MAP.ROM_START);
             }
         }
 
@@ -281,10 +281,10 @@ export const ComputerControls: React.FC<ComputerControls> = (props) => {
         }
 
         if (cpuInstance) {
-            const pc = cpuInstance.getRegister('PC');
+            const pc = cpuInstance.cores[0].getRegister('PC');
 
             if (pc >= MEMORY_MAP.PROGRAM_START && pc <= MEMORY_MAP.PROGRAM_END) {
-                cpuInstance.setRegister('PC', MEMORY_MAP.OS_START);
+                cpuInstance.cores[0].setRegister('PC', MEMORY_MAP.OS_START);
             }
         }
 
@@ -318,10 +318,10 @@ export const ComputerControls: React.FC<ComputerControls> = (props) => {
         }
 
         if (cpuInstance) {
-            const pc = cpuInstance.getRegister('PC');
+            const pc = cpuInstance.cores[0].getRegister('PC');
 
             if ((pc > MEMORY_MAP.ROM_END)) {
-                cpuInstance.setRegister('PC', MEMORY_MAP.ROM_START);
+                cpuInstance.cores[0].setRegister('PC', MEMORY_MAP.ROM_START);
             }
         }
 
@@ -351,10 +351,10 @@ export const ComputerControls: React.FC<ComputerControls> = (props) => {
         }
 
         if (cpuInstance) {
-            const pc = cpuInstance.getRegister('PC');
+            const pc = cpuInstance.cores[0].getRegister('PC');
 
             if (pc >= MEMORY_MAP.PROGRAM_START && pc <= MEMORY_MAP.PROGRAM_END) {
-                cpuInstance.setRegister('PC', MEMORY_MAP.OS_START);
+                cpuInstance.cores[0].setRegister('PC', MEMORY_MAP.OS_START);
             }
         }
 

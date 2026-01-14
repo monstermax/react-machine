@@ -15,10 +15,10 @@ export abstract class BaseCpu extends EventEmitter implements ICpu {
     public id: number;
 
     // État
-    public halted = false;
+    //public halted = false;
     public paused = true;
     public clockCycle = 0;
-    public registers: Map<string, u8 | u16> = new Map;
+    //public registers: Map<string, u8 | u16> = new Map;
     public status: 'ready' | 'executingCycle' = "ready";
     public breakpoints = new Set<number>();
 
@@ -37,9 +37,9 @@ export abstract class BaseCpu extends EventEmitter implements ICpu {
     // Méthodes abstraites (à implémenter par chaque CPU)
     abstract executeCycle(): void;
     abstract reset(): void;
-    abstract getRegister(name: string): u8 | u16 | null;
-    abstract setRegister(name: string, value: u8 | u16): void;
-    abstract getAllRegisters(): Map<string, u8 | u16 | u32 | u64>;
+    //abstract getRegister(name: string): u8 | u16 | null;
+    //abstract setRegister(name: string, value: u8 | u16): void;
+    //abstract getAllRegisters(): Map<string, u8 | u16 | u32 | u64>;
 
 
     // Méthodes communes
@@ -54,14 +54,17 @@ export abstract class BaseCpu extends EventEmitter implements ICpu {
             } else {
                 this.clock.start()
             }
-
         }
+
+        this.emit('state', {
+            paused: this.paused,
+        })
     }
+
 
     togglePaused(): void {
         this.setPaused(!this.paused);
     }
-
 
 
     // Helpers mémoire

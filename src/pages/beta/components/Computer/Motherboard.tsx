@@ -60,9 +60,6 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
 
             });
 
-            // Emit initial state
-            // TODO
-
             //setInstanciated(true)
         }
 

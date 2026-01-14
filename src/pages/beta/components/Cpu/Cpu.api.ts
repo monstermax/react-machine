@@ -30,35 +30,19 @@ export const initialRegisters = [
 ;
 
 
-export class Cpu extends BaseCpu {
-    // Identification
-    public type = "simple";
-    public architecture: ICpu["architecture"] = "8bit";
-    public id: number;
 
-    // État
-    public halted: boolean = false;
-    public paused: boolean = true;
-    public clockCycle: number = 0;
+class CpuCore extends EventEmitter {
+    private cpu: Cpu;
+    public coreHalted: boolean = true;
+    public coreCycle: number = 0;
     public registers: Map<string, u8 | u16> = new Map;
-    public breakpoints: Set<number> = new Set;
-
-    // Composants
-    public memoryBus: MemoryBus | null = null;
-    public interrupt: Interrupt | null = null;
-    public clock: Clock | null = null;
-
-    private currentBreakpoint: number | null = null;
-    private interruptsEnabled: boolean = false;
-    private inInterruptHandler: boolean = false;
+    public idx: number;
 
 
-    constructor() {
-        //console.log(`Initializing Cpu`);
-        super();
-
-        this.id = Math.round(Math.random() * 999_999_999);
-        this.reset()
+    constructor(cpu: Cpu, idx: number) {
+        super()
+        this.cpu = cpu;
+        this.idx = idx;
     }
 
 
@@ -84,6 +68,7 @@ export class Cpu extends BaseCpu {
 
         // Update UI State
         this.emit('state', {
+            idx: this.idx,
             registers: this.registers,
         })
     }
@@ -105,11 +90,9 @@ export class Cpu extends BaseCpu {
     }
 
 
-    executeCycle() {
-        if (!this.memoryBus || this.halted) return;
-        if (this.status !== 'ready') return;
-
-        this.status = 'executingCycle';
+    executeCoreCycle() {
+        if (this.coreHalted) return;
+        if (!this.cpu.memoryBus) return;
 
         // 1. Fetch
         const pc = this.getRegister("PC");
@@ -120,43 +103,45 @@ export class Cpu extends BaseCpu {
         //}
 
         // Handle manual breakpoints
-        if (this.currentBreakpoint === pc) {
+        if (this.cpu.currentBreakpoint === pc) {
             //debugger
             //this.currentBreakpoint = null;
         }
 
-        if (this.currentBreakpoint === null && this.breakpoints.has(pc) && !this.paused) {
-            this.setPaused(true);
-            this.currentBreakpoint = pc;
+        if (this.cpu.currentBreakpoint === null && this.cpu.breakpoints.has(pc) && !this.cpu.paused) {
+            this.cpu.setPaused(true);
+            this.cpu.currentBreakpoint = pc;
             // TODO: petit bug à corriger. si on step jusqu'a un breakpoint. quand on redémarrage il toussote
 
             // Update UI State
-            this.emit('state', {
-                paused: this.paused,
+            this.cpu.emit('state', {
+                paused: this.cpu.paused,
             })
 
-            this.status = 'ready';
             return;
         }
 
-        if (this.currentBreakpoint === pc) {
+        if (this.cpu.currentBreakpoint === pc) {
             //this.currentBreakpoint = null;
             //debugger
         }
 
-        this.clockCycle++
-
-        // Handle Threads
 
         // Handle Interrupts - Vérifier les interruptions AVANT de fetch
-        if (this.interrupt && this.interruptsEnabled && !this.inInterruptHandler && this.interrupt.hasPendingInterrupt()) {
+        if (this.cpu.interrupt && this.cpu.interruptsEnabled && !this.cpu.inInterruptHandler && this.cpu.interrupt.hasPendingInterrupt()) {
             this.handleInterrupt();
-            this.status = 'ready';
             return; // On saute l'exécution normale ce cycle
         }
 
 
-        const instruction = this.memoryBus.readMemory(pc);
+        if (this.coreHalted) {
+            return;
+        }
+
+        this.coreCycle++
+
+
+        const instruction = this.cpu.memoryBus.readMemory(pc);
         this.setRegister("IR", instruction);
 
         // 2. Decode
@@ -173,17 +158,59 @@ export class Cpu extends BaseCpu {
 
         // Update UI State
         this.emit('state', {
-            clockCycle: this.clockCycle,
+            idx: this.idx,
+            coreCycle: this.coreCycle,
             //registers: this.registers,
         })
 
+    }
 
-        this.status = 'ready';
+
+    handleInterrupt() {
+        if (!this.cpu.memoryBus) throw new Error("Missing MemoryBus")
+        if (!this.cpu.interrupt) throw new Error("Missing Interrupt")
+
+        const irq = this.cpu.interrupt.getPendingIRQ();
+        if (irq === null) return;
+
+        console.log(`🎯 Handling IRQ ${irq}, handlerAddr = ${this.cpu.interrupt.handlerAddr.toString(16)}`);
+
+        // 1. Désactiver interruptions
+        this.cpu.interruptsEnabled = false;
+        this.cpu.inInterruptHandler = true;
+
+        // 2. Sauvegarder contexte sur la pile
+        const sp = this.getRegister("SP");
+        const pc = this.getRegister("PC");
+        const flags = this.getRegister("FLAGS");
+
+        // PUSH Flags
+        this.cpu.memoryBus.writeMemory(sp, flags);
+        this.setRegister("SP", (sp - 1) as u16);
+
+        // PUSH PC (little-endian)
+        this.cpu.memoryBus.writeMemory((sp - 1) as u16, ((pc >> 8) & 0xFF) as u8); // High byte
+        this.cpu.memoryBus.writeMemory((sp - 2) as u16, (pc & 0xFF) as u8);      // Low byte
+        this.setRegister("SP", (sp - 3) as u16);
+
+        // 3. Acquitter l'interruption
+        this.cpu.interrupt.acknowledgeInterrupt(irq);
+
+        // 4. Sauter au handler
+        let handlerAddress = this.cpu.interrupt.handlerAddr;
+        if (handlerAddress === 0) {
+            // Vecteur par défaut: 0x0040 + irq*4
+            handlerAddress = (0x0040 + (irq * 4)) as u16;
+        }
+
+        this.setRegister("PC", handlerAddress);
+
+        console.log(`🔄 Interruption IRQ${irq} -> Handler 0x${handlerAddress.toString(16)}`);
     }
 
 
     executeOpcode(pc: u16, instruction: u8) {
-        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+        if (!this.cpu.memoryBus) throw new Error("Missing MemoryBus")
 
         switch (instruction) {
             // ===== SYSTEM =====
@@ -191,22 +218,45 @@ export class Cpu extends BaseCpu {
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
+            case Opcode.CORE_START: {
+                const coreIdx = this.cpu.readMem8(pc);
+                this.cpu.cores[coreIdx].setRegister('PC', U16(0x1000)) // TODO: ne pas hardcoder l'adresse
+                this.cpu.cores[coreIdx].start()
+
+                if (coreIdx !== this.idx) {
+                    this.setRegister("PC", (pc + 2) as u16);
+                }
+                break;
+            }
+
+            case Opcode.CORE_HALT: {
+                const coreIdx = this.cpu.readMem8(pc);
+                this.cpu.cores[coreIdx].stop()
+
+                if (coreIdx !== this.idx) {
+                    this.setRegister("PC", (pc + 2) as u16);
+                }
+                break;
+            }
+
             case Opcode.SYSCALL:
                 this.handleSyscall(pc);
                 break;
 
             case Opcode.GET_FREQ:
-                this.setRegister("A", U8(this.clock?.clockFrequency ?? 0));
+                this.setRegister("A", U8(this.cpu.clock?.clockFrequency ?? 0));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.SET_FREQ:
-                if (this.clock) {
-                    this.clock.clockFrequency = this.readMem8(pc);
-                    this.clock.restart()
+                if (this.cpu.clock) {
+                    this.cpu.clock.clockFrequency = this.cpu.readMem8(pc);
+                    this.cpu.clock.restart()
 
                     // Update UI State
-                    this.clock.emit('state', { clockFrequency: this.clock.clockFrequency, })
+                    this.cpu.clock.emit('state', {
+                        clockFrequency: this.cpu.clock.clockFrequency,
+                    })
                 }
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
@@ -217,25 +267,21 @@ export class Cpu extends BaseCpu {
                 break;
 
             case Opcode.BREAKPOINT:
-                if (this.currentBreakpoint === pc) {
-                    this.currentBreakpoint = null;
+                if (this.cpu.currentBreakpoint === pc) {
+                    this.cpu.currentBreakpoint = null;
                     this.setRegister("PC", (pc + 1) as u16);
 
                 } else {
-                    this.currentBreakpoint = pc;
+                    this.cpu.currentBreakpoint = pc;
 
-                    if (!this.paused) {
-                        this.setPaused(true);
-
-                        // Update UI State
-                        this.emit('state', { paused: this.paused, })
+                    if (!this.cpu.paused) {
+                        this.cpu.setPaused(true);
                     }
                 }
                 break;
 
             case Opcode.HALT:
-                this.halted = true;
-                this.emit('state', { halted: this.halted });
+                this.stop();
                 break;
 
             // ===== ALU INSTRUCTIONS =====
@@ -345,12 +391,12 @@ export class Cpu extends BaseCpu {
 
             // ===== JUMP INSTRUCTIONS =====
             case Opcode.JMP:
-                this.setRegister("PC", this.readMem16(pc));
+                this.setRegister("PC", this.cpu.readMem16(pc));
                 break;
 
             case Opcode.JZ:
                 if (this.getFlag('zero')) {
-                    this.setRegister("PC", this.readMem16(pc));
+                    this.setRegister("PC", this.cpu.readMem16(pc));
                 } else {
                     this.setRegister("PC", (pc + 3) as u16);
                 }
@@ -358,7 +404,7 @@ export class Cpu extends BaseCpu {
 
             case Opcode.JNZ:
                 if (!this.getFlag('zero')) {
-                    this.setRegister("PC", this.readMem16(pc));
+                    this.setRegister("PC", this.cpu.readMem16(pc));
                 } else {
                     this.setRegister("PC", (pc + 3) as u16);
                 }
@@ -366,7 +412,7 @@ export class Cpu extends BaseCpu {
 
             case Opcode.JC:
                 if (this.getFlag('carry')) {
-                    this.setRegister("PC", this.readMem16(pc));
+                    this.setRegister("PC", this.cpu.readMem16(pc));
                 } else {
                     this.setRegister("PC", (pc + 3) as u16);
                 }
@@ -374,7 +420,7 @@ export class Cpu extends BaseCpu {
 
             case Opcode.JNC:
                 if (!this.getFlag('carry')) {
-                    this.setRegister("PC", this.readMem16(pc));
+                    this.setRegister("PC", this.cpu.readMem16(pc));
                 } else {
                     this.setRegister("PC", (pc + 3) as u16);
                 }
@@ -426,7 +472,7 @@ export class Cpu extends BaseCpu {
             // ===== STACK =====
             case Opcode.SET_SP:
                 // SET_SP imm16 : SP = valeur immédiate 16-bit
-                this.setRegister("SP", this.readMem16(pc));
+                this.setRegister("SP", this.cpu.readMem16(pc));
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
@@ -440,12 +486,12 @@ export class Cpu extends BaseCpu {
 
             // ===== INTERRUPTS =====
             case Opcode.EI:  // Enable Interrupts
-                this.interruptsEnabled = true;
+                this.cpu.interruptsEnabled = true;
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.DI:  // Disable Interrupts
-                this.interruptsEnabled = false;
+                this.cpu.interruptsEnabled = false;
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
@@ -516,28 +562,28 @@ export class Cpu extends BaseCpu {
 
             // ===== MOV register-immediate (set flags) ===== => TODO: ne pas modifier les flags
             case Opcode.MOV_A_IMM:  // MOV A, imm8
-                const immA = this.memoryBus.readMemory((pc + 1) as u16);
+                const immA = this.cpu.memoryBus.readMemory((pc + 1) as u16);
                 this.setRegister("A", immA);
                 this.setFlags(immA === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.MOV_B_IMM:  // MOV B, imm8
-                const immB = this.memoryBus.readMemory((pc + 1) as u16);
+                const immB = this.cpu.memoryBus.readMemory((pc + 1) as u16);
                 this.setRegister("B", immB);
                 this.setFlags(immB === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.MOV_C_IMM:  // MOV C, imm8
-                const immC = this.memoryBus.readMemory((pc + 1) as u16);
+                const immC = this.cpu.memoryBus.readMemory((pc + 1) as u16);
                 this.setRegister("C", immC);
                 this.setFlags(immC === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.MOV_D_IMM:  // MOV D, imm8
-                const immD = this.memoryBus.readMemory((pc + 1) as u16);
+                const immD = this.cpu.memoryBus.readMemory((pc + 1) as u16);
                 this.setRegister("D", immD);
                 this.setFlags(immD === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 2) as u16);
@@ -545,32 +591,32 @@ export class Cpu extends BaseCpu {
 
             // ===== MOV memory-register (set flags) ===== => TODO: ne pas modifier les flags
             case Opcode.MOV_A_MEM:  // MOV A, [addr16]
-                const addrA = this.readMem16(pc);
-                const memValueA = this.memoryBus.readMemory(addrA);
+                const addrA = this.cpu.readMem16(pc);
+                const memValueA = this.cpu.memoryBus.readMemory(addrA);
                 this.setRegister("A", memValueA);
                 this.setFlags(memValueA === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.MOV_B_MEM:  // MOV B, [addr16]
-                const addrB = this.readMem16(pc);
-                const memValueB = this.memoryBus.readMemory(addrB);
+                const addrB = this.cpu.readMem16(pc);
+                const memValueB = this.cpu.memoryBus.readMemory(addrB);
                 this.setRegister("B", memValueB);
                 this.setFlags(memValueB === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.MOV_C_MEM:  // MOV C, [addr16]
-                const addrC = this.readMem16(pc);
-                const memValueC = this.memoryBus.readMemory(addrC);
+                const addrC = this.cpu.readMem16(pc);
+                const memValueC = this.cpu.memoryBus.readMemory(addrC);
                 this.setRegister("C", memValueC);
                 this.setFlags(memValueC === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.MOV_D_MEM:  // MOV D, [addr16]
-                const addrD = this.readMem16(pc);
-                const memValueD = this.memoryBus.readMemory(addrD);
+                const addrD = this.cpu.readMem16(pc);
+                const memValueD = this.cpu.memoryBus.readMemory(addrD);
                 this.setRegister("D", memValueD);
                 this.setFlags(memValueD === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 3) as u16);
@@ -578,32 +624,32 @@ export class Cpu extends BaseCpu {
 
             // ===== MOV register-memory =====
             case Opcode.MOV_MEM_A:  // MOV [addr16], A
-                const addrMemA = this.readMem16(pc);
-                this.memoryBus.writeMemory(addrMemA, this.getRegister("A"));
+                const addrMemA = this.cpu.readMem16(pc);
+                this.cpu.memoryBus.writeMemory(addrMemA, this.getRegister("A"));
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.MOV_MEM_B:  // MOV [addr16], B
-                const addrMemB = this.readMem16(pc);
-                this.memoryBus.writeMemory(addrMemB, this.getRegister("B"));
+                const addrMemB = this.cpu.readMem16(pc);
+                this.cpu.memoryBus.writeMemory(addrMemB, this.getRegister("B"));
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.MOV_MEM_C:  // MOV [addr16], C
-                const addrMemC = this.readMem16(pc);
-                this.memoryBus.writeMemory(addrMemC, this.getRegister("C"));
+                const addrMemC = this.cpu.readMem16(pc);
+                this.cpu.memoryBus.writeMemory(addrMemC, this.getRegister("C"));
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.MOV_MEM_D:  // MOV [addr16], D
-                const addrMemD = this.readMem16(pc);
-                this.memoryBus.writeMemory(addrMemD, this.getRegister("D"));
+                const addrMemD = this.cpu.readMem16(pc);
+                this.cpu.memoryBus.writeMemory(addrMemD, this.getRegister("D"));
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.MOV_A_PTR_CD:  // MOV A, *[C:D] => TODO: ne pas modifier les flags
                 const ptrCD_LoadA = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
-                const valuePtr_A = this.memoryBus.readMemory(ptrCD_LoadA);
+                const valuePtr_A = this.cpu.memoryBus.readMemory(ptrCD_LoadA);
                 this.setRegister("A", valuePtr_A);
                 this.setFlags(valuePtr_A === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 1) as u16);
@@ -611,7 +657,7 @@ export class Cpu extends BaseCpu {
 
             case Opcode.MOV_B_PTR_CD:  // MOV B, *[C:D] => TODO: ne pas modifier les flags
                 const ptrCD_LoadB = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
-                const valuePtr_B = this.memoryBus.readMemory(ptrCD_LoadB);
+                const valuePtr_B = this.cpu.memoryBus.readMemory(ptrCD_LoadB);
                 this.setRegister("B", valuePtr_B);
                 this.setFlags(valuePtr_B === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 1) as u16);
@@ -619,13 +665,13 @@ export class Cpu extends BaseCpu {
 
             case Opcode.MOV_PTR_CD_A:  // MOV *[C:D], A
                 const ptrCD_StoreA = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
-                this.memoryBus.writeMemory(ptrCD_StoreA, this.getRegister("A"));
+                this.cpu.memoryBus.writeMemory(ptrCD_StoreA, this.getRegister("A"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.MOV_PTR_CD_B:  // MOV *[C:D], B
                 const ptrCD_StoreB = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
-                this.memoryBus.writeMemory(ptrCD_StoreB, this.getRegister("B"));
+                this.cpu.memoryBus.writeMemory(ptrCD_StoreB, this.getRegister("B"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
@@ -633,8 +679,11 @@ export class Cpu extends BaseCpu {
                 this.setRegister("PC", (pc + 1) as u16);
 
                 console.error(`Unknown opcode at 0x${pc.toString(16)}: 0x${instruction.toString(16)}`);
-                this.halted = true;
-                this.emit('state', { halted: this.halted });
+                this.stop();
+                this.emit('state', {
+                    idx: this.idx,
+                    coreHalted: this.coreHalted,
+                });
                 break;
         }
 
@@ -643,9 +692,9 @@ export class Cpu extends BaseCpu {
 
     // Fonction pour CALL
     handleSyscall(pc: u16) {
-        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+        if (!this.cpu.memoryBus) throw new Error("Missing MemoryBus")
 
-        const syscallNum = this.memoryBus.readMemory((pc + 1) as u16);
+        const syscallNum = this.cpu.memoryBus.readMemory((pc + 1) as u16);
 
         switch (syscallNum) {
             case 0: // exit
@@ -682,7 +731,7 @@ export class Cpu extends BaseCpu {
 
                     // Lire caractères jusqu'à '\0'
                     while (true) {
-                        const char = this.memoryBus.readMemory(addr);
+                        const char = this.cpu.memoryBus.readMemory(addr);
 
                         if (char === 0) break; // '\0' trouvé
 
@@ -705,7 +754,7 @@ export class Cpu extends BaseCpu {
 
 
     handleCall(pc: u16) {
-        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+        if (!this.cpu.memoryBus) throw new Error("Missing MemoryBus")
 
         // Adresse de retour = PC + 3 (opcode + 2 bytes d'adresse)
         const returnAddr = pc + 3;
@@ -714,17 +763,17 @@ export class Cpu extends BaseCpu {
         let sp = this.getRegister("SP");
 
         // PUSH high byte
-        this.memoryBus.writeMemory(sp, ((returnAddr >> 8) & 0xFF) as u8);
+        this.cpu.memoryBus.writeMemory(sp, ((returnAddr >> 8) & 0xFF) as u8);
         sp = ((sp - 1) & 0xFFFF) as u16;
 
         // PUSH low byte
-        this.memoryBus.writeMemory(sp, (returnAddr & 0xFF) as u8);
+        this.cpu.memoryBus.writeMemory(sp, (returnAddr & 0xFF) as u8);
         sp = ((sp - 1) & 0xFFFF) as u16;
 
         this.setRegister("SP", sp);
 
         // Lire l'adresse de destination
-        const callAddr = this.readMem16(pc);
+        const callAddr = this.cpu.readMem16(pc);
 
         // Sauter
         this.setRegister("PC", callAddr);
@@ -733,17 +782,17 @@ export class Cpu extends BaseCpu {
 
     // Fonction pour RET
     handleRet() {
-        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+        if (!this.cpu.memoryBus) throw new Error("Missing MemoryBus")
 
         let sp = this.getRegister("SP");
 
         // POP low byte
         sp = ((sp + 1) & 0xFFFF) as u16;
-        const low = this.memoryBus.readMemory(sp);
+        const low = this.cpu.memoryBus.readMemory(sp);
 
         // POP high byte
         sp = ((sp + 1) & 0xFFFF) as u16;
-        const high = this.memoryBus.readMemory(sp);
+        const high = this.cpu.memoryBus.readMemory(sp);
 
         const retAddr = ((high << 8) | low) as u16;
 
@@ -757,22 +806,22 @@ export class Cpu extends BaseCpu {
 
     // Fonction pour IRET (Return from Interrupt)
     handleIRet() {
-        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+        if (!this.cpu.memoryBus) throw new Error("Missing MemoryBus")
 
         let sp = this.getRegister("SP");
 
         // POP PC - low
         sp = ((sp + 1) & 0xFFFF) as u16;
-        const pcLow = this.memoryBus.readMemory(sp);
+        const pcLow = this.cpu.memoryBus.readMemory(sp);
 
         // POP PC - high
         sp = ((sp + 1) & 0xFFFF) as u16;
-        const pcHigh = this.memoryBus.readMemory(sp);
+        const pcHigh = this.cpu.memoryBus.readMemory(sp);
         const returnAddr = ((pcHigh << 8) | pcLow) as u16;
 
         // POP Flags
         sp = ((sp + 1) & 0xFFFF) as u16;
-        const flags = this.memoryBus.readMemory(sp);
+        const flags = this.cpu.memoryBus.readMemory(sp);
 
         // Mettre à jour registres
         this.setRegister("SP", sp);
@@ -780,53 +829,164 @@ export class Cpu extends BaseCpu {
         this.setRegister("FLAGS", flags);
 
         // Réactiver interruptions
-        this.interruptsEnabled = true;
-        this.inInterruptHandler = false;
+        this.cpu.interruptsEnabled = true;
+        this.cpu.inInterruptHandler = false;
     }
 
 
-    handleInterrupt() {
-        if (!this.memoryBus) throw new Error("Missing MemoryBus")
-        if (!this.interrupt) throw new Error("Missing Interrupt")
+    // Fonction pour push une valeur sur la pile
+    pushValue(value: u8) {
+        if (!this.cpu.memoryBus) throw new Error("Missing MemoryBus")
 
-        const irq = this.interrupt.getPendingIRQ();
-        if (irq === null) return;
+        let sp = this.getRegister("SP");
 
-        console.log(`🎯 Handling IRQ ${irq}, handlerAddr = ${this.interrupt.handlerAddr.toString(16)}`);
+        // Écrire la valeur à [SP]
+        this.cpu.memoryBus.writeMemory(sp, value);
 
-        // 1. Désactiver interruptions
-        this.interruptsEnabled = false;
-        this.inInterruptHandler = true;
+        // Décrémenter SP (pile descend)
+        sp = ((sp - 1) & 0xFFFF) as u16;
+        this.setRegister("SP", sp);
+    }
 
-        // 2. Sauvegarder contexte sur la pile
-        const sp = this.getRegister("SP");
-        const pc = this.getRegister("PC");
-        const flags = this.getRegister("FLAGS");
 
-        // PUSH Flags
-        this.memoryBus.writeMemory(sp, flags);
-        this.setRegister("SP", (sp - 1) as u16);
+    // Fonction pour pop une valeur de la pile
+    popValue(): u8 {
+        if (!this.cpu.memoryBus) throw new Error("Missing MemoryBus")
 
-        // PUSH PC (little-endian)
-        this.memoryBus.writeMemory((sp - 1) as u16, ((pc >> 8) & 0xFF) as u8); // High byte
-        this.memoryBus.writeMemory((sp - 2) as u16, (pc & 0xFF) as u8);      // Low byte
-        this.setRegister("SP", (sp - 3) as u16);
+        let sp = this.getRegister("SP");
 
-        // 3. Acquitter l'interruption
-        this.interrupt.acknowledgeInterrupt(irq);
+        // Incrémenter SP d'abord (pile remonte)
+        sp = ((sp + 1) & 0xFFFF) as u16;
 
-        // 4. Sauter au handler
-        let handlerAddress = this.interrupt.handlerAddr;
-        if (handlerAddress === 0) {
-            // Vecteur par défaut: 0x0040 + irq*4
-            handlerAddress = (0x0040 + (irq * 4)) as u16;
+        // Lire la valeur à [SP]
+        const value = this.cpu.memoryBus.readMemory(sp);
+
+        // Mettre à jour SP
+        this.setRegister("SP", sp);
+
+        return value;
+    }
+
+
+    start() {
+        if (!this.coreHalted) return;
+
+        this.coreHalted = false;
+
+        this.emit('state', {
+            idx: this.idx,
+            coreHalted: this.coreHalted,
+        });
+    }
+
+
+    stop() {
+        if (this.coreHalted) return;
+
+        this.coreHalted = true;
+
+        this.emit('state', {
+            idx: this.idx,
+            coreHalted: this.coreHalted,
+        });
+    }
+
+
+    reset() {
+        this.stop();
+        this.coreCycle = 0;
+        this.registers = new Map(initialRegisters);
+
+        this.emit('state', {
+            idx: this.idx,
+            //coreHalted: this.coreHalted,
+            coreCycle: this.coreCycle,
+            registers: this.registers,
+        })
+    }
+
+}
+
+
+export class Cpu extends BaseCpu {
+    // Identification
+    public type = "simple";
+    public architecture: ICpu["architecture"] = "8bit";
+    public id: number;
+
+    // État
+    public cores: CpuCore[] = [];
+    public cpuHalted: boolean = false;
+    public paused: boolean = true;
+    public clockCycle: number = 0;
+    //public registers: Map<string, u8 | u16> = new Map;
+    public breakpoints: Set<number> = new Set;
+
+    // Composants
+    public memoryBus: MemoryBus | null = null;
+    public interrupt: Interrupt | null = null;
+    public clock: Clock | null = null;
+
+    public currentBreakpoint: number | null = null;
+    public interruptsEnabled: boolean = false;
+    public inInterruptHandler: boolean = false;
+
+
+    constructor(coresCount=1) {
+        //console.log(`Initializing Cpu`);
+        super();
+
+        this.id = Math.round(Math.random() * 999_999_999);
+
+        for (let i=0; i<coresCount; i++) {
+            const core = new CpuCore(this, i);
+            this.cores.push(core)
+
+            core.on('state', (state) => {
+                const coreIdx = state.idx;
+                console.log('CPU CORE state:', state)
+
+                if (state.coreHalted !== undefined) {
+                    const haltCpuIfAllCoresHalted = false;
+
+                    if (haltCpuIfAllCoresHalted && state.coreHalted) {
+                        let coresAlive = 0;
+
+                        for (const core of this.cores) {
+                            coresAlive += core.coreHalted ? 0 : 1;
+                        }
+
+                        if (coresAlive === 0) {
+                            this.cpuHalted = true;
+                        }
+                    }
+                }
+            })
         }
 
-        this.setRegister("PC", handlerAddress);
+        this.reset()
 
-        console.log(`🔄 Interruption IRQ${irq} -> Handler 0x${handlerAddress.toString(16)}`);
     }
 
+
+    executeCycle() {
+        if (this.cpuHalted) return;
+        if (this.status !== 'ready') return;
+
+        this.status = 'executingCycle';
+        this.clockCycle++
+
+        this.emit('state', {
+            clockCycle: this.clockCycle,
+        })
+
+
+        for (const core of this.cores) {
+            core.executeCoreCycle();
+        }
+
+        this.status = 'ready';
+    }
 
 
     readMem8(pc: u16): u8 {
@@ -846,56 +1006,30 @@ export class Cpu extends BaseCpu {
     }
 
 
-    // Fonction pour push une valeur sur la pile
-    pushValue(value: u8) {
-        if (!this.memoryBus) throw new Error("Missing MemoryBus")
-
-        let sp = this.getRegister("SP");
-
-        // Écrire la valeur à [SP]
-        this.memoryBus.writeMemory(sp, value);
-
-        // Décrémenter SP (pile descend)
-        sp = ((sp - 1) & 0xFFFF) as u16;
-        this.setRegister("SP", sp);
-    }
-
-
-    // Fonction pour pop une valeur de la pile
-    popValue(): u8 {
-        if (!this.memoryBus) throw new Error("Missing MemoryBus")
-
-        let sp = this.getRegister("SP");
-
-        // Incrémenter SP d'abord (pile remonte)
-        sp = ((sp + 1) & 0xFFFF) as u16;
-
-        // Lire la valeur à [SP]
-        const value = this.memoryBus.readMemory(sp);
-
-        // Mettre à jour SP
-        this.setRegister("SP", sp);
-
-        return value;
-    }
-
-
     reset() {
-        this.halted = false;
         this.clockCycle = 0;
         //this.setPaused(true);
-
-        this.registers = new Map(initialRegisters);
 
         this.interruptsEnabled = false;
         this.inInterruptHandler = false;
         this.currentBreakpoint = null;
 
+        //this.registers = new Map(initialRegisters);
+        this.cpuHalted = false;
+
+        for (const core of this.cores) {
+            core.reset();
+        }
+
+        if (this.cores[0]) {
+            this.cores[0].start()
+        }
+
         // Update UI State
         this.emit('state', {
-            halted: this.halted,
+            cpuHalted: this.cpuHalted,
             clockCycle: this.clockCycle,
-            registers: this.registers,
+            //registers: this.registers,
             interruptsEnabled: this.interruptsEnabled,
             inInterruptHandler: this.inInterruptHandler,
             currentBreakpoint: this.currentBreakpoint,

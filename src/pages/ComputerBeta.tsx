@@ -58,10 +58,11 @@ export const ComputerBeta: React.FC = () => {
             <div>
                 <Computer>
                     <Motherboard>
-                        <Cpu>
+                        <Cpu cores={2}>
                             <Clock frequency={10} />
                             {/* <Registers /> */}
                             <Interrupt ioPort={4} hidden={false} />
+                            {/* <CpuTimer /> */}
                         </Cpu>
 
                         <Memory >

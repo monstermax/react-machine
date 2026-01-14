@@ -18,7 +18,7 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
     // UI snapshot state
     const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set);
-    const [pc, setPc] = useState<u16>(0 as u16);
+    const [coresPc, setCoresPc] = useState<Map<number, u16>>(new Map);
 
     // UI
     const [followInstruction, setFollowInstruction] = useState(true);
@@ -46,22 +46,36 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
                 }
             });
 
-            cpuInstance.on('state', (state) => {
-                if (state.registers) {
-                    setPc(state.registers.get('PC'))
-                }
-            });
+            for (const core of cpuInstance.cores) {
+                core.on('state', (state) => {
+                    const coreIdx = state.idx;
+
+                    if (state.registers) {
+                        const pc = state.registers.get('PC');
+
+                        setCoresPc(o => {
+                            const n = new Map(o);
+                            n.set(coreIdx, pc);
+                            return n;
+                        })
+                    }
+                });
+
+            }
         }
     }, [cpuInstance])
 
 
     // Auto-scroll vers PC quand il change
     useEffect(() => {
+        const followCoreIdx = 0; // follow core #0 only
+        const pc = coresPc.get(followCoreIdx) ?? 0;
         const pcElement = addressRefs.current.get(pc);
+
         if (followInstruction && pcElement) {
             scrollInContainer(pcElement, -200);
         }
-    }, [pc, followInstruction]);
+    }, [coresPc, followInstruction]);
 
 
     const toggleBreakpoint = useCallback((address: number) => {
@@ -109,7 +123,7 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
             >
 
                 {sortedStorage.map(([address, value]) => {
-                    const isPC = cpuInstance && (address === pc);
+                    const isPC = Array.from(coresPc.values()).includes(address);
                     const isInstruction = memoryInstructionMap.get(address) ?? false;
                     const inROM = isROM(address);
 

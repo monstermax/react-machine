@@ -162,6 +162,10 @@ export const Clock: React.FC<ClockProps> = (props) => {
                 Current: {frequencyReal.toFixed(1)} Hz
             </div>
 
+            <div className="">
+                CPU Cycle: {cpuInstance?.clockCycle ?? '-'}
+            </div>
+
             <div>
                 {children}
             </div>

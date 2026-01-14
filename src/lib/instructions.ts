@@ -18,6 +18,10 @@ export enum Opcode {
     SYSCALL = 0x0E,
     HALT = 0x0F,
 
+    // Cores
+    CORE_HALT = 0xE0,
+    CORE_START = 0xE1,
+
     // Registers
     //R_LOAD_A = 0x10,     // R_LOAD A, immediate (8-bit) => remplacé par MOV_A_IMM
     //R_LOAD_B = 0x11,     // R_LOAD B, immediate (8-bit) => remplacé par MOV_B_IMM
@@ -158,6 +162,8 @@ export const INSTRUCTIONS_WITH_OPERAND = [
     Opcode.MOV_D_IMM,
     Opcode.SYSCALL,
     Opcode.SET_FREQ,
+    Opcode.CORE_HALT,
+    Opcode.CORE_START,
 ];
 
 
@@ -191,6 +197,9 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.BREAKPOINT: return "BREAKPOINT ASM";
         case Opcode.BREAKPOINT_JS: return "BREAKPOINT JS";
         case Opcode.HALT: return "HALT";
+
+        case Opcode.CORE_START: return "CORE START";
+        case Opcode.CORE_HALT: return "CORE HALT";
 
         // ALU
         case Opcode.ADD: return "ADD";

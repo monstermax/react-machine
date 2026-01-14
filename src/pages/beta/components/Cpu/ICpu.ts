@@ -13,7 +13,7 @@ export interface ICpu {
     id: number;
 
     // État
-    halted: boolean;
+    //halted: boolean;
     paused: boolean;
     clockCycle: number;
     breakpoints: Set<number>;
@@ -30,9 +30,9 @@ export interface ICpu {
     setPaused(paused: boolean): void;
 
     // Registres (abstraction)
-    getRegister(name: string): u8 | u16 | u32 | u64 | null;
-    setRegister(name: string, value: u8 | u16 | u32 | u64): void;
-    getAllRegisters(): Map<string, u8 | u16 | u32 | u64>;
+    //getRegister(name: string): u8 | u16 | u32 | u64 | null;
+    //setRegister(name: string, value: u8 | u16 | u32 | u64): void;
+    //getAllRegisters(): Map<string, u8 | u16 | u32 | u64>;
 
     // EventEmitter
     on(event: string, handler: (...args: any[]) => void): void;
