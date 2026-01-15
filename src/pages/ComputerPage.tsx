@@ -44,7 +44,7 @@ export const ComputerComponent: React.FC = () => {
                 <Link to="/">CPU Simulator</Link>
             </h1>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
                 <div className="space-y-8">
 
                     {/* Controls */}
