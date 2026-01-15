@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 
-import { compileCode, decompileCode, preCompileCode } from "@/lib/cpu_default/asm_compiler";
+import { compileCode, decompileCode, preCompileCode } from "@/cpus/default/asm_compiler";
 import { toHex, U16 } from "@/lib/integers";
 import { MEMORY_MAP } from "@/lib/memory_map_16bit";
 
@@ -102,14 +102,9 @@ export const CompilePage: React.FC = () => {
     }, [compileLineOffsetStr])
 
 
-
     const handleCompile = async () => {
         try {
             const result = await preCompileCode(sourceCode, compileMemoryOffsetUint, compileLineOffsetUint);
-
-            //const result2 = await compileCode(sourceCode, compileMemoryOffsetUint);
-            //const { code, comments, labels } = result2;
-            //console.log('result2:', result2)
 
             setCompiledCode(result.code);
 

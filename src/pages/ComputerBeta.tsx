@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'wouter';
 
-import { compileCode } from '@/lib/cpu_default/asm_compiler';
+import { compileCode } from '@/cpus/default/asm_compiler';
 import { MEMORY_MAP } from '@/lib/memory_map_16bit';
 
 import { Computer } from '@/v2/components/Computer/ComputerContext';
@@ -29,7 +29,7 @@ import { Timer } from '@/v2/components/Devices/Timer/Timer';
 
 import type { u16, u8 } from '@/types/cpu.types';
 
-import BootloaderSourceCode from '@/asm_default/bootloader/bootloader_v1.asm?raw'
+import BootloaderSourceCode from '@/cpus/default/asm/bootloader/bootloader_v1.asm?raw'
 
 
 export const ComputerBeta: React.FC = () => {

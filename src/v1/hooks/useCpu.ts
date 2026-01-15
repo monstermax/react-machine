@@ -1,7 +1,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Opcode } from "@/lib/cpu_default/cpu_instructions";
+import { Opcode } from "@/cpus/default/cpu_instructions";
 import { MEMORY_MAP } from "@/lib/memory_map_16bit";
 import type { MemoryHook } from "./useMemory";
 import type { IOHook } from "./useIo";

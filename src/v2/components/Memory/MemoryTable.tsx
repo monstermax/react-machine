@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXEleme
 
 import * as cpuApi from '@/v2/api';
 import { isROM } from '@/lib/memory_map_16bit';
-import { buildMemoryInstructionMap, getOpcodeName } from '@/lib/cpu_default/cpu_instructions';
+import { buildMemoryInstructionMap, getOpcodeName } from '@/cpus/default/cpu_instructions';
 import { U16 } from '@/lib/integers';
 import { useComputer } from '../Computer/ComputerContext';
 

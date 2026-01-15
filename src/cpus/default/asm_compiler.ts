@@ -1,19 +1,17 @@
 
-import { MEMORY_MAP } from '../memory_map_16bit';
+import { MEMORY_MAP } from '../../lib/memory_map_16bit';
+import { high16, low16, toHex, U16, U8 } from '../../lib/integers';
 import { Opcode, getInstructionLength } from './cpu_instructions';
-import { high16, low16, toHex, U16, U8 } from '../integers';
 
 import type { CompiledCode, CompiledCodeComments, CompiledCodeLabels, PreCompiledCode, u16, u8 } from '../../types/cpu.types';
 
 
 export async function loadSourceCodeFromFile(sourceFile: string): Promise<string> {
     const sourceCodeModule = sourceFile.endsWith('.ts')
-        ? await import(`../../asm_default/${sourceFile}`)
-        : await import(`../../asm_default/${sourceFile}?raw`);
+        ? await import(`../../cpus/default/asm/${sourceFile}`)
+        : await import(`../../cpus/default/asm/${sourceFile}?raw`);
     const sourceCode = sourceCodeModule.default;
     return sourceCode;
-    //const compiled = compileCode(sourceCode, memoryOffset);
-    //return compiled;
 }
 
 
@@ -697,34 +695,34 @@ function decompileStage2(inputCode: { line: string, opcode: string, value: strin
 
 const demoCodeSource: string = `
 :INIT
-SET_SP MEMORY_MAP.STACK_END
-MOV_A_IMM 0x01 # Commande clear
-MOV_MEM_A MEMORY_MAP.LCD_COMMAND
+    SET_SP MEMORY_MAP.STACK_END
+    MOV_A_IMM 0x01 # Commande clear
+    MOV_MEM_A MEMORY_MAP.LCD_COMMAND
 
 :START
-CALL $LEDS_ON
-MOV_A_IMM 0x0f
-CALL $WAIT_LOOP
-CALL $LEDS_OFF
-JMP END
+    CALL $LEDS_ON
+    MOV_A_IMM 0x0f
+    CALL $WAIT_LOOP
+    CALL $LEDS_OFF
+    JMP END
 
 :LEDS_ON
-MOV_A_IMM 0xff
-MOV_MEM_A MEMORY_MAP.LEDS_BASE
-RET
+    MOV_A_IMM 0xff
+    MOV_MEM_A MEMORY_MAP.LEDS_BASE
+    RET
 
 :LEDS_OFF
-MOV_A_IMM 0x00
-MOV_MEM_A MEMORY_MAP.LEDS_BASE
-RET
+    MOV_A_IMM 0x00
+    MOV_MEM_A MEMORY_MAP.LEDS_BASE
+    RET
 
 :WAIT_LOOP
-DEC_A
-JNZ $WAIT_LOOP
-RET
+    DEC_A
+    JNZ $WAIT_LOOP
+    RET
 
 :END
-SYSCALL 0
+    SYSCALL 0
 `;
 
 

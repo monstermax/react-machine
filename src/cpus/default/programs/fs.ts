@@ -1,5 +1,5 @@
 
-import { Opcode } from "@/lib/cpu_default/cpu_instructions";
+import { Opcode } from "@/cpus/default/cpu_instructions";
 
 import { MEMORY_MAP } from "@/lib/memory_map_16bit";
 import { high16, low16 } from "@/lib/integers";

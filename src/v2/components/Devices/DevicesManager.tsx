@@ -4,14 +4,14 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXEleme
 import * as cpuApi from '@/v2/api';
 import { StorageDisk } from './StorageDisk/StorageDisk';
 import { LedsDisplay } from './LedsDisplay/LedsDisplay';
-import { compileCode } from '@/lib/cpu_default/asm_compiler';
+import { compileCode } from '@/cpus/default/asm_compiler';
 import { Buzzer } from './Buzzer/Buzzer';
 import { useComputer } from '../Computer/ComputerContext';
 
 import type { u16, u8 } from '@/types/cpu.types';
 import type { IoDevice } from '@/v2/types/cpu_v2.types';
 
-import ledTestCodeSource from '@/asm_default/os/devices/led/led.lib.test.asm?raw'
+import ledTestCodeSource from '@/cpus/default/asm/os/devices/led/led.lib.test.asm?raw'
 
 
 const validDeviceTypes = ['Input', 'DiskStorage', 'Display', 'Audio', 'Time', 'Random', 'Interrupt'];

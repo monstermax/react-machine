@@ -2,7 +2,7 @@
 import { EventEmitter } from "eventemitter3";
 
 import { toHex, U16, U8 } from "@/lib/integers";
-import { Opcode } from "@/lib/cpu_default/cpu_instructions";
+import { Opcode } from "@/cpus/default/cpu_instructions";
 import { MEMORY_MAP } from "@/lib/memory_map_16bit";
 
 import type { MemoryBus } from "../Memory/MemoryBus.api";

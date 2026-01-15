@@ -1,5 +1,5 @@
 
-import { Opcode } from "@/lib/cpu_default/cpu_instructions";
+import { Opcode } from "@/cpus/default/cpu_instructions";
 
 import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
