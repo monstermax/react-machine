@@ -11,13 +11,14 @@ export type KeyboardProps = {
     name: string;
     ioPort: number | u8 | null;
     hidden?: boolean;
+    open?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Keyboard) => void,
 }
 
 
 export const Keyboard: React.FC<KeyboardProps> = (props) => {
-    const { hidden, name, ioPort, children, onInstanceCreated } = props;
+    const { hidden, open=true, name, ioPort, children, onInstanceCreated } = props;
 
     // Core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.Keyboard | null>(null);
@@ -27,7 +28,7 @@ export const Keyboard: React.FC<KeyboardProps> = (props) => {
     const [hasChar, setHasChar] = useState<boolean>(true)
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open);
 
 
     // Instanciate Device

@@ -263,7 +263,8 @@ export const programs: Record<string, ProgramInfo> = {
             [0x43, 0xFF],
 
             // HALT
-            [0x44, Opcode.HALT],
+            [0x44, Opcode.SYSCALL],
+            [0x45, 0],
         ] as [u16, u8][]),
     },
 

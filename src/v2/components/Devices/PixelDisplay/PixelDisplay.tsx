@@ -12,6 +12,7 @@ export type PixelDisplayProps = {
     name: string;
     ioPort: number | u8 | null;
     hidden?: boolean;
+    open?: boolean;
     width?: number;
     height?: number;
     children?: React.ReactNode,
@@ -20,7 +21,7 @@ export type PixelDisplayProps = {
 
 
 export const PixelDisplay: React.FC<PixelDisplayProps> = (props) => {
-    const { hidden, name, ioPort, width=32, height=32, children, onInstanceCreated } = props;
+    const { hidden, open=true, name, ioPort, width=32, height=32, children, onInstanceCreated } = props;
 
     // Core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.PixelDisplay | null>(null);
@@ -33,7 +34,7 @@ export const PixelDisplay: React.FC<PixelDisplayProps> = (props) => {
 
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open);
 
 
     // Instanciate Device

@@ -79,11 +79,11 @@ export const ComputerBeta: React.FC = () => {
                         {/* Display */}
                         <LedsDisplay ioPort={0x03} name="leds" />
                         <LcdDisplay ioPort={0x0A} name="lcd" />
-                        <PixelDisplay ioPort={0x0D} name="display_32x32" />
-                        <SevenSegmentDisplay ioPort={0x06} name="7-segment"  />
+                        <PixelDisplay ioPort={0x0D} name="display_32x32" open={false} />
+                        <SevenSegmentDisplay ioPort={0x06} name="7-segment" open={false} />
 
                         {/* Input */}
-                        <Keyboard ioPort={0x05} name="keyboard" />
+                        <Keyboard ioPort={0x05} name="keyboard" open={false} />
 
                         {/* Audio */}
                         <Buzzer ioPort={0x08} name="buzzer" hidden />

@@ -11,13 +11,14 @@ export type SevenSegmentDisplayProps = {
     name: string;
     ioPort: number | u8 | null;
     hidden?: boolean;
+    open?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.SevenSegmentDisplay) => void,
 }
 
 
 export const SevenSegmentDisplay: React.FC<SevenSegmentDisplayProps> = (props) => {
-    const { hidden, name, ioPort, children, onInstanceCreated } = props;
+    const { hidden, open=true, name, ioPort, children, onInstanceCreated } = props;
 
     // Core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.SevenSegmentDisplay | null>(null);
@@ -38,7 +39,7 @@ export const SevenSegmentDisplay: React.FC<SevenSegmentDisplayProps> = (props) =
 
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open);
 
 
     // Instanciate Device
