@@ -142,16 +142,15 @@ export const programs: Record<string, ProgramInfo> = {
             // Délai
             [0x07, Opcode.DEC_B],
             [0x08, Opcode.JNZ],
-            [0x10, low16(MEMORY_MAP.PROGRAM_START + 0x07 as u16)],   // PROGRAM_START + 0x07 - Low
-            [0x11, high16(MEMORY_MAP.PROGRAM_START + 0x07 as u16)],  // PROGRAM_START + 0x07 - High
+            [0x09, low16(MEMORY_MAP.PROGRAM_START + 0x07 as u16)],   // PROGRAM_START + 0x07 - Low
+            [0x0A, high16(MEMORY_MAP.PROGRAM_START + 0x07 as u16)],  // PROGRAM_START + 0x07 - High
 
             [0x0B, Opcode.INC_A],
             [0x0C, Opcode.MOV_B_IMM],
             [0x0D, 0x0F],
-            [0x0E, Opcode.AND],          // A = A & 0x0F
-            [0x0F, Opcode.JMP],
-            [0x10, low16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],   // PROGRAM_START + 0x02 - Low
-            [0x11, high16(MEMORY_MAP.PROGRAM_START + 0x02 as u16)],  // PROGRAM_START + 0x02 - High
+
+            [0x0E, Opcode.SYSCALL],
+            [0x0F, 0],
         ] as [u16, u8][]),
     },
 
@@ -634,9 +633,12 @@ export const programs: Record<string, ProgramInfo> = {
         name: "Contour Carré 10x10",
         description: "Dessine uniquement le contour d'un carré 10x10",
         code: new Map([
-            [0x00, Opcode.SET_SP],
-            [0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
-            [0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
+            [0x00, Opcode.PUSH_A],
+            [0x01, Opcode.NOP],
+            [0x02, Opcode.POP_A],
+            //[0x00, Opcode.SET_SP],
+            //[0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
+            //[0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
 
             // === LIGNE HAUT (Y=5, X=5 à 14) ===
             [0x03, Opcode.MOV_A_IMM],

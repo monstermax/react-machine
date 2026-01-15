@@ -220,45 +220,62 @@ class CpuCore extends EventEmitter {
 
             case Opcode.CORES_COUNT: {
                 this.setRegister("A", U8(this.cpu.cores.length));
-                this.setRegister("PC", (pc + 2) as u16);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
             }
 
             case Opcode.CORE_STATUS: {
-                const coreIdx = this.cpu.readMem8(pc);
+                const coreIdx = this.getRegister("A");
 
                 if (this.cpu.cores[coreIdx]) {
                     this.setRegister("A", U8(this.cpu.cores[coreIdx].coreHalted ? 0 : 1));
+                    this.setFlags(this.cpu.cores[coreIdx].coreHalted, false);
 
                 } else {
                     this.setRegister("A", U8(0));
+                    this.setFlags(true, false);
                 }
 
-                this.setRegister("PC", (pc + 2) as u16);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CORE_INIT: {
+                const coreIdx = this.getRegister("A");
+
+                if (this.cpu.cores[coreIdx] && this.cpu.cores[coreIdx].coreHalted) {
+                    const addrLow = this.getRegister('C');
+                    const addrHigh = this.getRegister('D');
+                    const address = U16((addrHigh << 8) | addrLow)
+                    this.cpu.cores[coreIdx].setRegister("PC", address);
+                }
+
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
             }
 
             case Opcode.CORE_START: {
-                const coreIdx = this.cpu.readMem8(pc);
+                const coreIdx = this.getRegister("A");
 
                 if (this.cpu.cores[coreIdx]) {
-                    this.cpu.cores[coreIdx].setRegister('PC', U16(0x1000)) // TODO: ne pas hardcoder l'adresse
                     this.cpu.cores[coreIdx].start()
                 }
 
                 if (coreIdx !== this.idx) {
-                    this.setRegister("PC", (pc + 2) as u16);
+                    this.setRegister("PC", (pc + 1) as u16);
                 }
                 break;
             }
 
             case Opcode.CORE_HALT: {
-                const coreIdx = this.cpu.readMem8(pc);
+                const coreIdx = this.getRegister("A");
 
                 if (this.cpu.cores[coreIdx]) {
                     this.cpu.cores[coreIdx].stop()
                 }
 
                 if (coreIdx !== this.idx) {
-                    this.setRegister("PC", (pc + 2) as u16);
+                    this.setRegister("PC", (pc + 1) as u16);
                 }
                 break;
             }
@@ -724,49 +741,25 @@ class CpuCore extends EventEmitter {
             case 0: // exit
                 console.log("📍 Program exit (syscall 0)");
 
+                if (this.idx !== 0) {
+                    this.stop();
+                    break;
+                }
+
                 // Clear program memory - pour eviter que le programme ne se relance automatiquement (si mini_os v1)
-                //for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
-                //    memory.writeMemory(addr, 0 as u8);
-                //    break; // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
-                //}
+                //this.cpu.memoryBus.writeMemory(MEMORY_MAP.OS_START, U8(0))
+                for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
+                    //this.cpu.memoryBus.writeMemory(addr, 0 as u8);
+                    //break; // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
+
+                    if (this.cpu.memoryBus.ram) {
+                        this.cpu.memoryBus.ram.storage.delete(addr);
+                    }
+                }
 
                 // Retour à l'OS
                 this.setRegister("PC", MEMORY_MAP.OS_START);
-                break;
-
-            case 1: // pause
-                // TODO: mettre en pause dans l'interface UI
-                this.setRegister("PC", (pc + 2) as u16);
-                break;
-
-            case 2: // print_char - afficher A comme caractère
-                //console.log(`📝 print_char: ${String.fromCharCode(getRegister("A"))}`);
-                this.setRegister("PC", (pc + 2) as u16);
-                break;
-
-            case 3: // print_num - afficher A comme nombre
-                //console.log(`📊 print_num: ${getRegister("A")}`);
-                this.setRegister("PC", (pc + 2) as u16);
-                break;
-
-            case 4: // print_string - afficher string pointée par C:D
-                {
-                    let addr = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
-
-                    // Lire caractères jusqu'à '\0'
-                    while (true) {
-                        const char = this.cpu.memoryBus.readMemory(addr);
-
-                        if (char === 0) break; // '\0' trouvé
-
-                        // Écrire dans console
-                        //ioHook.console.write(0x00 as u8, char); // CONSOLE_CHAR
-
-                        addr = ((addr + 1) & 0xFFFF) as u16;
-                    }
-
-                    this.setRegister("PC", (pc + 2) as u16);
-                }
+                //this.setRegister("PC", (pc + 2) as u16);
                 break;
 
             default:

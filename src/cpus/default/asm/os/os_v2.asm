@@ -10,7 +10,6 @@ OS_START:
 
 MAIN:
     SET_FREQ 50
-    CALL $START_CORE_TEST()
     JMP $HANDLE_USER_MENU
 
 
@@ -103,11 +102,16 @@ HANDLE_USER_MENU:
         JZ $CALL_PROGRAM_NOT_FOUND
 
         CALL $CONSOLE_PRINT_START_PROGRAM() # display START PROGRAM
+
         SET_FREQ 10
-        CALL @PROGRAM_START
-        SET_FREQ 50
-        CALL $CONSOLE_PRINT_STOP_PROGRAM() # display STOP PROGRAM
-        JMP $CLEAR_CONSOLE
+        #CALL @PROGRAM_START
+        CALL $START_CORE_TEST()
+        #JMP $CALL_PRINT_MENU
+        JMP $WAIT_KEY
+
+        #SET_FREQ 50
+        #CALL $CONSOLE_PRINT_STOP_PROGRAM() # display STOP PROGRAM
+        #JMP $CLEAR_CONSOLE
 
 
     PRINT_MENU():
@@ -128,8 +132,32 @@ HANDLE_USER_MENU:
 
 
 START_CORE_TEST():
-    CORE_START 0x01
-    RET
+    # endpoint du coeur à lancer
+    MOV_C_IMM <@PROGRAM_START
+    MOV_D_IMM >@PROGRAM_START
+    CORES_COUNT # A = Cores count
+    DEC_A # A = Last Core Idx
 
+    START_CORE_TEST_FIND_FREE_CORE:
+        PUSH_A # A = Core Idx to check
+        CORE_STATUS # A = Cores #x Status
+        JZ $START_CORE_TEST_START # si core disponible, jump
+        POP_A
+        PUSH_A
+        DEC_A
+        JZ $START_CORE_TEST_NO_CORE_AVAILABLE
+        JMP $START_CORE_TEST_FIND_FREE_CORE
 
+    START_CORE_TEST_NO_CORE_AVAILABLE:
+        POP_A
+        JMP $START_CORE_TEST_END
+
+    START_CORE_TEST_START:
+        POP_A
+        # TODO: configurer une stack pour le core
+        CORE_INIT
+        CORE_START
+
+    START_CORE_TEST_END:
+        RET
 

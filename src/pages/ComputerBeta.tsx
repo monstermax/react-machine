@@ -58,7 +58,7 @@ export const ComputerBeta: React.FC = () => {
             <div>
                 <Computer>
                     <Motherboard>
-                        <Cpu cores={2}>
+                        <Cpu cores={4}>
                             <Clock frequency={10} />
                             {/* <Registers /> */}
                             <Interrupt ioPort={4} hidden={false} />
@@ -80,7 +80,7 @@ export const ComputerBeta: React.FC = () => {
                         <LedsDisplay ioPort={0x03} name="leds" />
                         <LcdDisplay ioPort={0x0A} name="lcd" />
                         <PixelDisplay ioPort={0x0D} name="display_32x32" />
-                        <SevenSegmentDisplay ioPort={0x06} name="7-segment" hidden />
+                        <SevenSegmentDisplay ioPort={0x06} name="7-segment"  />
 
                         {/* Input */}
                         <Keyboard ioPort={0x05} name="keyboard" />

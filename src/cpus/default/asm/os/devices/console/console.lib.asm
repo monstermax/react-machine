@@ -75,13 +75,16 @@
 
 
 TEXT_DEMO:
-    .string "Welcome on OS v1"
+    #.string "Welcome on OS v1"
+    .string "OS v1"
 
 TEXT_START_PROGRAM:
-    .string "Starting Program"
+    #.string "Starting Program"
+    .string "RUN"
 
 TEXT_STOP_PROGRAM:
-    .string "Program Complete"
+    #.string "Program Complete"
+    .string "END"
 
 STR_OK:
     .string "OK"
