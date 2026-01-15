@@ -29,12 +29,6 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
     const [interruptInstance, setInterruptInstance] = useState<cpuApi.Interrupt | null>(null);
 
-    // Core Dependencies
-    const computerInstance = computerRef.current;
-    const motherboardInstance = motherboardRef.current;
-    const ramInstance = ramRef.current;
-    const devicesManagerInstance = devicesManagerRef.current;
-
     // UI snapshot state
     const [paused, setPaused] = useState(true);
     const [clockCycle, setClockCycle] = useState(0);
@@ -53,7 +47,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
     // Instanciate CPU
     useEffect(() => {
-        if (!motherboardInstance) return;
+        //if (!motherboardRef.current) return;
         if (cpuRef.current) return;
 
         const _instanciateCpu = () => {
@@ -146,7 +140,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
         const timer = setTimeout(_instanciateCpu, 100);
         return () => clearTimeout(timer);
-    }, [motherboardInstance]);
+    }, []);
 
 
     // Notifie le parent quand le CPU est créé
@@ -186,8 +180,8 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
             //console.log('interrupt monté dans CPU:', interruptInstance);
 
-            if (devicesManagerInstance) {
-                devicesManagerInstance.devices.set(interruptInstance.ioPort, interruptInstance)
+            if (devicesManagerRef.current) {
+                devicesManagerRef.current.devices.set(interruptInstance.ioPort, interruptInstance)
             }
         }
 
@@ -242,12 +236,12 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             resetCpu()
         }
 
-        if (devicesManagerInstance) {
-            devicesManagerInstance.reset()
+        if (devicesManagerRef.current) {
+            devicesManagerRef.current.reset()
         }
 
-        if (ramInstance) {
-            ramInstance.eraseRam()
+        if (ramRef.current) {
+            ramRef.current.eraseRam()
         }
     }
 

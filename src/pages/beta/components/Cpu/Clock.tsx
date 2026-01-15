@@ -33,9 +33,6 @@ export const Clock: React.FC<ClockProps> = (props) => {
     // Core
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
 
-    // Core Dependencies
-    const cpuInstance = cpuRef.current;
-
     // UI
     const [clockFrequency, setClockFrequency] = useState(initialFrequency)
     const [frequencyReal, setFrequencyReal] = useState(0)
@@ -95,10 +92,10 @@ export const Clock: React.FC<ClockProps> = (props) => {
     // Calculer la frequence reelle
     useEffect(() => {
         const updateFrequencyStat = () => {
-            if (!cpuInstance) return;
+            if (!cpuRef.current) return;
 
             const timestamp = Date.now() / 1000;
-            const cyclesNew = cpuInstance.clockCycle;
+            const cyclesNew = cpuRef.current.clockCycle;
 
             if (lastFrequencyStat) {
                 const duration = timestamp - lastFrequencyStat.timestamp;
@@ -163,7 +160,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
             </div>
 
             <div className="">
-                CPU Cycle: {cpuInstance?.clockCycle ?? '-'}
+                CPU Cycle: {cpuRef.current?.clockCycle ?? '-'}
             </div>
 
             <div>

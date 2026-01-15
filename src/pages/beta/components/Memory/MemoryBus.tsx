@@ -25,18 +25,16 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     const [romInstance, setRomInstance] = useState<cpuApi.Rom | null>(null);
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
 
-    // Core Dependencies
-    const motherboardInstance = motherboardRef.current;
-    const devicesManagerInstance = devicesManagerRef.current;
-
     // UI
     const [contentVisible, setContentVisible] = useState(true);
 
 
     // Instanciate MemoryBus
     useEffect(() => {
-        if (!motherboardInstance) return;
-        if (memoryBusRef.current) return;
+        if (memoryBusRef.current) {
+            setMemoryBusInstance(memoryBusRef.current);
+            return;
+        }
 
         const _instanciateMemoryBus = () => {
             const memoryBusInstance = new cpuApi.MemoryBus;
@@ -51,9 +49,9 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
             }
 
             // Connect MemoryBus to DevicesManager
-            if (devicesManagerInstance && !memoryBusInstance.io) {
-                memoryBusInstance.io = devicesManagerInstance;
-                //console.log('DevicesManager connecté à MemoryBus:', devicesManagerInstance);
+            if (devicesManagerRef.current) {
+                memoryBusInstance.io = devicesManagerRef.current;
+                console.log('DevicesManager connecté à MemoryBus:', devicesManagerRef.current);
             }
 
 
@@ -67,11 +65,13 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
             // TODO
 
             //setInstanciated(true)
+
+            //console.log(`MemoryBus Initialized`)
         }
 
         const timer = setTimeout(_instanciateMemoryBus, 100);
         return () => clearTimeout(timer);
-    }, [motherboardInstance]);
+    }, []);
 
 
     // Notifie le parent quand le MemoryBus est créé

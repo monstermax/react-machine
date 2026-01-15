@@ -25,9 +25,6 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
 
-    // Core Dependencies
-    const computerInstance = computerRef.current;
-
     // UI
     const [contentVisible, setContentVisible] = useState(true);
 
@@ -49,8 +46,8 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
             motherBoardRef.current = motherBoardInstance;
 
             // Attach Motherboard to Computer
-            if (computerInstance && !computerInstance.motherboard) {
-                computerInstance.motherboard = motherboardInstance;
+            if (computerRef.current && !computerRef.current.motherboard) {
+                computerRef.current.motherboard = motherboardInstance;
                 //console.log('Motherboard monté dans Computer:', motherboardInstance);
             }
 

@@ -26,10 +26,6 @@ export const Ram: React.FC<RamProps> = (props) => {
     // Core
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
 
-    // Core Dependencies
-    const computerInstance = computerRef.current;
-    const memoryBusInstance = memoryBusRef.current;
-
     // UI snapshot state
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
 
@@ -39,7 +35,7 @@ export const Ram: React.FC<RamProps> = (props) => {
 
     // Instanciate Ram
     useEffect(() => {
-        if (!memoryBusInstance) return;
+        //if (!memoryBusRef.current) return;
         if (ramRef.current) return;
 
         const _instanciateRam = () => {
@@ -66,7 +62,7 @@ export const Ram: React.FC<RamProps> = (props) => {
 
         const timer = setTimeout(_instanciateRam, 100);
         return () => clearTimeout(timer);
-    }, [memoryBusInstance]);
+    }, []);
 
 
     // Notifie le parent quand le Ram est créé
@@ -95,7 +91,7 @@ export const Ram: React.FC<RamProps> = (props) => {
 
 
     const loadOsInRam = async (osName: string) => {
-        if (!ramInstance || !computerInstance) return;
+        if (!ramInstance || !computerRef.current) return;
 
         // doublon avec Computer.loadOsInRam
 
@@ -114,13 +110,13 @@ export const Ram: React.FC<RamProps> = (props) => {
 
         //ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
 
-        computerInstance.loadedOs = osName;
-        computerInstance.emit('state', { loadedOs: osName })
+        computerRef.current.loadedOs = osName;
+        computerRef.current.emit('state', { loadedOs: osName })
     }
 
 
     const loadProgramInRam = async (programName: string) => {
-        if (!ramInstance || !computerInstance) return;
+        if (!ramInstance || !computerRef.current) return;
 
         // doublon avec Computer.loadProgramInRam
 
@@ -139,8 +135,8 @@ export const Ram: React.FC<RamProps> = (props) => {
 
         //ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
 
-        computerInstance.loadedProgram = programName;
-        computerInstance.emit('state', { loadedProgram: programName })
+        computerRef.current.loadedProgram = programName;
+        computerRef.current.emit('state', { loadedProgram: programName })
     }
 
 

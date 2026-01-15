@@ -21,9 +21,6 @@ export const Rom: React.FC<RomProps> = (props) => {
     // Core
     const [romInstance, setRomInstance] = useState<cpuApi.Rom | null>(null);
 
-    // Core Dependencies
-    const memoryBusInstance = memoryBusRef.current;
-
     // UI snapshot state
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
 
@@ -33,7 +30,7 @@ export const Rom: React.FC<RomProps> = (props) => {
 
     // Instanciate Rom
     useEffect(() => {
-        if (!memoryBusInstance) return;
+        //if (!memoryBusRef.current) return;
         //if (romRef.current) return;
 
         const _instanciateRom = () => {
@@ -56,7 +53,7 @@ export const Rom: React.FC<RomProps> = (props) => {
 
         const timer = setTimeout(_instanciateRom, 100);
         return () => clearTimeout(timer);
-    }, [memoryBusInstance]);
+    }, []);
 
 
     // Notifie le parent quand le Rom est créé

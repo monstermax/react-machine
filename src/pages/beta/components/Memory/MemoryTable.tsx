@@ -48,24 +48,24 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
             }
         });
 
+
         // CPU CORES State updates
-        let lastCommits: Map<number, number | null> = new Map;
         for (const core of cpuInstance.cores) {
-            const coreIdx = core.idx;
 
             core.on('state', (state) => {
                 //console.log('update', Object.keys(state))
+                const coreIdx = state.idx;
 
                 if (state.registers) {
                     const pc = state.registers.get('PC');
 
-                    // TODO: mettre un delai sur cet update
-
-                    setCoresPc(o => {
-                        const n = new Map(o);
-                        n.set(coreIdx, pc);
-                        return n;
-                    })
+                    //delayer('core-register', (coreIdx: number) => {
+                        setCoresPc(o => {
+                            const n = new Map(o);
+                            n.set(coreIdx, pc);
+                            return n;
+                        })
+                    //}, 100, 500, [coreIdx]);
                 }
             });
 
@@ -193,5 +193,51 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
             </div>
         </div>
     )
+}
+
+
+
+
+const delayers: Map<string, { timer: NodeJS.Timeout | null, waiting: boolean, requestDate: number | null }> = new Map;
+
+const delayer = (name: string, callback: (...args: any[]) => void, delay: number, maxDelay: number, args: any[]) => {
+    let delayerKey = `${name}-${JSON.stringify(args)}`;
+    let delayer = delayers.get(delayerKey);
+    const uiFPS = 1000 / maxDelay;
+
+    if (!delayer) {
+        delayer = { timer: null, requestDate: null, waiting: false };
+        //console.log('waiting: SET FALSE')
+        delayers.set(delayerKey, delayer)
+    }
+
+    if (delayer.timer !== null) {
+        clearTimeout(delayer.timer);
+        delayer.timer = null;
+    }
+
+    if (delayer.waiting && delayer.requestDate && Date.now() - delayer.requestDate > 1000 / uiFPS) {
+        console.log('delayer:', 'forced', delayer.requestDate, delayer.waiting)
+        callback(...args);
+        delayer.waiting = false;
+        //console.log('waiting: set FALSE')
+
+    } else {
+        if (!delayer.waiting) {
+            delayer.requestDate = Date.now()
+            delayer.waiting = true;
+            //console.log('waiting: set TRUE')
+        }
+
+        delayer.timer = setTimeout(() => {
+            console.log('delayer:', 'not-forced', delayer?.requestDate, delayer.waiting)
+            callback(...args);
+
+            if (delayer) {
+                delayer.waiting = false;
+                //console.log('waiting: set FALSE')
+            }
+        }, delay);
+    }
 }
 

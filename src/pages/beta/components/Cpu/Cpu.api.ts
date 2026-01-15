@@ -220,8 +220,11 @@ class CpuCore extends EventEmitter {
 
             case Opcode.CORE_START: {
                 const coreIdx = this.cpu.readMem8(pc);
-                this.cpu.cores[coreIdx].setRegister('PC', U16(0x1000)) // TODO: ne pas hardcoder l'adresse
-                this.cpu.cores[coreIdx].start()
+
+                if (this.cpu.cores[coreIdx]) {
+                    this.cpu.cores[coreIdx].setRegister('PC', U16(0x1000)) // TODO: ne pas hardcoder l'adresse
+                    this.cpu.cores[coreIdx].start()
+                }
 
                 if (coreIdx !== this.idx) {
                     this.setRegister("PC", (pc + 2) as u16);
@@ -231,7 +234,10 @@ class CpuCore extends EventEmitter {
 
             case Opcode.CORE_HALT: {
                 const coreIdx = this.cpu.readMem8(pc);
-                this.cpu.cores[coreIdx].stop()
+
+                if (this.cpu.cores[coreIdx]) {
+                    this.cpu.cores[coreIdx].stop()
+                }
 
                 if (coreIdx !== this.idx) {
                     this.setRegister("PC", (pc + 2) as u16);
