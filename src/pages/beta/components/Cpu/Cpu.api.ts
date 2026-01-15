@@ -218,6 +218,24 @@ class CpuCore extends EventEmitter {
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
+            case Opcode.CORES_COUNT: {
+                this.setRegister("A", U8(this.cpu.cores.length));
+                this.setRegister("PC", (pc + 2) as u16);
+            }
+
+            case Opcode.CORE_STATUS: {
+                const coreIdx = this.cpu.readMem8(pc);
+
+                if (this.cpu.cores[coreIdx]) {
+                    this.setRegister("A", U8(this.cpu.cores[coreIdx].coreHalted ? 0 : 1));
+
+                } else {
+                    this.setRegister("A", U8(0));
+                }
+
+                this.setRegister("PC", (pc + 2) as u16);
+            }
+
             case Opcode.CORE_START: {
                 const coreIdx = this.cpu.readMem8(pc);
 

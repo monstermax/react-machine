@@ -82,8 +82,14 @@ TEXT_START_PROGRAM:
 TEXT_STOP_PROGRAM:
     .string "Program Complete"
 
-STR_YOP:
-    .string "YooP"
+STR_OK:
+    .string "OK"
+
+STR_KO:
+    .string "KO"
+
+STR_ERROR:
+    .string "ERROR"
 
 
 
@@ -215,138 +221,61 @@ WRITE_CHAR_AND_INC:
 
 
 CONSOLE_PRINT_OK():
-    MOV_A_IMM $ASCII_O        # O
-    MOV_MEM_A @CONSOLE_CHAR
+    MOV_C_IMM <$STR_OK
+    MOV_D_IMM >$STR_OK
+    CALL $CONSOLE_PRINT_STRING()
 
-    MOV_A_IMM $ASCII_K        # K
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_EOL      # \n
-    MOV_MEM_A @CONSOLE_CHAR
+#    MOV_A_IMM $ASCII_O        # O
+#    MOV_MEM_A @CONSOLE_CHAR
+#
+#    MOV_A_IMM $ASCII_K        # K
+#    MOV_MEM_A @CONSOLE_CHAR
+#
+#    MOV_A_IMM $ASCII_EOL      # \n
+#    MOV_MEM_A @CONSOLE_CHAR
 
     RET
 
 
 CONSOLE_PRINT_KO():
-    MOV_A_IMM $ASCII_K        # K
-    MOV_MEM_A @CONSOLE_CHAR
+    MOV_C_IMM <$STR_KO
+    MOV_D_IMM >$STR_KO
+    CALL $CONSOLE_PRINT_STRING()
 
-    MOV_A_IMM $ASCII_O        # O
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_EOL      # \n
-    MOV_MEM_A @CONSOLE_CHAR
-
-    RET
-
-
-CONSOLE_PRINT_START_PROGRAM_OLD():
-    MOV_A_IMM $ASCII_S        # S
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_T        # T
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_A        # A
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_R        # R
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_T        # T
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_SPACE        # SPACE
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_P        # P
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_R        # R
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_O        # O
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_G        # G
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_R        # R
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_A        # A
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_M        # M
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_EOL      # \n
-    MOV_MEM_A @CONSOLE_CHAR
-
-    RET
-
-
-CONSOLE_PRINT_STOP_PROGRAM_OLD():
-    MOV_A_IMM $ASCII_S        # S
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_T        # T
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_O        # O
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_P        # P
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_SPACE        # SPACE
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_P        # P
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_R        # R
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_O        # O
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_G        # G
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_R        # R
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_A        # A
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_M        # M
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_EOL      # \n
-    MOV_MEM_A @CONSOLE_CHAR
+#    MOV_A_IMM $ASCII_K        # K
+#    MOV_MEM_A @CONSOLE_CHAR
+#
+#    MOV_A_IMM $ASCII_O        # O
+#    MOV_MEM_A @CONSOLE_CHAR
+#
+#    MOV_A_IMM $ASCII_EOL      # \n
+#    MOV_MEM_A @CONSOLE_CHAR
 
     RET
 
 
 CONSOLE_PRINT_ERROR():
-    MOV_A_IMM $ASCII_E        # E
-    MOV_MEM_A @CONSOLE_CHAR
+    MOV_C_IMM <$STR_ERROR
+    MOV_D_IMM >$STR_ERROR
+    CALL $CONSOLE_PRINT_STRING()
 
-    MOV_A_IMM $ASCII_R        # R
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_R        # R
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_O        # O
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_R        # R
-    MOV_MEM_A @CONSOLE_CHAR
-
-    MOV_A_IMM $ASCII_EOL      # \n
-    MOV_MEM_A @CONSOLE_CHAR
+#    MOV_A_IMM $ASCII_E        # E
+#    MOV_MEM_A @CONSOLE_CHAR
+#
+#    MOV_A_IMM $ASCII_R        # R
+#    MOV_MEM_A @CONSOLE_CHAR
+#
+#    MOV_A_IMM $ASCII_R        # R
+#    MOV_MEM_A @CONSOLE_CHAR
+#
+#    MOV_A_IMM $ASCII_O        # O
+#    MOV_MEM_A @CONSOLE_CHAR
+#
+#    MOV_A_IMM $ASCII_R        # R
+#    MOV_MEM_A @CONSOLE_CHAR
+#
+#    MOV_A_IMM $ASCII_EOL      # \n
+#    MOV_MEM_A @CONSOLE_CHAR
 
     RET
 

@@ -21,6 +21,8 @@ export enum Opcode {
     // Cores
     CORE_HALT = 0xE0,
     CORE_START = 0xE1,
+    CORE_STATUS = 0xE2,
+    CORES_COUNT = 0xE3,
 
     // Registers
     //R_LOAD_A = 0x10,     // R_LOAD A, immediate (8-bit) => remplacé par MOV_A_IMM
@@ -164,6 +166,7 @@ export const INSTRUCTIONS_WITH_OPERAND = [
     Opcode.SET_FREQ,
     Opcode.CORE_HALT,
     Opcode.CORE_START,
+    Opcode.CORE_STATUS,
 ];
 
 
