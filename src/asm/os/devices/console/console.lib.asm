@@ -1,4 +1,5 @@
 
+@include os/devices/console/console.driver.asm
 @include os/memory/malloc.lib.asm
 @include os/arithmetic/math2.lib.asm
 
@@ -93,6 +94,76 @@ STR_ERROR:
 
 
 
+CONSOLE_PRINT_STRING():
+    CONSOLE_PRINT_STRING_LOOP:
+        # Lire caractère depuis buffer
+        MOV_A_PTR_CD
+
+        # Vérifier si \0 (fin de string)
+        MOV_AB              # B = A (sauvegarder le caractère)
+        MOV_A_IMM 0x00      # A = 0
+        SUB                 # A = B - 0 (set zero flag si B = 0)
+        JZ $CONSOLE_PRINT_STRING_END             # Si \0, terminer
+
+        # Afficher le caractère
+        MOV_BA              # A = B (restaurer)
+        #MOV_MEM_A @CONSOLE_CHAR
+        CALL $PRINT_CHAR()
+
+        # Incrémenter pointeur C:D
+        INC_C
+        JNC $CONSOLE_PRINT_STRING_LOOP
+        INC_D
+        JMP $CONSOLE_PRINT_STRING_LOOP
+
+    CONSOLE_PRINT_STRING_END:
+        RET
+
+
+# Affiche une string depuis un buffer mémoire
+# Input: C:D = adresse du buffer, B = taille
+CONSOLE_PRINT_SIZED_STRING():
+    DEQUEUE:
+        # Lire caractère depuis buffer
+        MOV_A_PTR_CD
+        #MOV_MEM_A @CONSOLE_CHAR
+        CALL $PRINT_CHAR()
+
+        # Incrémenter pointeur C:D
+        INC_C
+        JNC $NO_CARRY_PRINT
+        INC_D
+
+    NO_CARRY_PRINT:
+        # Décrémenter compteur
+        DEC_B
+        JNZ $DEQUEUE
+
+    CONSOLE_PRINT_SIZED_STRING_END:
+        RET
+
+
+CONSOLE_PRINT_OK():
+    MOV_C_IMM <$STR_OK
+    MOV_D_IMM >$STR_OK
+    CALL $CONSOLE_PRINT_STRING()
+    RET
+
+
+CONSOLE_PRINT_KO():
+    MOV_C_IMM <$STR_KO
+    MOV_D_IMM >$STR_KO
+    CALL $CONSOLE_PRINT_STRING()
+    RET
+
+
+CONSOLE_PRINT_ERROR():
+    MOV_C_IMM <$STR_ERROR
+    MOV_D_IMM >$STR_ERROR
+    CALL $CONSOLE_PRINT_STRING()
+    RET
+
+
 CONSOLE_PRINT_WELCOME():
     MOV_C_IMM <$TEXT_DEMO
     MOV_D_IMM >$TEXT_DEMO
@@ -157,55 +228,6 @@ CONSOLE_PRINT_SIZED_ALLOC_STRING_DEMO():
 
 
 
-CONSOLE_PRINT_STRING():
-    CONSOLE_PRINT_STRING_LOOP:
-        # Lire caractère depuis buffer
-        MOV_A_PTR_CD
-
-        # Vérifier si \0 (fin de string)
-        MOV_AB              # B = A (sauvegarder le caractère)
-        MOV_A_IMM 0x00      # A = 0
-        SUB                 # A = B - 0 (set zero flag si B = 0)
-        JZ $CONSOLE_PRINT_STRING_END             # Si \0, terminer
-
-        # Afficher le caractère
-        MOV_BA              # A = B (restaurer)
-        MOV_MEM_A @CONSOLE_CHAR
-
-        # Incrémenter pointeur C:D
-        INC_C
-        JNC $CONSOLE_PRINT_STRING_LOOP
-        INC_D
-        JMP $CONSOLE_PRINT_STRING_LOOP
-
-    CONSOLE_PRINT_STRING_END:
-        #MOV_A_IMM $ASCII_EOL
-        #MOV_MEM_A @CONSOLE_CHAR # EOL
-        RET
-
-
-# Affiche une string depuis un buffer mémoire
-# Input: C:D = adresse du buffer, B = taille
-CONSOLE_PRINT_SIZED_STRING():
-    DEQUEUE:
-        # Lire caractère depuis buffer
-        MOV_A_PTR_CD
-        MOV_MEM_A @CONSOLE_CHAR
-
-        # Incrémenter pointeur C:D
-        INC_C
-        JNC $NO_CARRY_PRINT
-        INC_D
-
-    NO_CARRY_PRINT:
-        # Décrémenter compteur
-        DEC_B
-        JNZ $DEQUEUE
-
-    CONSOLE_PRINT_SIZED_STRING_END:
-        RET
-
-
 # Helper: Écrire A à [C:D] puis C:D++
 WRITE_CHAR_AND_INC:
     MOV_PTR_CD_A
@@ -215,68 +237,4 @@ WRITE_CHAR_AND_INC:
 
     WRITE_CHAR_RET:
         RET
-
-
-
-
-
-CONSOLE_PRINT_OK():
-    MOV_C_IMM <$STR_OK
-    MOV_D_IMM >$STR_OK
-    CALL $CONSOLE_PRINT_STRING()
-
-#    MOV_A_IMM $ASCII_O        # O
-#    MOV_MEM_A @CONSOLE_CHAR
-#
-#    MOV_A_IMM $ASCII_K        # K
-#    MOV_MEM_A @CONSOLE_CHAR
-#
-#    MOV_A_IMM $ASCII_EOL      # \n
-#    MOV_MEM_A @CONSOLE_CHAR
-
-    RET
-
-
-CONSOLE_PRINT_KO():
-    MOV_C_IMM <$STR_KO
-    MOV_D_IMM >$STR_KO
-    CALL $CONSOLE_PRINT_STRING()
-
-#    MOV_A_IMM $ASCII_K        # K
-#    MOV_MEM_A @CONSOLE_CHAR
-#
-#    MOV_A_IMM $ASCII_O        # O
-#    MOV_MEM_A @CONSOLE_CHAR
-#
-#    MOV_A_IMM $ASCII_EOL      # \n
-#    MOV_MEM_A @CONSOLE_CHAR
-
-    RET
-
-
-CONSOLE_PRINT_ERROR():
-    MOV_C_IMM <$STR_ERROR
-    MOV_D_IMM >$STR_ERROR
-    CALL $CONSOLE_PRINT_STRING()
-
-#    MOV_A_IMM $ASCII_E        # E
-#    MOV_MEM_A @CONSOLE_CHAR
-#
-#    MOV_A_IMM $ASCII_R        # R
-#    MOV_MEM_A @CONSOLE_CHAR
-#
-#    MOV_A_IMM $ASCII_R        # R
-#    MOV_MEM_A @CONSOLE_CHAR
-#
-#    MOV_A_IMM $ASCII_O        # O
-#    MOV_MEM_A @CONSOLE_CHAR
-#
-#    MOV_A_IMM $ASCII_R        # R
-#    MOV_MEM_A @CONSOLE_CHAR
-#
-#    MOV_A_IMM $ASCII_EOL      # \n
-#    MOV_MEM_A @CONSOLE_CHAR
-
-    RET
-
 
