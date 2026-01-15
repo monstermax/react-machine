@@ -24,27 +24,7 @@ export type Register16 =
 export type Register = Register8 | Register16;
 
 
-export interface Device {
-    read(port: u8): u8;
-    write(port: u8, value: u8): void;
-    getSize?(): number;
-    reset?(): void;
-}
-
-
 export type IoDeviceType = 'Input' | 'DiskStorage' | 'Display' | 'Audio' | 'Random' | 'Time' | 'Interrupt';
-
-
-export interface IoDevice {
-    name: string;
-    ioPort: u8;
-    type: IoDeviceType;
-    read(port: u8): u8;
-    write(port: u8, value: u8): void;
-    getSize?(): number;
-    reset?(): void;
-}
-
 
 
 export type OsInfo = {
@@ -62,7 +42,6 @@ export type ProgramInfo = {
 };
 
 
-
 export type PreCompiledCode = [line: u16, code: string, comment?: string, labels?: string[]][];
 
 export type CompiledCode = Map<u16, u8>;
@@ -70,45 +49,3 @@ export type CompiledCodeComments = [line: u16, comment: string][];
 export type CompiledCodeLabels = [line: u16, labels: string[]][];
 
 
-type ProcessControlBlock = { // cf https://youtu.be/M9HHWFp84f0?t=499
-    pid: u16;
-    //state: ProcessState;
-    program_counter: u16;
-    general_purpose_registers: [u8, u8, u8];
-    instruction_register: u8;
-    flags: [u1, u1, u1];
-    stack_pointer: u16;
-    index_registers: [u16, u16]
-    memory_limits: [u16, u16]
-    //io_devices: Vec<IO_Device>;
-    //open_files: Vec<File>;
-    parent: ProcessControlBlock | null;
-}
-
-/*
-# Monolithic Kernal
-
-## Kernel Space
-- File System
-- Memory Management
-- Device Drviers
-- Code OS
-
-## User Space
-- User Applications
-- Syscall to Kernel
-
-
-# MicroKernel
-
-## Kernel Space
-- CPU Scheduling
-- Memory Management
-
-## User Space
-- User Applications
-- File System
-- Device Drviers
-- IPC & Syscall to Kernel
-
-*/

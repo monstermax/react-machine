@@ -2,34 +2,34 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'wouter';
 
-import { compileCode } from '@/lib/compiler';
-import { MEMORY_MAP } from '@/lib/memory_map';
+import { compileCode } from '@/lib/cpu_default/asm_compiler';
+import { MEMORY_MAP } from '@/lib/memory_map_16bit';
 
-import { Computer } from './beta/components/Computer/ComputerContext';
-import { Cpu } from './beta/components/Cpu/Cpu';
-import { Memory, MemoryBus } from './beta/components/Memory/MemoryBus';
-import { Ram } from './beta/components/Memory/Ram';
-import { Rom } from './beta/components/Memory/Rom';
-import { Devices, DevicesManager } from './beta/components/Devices/DevicesManager';
-import { StorageDisk } from './beta/components/Devices/StorageDisk/StorageDisk';
-import { Clock } from './beta/components/Cpu/Clock';
-import { LedsDisplay } from './beta/components/Devices/LedsDisplay/LedsDisplay';
-import { Buzzer } from './beta/components/Devices/Buzzer/Buzzer';
-import { PixelDisplay } from './beta/components/Devices/PixelDisplay/PixelDisplay';
-import { Rng } from './beta/components/Devices/Rng/Rng';
-import { Rtc } from './beta/components/Devices/Rtc/Rtc';
-import { LcdDisplay } from './beta/components/Devices/LcdDisplay/LcdDisplay';
-import { Console } from './beta/components/Devices/Console/Console';
-import { SevenSegmentDisplay } from './beta/components/Devices/7SegmentsDisplay/7SegmentsDisplay';
-import { Keyboard } from './beta/components/Devices/Keyboard/Keyboard';
-import { Interrupt } from './beta/components/Cpu/Interrupt';
-import { Motherboard } from './beta/components/Computer/Motherboard';
-import { ComputerControls } from './beta/components/Computer/ComputerContainer';
-import { Timer } from './beta/components/Devices/Timer/Timer';
+import { Computer } from '@/v2/components/Computer/ComputerContext';
+import { Cpu } from '@/v2/components/Cpu/Cpu';
+import { Memory, MemoryBus } from '@/v2/components/Memory/MemoryBus';
+import { Ram } from '@/v2/components/Memory/Ram';
+import { Rom } from '@/v2/components/Memory/Rom';
+import { Devices, DevicesManager } from '@/v2/components/Devices/DevicesManager';
+import { StorageDisk } from '@/v2/components/Devices/StorageDisk/StorageDisk';
+import { Clock } from '@/v2/components/Cpu/Clock';
+import { LedsDisplay } from '@/v2/components/Devices/LedsDisplay/LedsDisplay';
+import { Buzzer } from '@/v2/components/Devices/Buzzer/Buzzer';
+import { PixelDisplay } from '@/v2/components/Devices/PixelDisplay/PixelDisplay';
+import { Rng } from '@/v2/components/Devices/Rng/Rng';
+import { Rtc } from '@/v2/components/Devices/Rtc/Rtc';
+import { LcdDisplay } from '@/v2/components/Devices/LcdDisplay/LcdDisplay';
+import { Console } from '@/v2/components/Devices/Console/Console';
+import { SevenSegmentDisplay } from '@/v2/components/Devices/7SegmentsDisplay/7SegmentsDisplay';
+import { Keyboard } from '@/v2/components/Devices/Keyboard/Keyboard';
+import { Interrupt } from '@/v2/components/Cpu/Interrupt';
+import { Motherboard } from '@/v2/components/Computer/Motherboard';
+import { ComputerControls } from '@/v2/components/Computer/ComputerContainer';
+import { Timer } from '@/v2/components/Devices/Timer/Timer';
 
 import type { u16, u8 } from '@/types/cpu.types';
 
-import BootloaderSourceCode from '@/asm/bootloader/bootloader_v1.asm?raw'
+import BootloaderSourceCode from '@/asm_default/bootloader/bootloader_v1.asm?raw'
 
 
 export const ComputerBeta: React.FC = () => {

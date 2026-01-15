@@ -1,7 +1,7 @@
 
-import { Opcode } from "../lib/instructions";
+import { Opcode } from "@/lib/cpu_default/cpu_instructions";
 
-import { MEMORY_MAP } from "../lib/memory_map";
+import { MEMORY_MAP } from "@/lib/memory_map_16bit";
 import { high16, low16 } from "@/lib/integers";
 
 import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";

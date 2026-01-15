@@ -2,9 +2,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 
-import { compileCode, decompileCode, preCompileCode } from "@/lib/compiler";
+import { compileCode, decompileCode, preCompileCode } from "@/lib/cpu_default/asm_compiler";
 import { toHex, U16 } from "@/lib/integers";
-import { MEMORY_MAP } from "@/lib/memory_map";
+import { MEMORY_MAP } from "@/lib/memory_map_16bit";
 
 import type { CompiledCode, PreCompiledCode, u16 } from "@/types/cpu.types";
 
@@ -83,6 +83,8 @@ export const CompilePage: React.FC = () => {
 
     const [compileMemoryOffsetStr, setCompileMemoryOffsetStr] = useState('0x00');
     const [compileMemoryOffsetUint, setCompileMemoryOffsetUint] = useState<u16>(0 as u16);
+    const [compileLineOffsetStr, setCompileLineOffsetStr] = useState('0x00');
+    const [compileLineOffsetUint, setCompileLineOffsetUint] = useState<u16>(0 as u16);
 
 
     // Synchronize compileMemoryOffsetStr & compileMemoryOffsetUint
@@ -92,11 +94,18 @@ export const CompilePage: React.FC = () => {
 
     }, [compileMemoryOffsetStr])
 
+    // Synchronize compileMemoryOffsetStr & compileLineOffsetUint
+    useEffect(() => {
+        const newCompileLineOffsetUint = Number(compileLineOffsetStr)
+        setCompileLineOffsetUint(U16(newCompileLineOffsetUint))
+
+    }, [compileLineOffsetStr])
+
 
 
     const handleCompile = async () => {
         try {
-            const result = await preCompileCode(sourceCode, compileMemoryOffsetUint);
+            const result = await preCompileCode(sourceCode, compileMemoryOffsetUint, compileLineOffsetUint);
 
             //const result2 = await compileCode(sourceCode, compileMemoryOffsetUint);
             //const { code, comments, labels } = result2;
@@ -287,6 +296,23 @@ export const CompilePage: React.FC = () => {
                                 ({compileMemoryOffsetUint})
                             </div>
                         </div>
+
+                        <div className="ms-auto flex gap-2 items-center">
+                            <div>Offset Line:</div>
+
+                            <input
+                                type="text"
+                                value={'0x' + (compileLineOffsetStr.startsWith('0x') ? compileLineOffsetStr.slice(2) : compileLineOffsetStr)}
+                                placeholder="0x0000"
+                                onChange={(event) => setCompileLineOffsetStr(event.target.value)}
+                                className={"w-16 font-mono text-sm bg-gray-800 text-yellow-300 p-1 border-none focus:outline-none"}
+                            />
+
+                            <div className="w-16">
+                                ({compileLineOffsetUint})
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 

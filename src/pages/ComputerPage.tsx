@@ -2,12 +2,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 
-import { useComputer } from "@/hooks/useComputer";
+import { useComputer } from "@/v1/hooks/useComputer";
 
-import { PanelMemory } from "@/components/computer/PanelMemory";
-import { PanelControls } from "@/components/computer/PanelControls";
-import { PanelRegisters } from "@/components/computer/PanelRegisters";
-import { IosDevices } from "@/components/io/IosDevices";
+import { PanelMemory } from "@/v1/components/computer/PanelMemory";
+import { PanelControls } from "@/v1/components/computer/PanelControls";
+import { PanelRegisters } from "@/v1/components/computer/PanelRegisters";
+import { IosDevices } from "@/v1/components/io/IosDevices";
 
 
 export const ComputerPage: React.FC = () => {

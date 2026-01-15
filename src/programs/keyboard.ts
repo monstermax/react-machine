@@ -1,8 +1,8 @@
 
-import { Opcode } from "../lib/instructions";
-import { MEMORY_MAP } from "../lib/memory_map";
+import { Opcode } from "@/lib/cpu_default/cpu_instructions";
+import { MEMORY_MAP } from "@/lib/memory_map_16bit";
 
-import type { ProgramInfo, u8 } from "@/types/cpu.types";
+import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
 
 export const programs: Record<string, ProgramInfo> = {
