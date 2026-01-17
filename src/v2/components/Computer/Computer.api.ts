@@ -47,18 +47,29 @@ export class Computer extends EventEmitter {
 
         // Attach DevicesManager to Computer
         if (!this.devicesManager) {
-            this.devicesManager = devicesManager;
-            //console.log('DevicesManager monté dans Computer:', devicesManager);
+            this.attachDevicesManager(devicesManager);
         }
 
         // Connect DevicesManager to MemoryBus
         if (this.motherboard?.memoryBus) {
-            //this.motherboard.memoryBus.io = devicesManager;
             this.motherboard.memoryBus.connectDevicesManager(devicesManager);
-            //console.log('DevicesManager connecté à MemoryBus:', devicesManager);
+        }
+
+        // Attach CPUs's Interrupt to DevicesManager
+        if (this.motherboard) {
+            for (const cpu of this.motherboard.getCpus()) {
+                if (!cpu?.interrupt) continue;
+                devicesManager.devices.set(cpu.interrupt.ioPort, cpu.interrupt)
+            }
         }
 
         return devicesManager;
+    }
+
+
+    attachDevicesManager(devicesManager: cpuApi.DevicesManager) {
+        this.devicesManager = devicesManager;
+        //console.log('DevicesManager monté dans Computer:', devicesManager);
     }
 
 

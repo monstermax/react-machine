@@ -47,6 +47,7 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
         const _instanciateDevices = () => {
         if (!computerRef.current) return;
 
+            // Save Instance for UI
             const devicesManagerInstance = computerRef.current.addDevicesManager();
             setDevicesManagerInstance(devicesManagerInstance);
 

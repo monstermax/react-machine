@@ -1087,6 +1087,11 @@ export class Cpu extends BaseCpu {
     }
 
 
+    // Connect CPU to MemoryBus
+    connectToMemoryBus(memoryBus: MemoryBus) {
+        this.memoryBus = memoryBus;
+    }
+
 
     executeCycle() {
         if (this.cpuHalted) return;

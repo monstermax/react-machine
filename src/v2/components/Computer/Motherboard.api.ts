@@ -38,7 +38,7 @@ export class Motherboard extends EventEmitter {
 
         // Connect CPU to MemoryBus
         if (this.memoryBus) {
-            cpu.memoryBus = this.memoryBus;
+            cpu.connectToMemoryBus(this.memoryBus);
         }
 
         return cpu;
@@ -62,14 +62,13 @@ export class Motherboard extends EventEmitter {
         // Connect MemoryBus to CPUs
         for (const cpu of this.getCpus()) {
             if (!cpu) continue;
-            cpu.memoryBus = memoryBus;
+            cpu.connectToMemoryBus(memoryBus);
         }
 
         // Connect MemoryBus to DevicesManager
         if (this.computer.devicesManager) {
-            //memoryBus.io = this.computer.devicesManager;
             memoryBus.connectDevicesManager(this.computer.devicesManager)
-            console.log('DevicesManager connecté à MemoryBus:', this.computer.devicesManager);
+            //console.log('DevicesManager connecté à MemoryBus:', this.computer.devicesManager);
         }
 
         return memoryBus;

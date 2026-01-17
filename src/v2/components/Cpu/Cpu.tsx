@@ -181,6 +181,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
             //console.log('interrupt monté dans CPU:', interruptInstance);
 
+            // Attach Interrupt to DevicesManager
             if (devicesManagerRef.current) {
                 devicesManagerRef.current.devices.set(interruptInstance.ioPort, interruptInstance)
             }

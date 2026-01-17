@@ -17,7 +17,7 @@ type MemoryBusProps = {
 
 export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     const { hidden, children, onInstanceCreated } = props;
-    const { motherboardRef, devicesManagerRef, memoryBusRef } = useComputer();
+    const { motherboardRef, memoryBusRef } = useComputer();
 
     // Core
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);

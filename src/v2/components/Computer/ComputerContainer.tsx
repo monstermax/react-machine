@@ -68,15 +68,15 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
     }, []);
 
 
-    const addMotherboard = (motherboardInstance: cpuApi.Motherboard) => {
+    const addMotherboard = (motherboard: cpuApi.Motherboard) => {
         // Save Instance
-        setMotherboardInstance(motherboardInstance);
+        setMotherboardInstance(motherboard);
     }
 
 
-    const addDevicesManager = (devicesManagerInstance: cpuApi.DevicesManager) => {
+    const addDevicesManager = (devicesManager: cpuApi.DevicesManager) => {
         // Save Instance
-        setDevicesManagerInstance(devicesManagerInstance);
+        setDevicesManagerInstance(devicesManager);
     }
 
     const onOpenCase = () => {
