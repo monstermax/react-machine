@@ -109,9 +109,9 @@ HANDLE_USER_MENU:
         CALL $CONSOLE_PRINT_START_PROGRAM() # display START PROGRAM
 
         SET_FREQ 10
-        #CALL @PROGRAM_START
-        #CALL $START_PROGRAM_ON_CORE()
-        CALL $START_PROGRAM_ON_CPU()
+        CALL @PROGRAM_START
+        #CALL $START_PROGRAM_ON_CORE() # Test: program on second core
+        #CALL $START_PROGRAM_ON_CPU()  # Test: program on second cpu
         JMP $WAIT_KEY
 
         #SET_FREQ 50
