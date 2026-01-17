@@ -101,18 +101,31 @@ export class Computer extends EventEmitter {
     async loadOs(osName: string) {
         const osCode: CompiledCode | null = await this.loadOsCode(osName);
 
-        await this.loadCodeOnDisk('os_disk', osCode ?? new Map); // load on disk too (for debug)
+         // Load on disk (for debug)
+        await this.loadCodeOnDisk('os_disk', osCode ?? new Map);
 
+         // Load in RAM
         const memoryOffset = MEMORY_MAP.OS_START;
         await this.loadCodeInRam(osCode, memoryOffset);
 
-//        if (cpuInstance) {
-//            const pc = cpuInstance.cores[0].getRegister('PC');
-//
-//            if ((pc > MEMORY_MAP.ROM_END)) {
-//                cpuInstance.cores[0].setRegister('PC', MEMORY_MAP.ROM_START);
-//            }
-//        }
+        // Check Program Counter
+        if (this.motherboard) {
+            for (const cpu of this.motherboard.getCpus()) {
+                if (!cpu) continue;
+
+                for (const core of cpu.cores) {
+                    const pc = core.getRegister('PC');
+
+                    if (pc >= MEMORY_MAP.OS_START && pc <= MEMORY_MAP.PROGRAM_END) {
+                        core.setRegister('PC', MEMORY_MAP.ROM_START);
+                    }
+
+                    break; // Only on core #0
+                }
+
+                break; // Only on cpu #0
+            }
+        }
 
         this.loadedOs = osName;
         this.emit('state', { loadedOs: this.loadedOs })
@@ -143,13 +156,27 @@ export class Computer extends EventEmitter {
             ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
         }
 
-//        if (cpuInstance) {
-//            const pc = cpuInstance.cores[0].getRegister('PC');
-//
-//            if ((pc > MEMORY_MAP.ROM_END)) {
-//                cpuInstance.cores[0].setRegister('PC', MEMORY_MAP.ROM_START);
-//            }
-//        }
+        if (this.motherboard) {
+            for (const cpu of this.motherboard.getCpus()) {
+                if (!cpu) continue;
+
+                for (const core of cpu.cores) {
+                    const pc = core.getRegister('PC');
+
+                    if (pc >= MEMORY_MAP.OS_START && pc <= MEMORY_MAP.OS_END) {
+                        core.setRegister('PC', MEMORY_MAP.ROM_START);
+                    }
+
+                    if (core.idx > 0) {
+                        core.stop();
+                    }
+                }
+
+                if (cpu.idx > 0) {
+                    cpu.stop();
+                }
+            }
+        }
 
         //setLoadedOs(null);
         this.loadedOs = null;
@@ -166,13 +193,23 @@ export class Computer extends EventEmitter {
         const memoryOffset = MEMORY_MAP.PROGRAM_START;
         await this.loadCodeInRam(programCode, memoryOffset);
 
-//        if (cpuInstance) {
-//            const pc = cpuInstance.cores[0].getRegister('PC');
-//
-//            if (pc >= MEMORY_MAP.PROGRAM_START && pc <= MEMORY_MAP.PROGRAM_END) {
-//                cpuInstance.cores[0].setRegister('PC', MEMORY_MAP.OS_START);
-//            }
-//        }
+        if (this.motherboard) {
+            for (const cpu of this.motherboard.getCpus()) {
+                if (!cpu) continue;
+
+                for (const core of cpu.cores) {
+                    const pc = core.getRegister('PC');
+
+                    if (pc >= MEMORY_MAP.PROGRAM_START && pc <= MEMORY_MAP.PROGRAM_END) {
+                        core.setRegister('PC', MEMORY_MAP.OS_START);
+                    }
+
+                    break; // Only on core #0
+                }
+
+                break; // Only on cpu #0
+            }
+        }
 
         this.loadedProgram = programName;
         this.emit('state', { loadedProgram: this.loadedProgram })
@@ -217,13 +254,27 @@ export class Computer extends EventEmitter {
             ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
         }
 
-//        if (cpuInstance) {
-//            const pc = cpuInstance.cores[0].getRegister('PC');
-//
-//            if (pc >= MEMORY_MAP.PROGRAM_START && pc <= MEMORY_MAP.PROGRAM_END) {
-//                cpuInstance.cores[0].setRegister('PC', MEMORY_MAP.OS_START);
-//            }
-//        }
+        if (this.motherboard) {
+            for (const cpu of this.motherboard.getCpus()) {
+                if (!cpu) continue;
+
+                for (const core of cpu.cores) {
+                    const pc = core.getRegister('PC');
+
+                    if (pc >= MEMORY_MAP.PROGRAM_START && pc <= MEMORY_MAP.PROGRAM_END) {
+                        core.setRegister('PC', MEMORY_MAP.OS_START);
+                    }
+
+                    if (core.idx > 0) {
+                        core.stop();
+                    }
+                }
+
+                if (cpu.idx > 0) {
+                    cpu.stop();
+                }
+            }
+        }
 
         //setLoadedProgram(null);
 
