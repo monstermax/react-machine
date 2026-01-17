@@ -1,20 +1,23 @@
 
 import { EventEmitter } from "eventemitter3";
+import type { Motherboard } from "../Computer/Motherboard.api";
 
 
 export class Clock extends EventEmitter {
     public id: number;
+    public motherboard: Motherboard;
     public clockFrequency: number;
     public clockCycles: number;
     private timer: NodeJS.Timeout | null = null;
     public status: boolean = false;
 
 
-    constructor(initialFrequency=1) {
+    constructor(motherboard: Motherboard, initialFrequency=1) {
         //console.log(`Initializing Clock`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);
+        this.motherboard = motherboard;
         this.clockFrequency = initialFrequency;
         this.clockCycles = 0;
         //this.start();

@@ -4,19 +4,22 @@ import { EventEmitter } from "eventemitter3";
 import { U16, U8 } from "@/lib/integers";
 
 import type { CompiledCode, u16, u8 } from "@/types/cpu.types";
+import type { MemoryBus } from "./MemoryBus.api";
 
 
 export class Rom extends EventEmitter {
     public id: number;
     public storage: Map<u16, u8> = new Map;
+    public memoryBus: MemoryBus;
     private maxSize: number;
 
 
-    constructor(data?: Array<[u16, u8]> | Map<u16, u8>, maxSize=0xFFFF) {
+    constructor(memoryBus: MemoryBus, data?: Array<[u16, u8]> | Map<u16, u8>, maxSize=0xFFFF) {
         //console.log(`Initializing ROM`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);
+        this.memoryBus = memoryBus;
         this.maxSize = maxSize;
 
         if (data) {

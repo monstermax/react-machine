@@ -29,7 +29,7 @@ export class MemoryBus extends EventEmitter {
 
 
     addRom(data?: Map<u16, u8> | [u16, u8][], maxSize?: number): Rom {
-        const rom = new Rom(data, maxSize);
+        const rom = new Rom(this, data, maxSize);
 
         if (!this.rom) {
             this.rom = rom;
@@ -41,7 +41,7 @@ export class MemoryBus extends EventEmitter {
 
 
     addRam(data?: Map<u16, u8> | [u16, u8][], maxSize?: number): Ram {
-        const ram = new Ram(data, maxSize);
+        const ram = new Ram(this, data, maxSize);
 
         if (!this.ram) {
             this.ram = ram;

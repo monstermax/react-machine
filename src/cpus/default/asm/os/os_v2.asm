@@ -13,7 +13,7 @@ OS_START:
 
 MAIN:
     SET_FREQ 50
-    CALL $START_CORE_TEST() # Test 2nd Core
+    #CALL $START_CORE_TEST() # Test 2nd Core
     #CALL $START_CPU_TEST() # Test 2nd Cpu
     JMP $HANDLE_USER_MENU
 
@@ -110,8 +110,8 @@ HANDLE_USER_MENU:
 
         SET_FREQ 10
         #CALL @PROGRAM_START
-        CALL $START_PROGRAM_ON_CORE()
-        #JMP $CALL_PRINT_MENU
+        #CALL $START_PROGRAM_ON_CORE()
+        CALL $START_PROGRAM_ON_CPU()
         JMP $WAIT_KEY
 
         #SET_FREQ 50
@@ -182,5 +182,36 @@ START_PROGRAM_ON_CORE():
         CORE_START
 
     START_PROGRAM_ON_CORE_END:
+        RET
+
+
+START_PROGRAM_ON_CPU():
+    # endpoint du cpu à lancer
+    MOV_C_IMM <@PROGRAM_START
+    MOV_D_IMM >@PROGRAM_START
+    CPUS_COUNT # A = Cpus count
+    DEC_A # A = Last Cpu Idx
+
+    START_PROGRAM_ON_CPU_FIND_FREE_CPU:
+        PUSH_A # A = Cpu Idx to check
+        CPU_STATUS # A = Cpus #x Status
+        JZ $START_PROGRAM_ON_CPU_START # si cpu disponible, jump
+        POP_A
+        PUSH_A
+        DEC_A
+        JZ $START_PROGRAM_ON_CPU_NO_CPU_AVAILABLE
+        JMP $START_PROGRAM_ON_CPU_FIND_FREE_CPU
+
+    START_PROGRAM_ON_CPU_NO_CPU_AVAILABLE:
+        POP_A
+        JMP $START_PROGRAM_ON_CPU_END
+
+    START_PROGRAM_ON_CPU_START:
+        POP_A
+        # TODO: configurer une stack pour le cpu
+        CPU_INIT
+        CPU_START
+
+    START_PROGRAM_ON_CPU_END:
         RET
 

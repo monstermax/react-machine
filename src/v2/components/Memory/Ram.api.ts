@@ -5,19 +5,22 @@ import { U16, U8 } from "@/lib/integers";
 
 import type { CompiledCode, u16, u8 } from "@/types/cpu.types";
 import { MEMORY_MAP } from "@/lib/memory_map_16bit";
+import type { MemoryBus } from "./MemoryBus.api";
 
 
 export class Ram extends EventEmitter {
     public id: number;
     public storage: Map<u16, u8> = new Map;
+    public memoryBus: MemoryBus;
     private maxSize: number;
 
 
-    constructor(data?: Array<[u16, u8]> | Map<u16, u8>, maxSize=0xFFFF) {
+    constructor(memoryBus: MemoryBus, data?: Array<[u16, u8]> | Map<u16, u8>, maxSize=0xFFFF) {
         //console.log(`Initializing RAM`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);
+        this.memoryBus = memoryBus;
         this.maxSize = maxSize;
 
         if (data) {

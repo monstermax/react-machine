@@ -46,7 +46,7 @@ export class Motherboard extends EventEmitter {
 
 
     addClock(initialFrequency=1) {
-        const clock = new Clock(initialFrequency);
+        const clock = new Clock(this, initialFrequency);
 
         this.clock = clock;
 
