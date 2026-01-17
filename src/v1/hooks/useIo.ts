@@ -12,7 +12,7 @@ import { useKeyboard, type KeyboardDevice } from "./devices/useKeyboard";
 import { useConsole, type ConsoleDevice } from "./devices/useConsole";
 import { useLcdDisplay, type LCDDevice } from "./devices/useLcdDisplay";
 import { usePixelDisplay, type PixelDisplayDevice } from "./devices/usePixelDisplay";
-import { mapAddress16 } from "@/lib/memory_map_16bit";
+import { mapAddress16 } from "@/lib/memory_map_16x8_bits";
 import { useRtc, type RtcHook } from "./devices/useRtc";
 import { useRng, type RngHook } from "./devices/useRng";
 import { useBuzzer, type BuzzerHook } from "./devices/useBuzzer";

@@ -2,7 +2,7 @@
 import { EventEmitter } from "eventemitter3";
 
 import { U16, U8 } from "@/lib/integers";
-import { isIO, isROM, MEMORY_MAP, memoryToIOPort } from "@/lib/memory_map_16bit";
+import { isIO, isROM, MEMORY_MAP, memoryToIOPort } from "@/lib/memory_map_16x8_bits";
 import type { DevicesManager } from "../Devices/DevicesManager.api";
 
 import type { IoDeviceType, u16, u8 } from "@/types/cpu.types";

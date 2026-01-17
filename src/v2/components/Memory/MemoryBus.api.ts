@@ -2,12 +2,13 @@
 import { EventEmitter } from "eventemitter3";
 
 import { U16, U8 } from "@/lib/integers";
-import { isIO, isROM, memoryToIOPort } from "@/lib/memory_map_16bit";
+import { isIO, isROM, memoryToIOPort } from "@/lib/memory_map_16x8_bits";
+import { Rom } from "./Rom.api";
+import { Ram } from "./Ram.api";
+import { DevicesManager } from "../Devices/DevicesManager.api";
 
-import type { Rom } from "./Rom.api";
-import type { Ram } from "./Ram.api";
-import type { DevicesManager } from "../Devices/DevicesManager.api";
 import type { u16, u8 } from "@/types/cpu.types";
+import type { Motherboard } from "../Computer/Motherboard.api";
 
 
 export class MemoryBus extends EventEmitter {
@@ -15,13 +16,47 @@ export class MemoryBus extends EventEmitter {
     public rom: Rom | null = null;
     public ram: Ram | null = null;
     public io: DevicesManager | null = null;
+    public motherboard: Motherboard;
 
 
-    constructor() {
+    constructor(motherboard: Motherboard) {
         //console.log(`Initializing MemoryBus`);
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);
+        this.motherboard = motherboard;
+    }
+
+
+    addRom(data?: Map<u16, u8> | [u16, u8][], maxSize?: number): Rom {
+        const rom = new Rom(this, data, maxSize);
+
+        if (!this.rom) {
+            this.rom = rom;
+            //console.log('ROM monté dans MemoryBus.');
+        }
+
+        return rom;
+    }
+
+
+    addRam(data?: Map<u16, u8> | [u16, u8][], maxSize?: number): Ram {
+        const ram = new Ram(this, data, maxSize);
+
+        if (!this.ram) {
+            this.ram = ram;
+            //console.log('RAM monté dans MemoryBus.');
+        }
+
+        return ram;
+    }
+
+
+    connectDevicesManager(devicesManager: DevicesManager): void {
+        if (!this.io && devicesManager) {
+            this.io = devicesManager;
+            //console.log('DevicesManager connecté à MemoryBus.');
+        }
     }
 
 

@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Opcode } from "@/cpus/default/cpu_instructions";
-import { MEMORY_MAP } from "@/lib/memory_map_16bit";
+import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 import type { MemoryHook } from "./useMemory";
 import type { IOHook } from "./useIo";
 import { useCpuClock } from "./useCpuClock";

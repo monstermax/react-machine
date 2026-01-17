@@ -2,23 +2,25 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '@/v2/api';
-import { isROM } from '@/lib/memory_map_16bit';
+import { isROM } from '@/lib/memory_map_16x8_bits';
 import { buildMemoryInstructionMap, getOpcodeName } from '@/cpus/default/cpu_instructions';
 import { U16 } from '@/lib/integers';
 import { useComputer } from '../Computer/ComputerContext';
 
 import type { u16, u8 } from '@/types/cpu.types';
+import { delayer } from '@/lib/delayer';
 
 
 export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({ name, storage }) => {
-    const { cpuRef } = useComputer();
+    const { computerRef, motherboardRef } = useComputer();
 
     // Core
-    const cpuInstance = cpuRef.current;
+    const computerInstance = computerRef.current;
+    const motherBoardInstance = motherboardRef.current;
 
     // UI snapshot state
     const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set);
-    const [coresPc, setCoresPc] = useState<Map<number, u16>>(new Map);
+    const [coresPc, setCoresPc] = useState<Map<string, u16>>(new Map);
 
     // UI
     const [followInstruction, setFollowInstruction] = useState(true);
@@ -35,48 +37,56 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
     }, [storage]);
 
 
-    // Breakpoints
+    // CPUs Program Counter + Breakpoints
     useEffect(() => {
-        if (!cpuInstance) return;
 
-        setBreakpoints(cpuInstance.breakpoints ?? new Set);
+        if (computerInstance) {
+            setBreakpoints(computerInstance.breakpoints ?? new Set);
 
-        // CPU State updates
-        cpuInstance.on('state', (state) => {
-            if (state.breakpoints) {
-                setBreakpoints(new Set(state.breakpoints))
-            }
-        });
-
-
-        // CPU CORES State updates
-        for (const core of cpuInstance.cores) {
-
-            core.on('state', (state) => {
-                //console.log('update', Object.keys(state))
-                const coreIdx = state.idx;
-
-                if (state.registers) {
-                    const pc = state.registers.get('PC');
-
-                    //delayer('core-register', (coreIdx: number) => {
-                        setCoresPc(o => {
-                            const n = new Map(o);
-                            n.set(coreIdx, pc);
-                            return n;
-                        })
-                    //}, 100, 500, [coreIdx]);
+            // CPU State updates
+            computerInstance.on('state', (state) => {
+                if (state.breakpoints) {
+                    setBreakpoints(new Set(state.breakpoints))
                 }
             });
-
         }
-    }, [cpuInstance])
+
+        if (motherBoardInstance) {
+            for (const cpuInstance of motherBoardInstance.getCpus()) {
+                if (!cpuInstance) continue;
+                //console.log('init cpu', cpuInstance.idx)
+
+                // CPU CORES State updates
+                for (const core of cpuInstance.cores) {
+
+                    core.on('state', (state) => {
+                        //console.log('update', Object.keys(state))
+                        const coreIdx = state.idx;
+
+                        if (state.registers) {
+                            const pc = state.registers.get('PC');
+                            const cpuIdx = cpuInstance.idx;
+
+                            //delayer('memory-core-register', (cpuIdx: number, coreIdx: number) => {
+                                setCoresPc(o => {
+                                    const n = new Map(o);
+                                    n.set(`${cpuIdx}-${coreIdx}`, pc);
+                                    return n;
+                                })
+                            //}, 10, 100, [cpuIdx, coreIdx]);
+                        }
+                    });
+                }
+            }
+        }
+    }, [motherBoardInstance?.cpus])
 
 
     // Auto-scroll vers PC quand il change
     useEffect(() => {
+        const followCpuIdx = 0; // follow core #0 only
         const followCoreIdx = 0; // follow core #0 only
-        const pc = coresPc.get(followCoreIdx) ?? 0;
+        const pc = coresPc.get(`${followCpuIdx}-${followCoreIdx}`) ?? 0;
         const pcElement = addressRefs.current.get(pc);
 
         if (followInstruction && pcElement) {
@@ -86,17 +96,17 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
 
     const toggleBreakpoint = useCallback((address: number) => {
-        if (!cpuInstance) return;
+        if (!computerInstance) return;
 
-        if (cpuInstance.breakpoints.has(address)) {
-            cpuInstance.breakpoints.delete(address);
+        if (computerInstance.breakpoints.has(address)) {
+            computerInstance.breakpoints.delete(address);
 
         } else {
-            cpuInstance.breakpoints.add(address);
+            computerInstance.breakpoints.add(address);
         }
 
-        cpuInstance.emit('state', { breakpoints: cpuInstance.breakpoints })
-    }, [cpuInstance])
+        computerInstance.emit('state', { breakpoints: computerInstance.breakpoints })
+    }, [computerInstance])
 
 
     // Fonction utilitaire pour scroller dans le conteneur
@@ -196,48 +206,4 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 }
 
 
-
-
-const delayers: Map<string, { timer: NodeJS.Timeout | null, waiting: boolean, requestDate: number | null }> = new Map;
-
-const delayer = (name: string, callback: (...args: any[]) => void, delay: number, maxDelay: number, args: any[]) => {
-    let delayerKey = `${name}-${JSON.stringify(args)}`;
-    let delayer = delayers.get(delayerKey);
-    const uiFPS = 1000 / maxDelay;
-
-    if (!delayer) {
-        delayer = { timer: null, requestDate: null, waiting: false };
-        //console.log('waiting: SET FALSE')
-        delayers.set(delayerKey, delayer)
-    }
-
-    if (delayer.timer !== null) {
-        clearTimeout(delayer.timer);
-        delayer.timer = null;
-    }
-
-    if (delayer.waiting && delayer.requestDate && Date.now() - delayer.requestDate > 1000 / uiFPS) {
-        console.log('delayer:', 'forced', delayer.requestDate, delayer.waiting)
-        callback(...args);
-        delayer.waiting = false;
-        //console.log('waiting: set FALSE')
-
-    } else {
-        if (!delayer.waiting) {
-            delayer.requestDate = Date.now()
-            delayer.waiting = true;
-            //console.log('waiting: set TRUE')
-        }
-
-        delayer.timer = setTimeout(() => {
-            console.log('delayer:', 'not-forced', delayer?.requestDate, delayer.waiting)
-            callback(...args);
-
-            if (delayer) {
-                delayer.waiting = false;
-                //console.log('waiting: set FALSE')
-            }
-        }, delay);
-    }
-}
 

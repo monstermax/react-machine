@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 
 import * as cpuApi from '@/v2/api';
 import { useComputer } from '../Computer/ComputerContext';
+import { delayer } from '@/lib/delayer';
 
 
 const frequencies = [
@@ -28,12 +29,15 @@ export type ClockProps = {
 
 export const Clock: React.FC<ClockProps> = (props) => {
     const { hidden, frequency: initialFrequency, children, onInstanceCreated } = props;
-    const { cpuRef } = useComputer();
+    const { motherboardRef } = useComputer();
 
     // Core
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
 
     // UI
+    const [contentVisible, setContentVisible] = useState(true);
+    const [paused, setPaused] = useState(true);
+    const [clockCycle, setClockCycle] = useState(0);
     const [clockFrequency, setClockFrequency] = useState(initialFrequency)
     const [frequencyReal, setFrequencyReal] = useState(0)
     const [lastFrequencyStat, setLastFrequencyStat] = useState<{ timestamp: number, cycles: number } | null>(null)
@@ -42,29 +46,44 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
     // Instanciate Clock
     useEffect(() => {
+        if (!motherboardRef.current) return;
+
         const _instanciateClock = () => {
-            const clock = new cpuApi.Clock(initialFrequency ?? 1);
-            setClockInstance(clock);
+            if (!motherboardRef.current) return;
+
+            const clockInstance = motherboardRef.current.addClock(initialFrequency ?? 1);
+            setClockInstance(clockInstance);
 
             // Handle state updates
-            clock.on('state', (state) => {
-                if (!clock) return
+            clockInstance.on('state', (state) => {
+                if (!clockInstance) return
                 //console.log('Clock state update', state)
 
                 if (state.clockFrequency !== undefined) {
                     setClockFrequency(state.clockFrequency)
                 }
+
+                if (state.status !== undefined) {
+                    setPaused(!state.status)
+                }
+            })
+
+            clockInstance.on('tick', ({ cycle }) => {
+                //console.log('Clock tick', cycle)
+                delayer('clock-cycle', (cycle: number) => {
+                    setClockCycle(cycle)
+                }, 10, 100, [cycle]);
             })
 
             // Emit initial state
-            setClockFrequency(clock.clockFrequency)
+            setClockFrequency(clockInstance.clockFrequency)
 
             //setInstanciated(true)
         }
 
         const timer = setTimeout(_instanciateClock, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [motherboardRef.current]);
 
 
     // Notifie le parent quand le Clock est créé
@@ -92,10 +111,11 @@ export const Clock: React.FC<ClockProps> = (props) => {
     // Calculer la frequence reelle
     useEffect(() => {
         const updateFrequencyStat = () => {
-            if (!cpuRef.current) return;
+            //if (!cpuRef.current) return;
 
             const timestamp = Date.now() / 1000;
-            const cyclesNew = cpuRef.current.clockCycle;
+            //const cyclesNew = cpuRef.current.clockCycle;
+            const cyclesNew = clockCycle;
 
             if (lastFrequencyStat) {
                 const duration = timestamp - lastFrequencyStat.timestamp;
@@ -122,10 +142,41 @@ export const Clock: React.FC<ClockProps> = (props) => {
     const handleChangeFrequency = (frequency: number) => {
         if (!clockInstance) return;
         clockInstance.clockFrequency = frequency
-        clockInstance.restart()
+
+        if (clockInstance.status) {
+            clockInstance.restart()
+        }
 
         clockInstance.emit('state', { clockFrequency: frequency })
     }
+
+
+    const resetComputer = () => {
+        if (!motherboardRef.current) return;
+        motherboardRef.current.computer.reset()
+    }
+
+
+    const runStep = () => {
+        if (!clockInstance) return;
+
+        console.log(`runStep cycle #${clockInstance.clockCycles + 1}`);
+        clockInstance.tick();
+    };
+
+
+    const runLoop = () => {
+        if (!clockInstance) return;
+
+        console.log(`runLoop cycle #${clockInstance.clockCycles + 1}`);
+
+        if (clockInstance.status) {
+            clockInstance.stop()
+
+        } else {
+            clockInstance.start()
+        }
+    };
 
 
     if (!clockInstance) {
@@ -134,12 +185,57 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
 
     return (
-        <div className={`w-full p-2 rounded bg-background-light-2xl space-y-2 ${hidden ? "hidden" : ""}`}>
-            <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Clock</h3>
+        <div className={`w-96 p-2 rounded bg-background-light-2xl space-y-2 ${hidden ? "hidden" : ""}`}>
 
-            <div>
+            {/* Clock Head */}
+            <div className="w-full flex bg-background-light-xl p-2 rounded">
+                <h2 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Clock</h2>
+
+                {true && (
+                    <button
+                        className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
+                        onClick={() => setContentVisible(b => !b)}
+                    >
+                        {contentVisible ? "-" : "+"}
+                    </button>
+                )}
+            </div>
+
+            {/* Clock Content */}
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
+
+                {/* Buttons */}
+                <div className="p-2 rounded bg-background-light-2xl flex gap-2">
+                    <button
+                        onClick={() => resetComputer()}
+                        className="bg-red-900 hover:bg-red-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                    >
+                        ⟳ Reset
+                    </button>
+
+                    <button
+                        disabled={!paused  /*|| halted*/}
+                        onClick={() => runStep()}
+                        className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
+                    >
+                        ⏭ Step
+                    </button>
+
+                    <button
+                        disabled={false /*halted*/}
+                        onClick={() => runLoop()}
+                        className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${!paused
+                            ? "bg-yellow-600 hover:bg-yellow-700"
+                            : "bg-green-900 hover:bg-green-700"
+                            }`}
+                    >
+                        {paused ? "▶ Start" : "⏸ Pause"}
+                    </button>
+                </div>
+
                 <div className="flex items-center gap-2 px-1">
                     <label className="text-sm font-medium text-slate-300">Freq.:</label>
+
                     <select
                         value={clockFrequency}
                         onChange={(e) => handleChangeFrequency(Number(e.target.value))}
@@ -153,18 +249,18 @@ export const Clock: React.FC<ClockProps> = (props) => {
                         ))}
                     </select>
                 </div>
-            </div>
 
-            <div className="">
-                Current: {frequencyReal.toFixed(1)} Hz
-            </div>
+                <div className="">
+                    Current: {frequencyReal.toFixed(1)} Hz
+                </div>
 
-            <div className="">
-                CPU Cycle: {cpuRef.current?.clockCycle ?? '-'}
-            </div>
+                <div className="">
+                    Clock Cycle: {clockCycle}
+                </div>
 
-            <div>
-                {children}
+                <div>
+                    {children}
+                </div>
             </div>
         </div>
     );

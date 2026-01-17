@@ -4,6 +4,7 @@ import type { u8, u16, u32, u64 } from '@/types/cpu.types';
 import type { MemoryBus } from '../Memory/MemoryBus.api';
 import type { Clock } from '../Cpu/Clock.api';
 import type { Interrupt } from '../Cpu/Interrupt.api';
+import type { Motherboard } from '../Computer/Motherboard.api';
 
 
 export interface ICpu {
@@ -14,13 +15,14 @@ export interface ICpu {
 
     // État
     //halted: boolean;
+    motherboard: Motherboard;
     paused: boolean;
     clockCycle: number;
-    breakpoints: Set<number>;
+    //breakpoints: Set<number>;
 
     // Composants
     memoryBus: MemoryBus | null;
-    clock: Clock | null;
+    //clock: Clock | null;
     interrupt: Interrupt | null;
 
     // Méthodes obligatoires

@@ -55,6 +55,19 @@ export const MEMORY_MAP = createMemoryMap({
     STACK_START: 0xFE00,
     STACK_END: 0xFEFF,
 
+    // STACK BOOTLOADER (0xFE00-0xFE0F) - 16 bytes
+    BOOTLOADER_STACK_START: 0xFE00,
+    BOOTLOADER_STACK_END: 0xFE0F,
+
+    // STACK OS (0xFE10-0xFE7F) - 112 bytes
+    OS_STACK_START: 0xFE10,
+    OS_STACK_END: 0xFE7F,
+
+    // STACK PROGRAMS (0xFE30-0xFEFF) - 128 bytes
+    PROGAMS_STACK_START: 0xFE80,
+    PROGAMS_STACK_END: 0xFEFF,
+
+
 
     // ## I/O Devices ## (0xFF00-0xFFFF) - 256 ports
 
@@ -139,22 +152,22 @@ export const MEMORY_MAP = createMemoryMap({
     LCD_CURSOR: 0xFFA2,       // Position curseur
 
     // === RNG (0xFFB0-0xFFBF) ===
-    RNG_BASE: 0xFFB0 as u16,
-    RNG_OUTPUT: 0xFFB0 as u16,        // Nombre aléatoire 0-255
-    RNG_SEED: 0xFFB1 as u16,          // Définir seed
+    RNG_BASE: 0xFFB0,
+    RNG_OUTPUT: 0xFFB0,        // Nombre aléatoire 0-255
+    RNG_SEED: 0xFFB1,          // Définir seed
 
     // === RTC (0xFFC0-0xFFCF) ===
-    RTC_BASE: 0xFFC0 as u16,
-    RTC_YEARS: 0xFFC1 as u16,         // Secondes (0-59)
-    RTC_MONTHS: 0xFFC2 as u16,        // Secondes (0-59)
-    RTC_DAYS: 0xFFC3 as u16,          // Secondes (0-59)
-    RTC_HOURS: 0xFFC4 as u16,         // Secondes (0-59)
-    RTC_MINUTES: 0xFFC5 as u16,       // Minutes (0-59)
-    RTC_SECONDS: 0xFFC6 as u16,       // Heures (0-23)
-    RTC_TIMESTAMP_0: 0xFFC7 as u16,   // Unix timestamp byte 0 (LSB)
-    RTC_TIMESTAMP_1: 0xFFC8 as u16,   // Unix timestamp byte 1
-    RTC_TIMESTAMP_2: 0xFFC9 as u16,   // Unix timestamp byte 2
-    RTC_TIMESTAMP_3: 0xFFCA as u16,   // Unix timestamp byte 3 (MSB)
+    RTC_BASE: 0xFFC0,
+    RTC_YEARS: 0xFFC1,         // Secondes (0-59)
+    RTC_MONTHS: 0xFFC2,        // Secondes (0-59)
+    RTC_DAYS: 0xFFC3,          // Secondes (0-59)
+    RTC_HOURS: 0xFFC4,         // Secondes (0-59)
+    RTC_MINUTES: 0xFFC5,       // Minutes (0-59)
+    RTC_SECONDS: 0xFFC6,       // Heures (0-23)
+    RTC_TIMESTAMP_0: 0xFFC7,   // Unix timestamp byte 0 (LSB)
+    RTC_TIMESTAMP_1: 0xFFC8,   // Unix timestamp byte 1
+    RTC_TIMESTAMP_2: 0xFFC9,   // Unix timestamp byte 2
+    RTC_TIMESTAMP_3: 0xFFCA,   // Unix timestamp byte 3 (MSB)
 
     // Pixel Display // Écran graphique 32x32 pixels monochrome
     PIXEL_DISPLAY_BASE: 0xFFD0,

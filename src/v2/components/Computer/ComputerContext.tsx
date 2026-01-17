@@ -14,19 +14,19 @@ export type ViewType = 'hidden' | 'closed' | 'open_simple' | 'open_advanced'
 export const Computer: React.FC<{ view?: ViewType, children: React.ReactNode }> = ({ view='open_advanced', children }) => {
     const computerRef = useRef<cpuApi.Computer | null>(null)
     const motherboardRef = useRef<cpuApi.Motherboard | null>(null)
-    const cpuRef = useRef<cpuApi.Cpu | null>(null)
+    //const cpuRef = useRef<cpuApi.Cpu | null>(null)
     const memoryBusRef = useRef<cpuApi.MemoryBus | null>(null)
     const devicesManagerRef = useRef<cpuApi.DevicesManager | null>(null)
-    const ramRef = useRef<cpuApi.Ram | null>(null)
+    //const ramRef = useRef<cpuApi.Ram | null>(null)
 
 
     const computerState: ComputerContextType = {
         computerRef,
         motherboardRef,
-        cpuRef,
+        //cpuRef,
         memoryBusRef,
         devicesManagerRef,
-        ramRef,
+        //ramRef,
     }
 
 
@@ -43,10 +43,10 @@ export const Computer: React.FC<{ view?: ViewType, children: React.ReactNode }> 
 interface ComputerContextType {
     computerRef: React.RefObject<cpuApi.Computer | null>;
     motherboardRef: React.RefObject<cpuApi.Motherboard | null>;
-    cpuRef: React.RefObject<cpuApi.Cpu | null>;
+    //cpuRef: React.RefObject<cpuApi.Cpu | null>;
     memoryBusRef: React.RefObject<cpuApi.MemoryBus | null>;
     devicesManagerRef: React.RefObject<cpuApi.DevicesManager | null>;
-    ramRef: React.RefObject<cpuApi.Ram | null>;
+    //ramRef: React.RefObject<cpuApi.Ram | null>;
 }
 
 

@@ -2,14 +2,14 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 
 import * as cpuApi from '@/v2/api';
 import { compileFile } from '@/cpus/default/asm_compiler';
-import { MEMORY_MAP } from '@/lib/memory_map_16bit';
+import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits';
 import { U16 } from '@/lib/integers';
 import { os_list } from '@/cpus/default/programs/mini_os';
 import { programs } from '@/cpus/default/programs/programs_index';
 import { MemoryTable } from './MemoryTable';
 import { useComputer } from '../Computer/ComputerContext';
 
-import type { OsInfo, ProgramInfo, u16, u8 } from '@/types/cpu.types';
+import type { CompiledCode, OsInfo, ProgramInfo, u16, u8 } from '@/types/cpu.types';
 
 
 export type RamProps = {
@@ -20,8 +20,8 @@ export type RamProps = {
 }
 
 export const Ram: React.FC<RamProps> = (props) => {
-    const { data, size: maxSize, children, onInstanceCreated } = props;
-    const { computerRef, memoryBusRef, ramRef } = useComputer();
+    const { data, size: maxSize=1+MEMORY_MAP.RAM_END-MEMORY_MAP.RAM_START, children, onInstanceCreated } = props;
+    const { memoryBusRef } = useComputer();
 
     // Core
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
@@ -35,17 +35,18 @@ export const Ram: React.FC<RamProps> = (props) => {
 
     // Instanciate Ram
     useEffect(() => {
-        //if (!memoryBusRef.current) return;
-        if (ramRef.current) return;
+        if (!memoryBusRef.current) return;
+        //if (ramRef.current) return;
+        if (memoryBusRef.current.ram) return;
 
         const _instanciateRam = () => {
-            const ram = new cpuApi.Ram(data, maxSize);
+        if (!memoryBusRef.current) return;
+
+            // Save Instance for UI
+            const ram = memoryBusRef.current.addRam(data, maxSize);
             setRamInstance(ram);
 
-            // Save RamBus Ref
-            ramRef.current = ram;
-
-            // Handle state updates
+            // Handle state updates for UI
             ram.on('state', (state) => {
                 //console.log('RAM state update', state)
 
@@ -62,7 +63,7 @@ export const Ram: React.FC<RamProps> = (props) => {
 
         const timer = setTimeout(_instanciateRam, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [memoryBusRef.current]);
 
 
     // Notifie le parent quand le Ram est créé
@@ -91,57 +92,31 @@ export const Ram: React.FC<RamProps> = (props) => {
 
 
     const loadOsInRam = async (osName: string) => {
-        if (!ramInstance || !computerRef.current) return;
+        if (!memoryBusRef.current) return;
 
-        // doublon avec Computer.loadOsInRam
+        const computerInstance = memoryBusRef.current.motherboard.computer
+        if (!computerInstance) return;
 
-        const os: OsInfo | null = osName ? os_list[osName] : null;
-        if (!os?.filepath) return;
-
+        const osCode: CompiledCode | null = await computerInstance.loadOsCode(osName);
         const memoryOffset = MEMORY_MAP.OS_START;
-        const { code } = await compileFile(os.filepath, memoryOffset)
-
-        if (os) {
-            ramInstance.loadCodeInRam(code, memoryOffset);
-
-        } else {
-            ramInstance.write(memoryOffset, 0 as u8);
-        }
-
-        //ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
-
-        computerRef.current.loadedOs = osName;
-        computerRef.current.emit('state', { loadedOs: osName })
+        await computerInstance.loadCodeInRam(osCode, memoryOffset);
     }
 
 
     const loadProgramInRam = async (programName: string) => {
-        if (!ramInstance || !computerRef.current) return;
+        if (!memoryBusRef.current) return;
 
-        // doublon avec Computer.loadProgramInRam
+        const computerInstance = memoryBusRef.current.motherboard.computer
+        if (!computerInstance) return;
 
-        const program: ProgramInfo | null = programName ? programs[programName] : null;
-        if (!program?.filepath) return;
-
+        const programCode: CompiledCode | null = await computerInstance.loadProgramCode(programName);
         const memoryOffset = MEMORY_MAP.PROGRAM_START;
-        const { code } = await compileFile(program.filepath, memoryOffset)
-
-        if (program) {
-            ramInstance.loadCodeInRam(code, memoryOffset);
-
-        } else {
-            ramInstance.write(memoryOffset, 0 as u8);
-        }
-
-        //ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
-
-        computerRef.current.loadedProgram = programName;
-        computerRef.current.emit('state', { loadedProgram: programName })
+        await computerInstance.loadCodeInRam(programCode, memoryOffset);
     }
 
 
     return (
-        <div className="ram w-80">
+        <div className="ram w-96">
 
             {/* RAM Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

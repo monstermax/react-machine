@@ -17,7 +17,7 @@ type MemoryBusProps = {
 
 export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     const { hidden, children, onInstanceCreated } = props;
-    const { motherboardRef, devicesManagerRef, cpuRef, memoryBusRef } = useComputer();
+    const { motherboardRef, memoryBusRef } = useComputer();
 
     // Core
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
@@ -32,31 +32,24 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
     // Instanciate MemoryBus
     useEffect(() => {
+        if (!motherboardRef.current) return;
+
         if (memoryBusRef.current) {
             setMemoryBusInstance(memoryBusRef.current);
             return;
         }
 
         const _instanciateMemoryBus = () => {
-            const memoryBusInstance = new cpuApi.MemoryBus;
+            if (!motherboardRef.current) return;
+
+            // Save Instance for UI
+            const memoryBusInstance = motherboardRef.current.addMemoryBus();
             setMemoryBusInstance(memoryBusInstance);
 
             // Save MemoryBus Ref
             memoryBusRef.current = memoryBusInstance;
 
-            // Connect MemoryBus to CPU
-            if (cpuRef.current) {
-                cpuRef.current.memoryBus = memoryBusInstance;
-            }
-
-            // Connect MemoryBus to DevicesManager
-            if (devicesManagerRef.current) {
-                memoryBusInstance.io = devicesManagerRef.current;
-                console.log('DevicesManager connecté à MemoryBus:', devicesManagerRef.current);
-            }
-
-
-            // Handle state updates
+            // Handle state updates for UI
             memoryBusInstance.on('state', (state) => {
                 console.log('MemoryBus state update', state)
 
@@ -72,7 +65,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
         const timer = setTimeout(_instanciateMemoryBus, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [motherboardRef.current]);
 
 
     // Notifie le parent quand le MemoryBus est créé
@@ -86,10 +79,10 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     const addRom = (romInstance: cpuApi.Rom) => {
         if (!memoryBusInstance) return;
 
-        if (romInstance && !memoryBusInstance.rom) {
-            memoryBusInstance.rom = romInstance;
-            //console.log('ROM monté dans MemoryBus:', romInstance);
-        }
+//        if (romInstance && !memoryBusInstance.rom) {
+//            memoryBusInstance.rom = romInstance;
+//            //console.log('ROM monté dans MemoryBus:', romInstance);
+//        }
 
         setRomInstance(romInstance);
     }
@@ -98,10 +91,10 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     const addRam = (ramInstance: cpuApi.Ram) => {
         if (!memoryBusInstance) return;
 
-        if (ramInstance && !memoryBusInstance.ram) {
-            memoryBusInstance.ram = ramInstance;
-            //console.log('RAM monté dans MemoryBus:', ramInstance);
-        }
+//        if (ramInstance && !memoryBusInstance.ram) {
+//            memoryBusInstance.ram = ramInstance;
+//            //console.log('RAM monté dans MemoryBus:', ramInstance);
+//        }
 
         setRamInstance(ramInstance)
     }

@@ -1,10 +1,11 @@
 
-import React, { useEffect, useState, type JSXElementConstructor } from 'react';
+import React, { useCallback, useEffect, useState, type JSXElementConstructor } from 'react';
 
 import * as cpuApi from '@/v2/api';
 import { useComputer } from './ComputerContext';
 import { Cpu } from '../Cpu/Cpu';
 import { MemoryBus } from '../Memory/MemoryBus';
+import { Clock } from '../Cpu/Clock';
 
 
 export type MotherboardProps = {
@@ -16,14 +17,15 @@ export type MotherboardProps = {
 
 export const Motherboard: React.FC<MotherboardProps> = (props) => {
     const { hidden, children, onInstanceCreated } = props;
-    const { computerRef, motherboardRef: motherBoardRef } = useComputer()
+    const { computerRef, motherboardRef } = useComputer()
 
     // Core
     const [motherboardInstance, setMotherBoardInstance] = useState<cpuApi.Motherboard | null>(null);
 
     // Core Children
-    const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
+    const [cpuInstances, setCpuInstances] = useState<Map<number, cpuApi.Cpu>>(new Map);
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
+    const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
 
     // UI
     const [contentVisible, setContentVisible] = useState(true);
@@ -33,25 +35,22 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
     useEffect(() => {
         if (!computerRef) return;
 
-        if (motherBoardRef.current) {
-            setMotherBoardInstance(motherBoardRef.current);
+        if (motherboardRef.current) {
+            setMotherBoardInstance(motherboardRef.current);
             return;
         }
 
         const _instanciateMotherBoard = () => {
-            const motherBoardInstance = new cpuApi.Motherboard;
+            if (!computerRef.current) return;
+
+            // Save Instance for UI
+            const motherBoardInstance = computerRef.current.addMotherboard();
             setMotherBoardInstance(motherBoardInstance);
 
             // Save MotherBoard Ref
-            motherBoardRef.current = motherBoardInstance;
+            motherboardRef.current = motherBoardInstance;
 
-            // Attach Motherboard to Computer
-            if (computerRef.current && !computerRef.current.motherboard) {
-                computerRef.current.motherboard = motherboardInstance;
-                //console.log('Motherboard monté dans Computer:', motherboardInstance);
-            }
-
-            // Handle state updates
+            // Handle state updates for UI
             motherBoardInstance.on('state', (state) => {
                 //console.log('MotherBoard state update', state)
 
@@ -62,7 +61,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
 
         const timer = setTimeout(_instanciateMotherBoard, 100);
         return () => clearTimeout(timer);
-    }, [computerRef]);
+    }, [computerRef.current]);
 
 
     // Notifie le parent quand le MotherBoard est créé
@@ -73,37 +72,63 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
     }, [motherboardInstance, onInstanceCreated]);
 
 
-    const addCpu = (cpuInstance: cpuApi.Cpu) => {
+    const addCpu = (cpuInstance: cpuApi.Cpu, cpuIndex=0) => {
         if (!motherboardInstance) return;
+        if (cpuInstances.get(cpuInstance.idx)) return;
 
-        if (cpuInstance && !motherboardInstance.cpu) {
-            motherboardInstance.cpu = cpuInstance;
-            //console.log('CPU monté dans Motherboard:', cpuInstance);
-        }
+        //if (cpuInstance && !motherboardInstance.cpus.get(cpuIndex)) {
+        //    motherboardInstance.cpus.set(cpuIndex, cpuInstance);
+        //    console.log(`CPU ${cpuIndex} monté dans Motherboard:`, cpuInstance);
+        //}
 
-        setCpuInstance(cpuInstance);
+        setCpuInstances(old => new Map(old).set(cpuInstance.idx, cpuInstance))
     }
 
 
-    const addMemoryBus = (memoryBusInstance: cpuApi.MemoryBus) => {
+    const addClock = (clock: cpuApi.Clock) => {
         if (!motherboardInstance) return;
+        if (clockInstance) return;
 
-        if (memoryBusInstance && !motherboardInstance.memoryBus) {
-            motherboardInstance.memoryBus = memoryBusInstance;
+        // Handle tick - Dispatch to all CPUs
+        clock.on('tick', ({ cycle }) => {
+            //console.log('Mother tick', cycle)
+
+            for (const cpuInstance of motherboardInstance.getCpus()) {
+                if (!cpuInstance) continue;
+                if (cpuInstance.paused || cpuInstance.cpuHalted) continue;
+                cpuInstance.executeCycle()
+            }
+        })
+
+        //console.log(`Clock montée dans Motherboard:`, clock);
+
+        setClockInstance(clock);
+    }
+
+
+    const addMemoryBus = (memoryBus: cpuApi.MemoryBus) => {
+        if (!motherboardInstance) return;
+        if (memoryBusInstance) return;
+
+        if (memoryBus && !motherboardInstance.memoryBus) {
+            motherboardInstance.memoryBus = memoryBus;
             //console.log('MemoryBus monté dans Motherboard:', memoryBusInstance);
         }
 
-        setMemoryBusInstance(memoryBusInstance);
+        setMemoryBusInstance(memoryBus);
     }
 
 
-    const childrenWithProps = React.Children.map(children, (child) => {
+    const childrenWithProps = React.Children.map(children, (child, childIdx) => {
         if (React.isValidElement(child)) {
             const childElement = child as React.ReactElement<any>;
 
             switch (childElement.type) {
                 case Cpu:
-                    return React.cloneElement(childElement, { onInstanceCreated: addCpu });
+                    return React.cloneElement(childElement, { onInstanceCreated: (cpuInstance: cpuApi.Cpu) => addCpu(cpuInstance, childIdx) });
+
+                case Clock:
+                    return React.cloneElement(childElement, { onInstanceCreated: addClock });
 
                 case MemoryBus:
                     return React.cloneElement(childElement, { onInstanceCreated: addMemoryBus });

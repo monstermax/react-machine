@@ -1,6 +1,8 @@
 
 @define8 INITIAL_FREQ 0x05
 @define8 LEDS_STATE_ALL_OFF 0x00
+@define8 LEDS_STATE_HALF_1 0x55
+@define8 LEDS_STATE_HALF_2 0xAA
 
 
 INIT:
@@ -39,3 +41,18 @@ MAIN:
     OS_RETURN:
         JMP $RESET_LEDS # Retour à WAIT_FOR_OS
 
+
+IDLE:
+    MOV_A_IMM 0x4
+
+    IDLE_LOOP:
+        MOV_B_IMM $LEDS_STATE_HALF_1
+        MOV_MEM_B @LEDS_BASE
+
+        MOV_B_IMM $LEDS_STATE_HALF_2
+        MOV_MEM_B @LEDS_BASE
+
+        DEC_A
+        JMP $IDLE_LOOP
+
+    HALT

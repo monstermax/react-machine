@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { MEMORY_MAP, isROM, isIO, memoryToIOPort } from "@/lib/memory_map_16bit";
+import { MEMORY_MAP, isROM, isIO, memoryToIOPort } from "@/lib/memory_map_16x8_bits";
 import type { IOHook } from "./useIo";
 import type { RomHook } from "./useRom";
 

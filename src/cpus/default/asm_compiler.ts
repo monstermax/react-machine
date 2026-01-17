@@ -1,5 +1,5 @@
 
-import { MEMORY_MAP } from '../../lib/memory_map_16bit';
+import { MEMORY_MAP } from '../../lib/memory_map_16x8_bits';
 import { high16, low16, toHex, U16, U8 } from '../../lib/integers';
 import { Opcode, getInstructionLength } from './cpu_instructions';
 
@@ -321,15 +321,20 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
             const define = defines.get(value0)
 
             if (define !== undefined) {
-                 if (define.bytes >= 16) {
-                    stage2Step1.push([asmLineNum, low16(Number(define.value) as u16).toString(), '', []])
-                    asmLineNum = U16(asmLineNum + 1);
-                    stage2Step1.push([asmLineNum, high16(Number(define.value) as u16).toString(), '', []])
-                    asmLineNum = U16(asmLineNum + 1);
+                if (define.bytes === 8) {
+                    stage2Step1.push([asmLineNum, toHex(U8(Number(define.value))), '', []])
+                    asmLineNum++;
 
-                } else if (define.bytes >= 8) {
-                    stage2Step1.push([asmLineNum, U8(Number(define.value)).toString(), '', []])
-                    asmLineNum = U16(asmLineNum + 1);
+                } else if (define.bytes === 16) {
+                    if (weight === null || weight === 'low') {
+                        stage2Step1.push([asmLineNum, toHex(low16(Number(define.value) as u16)), '', []])
+                        asmLineNum++;
+                    }
+
+                    if (weight === null || weight === 'high') {
+                        stage2Step1.push([asmLineNum, toHex(high16(Number(define.value) as u16)), '', []])
+                        asmLineNum++;
+                    }
                 }
 
                 continue;
@@ -350,7 +355,7 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
                         [],
                     ];
                     stage2Step1.push(lineInstruction)
-                    asmLineNum = U16(asmLineNum + 1);
+                    asmLineNum++;
 
                 } else if (weight === 'high') {
                     const lineInstruction: PreCompiledCode[number] = [
@@ -360,7 +365,7 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
                         [],
                     ];
                     stage2Step1.push(lineInstruction)
-                    asmLineNum = U16(asmLineNum + 1);
+                    asmLineNum++;
 
                 } else {
                     const lineInstruction1: PreCompiledCode[number] = [
@@ -370,7 +375,7 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
                         [],
                     ];
                     stage2Step1.push(lineInstruction1)
-                    asmLineNum = U16(asmLineNum + 1);
+                    asmLineNum++;
 
                     const lineInstruction2: PreCompiledCode[number] = [
                         asmLineNum,
@@ -379,7 +384,7 @@ async function preCompileStage2(stage1: { opcode: string, params: string[], comm
                         [],
                     ];
                     stage2Step1.push(lineInstruction2)
-                    asmLineNum = U16(asmLineNum + 1);
+                    asmLineNum++;
                 }
 
                 continue;

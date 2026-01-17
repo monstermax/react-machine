@@ -8,7 +8,7 @@ import { useIo, type IOHook } from "@/v1/hooks/useIo";
 import { useRam, type RamHook } from "@/v1/hooks/useRam";
 import { os_list } from "@/cpus/default/programs/mini_os";
 import { programs } from "@/cpus/default/programs/programs_index";
-import { mapAddress16, MEMORY_MAP } from "@/lib/memory_map_16bit";
+import { mapAddress16, MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 import { U16 } from "@/lib/integers";
 import { compileCode, compileFile } from "@/cpus/default/asm_compiler";
 

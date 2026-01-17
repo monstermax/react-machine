@@ -2,7 +2,7 @@
 import { useCallback, useState, useEffect } from "react";
 
 import type { InterruptHook } from "../useInterrupt";
-import { MEMORY_MAP } from "@/lib/memory_map_16bit";
+import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 import { U8 } from "@/lib/integers";
 
 import type { u8 } from "@/types/cpu.types";

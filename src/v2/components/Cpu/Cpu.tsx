@@ -8,30 +8,34 @@ import { useComputer } from '../Computer/ComputerContext';
 import { Interrupt } from './Interrupt';
 
 import type { u16, u8 } from '@/types/cpu.types';
+import { delayer } from '@/lib/delayer';
 
 
 export type CpuProps = {
     hidden?: boolean,
     cores?: number,
     type?: string,
+    active?: boolean,
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Cpu) => void,
 }
 
 
 export const Cpu: React.FC<CpuProps> = (props) => {
-    const { hidden, cores: coresCount, type: cpuType, children, onInstanceCreated } = props;
-    const { computerRef, motherboardRef, cpuRef, ramRef, memoryBusRef, devicesManagerRef } = useComputer();
+    const { hidden, cores: coresCount, type: cpuType, active: cpuActiveAtInit, children, onInstanceCreated } = props;
+    const { motherboardRef, devicesManagerRef } = useComputer();
 
     // Core
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
 
     // Core Children
-    const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
+    //const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
     const [interruptInstance, setInterruptInstance] = useState<cpuApi.Interrupt | null>(null);
 
     // UI snapshot state
-    const [paused, setPaused] = useState(true);
+    const [paused, setPaused] = useState(false);
+    const [halted, setHalted] = useState(true);
+    const [clockPaused, setClockPaused] = useState(true);
     const [clockCycle, setClockCycle] = useState(0);
     const [coresRegisters, setCoresRegisters] = useState<Map<number, Map<string, u8 | u16>>>(new Map);
     const [coresCoreCycle, setCoresCoreCycle] = useState<Map<number, number>>(new Map);
@@ -48,26 +52,25 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
     // Instanciate CPU
     useEffect(() => {
-        //if (!motherboardRef.current) return;
-        if (cpuRef.current) return;
+        if (!motherboardRef.current) return;
+        //if (cpuRef.current) return;
 
         const _instanciateCpu = () => {
-            const cpuInstance = new cpuApi.Cpu(coresCount);
-            setCpuInstance(cpuInstance);
+            if (!motherboardRef.current) return;
 
-            // Save CPU Ref
-            cpuRef.current = cpuInstance;
+            // Save Instance for UI
+            const cpu = motherboardRef.current.addCpu(coresCount);
+            setCpuInstance(cpu);
 
-            // Connect MemoryBus to CPU
-            if (memoryBusRef.current) {
-                cpuRef.current.memoryBus = memoryBusRef.current;
-            }
-
-            // Handle CPU state updates
-            cpuInstance.on('state', (state) => {
+            // Handle CPU state updates for UI
+            cpu.on('state', (state) => {
                 //console.log('CPU state update', state)
 
-                if (state.clockCycle) {
+                if (state.cpuHalted !== undefined) {
+                    setHalted(state.cpuHalted)
+                }
+
+                if (state.clockCycle !== undefined) {
                     setClockCycle(state.clockCycle)
                 }
 
@@ -76,9 +79,9 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 }
             })
 
-            // Handle CORES state updates
-            for (let i=0; i<cpuInstance.cores.length; i++) {
-                const core = cpuInstance.cores[i];
+            // Handle CORES state updates for UI
+            for (let i=0; i<cpu.cores.length; i++) {
+                const core = cpu.cores[i];
                 //const coreIdx = core.idx;
 
                 core.on('state', (state) => {
@@ -91,19 +94,23 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     }
 
                     if (state.coreCycle) {
-                        setCoresCoreCycle(r => {
-                            const n = new Map(r);
-                            n.set(coreIdx, state.coreCycle);
-                            return n;
-                        })
+                        delayer('cpu-core-cycle', (coreIdx: number) => {
+                            setCoresCoreCycle(r => {
+                                const n = new Map(r);
+                                n.set(coreIdx, state.coreCycle);
+                                return n;
+                            })
+                        }, 10, 100, [coreIdx]);
                     }
 
                     if (state.registers) {
-                        setCoresRegisters(r => {
-                            const n = new Map(r);
-                            n.set(coreIdx, state.registers);
-                            return n;
-                        })
+                        delayer('cpu-core-register', (coreIdx: number) => {
+                            setCoresRegisters(r => {
+                                const n = new Map(r);
+                                n.set(coreIdx, state.registers);
+                                return n;
+                            })
+                        }, 10, 100, [coreIdx]);
                     }
 
                     if (state.coreHalted !== undefined) {
@@ -117,14 +124,27 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 })
             }
 
+            // Handle Clock state updates for UI
+            if (motherboardRef.current && motherboardRef.current.clock) {
+                const clockInstance = motherboardRef.current.clock;
+
+                clockInstance.on('state', (state) => {
+                    if (state.status !== undefined) {
+                        setClockPaused(!state.status)
+                    }
+                });
+            }
+
+
             // Emit initial state
-            cpuInstance.emit('state', {
+            cpu.emit('state', {
                 //registers: this.cores[0].registers,
-                clockCycle: cpuInstance.clockCycle,
-                paused: cpuInstance.paused,
+                clockCycle: cpu.clockCycle,
+                paused: cpu.paused,
+                cpuHalted: cpu.cpuHalted,
             })
 
-            for (const core of cpuInstance.cores) {
+            for (const core of cpu.cores) {
                 core.emit('state', {
                     idx: core.idx,
                     registers: core.registers,
@@ -137,11 +157,16 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             //console.log('CPU initialized', cpuInstance.cores)
 
             //setInstanciated(true)
+
+            // Start CPU
+            if (cpuActiveAtInit || (cpuActiveAtInit === undefined && cpu.idx === 0)) {
+                cpu.start()
+            }
         }
 
         const timer = setTimeout(_instanciateCpu, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [motherboardRef.current]);
 
 
     // Notifie le parent quand le CPU est créé
@@ -150,26 +175,6 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             onInstanceCreated(cpuInstance);
         }
     }, [cpuInstance, onInstanceCreated]);
-
-
-    // Mount Clock - récupère l'instance du Clock depuis les enfants
-    const addClock = (clockInstance: cpuApi.Clock) => {
-        if (!cpuInstance) return;
-
-        if (clockInstance && !cpuInstance.clock) {
-            cpuInstance.clock = clockInstance;
-
-            // Handle state updates
-            clockInstance.on('tick', () => {
-                if (cpuInstance.paused) return;
-                cpuInstance.executeCycle()
-            })
-
-            //console.log('Clock monté dans CPU:', clockInstance);
-        }
-
-        setClockInstance(clockInstance);
-    }
 
 
     // Mount Interrupt - récupère l'instance du Interrupt depuis les enfants
@@ -181,6 +186,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
             //console.log('interrupt monté dans CPU:', interruptInstance);
 
+            // Attach Interrupt to DevicesManager
             if (devicesManagerRef.current) {
                 devicesManagerRef.current.devices.set(interruptInstance.ioPort, interruptInstance)
             }
@@ -195,8 +201,8 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             const childElement = child as React.ReactElement<any>;
 
             switch (childElement.type) {
-                case Clock:
-                    return React.cloneElement(childElement, { onInstanceCreated: addClock });
+                //case Clock:
+                //    return React.cloneElement(childElement, { onInstanceCreated: addClock });
 
                 case Interrupt:
                     return React.cloneElement(childElement, { onInstanceCreated: addInterrupt });
@@ -215,36 +221,16 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
         console.log(`runStep cycle #${clockCycle + 1}`);
 
-        if (cpuInstance) {
-            cpuInstance.executeCycle();
-        }
+        cpuInstance.executeCycle();
     };
 
-
-    const runLoop = () => {
+    const enableCpu = () => {
         if (!cpuInstance) return;
 
         console.log(`runLoop cycle #${clockCycle + 1}`);
 
-        if (cpuInstance) {
-            cpuInstance.togglePaused();
-        }
+        cpuInstance.togglePaused();
     };
-
-
-    const resetComputer = () => {
-        if (cpuInstance) {
-            resetCpu()
-        }
-
-        if (devicesManagerRef.current) {
-            devicesManagerRef.current.reset()
-        }
-
-        if (ramRef.current) {
-            ramRef.current.eraseRam()
-        }
-    }
 
 
     const resetCpu = () => {
@@ -267,7 +253,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
             {/* CPU Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
-                <h2 className="font-bold">CPU</h2>
+                <h2 className="font-bold">CPU #{cpuInstance.idx}</h2>
 
                 {true && (
                     <button
@@ -285,29 +271,29 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 {/* Buttons */}
                 <div className="p-2 rounded bg-background-light-2xl flex gap-2">
                     <button
-                        onClick={() => resetComputer()}
+                        onClick={() => resetCpu()}
                         className="bg-red-900 hover:bg-red-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                     >
                         ⟳ Reset
                     </button>
 
                     <button
-                        disabled={!paused  /*|| halted*/}
-                        onClick={() => runStep()}
-                        className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
-                    >
-                        ⏭ Step
-                    </button>
-
-                    <button
-                        disabled={false /*halted*/}
-                        onClick={() => runLoop()}
+                        disabled={halted}
+                        onClick={() => enableCpu()}
                         className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${!paused
                             ? "bg-yellow-600 hover:bg-yellow-700"
                             : "bg-green-900 hover:bg-green-700"
                             }`}
                     >
-                        {paused ? "▶ Start" : "⏸ Pause"}
+                        {paused ? "Auto" : "Manual"}
+                    </button>
+
+                    <button
+                        disabled={halted || (!paused && !clockPaused)}
+                        onClick={() => runStep()}
+                        className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
+                    >
+                        ⏭ Step
                     </button>
                 </div>
 
@@ -329,10 +315,12 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 {coresIds.map(coreIdx => (
                     <Registers key={coreIdx}
                         coreIdx={coreIdx}
-                        halted={coresHalted.get(coreIdx) ?? true}
+                        coreHalted={coresHalted.get(coreIdx) ?? true}
                         coreCycle={coresCoreCycle.get(coreIdx) ?? 0}
                         registers={coresRegisters.get(coreIdx) ?? new Map}
                         paused={paused}
+                        cpuHalted={halted}
+                        clockPaused={clockPaused}
                         clockCycle={clockCycle}
                     />
                 ))}
@@ -342,8 +330,8 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 };
 
 
-const Registers: React.FC<{ coreIdx: number, halted: boolean, paused: boolean, clockCycle: number, coreCycle: number, registers: Map<string, u8 | u16> }> = (props) => {
-    const { coreIdx, halted, paused, clockCycle, coreCycle, registers } = props;
+const Registers: React.FC<{ coreIdx: number, coreHalted: boolean, cpuHalted: boolean, paused: boolean, clockPaused: boolean, clockCycle: number, coreCycle: number, registers: Map<string, u8 | u16> }> = (props) => {
+    const { coreIdx, coreHalted, cpuHalted, paused, clockPaused, clockCycle, coreCycle, registers } = props;
 
     return (
         <div className={`p-2 rounded bg-background-light-2xl`}>
@@ -355,17 +343,21 @@ const Registers: React.FC<{ coreIdx: number, halted: boolean, paused: boolean, c
                         key={reg}
                         className={`flex w-full h-full border justify-between px-2 pt-2 rounded ${(reg === "PC")
                             ? "bg-blue-900/50"
-                            : (reg === "A" && halted)
+                            : (reg === "A" && coreHalted)
                                 ? "bg-green-900/50 border border-green-500"
                                 : "bg-slate-900/50"
                             }`}
                     >
                         <span className="text-cyan-400">{reg}:</span>
-                        <span className="text-green-400 ps-4 min-w-24 text-right">
-                            {value} (0x{value.toString(16).padStart(
-                                (reg === "PC" || reg === "SP" ? 4 : 2),  // 4 digits pour PC/SP, 2 pour les autres
-                                "0"
-                            )})
+                        <span className="text-green-400 ps-2 min-w-24 text-right">
+                            {reg !== "FLAGS" && (
+                                <>
+                                    {value} (0x{value.toString(16).padStart(
+                                        (reg === "PC" || reg === "SP" ? 4 : 2),  // 4 digits pour PC/SP, 2 pour les autres
+                                        "0"
+                                    )})
+                                </>
+                            )}
                             {reg === "FLAGS" && ` [Z:${(!!(value & 0b10)) ? 1 : 0} C:${(!!(value & 0b01)) ? 1 : 0}]`}
                         </span>
                     </div>
@@ -373,8 +365,18 @@ const Registers: React.FC<{ coreIdx: number, halted: boolean, paused: boolean, c
 
                 <div className="flex w-full h-full justify-between px-2 pt-2 rounded bg-slate-900/50 border border-red-500/30">
                     <span className="text-red-400">Status:</span>
-                    <span className={halted ? "text-red-400" : (paused ? "text-slate-400" : "text-yellow-400")}>
-                        {halted ? "CORE HALTED" : (paused ? "CPU PAUSED" : "RUNNING")}
+                    <span className={(cpuHalted || coreHalted) ? "text-red-400" : (paused ? "text-slate-400" : "text-yellow-400")}>
+                        {
+                            cpuHalted
+                                ? "CPU HALTED"
+                                : coreHalted
+                                    ? "CORE HALTED"
+                                    : paused
+                                        ? "MANUAL"
+                                        : clockPaused
+                                            ? "ACTIVE"
+                                            : "RUNNING"
+                        }
                     </span>
                 </div>
                 <div className="flex w-full h-full justify-between px-2 pt-2 rounded bg-slate-900/50 border border-cyan-500/30">
