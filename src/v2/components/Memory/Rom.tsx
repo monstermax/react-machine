@@ -6,6 +6,7 @@ import { useComputer } from '../Computer/ComputerContext';
 import { MemoryTable } from './MemoryTable';
 
 import type { u16, u8 } from '@/types/cpu.types';
+import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits';
 
 
 export type RomProps = {
@@ -16,7 +17,7 @@ export type RomProps = {
 }
 
 export const Rom: React.FC<RomProps> = (props) => {
-    const { data, size: maxSize, children, onInstanceCreated } = props;
+    const { data, size: maxSize=1+MEMORY_MAP.ROM_END-MEMORY_MAP.ROM_START, children, onInstanceCreated } = props;
     const { memoryBusRef } = useComputer();
 
     // Core

@@ -43,10 +43,14 @@ export class Rom extends EventEmitter {
 
 
     deleteOverload() {
-        while (this.storage.size > this.maxSize) {
-            const key = this.storage.keys().next();
-            if (key.done) break;
-            this.storage.delete(key.value)
+        const deleteCount = this.storage.size - this.maxSize;
+
+        if (deleteCount > 0) {
+            const keys = Array.from(this.storage.keys()).reverse().slice(0, deleteCount);
+
+            for (const key of keys) {
+                this.storage.delete(key)
+            }
         }
     }
 

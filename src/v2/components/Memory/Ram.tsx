@@ -20,7 +20,7 @@ export type RamProps = {
 }
 
 export const Ram: React.FC<RamProps> = (props) => {
-    const { data, size: maxSize, children, onInstanceCreated } = props;
+    const { data, size: maxSize=1+MEMORY_MAP.RAM_END-MEMORY_MAP.RAM_START, children, onInstanceCreated } = props;
     const { memoryBusRef } = useComputer();
 
     // Core
