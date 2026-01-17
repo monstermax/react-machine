@@ -1,5 +1,5 @@
 
-import { MEMORY_MAP } from '../../lib/memory_map_16bit';
+import { MEMORY_MAP } from '../../lib/memory_map_16x8_bits';
 import { high16, low16, toHex, U16, U8 } from '../../lib/integers';
 import { Opcode, getInstructionLength } from './cpu_instructions';
 

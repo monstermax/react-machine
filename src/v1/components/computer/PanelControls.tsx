@@ -1,7 +1,7 @@
 
 import { useEffect, useState, useRef, useCallback, memo, useMemo } from "react";
 
-import { MEMORY_MAP } from "@/lib/memory_map_16bit";
+import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 import { programs } from "@/cpus/default/programs/programs_index";
 import { os_list } from "@/cpus/default/programs/mini_os";
 

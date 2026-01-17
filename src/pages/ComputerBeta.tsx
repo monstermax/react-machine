@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'wouter';
 
 import { compileCode } from '@/cpus/default/asm_compiler';
-import { MEMORY_MAP } from '@/lib/memory_map_16bit';
+import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits';
 
 import { Computer } from '@/v2/components/Computer/ComputerContext';
 import { Cpu } from '@/v2/components/Cpu/Cpu';

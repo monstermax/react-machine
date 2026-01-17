@@ -4,7 +4,7 @@ import { Link } from "wouter";
 
 import { compileCode, decompileCode, preCompileCode } from "@/cpus/default/asm_compiler";
 import { toHex, U16 } from "@/lib/integers";
-import { MEMORY_MAP } from "@/lib/memory_map_16bit";
+import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 
 import type { CompiledCode, PreCompiledCode, u16 } from "@/types/cpu.types";
 

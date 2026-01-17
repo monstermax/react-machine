@@ -4,7 +4,7 @@ import { EventEmitter } from "eventemitter3";
 import { U16, U8 } from "@/lib/integers";
 
 import type { CompiledCode, u16, u8 } from "@/types/cpu.types";
-import { MEMORY_MAP } from "@/lib/memory_map_16bit";
+import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 import type { MemoryBus } from "./MemoryBus.api";
 
 

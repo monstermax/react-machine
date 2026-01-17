@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 
 import * as cpuApi from '@/v2/api';
 import { compileFile } from '@/cpus/default/asm_compiler';
-import { MEMORY_MAP } from '@/lib/memory_map_16bit';
+import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits';
 import { U16 } from '@/lib/integers';
 import { os_list } from '@/cpus/default/programs/mini_os';
 import { programs } from '@/cpus/default/programs/programs_index';
