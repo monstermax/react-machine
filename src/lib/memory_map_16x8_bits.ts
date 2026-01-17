@@ -55,6 +55,19 @@ export const MEMORY_MAP = createMemoryMap({
     STACK_START: 0xFE00,
     STACK_END: 0xFEFF,
 
+    // STACK BOOTLOADER (0xFE00-0xFE0F) - 16 bytes
+    BOOTLOADER_STACK_START: 0xFE00,
+    BOOTLOADER_STACK_END: 0xFE0F,
+
+    // STACK OS (0xFE10-0xFE7F) - 112 bytes
+    OS_STACK_START: 0xFE10,
+    OS_STACK_END: 0xFE7F,
+
+    // STACK PROGRAMS (0xFE30-0xFEFF) - 128 bytes
+    PROGAMS_STACK_START: 0xFE80,
+    PROGAMS_STACK_END: 0xFEFF,
+
+
 
     // ## I/O Devices ## (0xFF00-0xFFFF) - 256 ports
 
