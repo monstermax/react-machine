@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 
 import * as cpuApi from '@/v2/api';
 import { useComputer } from '../Computer/ComputerContext';
+import { delayer } from '@/lib/delayer';
 
 
 const frequencies = [
@@ -69,7 +70,9 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
             clockInstance.on('tick', ({ cycle }) => {
                 //console.log('Clock tick', cycle)
-                setClockCycle(cycle)
+                delayer('clock-cycle', (cycle: number) => {
+                    setClockCycle(cycle)
+                }, 10, 100, [cycle]);
             })
 
             // Emit initial state

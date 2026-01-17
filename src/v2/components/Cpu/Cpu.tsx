@@ -8,6 +8,7 @@ import { useComputer } from '../Computer/ComputerContext';
 import { Interrupt } from './Interrupt';
 
 import type { u16, u8 } from '@/types/cpu.types';
+import { delayer } from '@/lib/delayer';
 
 
 export type CpuProps = {
@@ -93,19 +94,23 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     }
 
                     if (state.coreCycle) {
-                        setCoresCoreCycle(r => {
-                            const n = new Map(r);
-                            n.set(coreIdx, state.coreCycle);
-                            return n;
-                        })
+                        delayer('cpu-core-cycle', (coreIdx: number) => {
+                            setCoresCoreCycle(r => {
+                                const n = new Map(r);
+                                n.set(coreIdx, state.coreCycle);
+                                return n;
+                            })
+                        }, 10, 100, [coreIdx]);
                     }
 
                     if (state.registers) {
-                        setCoresRegisters(r => {
-                            const n = new Map(r);
-                            n.set(coreIdx, state.registers);
-                            return n;
-                        })
+                        delayer('cpu-core-register', (coreIdx: number) => {
+                            setCoresRegisters(r => {
+                                const n = new Map(r);
+                                n.set(coreIdx, state.registers);
+                                return n;
+                            })
+                        }, 10, 100, [coreIdx]);
                     }
 
                     if (state.coreHalted !== undefined) {

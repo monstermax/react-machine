@@ -8,6 +8,7 @@ import { U16 } from '@/lib/integers';
 import { useComputer } from '../Computer/ComputerContext';
 
 import type { u16, u8 } from '@/types/cpu.types';
+import { delayer } from '@/lib/delayer';
 
 
 export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({ name, storage }) => {
@@ -64,20 +65,21 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
                         if (state.registers) {
                             const pc = state.registers.get('PC');
+                            const cpuIdx = cpuInstance.idx;
 
-                            //delayer('core-register', (coreIdx: number) => {
+                            //delayer('memory-core-register', (cpuIdx: number, coreIdx: number) => {
                                 setCoresPc(o => {
                                     const n = new Map(o);
-                                    n.set(`${cpuInstance.idx}-${coreIdx}`, pc);
+                                    n.set(`${cpuIdx}-${coreIdx}`, pc);
                                     return n;
                                 })
-                            //}, 100, 500, [coreIdx]);
+                            //}, 10, 100, [cpuIdx, coreIdx]);
                         }
                     });
                 }
             }
         }
-    }, [motherBoardInstance?.cpus]) // TODO
+    }, [motherBoardInstance?.cpus])
 
 
     // Auto-scroll vers PC quand il change
@@ -204,48 +206,4 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 }
 
 
-
-
-const delayers: Map<string, { timer: NodeJS.Timeout | null, waiting: boolean, requestDate: number | null }> = new Map;
-
-const delayer = (name: string, callback: (...args: any[]) => void, delay: number, maxDelay: number, args: any[]) => {
-    let delayerKey = `${name}-${JSON.stringify(args)}`;
-    let delayer = delayers.get(delayerKey);
-    const uiFPS = 1000 / maxDelay;
-
-    if (!delayer) {
-        delayer = { timer: null, requestDate: null, waiting: false };
-        //console.log('waiting: SET FALSE')
-        delayers.set(delayerKey, delayer)
-    }
-
-    if (delayer.timer !== null) {
-        clearTimeout(delayer.timer);
-        delayer.timer = null;
-    }
-
-    if (delayer.waiting && delayer.requestDate && Date.now() - delayer.requestDate > 1000 / uiFPS) {
-        console.log('delayer:', 'forced', delayer.requestDate, delayer.waiting)
-        callback(...args);
-        delayer.waiting = false;
-        //console.log('waiting: set FALSE')
-
-    } else {
-        if (!delayer.waiting) {
-            delayer.requestDate = Date.now()
-            delayer.waiting = true;
-            //console.log('waiting: set TRUE')
-        }
-
-        delayer.timer = setTimeout(() => {
-            console.log('delayer:', 'not-forced', delayer?.requestDate, delayer.waiting)
-            callback(...args);
-
-            if (delayer) {
-                delayer.waiting = false;
-                //console.log('waiting: set FALSE')
-            }
-        }, delay);
-    }
-}
 
