@@ -17,7 +17,7 @@ export type RomProps = {
 
 export const Rom: React.FC<RomProps> = (props) => {
     const { data, size: maxSize, children, onInstanceCreated } = props;
-        const { memoryBusRef } = useComputer();
+    const { memoryBusRef } = useComputer();
 
     // Core
     const [romInstance, setRomInstance] = useState<cpuApi.Rom | null>(null);
@@ -31,30 +31,35 @@ export const Rom: React.FC<RomProps> = (props) => {
 
     // Instanciate Rom
     useEffect(() => {
-        //if (!memoryBusRef.current) return;
+        if (!memoryBusRef.current) return;
         //if (romRef.current) return;
+        if (memoryBusRef.current.rom) return;
 
         const _instanciateRom = () => {
-            const rom = new cpuApi.Rom(data, maxSize)
+        if (!memoryBusRef.current) return;
+
+            // Save Instance for UI
+            const rom = memoryBusRef.current.addRom(data, maxSize);
             setRomInstance(rom);
 
-            // Save RamBus Ref
-            //romRef.current = rom;
-
-            // Handle state updates
+            // Handle state updates for UI
             rom.on('state', (state) => {
                 //console.log('ROM state update', state)
+
+                if (state.storage) {
+                    setStorage(new Map(state.storage))
+                }
             })
 
             // Emit initial state
-            setStorage(rom.storage);
+            rom.emit('state', { storage: new Map(rom.storage) })
 
             //setInstanciated(true)
         }
 
         const timer = setTimeout(_instanciateRom, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [memoryBusRef.current]);
 
 
     // Notifie le parent quand le Rom est créé
@@ -82,7 +87,7 @@ export const Rom: React.FC<RomProps> = (props) => {
     });
 
     return (
-        <div className="rom w-80">
+        <div className="rom w-96">
 
             {/* ROM Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

@@ -6,6 +6,7 @@ import type { u8, u16, u32, u64 } from '@/types/cpu.types';
 import type { MemoryBus } from '../Memory/MemoryBus.api';
 import type { Interrupt } from './Interrupt.api';
 import type { Clock } from './Clock.api';
+import type { Motherboard } from '../Computer/Motherboard.api';
 
 
 export abstract class BaseCpu extends EventEmitter implements ICpu {
@@ -16,21 +17,23 @@ export abstract class BaseCpu extends EventEmitter implements ICpu {
 
     // État
     //public halted = false;
+    public motherboard: Motherboard;
     public paused = true;
     public clockCycle = 0;
     //public registers: Map<string, u8 | u16> = new Map;
     public status: 'ready' | 'executingCycle' = "ready";
-    public breakpoints = new Set<number>();
+    //public breakpoints = new Set<number>();
 
     // Composants
     public memoryBus: MemoryBus | null = null;
-    public clock: Clock | null = null;
+    //public clock: Clock | null = null;
     public interrupt: Interrupt | null = null;
 
 
-    constructor() {
+    constructor(motherboard: Motherboard) {
         super();
         this.id = Math.round(Math.random() * 999_999_999);
+        this.motherboard = motherboard;
     }
 
 
@@ -46,15 +49,6 @@ export abstract class BaseCpu extends EventEmitter implements ICpu {
 
     setPaused(paused: boolean) {
         this.paused = paused;
-
-        if (this.clock) {
-            if (this.paused) {
-                this.clock.stop()
-
-            } else {
-                this.clock.start()
-            }
-        }
 
         this.emit('state', {
             paused: this.paused,

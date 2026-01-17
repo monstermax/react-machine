@@ -11,14 +11,15 @@ import type { u16, u8 } from '@/types/cpu.types';
 
 
 export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({ name, storage }) => {
-    const { cpuRef } = useComputer();
+    const { computerRef, motherboardRef } = useComputer();
 
     // Core
-    const cpuInstance = cpuRef.current;
+    const computerInstance = computerRef.current;
+    const motherBoardInstance = motherboardRef.current;
 
     // UI snapshot state
     const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set);
-    const [coresPc, setCoresPc] = useState<Map<number, u16>>(new Map);
+    const [coresPc, setCoresPc] = useState<Map<string, u16>>(new Map);
 
     // UI
     const [followInstruction, setFollowInstruction] = useState(true);
@@ -35,48 +36,55 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
     }, [storage]);
 
 
-    // Breakpoints
+    // CPUs Program Counter + Breakpoints
     useEffect(() => {
-        if (!cpuInstance) return;
 
-        setBreakpoints(cpuInstance.breakpoints ?? new Set);
+        if (computerInstance) {
+            setBreakpoints(computerInstance.breakpoints ?? new Set);
 
-        // CPU State updates
-        cpuInstance.on('state', (state) => {
-            if (state.breakpoints) {
-                setBreakpoints(new Set(state.breakpoints))
-            }
-        });
-
-
-        // CPU CORES State updates
-        for (const core of cpuInstance.cores) {
-
-            core.on('state', (state) => {
-                //console.log('update', Object.keys(state))
-                const coreIdx = state.idx;
-
-                if (state.registers) {
-                    const pc = state.registers.get('PC');
-
-                    //delayer('core-register', (coreIdx: number) => {
-                        setCoresPc(o => {
-                            const n = new Map(o);
-                            n.set(coreIdx, pc);
-                            return n;
-                        })
-                    //}, 100, 500, [coreIdx]);
+            // CPU State updates
+            computerInstance.on('state', (state) => {
+                if (state.breakpoints) {
+                    setBreakpoints(new Set(state.breakpoints))
                 }
             });
-
         }
-    }, [cpuInstance])
+
+        if (motherBoardInstance) {
+            for (const cpuInstance of motherBoardInstance.getCpus()) {
+                if (!cpuInstance) continue;
+                //console.log('init cpu', cpuInstance.idx)
+
+                // CPU CORES State updates
+                for (const core of cpuInstance.cores) {
+
+                    core.on('state', (state) => {
+                        //console.log('update', Object.keys(state))
+                        const coreIdx = state.idx;
+
+                        if (state.registers) {
+                            const pc = state.registers.get('PC');
+
+                            //delayer('core-register', (coreIdx: number) => {
+                                setCoresPc(o => {
+                                    const n = new Map(o);
+                                    n.set(`${cpuInstance.idx}-${coreIdx}`, pc);
+                                    return n;
+                                })
+                            //}, 100, 500, [coreIdx]);
+                        }
+                    });
+                }
+            }
+        }
+    }, [motherBoardInstance?.cpus]) // TODO
 
 
     // Auto-scroll vers PC quand il change
     useEffect(() => {
+        const followCpuIdx = 0; // follow core #0 only
         const followCoreIdx = 0; // follow core #0 only
-        const pc = coresPc.get(followCoreIdx) ?? 0;
+        const pc = coresPc.get(`${followCpuIdx}-${followCoreIdx}`) ?? 0;
         const pcElement = addressRefs.current.get(pc);
 
         if (followInstruction && pcElement) {
@@ -86,17 +94,17 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
 
     const toggleBreakpoint = useCallback((address: number) => {
-        if (!cpuInstance) return;
+        if (!computerInstance) return;
 
-        if (cpuInstance.breakpoints.has(address)) {
-            cpuInstance.breakpoints.delete(address);
+        if (computerInstance.breakpoints.has(address)) {
+            computerInstance.breakpoints.delete(address);
 
         } else {
-            cpuInstance.breakpoints.add(address);
+            computerInstance.breakpoints.add(address);
         }
 
-        cpuInstance.emit('state', { breakpoints: cpuInstance.breakpoints })
-    }, [cpuInstance])
+        computerInstance.emit('state', { breakpoints: computerInstance.breakpoints })
+    }, [computerInstance])
 
 
     // Fonction utilitaire pour scroller dans le conteneur

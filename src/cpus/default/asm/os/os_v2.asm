@@ -5,11 +5,16 @@
 
 @include os/devices/console/console.lib.asm
 
+@define16 START_CPU_TEST_ENTRYPOINT 0x0025
+@define16 START_CORE_TEST_ENTRYPOINT 0x0025
+
 
 OS_START:
 
 MAIN:
     SET_FREQ 50
+    CALL $START_CORE_TEST() # Test 2nd Core
+    #CALL $START_CPU_TEST() # Test 2nd Cpu
     JMP $HANDLE_USER_MENU
 
 
@@ -105,7 +110,7 @@ HANDLE_USER_MENU:
 
         SET_FREQ 10
         #CALL @PROGRAM_START
-        CALL $START_CORE_TEST()
+        CALL $START_PROGRAM_ON_CORE()
         #JMP $CALL_PRINT_MENU
         JMP $WAIT_KEY
 
@@ -131,33 +136,51 @@ HANDLE_USER_MENU:
 
 
 
+START_CPU_TEST():
+    MOV_A_IMM 0x01 # CPU #1
+    MOV_C_IMM <$START_CPU_TEST_ENTRYPOINT # entrypoint
+    MOV_D_IMM >$START_CPU_TEST_ENTRYPOINT # entrypoint
+    CPU_INIT
+    CPU_START
+    RET
+
+
 START_CORE_TEST():
+    MOV_A_IMM 0x01 # CORE #1
+    MOV_C_IMM <$START_CORE_TEST_ENTRYPOINT # entrypoint
+    MOV_D_IMM >$START_CORE_TEST_ENTRYPOINT # entrypoint
+    CORE_INIT
+    CORE_START
+    RET
+
+
+START_PROGRAM_ON_CORE():
     # endpoint du coeur à lancer
     MOV_C_IMM <@PROGRAM_START
     MOV_D_IMM >@PROGRAM_START
     CORES_COUNT # A = Cores count
     DEC_A # A = Last Core Idx
 
-    START_CORE_TEST_FIND_FREE_CORE:
+    START_PROGRAM_ON_CORE_FIND_FREE_CORE:
         PUSH_A # A = Core Idx to check
         CORE_STATUS # A = Cores #x Status
-        JZ $START_CORE_TEST_START # si core disponible, jump
+        JZ $START_PROGRAM_ON_CORE_START # si core disponible, jump
         POP_A
         PUSH_A
         DEC_A
-        JZ $START_CORE_TEST_NO_CORE_AVAILABLE
-        JMP $START_CORE_TEST_FIND_FREE_CORE
+        JZ $START_PROGRAM_ON_CORE_NO_CORE_AVAILABLE
+        JMP $START_PROGRAM_ON_CORE_FIND_FREE_CORE
 
-    START_CORE_TEST_NO_CORE_AVAILABLE:
+    START_PROGRAM_ON_CORE_NO_CORE_AVAILABLE:
         POP_A
-        JMP $START_CORE_TEST_END
+        JMP $START_PROGRAM_ON_CORE_END
 
-    START_CORE_TEST_START:
+    START_PROGRAM_ON_CORE_START:
         POP_A
         # TODO: configurer une stack pour le core
         CORE_INIT
         CORE_START
 
-    START_CORE_TEST_END:
+    START_PROGRAM_ON_CORE_END:
         RET
 

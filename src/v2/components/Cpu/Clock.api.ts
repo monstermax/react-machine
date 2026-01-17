@@ -5,7 +5,9 @@ import { EventEmitter } from "eventemitter3";
 export class Clock extends EventEmitter {
     public id: number;
     public clockFrequency: number;
+    public clockCycles: number;
     private timer: NodeJS.Timeout | null = null;
+    public status: boolean = false;
 
 
     constructor(initialFrequency=1) {
@@ -14,18 +16,20 @@ export class Clock extends EventEmitter {
 
         this.id = Math.round(Math.random() * 999_999_999);
         this.clockFrequency = initialFrequency;
+        this.clockCycles = 0;
         //this.start();
     }
 
 
     tick(): void {
-        //console.log('Clock tick')
-        this.emit('tick');
+        this.clockCycles++;
+        //console.log('Clock tick', this.clockCycles)
+        this.emit('tick', { cycle: this.clockCycles });
     }
 
 
     toggle(): void {
-        if (this.status()) {
+        if (this.status) {
             this.stop()
 
         } else {
@@ -45,8 +49,13 @@ export class Clock extends EventEmitter {
 
         const interval = 1000 / this.clockFrequency;
         this.timer = setInterval(this.tick.bind(this), interval);
+        this.status = true;
+
+        this.emit('state', { status: this.status });
 
         console.log('Clock started')
+
+        // immediate tick
         this.tick()
     }
 
@@ -55,13 +64,24 @@ export class Clock extends EventEmitter {
         if (!this.timer) return;
         clearInterval(this.timer);
         this.timer = null;
+        this.status = false;
+
+        this.emit('state', { status: this.status });
 
         console.log('Clock stopped')
     }
 
 
-    status(): boolean {
-        return !!this.timer;
+    reset(): void {
+        const status = this.status;
+
+        this.stop()
+
+        this.clockCycles = 0;
+
+        if (status) {
+            this.start()
+        }
     }
 }
 

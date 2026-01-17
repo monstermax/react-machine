@@ -25,6 +25,13 @@ export enum Opcode {
     CORE_STATUS = 0xE3,
     CORES_COUNT = 0xE4,
 
+    // CPUs
+    CPU_HALT = 0xE8,
+    CPU_START = 0xE9,
+    CPU_INIT = 0xEA,
+    CPU_STATUS = 0xEB,
+    CPUS_COUNT = 0xEC,
+
     // Registers
     //R_LOAD_A = 0x10,     // R_LOAD A, immediate (8-bit) => remplacé par MOV_A_IMM
     //R_LOAD_B = 0x11,     // R_LOAD B, immediate (8-bit) => remplacé par MOV_B_IMM
@@ -204,6 +211,12 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.CORE_INIT: return "CORE INIT";
         case Opcode.CORE_STATUS: return "CORE STATUS";
         case Opcode.CORES_COUNT: return "CORES COUNT";
+
+        case Opcode.CPU_START: return "CPU START";
+        case Opcode.CPU_HALT: return "CPU HALT";
+        case Opcode.CPU_INIT: return "CPU INIT";
+        case Opcode.CPU_STATUS: return "CPU STATUS";
+        case Opcode.CPUS_COUNT: return "CPUS COUNT";
 
         // ALU
         case Opcode.ADD: return "ADD";

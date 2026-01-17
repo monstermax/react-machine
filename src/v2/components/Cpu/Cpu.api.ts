@@ -11,6 +11,7 @@ import type { Register, Register16, u16, u8 } from "@/types/cpu.types";
 import type { Interrupt } from "./Interrupt.api";
 import type { ICpu } from "./ICpu";
 import { BaseCpu } from "./BaseCpu.api";
+import type { Motherboard } from "../Computer/Motherboard.api";
 
 
 // Adresses: 16 bits
@@ -108,21 +109,28 @@ class CpuCore extends EventEmitter {
             //this.currentBreakpoint = null;
         }
 
-        if (this.cpu.currentBreakpoint === null && this.cpu.breakpoints.has(pc) && !this.cpu.paused) {
-            this.cpu.setPaused(true);
-            this.cpu.currentBreakpoint = pc;
+        if (this.cpu.currentBreakpoint === null && this.cpu.motherboard.computer.breakpoints.has(pc) && !this.cpu.paused) {
             // TODO: petit bug à corriger. si on step jusqu'a un breakpoint. quand on redémarrage il toussote
+            this.cpu.currentBreakpoint = pc;
+
+            /*
+            this.cpu.setPaused(true);
 
             // Update UI State
             this.cpu.emit('state', {
                 paused: this.cpu.paused,
             })
+            */
+
+            if (this.cpu.motherboard.clock) {
+                this.cpu.motherboard.clock.stop()
+            }
 
             return;
         }
 
         if (this.cpu.currentBreakpoint === pc) {
-            //this.currentBreakpoint = null;
+            this.cpu.currentBreakpoint = null;
             //debugger
         }
 
@@ -280,24 +288,90 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
+            case Opcode.CPUS_COUNT: {
+                this.setRegister("A", U8(this.cpu.motherboard.cpus.size));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CPU_STATUS: {
+                const cpuIdx = this.getRegister("A");
+                const cpu = this.cpu.motherboard.cpus.get(cpuIdx);
+
+                if (cpu) {
+                    this.setRegister("A", U8(cpu.cpuHalted ? 0 : 1));
+                    this.setFlags(cpu.cpuHalted, false);
+
+                } else {
+                    this.setRegister("A", U8(0));
+                    this.setFlags(true, false);
+                }
+
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CPU_INIT: {
+                const cpuIdx = this.getRegister("A");
+                const cpu = this.cpu.motherboard.cpus.get(cpuIdx);
+
+                if (cpu && cpu.cpuHalted) {
+                    const addrLow = this.getRegister('C');
+                    const addrHigh = this.getRegister('D');
+                    const address = U16((addrHigh << 8) | addrLow)
+                    cpu.cores[0].setRegister("PC", address);
+                }
+
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CPU_START: {
+                const cpuIdx = this.getRegister("A");
+                const cpu = this.cpu.motherboard.cpus.get(cpuIdx);
+
+                if (cpu) {
+                    cpu.start()
+                }
+
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CPU_HALT: {
+                const cpuIdx = this.getRegister("A");
+                const cpu = this.cpu.motherboard.cpus.get(cpuIdx);
+
+                if (cpu) {
+                    cpu.stop()
+                }
+
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
             case Opcode.SYSCALL:
                 this.handleSyscall(pc);
                 break;
 
             case Opcode.GET_FREQ:
-                this.setRegister("A", U8(this.cpu.clock?.clockFrequency ?? 0));
+                this.setRegister("A", U8(this.cpu.motherboard.clock?.clockFrequency ?? 0));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.SET_FREQ:
-                if (this.cpu.clock) {
-                    this.cpu.clock.clockFrequency = this.cpu.readMem8(pc);
-                    this.cpu.clock.restart()
+                const clock = this.cpu.motherboard.clock;
+                if (clock) {
+                    clock.clockFrequency = this.cpu.readMem8(pc);
 
                     // Update UI State
-                    this.cpu.clock.emit('state', {
-                        clockFrequency: this.cpu.clock.clockFrequency,
+                    clock.emit('state', {
+                        clockFrequency: clock.clockFrequency,
                     })
+
+                    if (clock.status) {
+                        clock.restart()
+                    }
                 }
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
@@ -932,58 +1006,86 @@ export class Cpu extends BaseCpu {
     public id: number;
 
     // État
+    public idx: number;
     public cores: CpuCore[] = [];
-    public cpuHalted: boolean = false;
-    public paused: boolean = true;
+    public cpuHalted: boolean = true;
+    public paused: boolean = false;
     public clockCycle: number = 0;
     //public registers: Map<string, u8 | u16> = new Map;
-    public breakpoints: Set<number> = new Set;
+    //public breakpoints: Set<number> = new Set;
 
     // Composants
     public memoryBus: MemoryBus | null = null;
     public interrupt: Interrupt | null = null;
-    public clock: Clock | null = null;
+    //public clock: Clock | null = null;
 
     public currentBreakpoint: number | null = null;
     public interruptsEnabled: boolean = false;
     public inInterruptHandler: boolean = false;
 
 
-    constructor(coresCount=1) {
+    constructor(motherboard: Motherboard, idx=0, coresCount=1) {
         //console.log(`Initializing Cpu`);
-        super();
+        super(motherboard);
 
         this.id = Math.round(Math.random() * 999_999_999);
+        this.idx = idx;
+
 
         for (let i=0; i<coresCount; i++) {
             const core = new CpuCore(this, i);
             this.cores.push(core)
 
-            core.on('state', (state) => {
-                const coreIdx = state.idx;
-                //console.log('CPU CORE state:', state)
+            if (false) {
+                // Ecoute le statut de chaque coeur et si tous les coeurs sont HALT, alors on HALT le CPU
+                core.on('state', (state) => {
+                    const coreIdx = state.idx;
+                    //console.log('CPU CORE state:', state)
 
-                if (state.coreHalted !== undefined) {
-                    const haltCpuIfAllCoresHalted = false;
+                    if (state.coreHalted !== undefined) {
+                        const haltCpuIfAllCoresHalted = false;
 
-                    if (haltCpuIfAllCoresHalted && state.coreHalted) {
-                        let coresAlive = 0;
+                        if (haltCpuIfAllCoresHalted && state.coreHalted) {
+                            let coresAlive = 0;
 
-                        for (const core of this.cores) {
-                            coresAlive += core.coreHalted ? 0 : 1;
-                        }
+                            for (const core of this.cores) {
+                                coresAlive += core.coreHalted ? 0 : 1;
+                            }
 
-                        if (coresAlive === 0) {
-                            this.cpuHalted = true;
+                            if (coresAlive === 0) {
+                                this.cpuHalted = true;
+                            }
                         }
                     }
-                }
-            })
+                })
+            }
         }
 
         this.reset()
-
     }
+
+
+    start() {
+        if (!this.cpuHalted) return;
+
+        this.cpuHalted = false;
+
+        this.emit('state', {
+            cpuHalted: this.cpuHalted,
+        });
+    }
+
+
+    stop() {
+        if (this.cpuHalted) return;
+
+        this.cpuHalted = true;
+
+        this.emit('state', {
+            cpuHalted: this.cpuHalted,
+        });
+    }
+
 
 
     executeCycle() {
@@ -1032,7 +1134,7 @@ export class Cpu extends BaseCpu {
         this.currentBreakpoint = null;
 
         //this.registers = new Map(initialRegisters);
-        this.cpuHalted = false;
+        //this.cpuHalted = false;
 
         for (const core of this.cores) {
             core.reset();
@@ -1044,7 +1146,7 @@ export class Cpu extends BaseCpu {
 
         // Update UI State
         this.emit('state', {
-            cpuHalted: this.cpuHalted,
+            //cpuHalted: this.cpuHalted,
             clockCycle: this.clockCycle,
             //registers: this.registers,
             interruptsEnabled: this.interruptsEnabled,

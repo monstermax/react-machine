@@ -11,12 +11,12 @@ import { U16 } from '@/lib/integers';
 import { useComputer, type ViewType } from './ComputerContext';
 import { Motherboard } from './Motherboard';
 
-import type { CompiledCode, OsInfo, ProgramInfo, u8 } from '@/types/cpu.types';
+import type { CompiledCode, OsInfo, ProgramInfo, u16, u8 } from '@/types/cpu.types';
 
 
 export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.ReactNode }> = (props) => {
     const { view: initialView = 'open_advanced', children } = props;
-    const { computerRef, cpuRef, ramRef } = useComputer();
+    const { computerRef } = useComputer();
 
     // Core
     const [computerInstance, setComputerInstance] = useState<cpuApi.Computer | null>(null);
@@ -25,8 +25,8 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null);
 
     //const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
-    const cpuInstance = cpuRef.current;
-    const ramInstance = ramRef.current;
+    //const cpuInstance = cpuRef.current;
+    //const ramInstance = ramRef.current;
 
     // UI
     const [contentVisible, setContentVisible] = useState(initialView !== 'closed');
@@ -160,8 +160,8 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
                     loadedOs={loadedOs}
                     devicesManagerInstance={devicesManagerInstance}
                     computerInstance={computerInstance}
-                    ramInstance={ramInstance}
-                    cpuInstance={cpuInstance}
+                    //ramInstance={ramInstance}
+                    //cpuInstance={cpuInstance}
                     setLoadedOs={setLoadedOs}
                     setLoadedProgram={setLoadedProgram}
                 />
@@ -185,8 +185,8 @@ type ComputerControls = {
     loadedProgram: string | null;
     devicesManagerInstance: cpuApi.DevicesManager | null;
     computerInstance: cpuApi.Computer;
-    ramInstance: cpuApi.Ram | null
-    cpuInstance: cpuApi.Cpu | null
+    //ramInstance: cpuApi.Ram | null
+    //cpuInstance: cpuApi.Cpu | null
     setLoadedOs: React.Dispatch<React.SetStateAction<string | null>>
     setLoadedProgram: React.Dispatch<React.SetStateAction<string | null>>
 }
@@ -194,12 +194,12 @@ type ComputerControls = {
 export const ComputerControls: React.FC<ComputerControls> = (props) => {
     const { loadedOs, loadedProgram, } = props;
     const { setLoadedProgram, setLoadedOs, } = props;
-    const { devicesManagerRef, computerRef, ramRef, cpuRef } = useComputer()
+    const { devicesManagerRef, computerRef } = useComputer()
 
     const devicesManagerInstance = devicesManagerRef.current
     const computerInstance = computerRef.current
-    const ramInstance = ramRef.current
-    const cpuInstance = cpuRef.current
+    //const ramInstance = ramRef.current
+    //const cpuInstance = cpuRef.current
 
     const [selectedOs, setSelectedOs] = useState<string | null>(null);
     const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
@@ -208,156 +208,26 @@ export const ComputerControls: React.FC<ComputerControls> = (props) => {
     const isProgramUnloaded = false; // TODO
 
 
-    const loadOs = async (osName: string) => {
-        loadOsInRam(osName);
-    }
-
-
-    const loadCodeOnDisk = async (diskName: string, code: CompiledCode) => {
-        if (!devicesManagerInstance) return;
-
-        const disk = devicesManagerInstance.getDeviceByName(diskName) as cpuApi.StorageDisk | undefined
-        if (!disk) return;
-
-        if (disk.type !== 'DiskStorage') return;
-
-        await disk.loadRawData(code);
-    }
-
-
-    const loadOsInRam = useCallback(async (osName: string) => {
-        if (!ramInstance || !computerInstance) return;
-
-        // doublon avec Ram.loadOsInRam
-
-        const os: OsInfo | null = osName ? os_list[osName] : null;
-        if (!os?.filepath) return;
-
-        const memoryOffset = MEMORY_MAP.OS_START;
-        const { code } = await compileFile(os.filepath, memoryOffset)
-
-        if (os) {
-            loadCodeOnDisk('os_disk', code); // load on disk too (for debug)
-            ramInstance.loadCodeInRam(code, memoryOffset); // load in ram
-
-        } else {
-            ramInstance.write(memoryOffset, 0 as u8);
-        }
-
-        if (cpuInstance) {
-            const pc = cpuInstance.cores[0].getRegister('PC');
-
-            if ((pc > MEMORY_MAP.ROM_END)) {
-                cpuInstance.cores[0].setRegister('PC', MEMORY_MAP.ROM_START);
-            }
-        }
-
-        //ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
-
-        computerInstance.loadedOs = osName;
-        computerInstance.emit('state', { loadedOs: osName })
-    }, [ramInstance, computerInstance, cpuInstance])
-
-
-    const loadProgramInRam = useCallback(async (programName: string) => {
-        if (!ramInstance || !computerInstance) return;
-
-        // doublon avec Ram.loadProgramInRam
-
-        const program: ProgramInfo | null = programName ? programs[programName] : null;
-        if (!program?.filepath && !(program && program.code && program.code.size > 0)) return;
-
-        const memoryOffset = MEMORY_MAP.PROGRAM_START;
-        const { code } = program.code.size ? program : await compileFile(program.filepath as string, MEMORY_MAP.PROGRAM_START)
-
-        if (program) {
-            loadCodeOnDisk('program_disk', code); // load on disk too (for debug)
-            ramInstance.loadCodeInRam(code, memoryOffset); // load in ram
-
-        } else {
-            ramInstance.write(memoryOffset, 0 as u8);
-        }
-
-        if (cpuInstance) {
-            const pc = cpuInstance.cores[0].getRegister('PC');
-
-            if (pc >= MEMORY_MAP.PROGRAM_START && pc <= MEMORY_MAP.PROGRAM_END) {
-                cpuInstance.cores[0].setRegister('PC', MEMORY_MAP.OS_START);
-            }
-        }
-
-        //ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
-
-        computerInstance.loadedProgram = programName;
-        computerInstance.emit('state', { loadedProgram: programName })
-    }, [cpuInstance, ramInstance, computerInstance])
-
+    const loadOs = useCallback(async (osName: string) => {
+        if (!computerInstance) return;
+        computerInstance.loadOs(osName);
+    }, [computerInstance])
 
     const unloadOs = useCallback(() => {
-        // Vide le disk
-
-        if (devicesManagerInstance) {
-            const diskName = 'os_disk';
-            const disk = devicesManagerInstance.getDeviceByName(diskName) as cpuApi.StorageDisk | undefined
-            if (disk && disk.type === 'DiskStorage') {
-                disk.eraseDisk();
-            }
-        }
+        if (!computerInstance) return;
+        computerInstance.unloadOs();
+    }, [computerInstance]);
 
 
-        if (ramInstance) {
-            for (let addr = MEMORY_MAP.OS_START; addr <= MEMORY_MAP.OS_END; addr++) {
-                //ramInstance.storage.set(U16(addr), 0x00 as u8); // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
-                //break;
-                ramInstance.storage.delete(U16(addr)); // le delete est rapide
-            }
-
-            ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
-        }
-
-        if (cpuInstance) {
-            const pc = cpuInstance.cores[0].getRegister('PC');
-
-            if ((pc > MEMORY_MAP.ROM_END)) {
-                cpuInstance.cores[0].setRegister('PC', MEMORY_MAP.ROM_START);
-            }
-        }
-
-        setLoadedOs(null);
-    }, [devicesManagerInstance, ramInstance]);
-
+    const loadProgram = useCallback(async (programName: string) => {
+        if (!computerInstance) return;
+        computerInstance.loadProgram(programName);
+    }, [computerInstance])
 
     const unloadProgram = useCallback(() => {
-        // Vide le disk
-
-        if (devicesManagerInstance) {
-            const diskName = 'program_disk';
-            const disk = devicesManagerInstance.getDeviceByName(diskName) as cpuApi.StorageDisk | undefined
-            if (disk && disk.type === 'DiskStorage') {
-                disk.eraseDisk();
-            }
-        }
-
-        if (ramInstance) {
-            for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
-                //ramInstance.storage.set(U16(addr), 0x00 as u8); // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
-                //break;
-                ramInstance.storage.delete(U16(addr)); // le delete est rapide
-            }
-
-            ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
-        }
-
-        if (cpuInstance) {
-            const pc = cpuInstance.cores[0].getRegister('PC');
-
-            if (pc >= MEMORY_MAP.PROGRAM_START && pc <= MEMORY_MAP.PROGRAM_END) {
-                cpuInstance.cores[0].setRegister('PC', MEMORY_MAP.OS_START);
-            }
-        }
-
-        setLoadedProgram(null);
-    }, [devicesManagerInstance, ramInstance]);
+        if (!computerInstance) return;
+        computerInstance.unloadProgram();
+    }, [computerInstance]);
 
 
     return (
@@ -430,7 +300,7 @@ export const ComputerControls: React.FC<ComputerControls> = (props) => {
 
                         <button
                             onClick={() => {
-                                loadProgramInRam(selectedProgram ?? '');
+                                loadProgram(selectedProgram ?? '');
                             }}
                             disabled={!selectedProgram}
                             className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${(loadedProgram && (loadedProgram === selectedProgram) && !isProgramUnloaded)
