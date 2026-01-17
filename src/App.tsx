@@ -8,6 +8,7 @@ import { Home } from "@/pages/Home";
 import { ComputerPage } from "./pages/ComputerPage";
 import { CompilePage } from "./pages/CompilePage";
 import { ComputerBeta } from "./pages/ComputerBeta";
+import { LogicPage } from "./pages/LogicPage";
 import NotFound from "@/pages/NotFound";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -46,6 +47,7 @@ function Router() {
             <Route path={"/cpu"} component={ComputerPage} />
             <Route path={"/cpu-beta"} component={ComputerBeta} />
             <Route path={"/compiler"} component={CompilePage} />
+            <Route path={"/logic"} component={LogicPage} />
             <Route path={"/404"} component={NotFound} />
             {/* Final fallback route */}
             <Route component={NotFound} />
