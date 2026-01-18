@@ -437,3 +437,29 @@ const useMemory = () => {
 };
 ```
 
+
+---
+
+
+# Ordinateur, language machine, instruction et assembleur
+
+## CPU
+- le coeur de l'ordinateur est le PC
+- le CPU contient plusieurs "registres" dans lequel il stocke temporairement des valeurs numériques
+- le CPU permet d'executer des instructions, permettant de changer les valeurs des registres.
+- il permet aussi d'executer des instructions, permettant de lire ou écrire dans la mémoire (RAM)
+- il permet également d'executer des instructions, permettant d'intéragir avec les périphériques
+- le CPU est principalement constitué d'une unité de controle, de registres et d'une ALU (unité logique et arithmétique)
+
+## Instructions, code machine et assembleur
+- les instructions (en langage machine) à faire éxecuter au CPU sont chargées en RAM pour que le CPU puisse les executer
+
+## Bootloader & OS
+- au démarrage, le CPU démarre sur le bootloader/bios/uefi. Ce bootloader cherche un OS (sur les différents disques) à démarrer
+- L'OS, une fois démarré, prend en charge la gestion des processus, des threads, des périphériques (avec drivers), ...
+- L'OS gère les accès à la mémoire, la mémoire virtuelle, les pages de mémoire, ...
+- L'OS executre son propre code en mode "kernel" et le code des applications en mode "user"
+
+## Mémoire
+- La mémoire est connecté au CPU via un bus d'adresse, de données et de controle
+- La mémoire contient les programmes à executer et les données nécessaires
