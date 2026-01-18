@@ -39,29 +39,35 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     useEffect(() => {
         if (!computerRef.current) return;
 
-        if (devicesManagerRef.current) {
-            setDevicesManagerInstance(devicesManagerRef.current);
+        if (devicesManagerInstance) {
             return;
         }
 
+        //if (devicesManagerRef.current) {
+        //    setDevicesManagerInstance(devicesManagerRef.current);
+        //    return;
+        //}
+
         const _instanciateDevices = () => {
-        if (!computerRef.current) return;
+            if (!computerRef.current) return;
 
             // Save Instance for UI
-            const devicesManagerInstance = computerRef.current.addDevicesManager();
-            setDevicesManagerInstance(devicesManagerInstance);
-
-            // Save DevicesManager Ref
-            devicesManagerRef.current = devicesManagerInstance;
+            const devicesManager = devicesManagerRef.current ?? computerRef.current.addDevicesManager();
+            setDevicesManagerInstance(devicesManager);
 
             // Handle state updates
-            devicesManagerInstance.on('state', (state) => {
+            devicesManager.on('state', (state) => {
                 //console.log('DevicesManager state update', state)
 
             });
 
-            // Emit initial state
-            // TODO
+            if (!devicesManagerRef.current) {
+                // Save DevicesManager Ref
+                devicesManagerRef.current = devicesManager;
+
+                // Emit initial state
+                // TODO
+            }
 
             //setInstanciated(true)
 
@@ -176,7 +182,7 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
 
                 {/* Devices Children */}
                 {childrenWithProps && (
-                    <div className="devices-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-2">
+                    <div className="devices-children bg-background-light-2xl p-1 ps-2 grid grid-cols-1 space-x-2 space-y-2">
                         {childrenWithProps}
                     </div>
                 )}
@@ -187,5 +193,6 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
 }
 
 
-export const Devices = DevicesManager;
+export const InternalDevices = DevicesManager;
+export const ExternalDevices = DevicesManager;
 

@@ -5,6 +5,7 @@ import * as cpuApi from '@/v2/api';
 
 import type { u16, u8 } from '@/types/cpu.types';
 import { U8 } from '@/lib/integers';
+import { useComputer } from '../../Computer/ComputerContext';
 
 
 export type SevenSegmentDisplayProps = {
@@ -12,18 +13,21 @@ export type SevenSegmentDisplayProps = {
     ioPort: number | u8 | null;
     hidden?: boolean;
     open?: boolean;
+    displays?: number;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.SevenSegmentDisplay) => void,
 }
 
 
 export const SevenSegmentDisplay: React.FC<SevenSegmentDisplayProps> = (props) => {
-    const { hidden, open=true, name, ioPort, children, onInstanceCreated } = props;
+    const { hidden, open = true, name, ioPort, displays: displaysCount = 1, children, onInstanceCreated } = props;
+    const { devicesManagerRef } = useComputer();
 
     // Core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.SevenSegmentDisplay | null>(null);
 
     // UI snapshot state
+    /*
     const [currentValue, setCurrentValue] = useState<number>(0)
     const [rawSegments, setRawSegments] = useState<number>(0)
 
@@ -36,6 +40,9 @@ export const SevenSegmentDisplay: React.FC<SevenSegmentDisplayProps> = (props) =
 
         return segments;
     }, [rawSegments])
+    */
+
+    const [displays, setDisplays] = useState<{ currentValue: u8, rawSegments: u8 }[]>([])
 
 
     // UI
@@ -44,28 +51,47 @@ export const SevenSegmentDisplay: React.FC<SevenSegmentDisplayProps> = (props) =
 
     // Instanciate Device
     useEffect(() => {
+        if (!devicesManagerRef.current) return;
+        if (deviceInstance) return;
+
         const _instanciateDevice = () => {
-            const device = new cpuApi.SevenSegmentDisplay(name, ioPort as u8 | null)
+
+            // Init Instance
+            const device = new cpuApi.SevenSegmentDisplay(name, ioPort as u8 | null, displaysCount)
+
+            // Save Instance for UI
             setDeviceInstance(device);
 
             // Handle state updates
             device.on('state', (state) => {
-                //console.log('SevenSegmentDisplay state update', state)
+                console.log('SevenSegmentDisplay state update', state)
 
-                if (state.currentValue !== undefined) {
-                    setCurrentValue(state.currentValue)
-                }
+                //if (state.currentValue !== undefined) {
+                //    setCurrentValue(state.currentValue)
+                //}
 
-                if (state.rawSegments !== undefined) {
-                    setRawSegments(state.rawSegments)
+                //if (state.rawSegments !== undefined) {
+                //    setRawSegments(state.rawSegments)
+                //}
+
+                if (state.displays !== undefined) {
+                    setDisplays(state.displays)
                 }
 
             })
+
+            // Emit initial state
+            device.emit('state', {
+                displays: device.displays,
+            })
+
+            //console.log('7Segment initialized', device)
+            //setInstanciated(true)
         }
 
         const timer = setTimeout(_instanciateDevice, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [devicesManagerRef.current]);
 
 
     // Notifie le parent quand le Device est créé
@@ -90,6 +116,17 @@ export const SevenSegmentDisplay: React.FC<SevenSegmentDisplayProps> = (props) =
         }
         return child;
     });
+
+
+    const getRawSegments = (display: { currentValue: u8, rawSegments: u8 }) => {
+        const segments: boolean[] = [];
+
+        for (let i = 0; i < 8; i++) {
+            segments[i] = ((display.rawSegments >> i) & 1) === 1;
+        }
+
+        return segments;
+    }
 
 
     if (!deviceInstance) {
@@ -122,60 +159,67 @@ export const SevenSegmentDisplay: React.FC<SevenSegmentDisplayProps> = (props) =
                 {/* SevenSegment */}
                 <div className="p-2 rounded bg-background-light-2xl flex gap-4 items-center mx-auto">
 
-                    {/* Affichage 7 segments */}
-                    <div className="relative w-32 h-48 flex items-center justify-center">
-                        <svg viewBox="0 0 100 150" className="w-full h-full">
-                            {/* Segment a (top) */}
-                            <polygon
-                                points="20,5 80,5 75,10 25,10"
-                                className={segments[0] ? 'fill-red-500' : 'fill-gray-800'}
-                            />
+                    {displays.map((display, idx) => {
+                        const segments = getRawSegments(display)
 
-                            {/* Segment b (top right) */}
-                            <polygon
-                                points="80,5 85,10 85,70 80,65 75,70 75,10"
-                                className={segments[1] ? 'fill-red-500' : 'fill-gray-800'}
-                            />
+                        // Affichage 7 segments
+                        return (
+                            <div key={idx} className="relative w-16 h-24 flex items-center justify-center">
+                                <svg viewBox="0 0 100 150" className="w-full h-full">
+                                    {/* Segment a (top) */}
+                                    <polygon
+                                        points="20,5 80,5 75,10 25,10"
+                                        className={segments[0] ? 'fill-red-500' : 'fill-gray-800'}
+                                    />
 
-                            {/* Segment c (bottom right) */}
-                            <polygon
-                                points="80,85 85,80 85,140 80,145 75,140 75,80"
-                                className={segments[2] ? 'fill-red-500' : 'fill-gray-800'}
-                            />
+                                    {/* Segment b (top right) */}
+                                    <polygon
+                                        points="80,5 85,10 85,70 80,65 75,70 75,10"
+                                        className={segments[1] ? 'fill-red-500' : 'fill-gray-800'}
+                                    />
 
-                            {/* Segment d (bottom) */}
-                            <polygon
-                                points="20,145 80,145 75,140 25,140"
-                                className={segments[3] ? 'fill-red-500' : 'fill-gray-800'}
-                            />
+                                    {/* Segment c (bottom right) */}
+                                    <polygon
+                                        points="80,85 85,80 85,140 80,145 75,140 75,80"
+                                        className={segments[2] ? 'fill-red-500' : 'fill-gray-800'}
+                                    />
 
-                            {/* Segment e (bottom left) */}
-                            <polygon
-                                points="15,80 20,85 20,145 15,140 10,140 10,80"
-                                className={segments[4] ? 'fill-red-500' : 'fill-gray-800'}
-                            />
+                                    {/* Segment d (bottom) */}
+                                    <polygon
+                                        points="20,145 80,145 75,140 25,140"
+                                        className={segments[3] ? 'fill-red-500' : 'fill-gray-800'}
+                                    />
 
-                            {/* Segment f (top left) */}
-                            <polygon
-                                points="15,10 20,5 20,65 15,70 10,70 10,10"
-                                className={segments[5] ? 'fill-red-500' : 'fill-gray-800'}
-                            />
+                                    {/* Segment e (bottom left) */}
+                                    <polygon
+                                        points="15,80 20,85 20,145 15,140 10,140 10,80"
+                                        className={segments[4] ? 'fill-red-500' : 'fill-gray-800'}
+                                    />
 
-                            {/* Segment g (middle) */}
-                            <polygon
-                                points="20,75 25,70 75,70 80,75 75,80 25,80"
-                                className={segments[6] ? 'fill-red-500' : 'fill-gray-800'}
-                            />
+                                    {/* Segment f (top left) */}
+                                    <polygon
+                                        points="15,10 20,5 20,65 15,70 10,70 10,10"
+                                        className={segments[5] ? 'fill-red-500' : 'fill-gray-800'}
+                                    />
 
-                            {/* Point décimal */}
-                            <circle
-                                cx="90"
-                                cy="140"
-                                r="4"
-                                className={segments[7] ? 'fill-red-500' : 'fill-gray-800'}
-                            />
-                        </svg>
-                    </div>
+                                    {/* Segment g (middle) */}
+                                    <polygon
+                                        points="20,75 25,70 75,70 80,75 75,80 25,80"
+                                        className={segments[6] ? 'fill-red-500' : 'fill-gray-800'}
+                                    />
+
+                                    {/* Point décimal */}
+                                    <circle
+                                        cx="90"
+                                        cy="140"
+                                        r="4"
+                                        className={segments[7] ? 'fill-red-500' : 'fill-gray-800'}
+                                    />
+                                </svg>
+                            </div>
+                        )
+                    })}
+
                 </div>
 
                 {/* Device Children */}

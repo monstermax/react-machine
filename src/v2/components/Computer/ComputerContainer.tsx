@@ -228,7 +228,7 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
 
                 {/* Computer Children */}
                 {childrenWithProps && (
-                    <div className="computer-children flex space-x-2 space-y-4">
+                    <div className="computer-children flex flex-col space-y-4">
                         {childrenWithProps}
                     </div>
                 )}

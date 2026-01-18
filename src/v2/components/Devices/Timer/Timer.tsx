@@ -5,6 +5,7 @@ import * as cpuApi from '@/v2/api';
 import { U8 } from '@/lib/integers';
 
 import type { u8 } from '@/types/cpu.types';
+import { useComputer } from '../../Computer/ComputerContext';
 
 
 export type TimerProps = {
@@ -17,6 +18,7 @@ export type TimerProps = {
 
 export const Timer: React.FC<TimerProps> = (props) => {
     const { name, ioPort, hidden, children, onInstanceCreated } = props;
+    const { devicesManagerRef } = useComputer()
 
     // Core
     const [timerInstance, setTimerInstance] = useState<cpuApi.Timer | null>(null);
@@ -29,6 +31,9 @@ export const Timer: React.FC<TimerProps> = (props) => {
 
     // Instanciate Timer
     useEffect(() => {
+        if (!devicesManagerRef.current) return;
+        if (timerInstance) return;
+
         const _instanciateTimer = () => {
             const timer = new cpuApi.Timer(name, ioPort as u8 | null);
             setTimerInstance(timer);
@@ -59,7 +64,7 @@ export const Timer: React.FC<TimerProps> = (props) => {
 
         const timer = setTimeout(_instanciateTimer, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [devicesManagerRef.current]);
 
 
     // Notifie le parent quand le Timer est créé

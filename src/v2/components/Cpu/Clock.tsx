@@ -52,10 +52,13 @@ export const Clock: React.FC<ClockProps> = (props) => {
         const _instanciateClock = () => {
             if (!motherboardRef.current) return;
 
+            // Init Instance
             const clockInstance = motherboardRef.current.addClock(initialFrequency ?? 1);
+
+            // Save Instance for UI
             setClockInstance(clockInstance);
 
-            // Handle state updates
+            // Handle state updates for UI
             clockInstance.on('state', (state) => {
                 if (!clockInstance) return
                 //console.log('Clock state update', state)
@@ -77,7 +80,10 @@ export const Clock: React.FC<ClockProps> = (props) => {
             })
 
             // Emit initial state
-            setClockFrequency(clockInstance.clockFrequency)
+            //setClockFrequency(clockInstance.clockFrequency)
+            clockInstance.emit('state', {
+                clockFrequency: clockInstance.clockFrequency,
+            })
 
             //setInstanciated(true)
         }

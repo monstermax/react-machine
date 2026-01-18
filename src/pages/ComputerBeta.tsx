@@ -10,7 +10,7 @@ import { Cpu } from '@/v2/components/Cpu/Cpu';
 import { Memory, MemoryBus } from '@/v2/components/Memory/MemoryBus';
 import { Ram } from '@/v2/components/Memory/Ram';
 import { Rom } from '@/v2/components/Memory/Rom';
-import { Devices, DevicesManager } from '@/v2/components/Devices/DevicesManager';
+import { ExternalDevices, DevicesManager, InternalDevices } from '@/v2/components/Devices/DevicesManager';
 import { StorageDisk } from '@/v2/components/Devices/StorageDisk/StorageDisk';
 import { Clock } from '@/v2/components/Cpu/Clock';
 import { LedsDisplay } from '@/v2/components/Devices/LedsDisplay/LedsDisplay';
@@ -72,9 +72,27 @@ export const ComputerBeta: React.FC = () => {
                             {/* <Io /> */}
                         </Memory>
 
+                        <InternalDevices>
+                            {/* Audio */}
+                            <Buzzer ioPort={0x08} name="buzzer" hidden />
+
+                            {/* Random */}
+                            <Rng ioPort={0x0B} name="rng" hidden />
+                            <Rtc ioPort={0x0C} name="rtc" hidden />
+                            <Timer ioPort={0x02} name="timer" hidden />
+
+                            {/* Storage */}
+                            <StorageDisk ioPort={0x00} name="os_disk" open={false} />
+                            <StorageDisk ioPort={0x01} name="program_disk" open={false} />
+                            <StorageDisk ioPort={0x0E} name="data_1" persistent />
+                            <StorageDisk ioPort={0x0F} name="data_2" open={false} />
+
+                            {/* <Gpu /> */}
+                            {/* <Network /> */}
+                        </InternalDevices>
                     </Motherboard>
 
-                    <Devices >
+                    <ExternalDevices >
                         {/* Console */}
                         <Console ioPort={0x07} name="console" />
 
@@ -82,31 +100,13 @@ export const ComputerBeta: React.FC = () => {
                         <LedsDisplay ioPort={0x03} name="leds" />
                         <LcdDisplay ioPort={0x0A} name="lcd" />
                         <PixelDisplay ioPort={0x0D} name="display_32x32" open={false} />
-                        <SevenSegmentDisplay ioPort={0x06} name="7-segment" open={false} />
+                        <SevenSegmentDisplay displays={4} ioPort={0x06} name="7-segment" open={false} />
 
                         {/* Input */}
                         <Keyboard ioPort={0x05} name="keyboard" open={false} />
 
-                        {/* Audio */}
-                        <Buzzer ioPort={0x08} name="buzzer" hidden />
-
-                        {/* Random */}
-                        <Rng ioPort={0x0B} name="rng" hidden />
-                        <Rtc ioPort={0x0C} name="rtc" hidden />
-                        <Timer ioPort={0x02} name="timer" hidden />
-
-                        {/* Storage */}
-                        <StorageDisk ioPort={0x00} name="os_disk" open={false} />
-                        <StorageDisk ioPort={0x01} name="program_disk" open={false} />
-                        <StorageDisk ioPort={0x0E} name="data_1" persistent />
-                        <StorageDisk ioPort={0x0F} name="data_2" open={false} />
-
                         {/* <IDE /> adapter la page de compilation en composant Device + permettre l'execution du code */}
-
-                        {/* <Gpu /> */}
-                        {/* <Network /> */}
-
-                    </Devices>
+                    </ExternalDevices>
                 </Computer>
             </div>
         </div>

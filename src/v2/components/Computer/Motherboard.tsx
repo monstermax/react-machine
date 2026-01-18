@@ -6,6 +6,7 @@ import { useComputer } from './ComputerContext';
 import { Cpu } from '../Cpu/Cpu';
 import { MemoryBus } from '../Memory/MemoryBus';
 import { Clock } from '../Cpu/Clock';
+import { DevicesManager } from '../Devices/DevicesManager';
 
 
 export type MotherboardProps = {
@@ -25,6 +26,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
     // Core Children
     const [cpuInstances, setCpuInstances] = useState<Map<number, cpuApi.Cpu>>(new Map);
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
+    const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null);
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
 
     // UI
@@ -43,8 +45,10 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
         const _instanciateMotherBoard = () => {
             if (!computerRef.current) return;
 
-            // Save Instance for UI
+            // Init Instance
             const motherBoardInstance = computerRef.current.addMotherboard();
+
+            // Save Instance for UI
             setMotherBoardInstance(motherBoardInstance);
 
             // Save MotherBoard Ref
@@ -94,12 +98,15 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
         if (!motherboardInstance) return;
         if (memoryBusInstance) return;
 
-        if (memoryBus && !motherboardInstance.memoryBus) {
-            motherboardInstance.memoryBus = memoryBus;
-            //console.log('MemoryBus monté dans Motherboard:', memoryBusInstance);
-        }
-
         setMemoryBusInstance(memoryBus);
+    }
+
+
+    const addDevicesManager = (devicesManager: cpuApi.DevicesManager) => {
+        if (!motherboardInstance) return;
+        if (devicesManagerInstance) return;
+
+        setDevicesManagerInstance(devicesManager);
     }
 
 
@@ -116,6 +123,9 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
 
                 case MemoryBus:
                     return React.cloneElement(childElement, { onInstanceCreated: addMemoryBus });
+
+                case DevicesManager:
+                    return React.cloneElement(childElement, { onInstanceCreated: addDevicesManager });
 
                 default:
                     console.log(`Invalid component mounted into Motherboard : ${null}`, (childElement.type as JSXElementConstructor<any>).name);

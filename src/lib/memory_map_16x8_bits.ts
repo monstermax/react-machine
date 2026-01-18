@@ -69,7 +69,7 @@ export const MEMORY_MAP = createMemoryMap({
 
 
 
-    // ## I/O Devices ## (0xFF00-0xFFFF) - 256 ports
+    // ## I/O Devices ## (0xFF00-0xFFFF) - 256 ports (16 devices x 16 ports)
 
     IO_START: 0xFF00,
     IO_END: 0xFFFF,

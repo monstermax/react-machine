@@ -2,6 +2,7 @@
 import { EventEmitter } from "eventemitter3";
 
 import type { IoDeviceType, u8 } from "@/types/cpu.types";
+import { U8 } from "@/lib/integers";
 
 
 export class SevenSegmentDisplay extends EventEmitter {
@@ -10,11 +11,15 @@ export class SevenSegmentDisplay extends EventEmitter {
     public type: IoDeviceType;
     public ioPort: u8;
 
-    public currentValue: u8 = 0 as u8;
-    public rawSegments: u8 = 0 as u8;
+    //public currentValue: u8 = 0 as u8;
+    //public rawSegments: u8 = 0 as u8;
+
+    public displays: { currentValue: u8, rawSegments: u8 }[] = [];
+    private currentDisplay: number | null = null;
+    private displaysCount: number;
 
 
-    constructor(name: string, ioPort: u8 | null = null) {
+    constructor(name: string, ioPort: u8 | null = null, displaysCount=1) {
         //console.log(`Initializing SevenSegmentDisplay`);
         super();
 
@@ -22,6 +27,10 @@ export class SevenSegmentDisplay extends EventEmitter {
         this.name = name;
         this.type = 'Display';
         this.ioPort = ioPort ?? 0 as u8; // TODO: find free io port
+
+        this.displaysCount = displaysCount;
+
+        this.reset()
     }
 
 
@@ -50,9 +59,18 @@ export class SevenSegmentDisplay extends EventEmitter {
     read(port: u8): u8 {
         switch (port) {
             case 0: // Port 0 = DATA
-                return this.currentValue;
+                //return this.currentValue;
+                if (!this.currentDisplay) return 0 as u8;
+                return this.displays[this.currentDisplay].currentValue;
+
             case 1: // Port 1 = RAW
-                return this.rawSegments;
+                //return this.rawSegments;
+                if (!this.currentDisplay) return 0 as u8;
+                return this.displays[this.currentDisplay].rawSegments;
+
+            case 2: // Port 2 = select display index (if multiple 7segments)
+                return U8(this.currentDisplay ?? 0);
+
             default:
                 return 0 as u8;
         }
@@ -62,41 +80,77 @@ export class SevenSegmentDisplay extends EventEmitter {
     write(port: u8, value: u8): void {
         switch (port) {
             case 0: // Port 0 = DATA (0xFF60)
+                if (!this.currentDisplay) return;
                 const digit = (value & 0x0F) as u8;
-                this.currentValue = digit;
-                this.rawSegments = this.digitToSegments[digit] || 0 as u8;
-                this.emit('state', { rawSegments: this.rawSegments, currentValue: this.currentValue })
+                //this.currentValue = digit;
+                this.displays[this.currentDisplay].currentValue = digit;
+                //this.rawSegments = this.digitToSegments[digit] || 0 as u8;
+                this.displays[this.currentDisplay].rawSegments = this.digitToSegments[digit] || 0 as u8;
+
+                this.emit('state', {
+                    //rawSegments: this.rawSegments,
+                    //currentValue: this.currentValue,
+                    displays: this.displays,
+                })
                 break;
 
             case 1: // Port 1 = RAW (0xFF61)
-                this.rawSegments = (value & 0x7F) as u8;
-                this.emit('state', { rawSegments: this.rawSegments })
+                if (!this.currentDisplay) return;
+                //this.rawSegments = (value & 0x7F) as u8;
+                this.displays[this.currentDisplay].rawSegments = (value & 0x7F) as u8;
+
+                this.emit('state', {
+                    //rawSegments: this.rawSegments,
+                    displays: this.displays,
+                })
+                break;
+
+            case 2: // Port 2 = select display index (if multiple 7segments)
+                this.currentDisplay = value;
                 break;
         }
     }
 
 
     // Pour l'affichage UI
-    getSegments(): boolean[] {
+    getSegments(displayIdx=0): boolean[] {
         const segments: boolean[] = [];
 
         for (let i = 0; i < 8; i++) {
-            segments[i] = ((this.rawSegments >> i) & 1) === 1;
+            //segments[i] = ((this.rawSegments >> i) & 1) === 1;
+
+            segments[i] = this.displays[displayIdx]
+                ? (((this.displays[displayIdx].rawSegments >> i) & 1) === 1)
+                : false;
         }
 
         return segments;
     }
 
 
-    getCurrentDigit(): u8 {
-        return this.currentValue;
+    getCurrentDigit(displayIdx=0): u8 {
+        return this.displays[displayIdx]
+            ? this.displays[displayIdx].currentValue
+            : 0 as u8;
     }
 
 
     reset() {
-        this.currentValue = 0 as u8;
-        this.rawSegments = 0 as u8;
-        this.emit('state', { rawSegments: this.rawSegments, currentValue: this.currentValue })
+        //this.currentValue = 0 as u8;
+        //this.rawSegments = 0 as u8;
+
+        this.displays = new Array(this.displaysCount).fill(null).map(() => ({
+            currentValue: 0 as u8,
+            rawSegments: 0 as u8,
+        }))
+
+        this.currentDisplay = this.displays.length > 0 ? 0 : null;
+
+        this.emit('state', {
+            //rawSegments: this.rawSegments,
+            //currentValue: this.currentValue,
+            displays: this.displays,
+        })
     }
 
 }

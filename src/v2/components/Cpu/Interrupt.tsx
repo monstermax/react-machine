@@ -35,8 +35,14 @@ export const Interrupt: React.FC<InterruptProps> = (props) => {
 
     // Instanciate Interrupt
     useEffect(() => {
+        if (interruptInstance) return;
+
         const _instanciateInterrupt = () => {
+
+            // Init Instance
             const interrupt = new cpuApi.Interrupt(ioPort as u8 | null);
+
+            // Save Instance for UI
             setInterruptInstance(interrupt);
 
             // Handle state updates
@@ -63,7 +69,6 @@ export const Interrupt: React.FC<InterruptProps> = (props) => {
 
             // Emit initial state
             // TODO
-
 
             //setInstanciated(true)
         }

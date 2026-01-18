@@ -58,8 +58,10 @@ export const Cpu: React.FC<CpuProps> = (props) => {
         const _instanciateCpu = () => {
             if (!motherboardRef.current) return;
 
-            // Save Instance for UI
+            // Init Instance
             const cpu = motherboardRef.current.addCpu(coresCount);
+
+            // Save Instance for UI
             setCpuInstance(cpu);
 
             // Handle CPU state updates for UI
@@ -136,7 +138,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             }
 
 
-            // Emit initial state
+            // Emit initial CPU state
             cpu.emit('state', {
                 //registers: this.cores[0].registers,
                 clockCycle: cpu.clockCycle,
@@ -144,6 +146,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 cpuHalted: cpu.cpuHalted,
             })
 
+            // Emit initial CORES state
             for (const core of cpu.cores) {
                 core.emit('state', {
                     idx: core.idx,
@@ -155,7 +158,6 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
 
             //console.log('CPU initialized', cpuInstance.cores)
-
             //setInstanciated(true)
 
             // Start CPU

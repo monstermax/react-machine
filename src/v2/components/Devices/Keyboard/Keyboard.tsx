@@ -89,7 +89,7 @@ export const Keyboard: React.FC<KeyboardProps> = (props) => {
 
 
     return (
-        <div className={`device w-full ${hidden ? "hidden" : ""}`}>
+        <div className={`device w-auto ${hidden ? "hidden" : ""}`}>
 
             {/* Device Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
