@@ -191,7 +191,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
             <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
 
                 <>
-                    <div className="font-mono text-sm space-y-1 max-h-[600px] overflow-y-auto">
+                    <div className="font-mono text-sm space-y-1 max-h-[600px] overflow-y-auto overscroll-contain">
                         <div className="text-xs text-slate-400 mb-2">
                             {name}: {sortedDiskData.length} bytes
                         </div>
