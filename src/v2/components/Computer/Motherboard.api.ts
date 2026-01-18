@@ -58,7 +58,7 @@ export class Motherboard extends EventEmitter {
 
             for (const cpuInstance of this.getCpus()) {
                 if (!cpuInstance) continue;
-                if (cpuInstance.paused || cpuInstance.cpuHalted) continue;
+                if (cpuInstance.cpuPaused || cpuInstance.cpuHalted) continue;
                 cpuInstance.executeCycle()
             }
         })

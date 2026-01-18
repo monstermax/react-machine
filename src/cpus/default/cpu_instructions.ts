@@ -73,7 +73,8 @@ export enum Opcode {
     POP_C = 0x36,      // POP C
     POP_D = 0x37,      // POP D
 
-    // Contrôle Stack (0x3A-0x3C)
+    // Contrôle Stack (0x39-0x3C)
+    GET_SP = 0x39,     // GET SP
     SET_SP = 0x3A,     // SET SP, imm16
     CALL = 0x3B,       // CALL addr16 (push PC+3, then JMP)
     RET = 0x3C,        // RET (pop PC)
@@ -251,6 +252,7 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.POP_D: return "POP D";
 
         // Contrôle Stack
+        case Opcode.GET_SP: return "GET SP";
         case Opcode.SET_SP: return "SET SP";
         case Opcode.CALL: return "CALL";
         case Opcode.RET: return "RET";

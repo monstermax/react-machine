@@ -104,7 +104,7 @@ export class Interrupt extends EventEmitter {
 
     // Demander une interruption (appelé par les périphériques)
     requestInterrupt(irq: u8): void {
-        console.log(`🔔 IRQ ${irq} requested (current pending: 0b${this.pending.toString(2).padStart(8, '0')})`);
+        //console.log(`🔔 IRQ ${irq} requested (current pending: 0b${this.pending.toString(2).padStart(8, '0')})`);
 
         if (irq < 0 || irq > 7) {
             console.warn(`Invalid IRQ number: ${irq}`);
@@ -112,8 +112,7 @@ export class Interrupt extends EventEmitter {
         }
 
         this.pending = (this.pending | (1 << irq)) as u8;
-        //console.log(`🔔 IRQ ${irq} requested - Pending: 0b${newPending.toString(2).padStart(8, '0')}`);
-        console.log(`🔔 New pending: 0b${this.pending.toString(2).padStart(8, '0')}`);
+        //console.log(`🔔 [IRQ ${irq}] New pending: 0b${this.pending.toString(2).padStart(8, '0')}`);
 
         this.emit('state', { pending: this.pending })
     }
@@ -144,7 +143,7 @@ export class Interrupt extends EventEmitter {
     // Fonction pour le CPU pour acquitter
     acknowledgeInterrupt(irq: u8): void {
         this.pending = (this.pending & ~(1 << irq)) as u8;
-        console.log(`✅ IRQ ${irq} acknowledged - Pending: 0b${this.pending.toString(2).padStart(8, '0')}`);
+        //console.log(`✅ IRQ ${irq} acknowledged - Pending: 0b${this.pending.toString(2).padStart(8, '0')}`);
 
         this.emit('state', { pending: this.pending })
     }

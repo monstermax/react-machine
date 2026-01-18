@@ -18,8 +18,8 @@ export abstract class BaseCpu extends EventEmitter implements ICpu {
     // État
     //public halted = false;
     public motherboard: Motherboard;
-    public paused = true;
-    public clockCycle = 0;
+    public cpuPaused = true;
+    public cpuCycle = 0;
     //public registers: Map<string, u8 | u16> = new Map;
     public status: 'ready' | 'executingCycle' = "ready";
     //public breakpoints = new Set<number>();
@@ -48,16 +48,16 @@ export abstract class BaseCpu extends EventEmitter implements ICpu {
     // Méthodes communes
 
     setPaused(paused: boolean) {
-        this.paused = paused;
+        this.cpuPaused = paused;
 
         this.emit('state', {
-            paused: this.paused,
+            cpuPaused: this.cpuPaused,
         })
     }
 
 
     togglePaused(): void {
-        this.setPaused(!this.paused);
+        this.setPaused(!this.cpuPaused);
     }
 
 

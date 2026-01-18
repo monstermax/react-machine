@@ -107,6 +107,7 @@ export const MEMORY_MAP = createMemoryMap({
     TIMER_COUNTER: 0xFF20,  // Lecture seule: compteur incrémenté à chaque cycle
     TIMER_CONTROL: 0xFF21,  // Écriture: 0=stop, 1=start, 2=reset
     TIMER_PRESCALER: 0xFF22, // Diviseur de fréquence
+    TIMER_TICK: 0xFF23, // Declenchement de tick
 
     // Device 3: LEDs
     LEDS_BASE: 0xFF30,

@@ -39,6 +39,8 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
     // CPUs Program Counter + Breakpoints
     useEffect(() => {
+        if (!computerInstance) return;
+        if (!motherBoardInstance) return;
 
         if (computerInstance) {
             setBreakpoints(computerInstance.breakpoints ?? new Set);
@@ -79,7 +81,7 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
                 }
             }
         }
-    }, [motherBoardInstance?.cpus])
+    }, [computerInstance, motherBoardInstance])
 
 
     // Auto-scroll vers PC quand il change

@@ -109,18 +109,9 @@ class CpuCore extends EventEmitter {
             //this.currentBreakpoint = null;
         }
 
-        if (this.cpu.currentBreakpoint === null && this.cpu.motherboard.computer.breakpoints.has(pc) && !this.cpu.paused) {
+        if (this.cpu.currentBreakpoint === null && this.cpu.motherboard.computer.breakpoints.has(pc) && !this.cpu.cpuPaused) {
             // TODO: petit bug à corriger. si on step jusqu'a un breakpoint. quand on redémarrage il toussote
             this.cpu.currentBreakpoint = pc;
-
-            /*
-            this.cpu.setPaused(true);
-
-            // Update UI State
-            this.cpu.emit('state', {
-                paused: this.cpu.paused,
-            })
-            */
 
             if (this.cpu.motherboard.clock) {
                 this.cpu.motherboard.clock.stop()
@@ -181,7 +172,7 @@ class CpuCore extends EventEmitter {
         const irq = this.cpu.interrupt.getPendingIRQ();
         if (irq === null) return;
 
-        console.log(`🎯 Handling IRQ ${irq}, handlerAddr = ${this.cpu.interrupt.handlerAddr.toString(16)}`);
+        //console.log(`🎯 Handling IRQ ${irq}, handlerAddr = ${this.cpu.interrupt.handlerAddr.toString(16)}`);
 
         // 1. Désactiver interruptions
         this.cpu.interruptsEnabled = false;
@@ -207,13 +198,14 @@ class CpuCore extends EventEmitter {
         // 4. Sauter au handler
         let handlerAddress = this.cpu.interrupt.handlerAddr;
         if (handlerAddress === 0) {
-            // Vecteur par défaut: 0x0040 + irq*4
-            handlerAddress = (0x0040 + (irq * 4)) as u16;
+            //// Vecteur par défaut: 0x0040 + irq*4
+            //handlerAddress = (0x0040 + (irq * 4)) as u16;
+            throw new Error("missing handlerAddress")
         }
 
         this.setRegister("PC", handlerAddress);
 
-        console.log(`🔄 Interruption IRQ${irq} -> Handler 0x${handlerAddress.toString(16)}`);
+        //console.log(`🔄 Interruption IRQ${irq} -> Handler 0x${handlerAddress.toString(16)}`);
     }
 
 
@@ -226,13 +218,13 @@ class CpuCore extends EventEmitter {
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.CORES_COUNT: {
+            case Opcode.CORES_COUNT: { // A = CORE_COUNT (current CPU)
                 this.setRegister("A", U8(this.cpu.cores.length));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
 
-            case Opcode.CORE_STATUS: {
+            case Opcode.CORE_STATUS: { // A = Core #A status (current CPU)
                 const coreIdx = this.getRegister("A");
 
                 if (this.cpu.cores[coreIdx]) {
@@ -248,7 +240,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.CORE_INIT: {
+            case Opcode.CORE_INIT: { // Set SP (from [CD]) of Core #A (current CPU)
                 const coreIdx = this.getRegister("A");
 
                 if (this.cpu.cores[coreIdx] && this.cpu.cores[coreIdx].coreHalted) {
@@ -262,7 +254,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.CORE_START: {
+            case Opcode.CORE_START: { // Start Core #A (current CPU)
                 const coreIdx = this.getRegister("A");
 
                 if (this.cpu.cores[coreIdx]) {
@@ -275,7 +267,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.CORE_HALT: {
+            case Opcode.CORE_HALT: { // Halt Core #A (current CPU)
                 const coreIdx = this.getRegister("A");
 
                 if (this.cpu.cores[coreIdx]) {
@@ -288,13 +280,13 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.CPUS_COUNT: {
+            case Opcode.CPUS_COUNT: { // A = CPU_COUNT
                 this.setRegister("A", U8(this.cpu.motherboard.cpus.size));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
 
-            case Opcode.CPU_STATUS: {
+            case Opcode.CPU_STATUS: { // A = CPU #A status
                 const cpuIdx = this.getRegister("A");
                 const cpu = this.cpu.motherboard.cpus.get(cpuIdx);
 
@@ -311,7 +303,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.CPU_INIT: {
+            case Opcode.CPU_INIT: { // Set SP (from [CD]) of cpu #A
                 const cpuIdx = this.getRegister("A");
                 const cpu = this.cpu.motherboard.cpus.get(cpuIdx);
 
@@ -326,7 +318,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.CPU_START: {
+            case Opcode.CPU_START: { // Start cpu #A
                 const cpuIdx = this.getRegister("A");
                 const cpu = this.cpu.motherboard.cpus.get(cpuIdx);
 
@@ -338,7 +330,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.CPU_HALT: {
+            case Opcode.CPU_HALT: { // Halt cpu #A
                 const cpuIdx = this.getRegister("A");
                 const cpu = this.cpu.motherboard.cpus.get(cpuIdx);
 
@@ -354,12 +346,12 @@ class CpuCore extends EventEmitter {
                 this.handleSyscall(pc);
                 break;
 
-            case Opcode.GET_FREQ:
+            case Opcode.GET_FREQ: // A = FREQ
                 this.setRegister("A", U8(this.cpu.motherboard.clock?.clockFrequency ?? 0));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.SET_FREQ:
+            case Opcode.SET_FREQ: // FREQ = imm8
                 const clock = this.cpu.motherboard.clock;
                 if (clock) {
                     clock.clockFrequency = this.cpu.readMem8(pc);
@@ -389,7 +381,7 @@ class CpuCore extends EventEmitter {
                 } else {
                     this.cpu.currentBreakpoint = pc;
 
-                    if (!this.cpu.paused) {
+                    if (!this.cpu.cpuPaused) {
                         this.cpu.setPaused(true);
                     }
                 }
@@ -400,7 +392,7 @@ class CpuCore extends EventEmitter {
                 break;
 
             // ===== ALU INSTRUCTIONS =====
-            case Opcode.ADD: {
+            case Opcode.ADD: { // A = A + B
                 const { result, flags } = ALU.add(this.getRegister("A"), this.getRegister("B"));
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -408,7 +400,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.SUB: {
+            case Opcode.SUB: { // A = A - B
                 const { result, flags } = ALU.sub(this.getRegister("A"), this.getRegister("B"))
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -416,7 +408,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.AND: {
+            case Opcode.AND: { // A = A & B
                 const { result, flags } = ALU.and(this.getRegister("A"), this.getRegister("B"))
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -424,7 +416,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.OR: {
+            case Opcode.OR: { // A = A | B
                 const { result, flags } = ALU.or(this.getRegister("A"), this.getRegister("B"))
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -432,7 +424,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.XOR: {
+            case Opcode.XOR: { // A = A ^ B
                 const { result, flags } = ALU.xor(this.getRegister("A"), this.getRegister("B"))
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -440,7 +432,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.INC_A: {
+            case Opcode.INC_A: { // A = A + 1
                 const { result, flags } = ALU.inc(this.getRegister("A"))
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -448,7 +440,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.DEC_A: {
+            case Opcode.DEC_A: { // A = A - 1
                 const { result, flags } = ALU.dec(this.getRegister("A"))
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -456,7 +448,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.INC_B: {
+            case Opcode.INC_B: { // B = B + 1
                 const { result, flags } = ALU.inc(this.getRegister("B"))
                 this.setRegister("B", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -464,7 +456,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.DEC_B: {
+            case Opcode.DEC_B: { // B = B - 1
                 const { result, flags } = ALU.dec(this.getRegister("B"))
                 this.setRegister("B", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -472,7 +464,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.INC_C: {
+            case Opcode.INC_C: { // C = C + 1
                 const { result, flags } = ALU.inc(this.getRegister("C"))
                 this.setRegister("C", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -480,7 +472,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.DEC_C: {
+            case Opcode.DEC_C: { // C = C - 1
                 const { result, flags } = ALU.dec(this.getRegister("C"))
                 this.setRegister("C", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -488,7 +480,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.INC_D: {
+            case Opcode.INC_D: { // D = D + 1
                 const { result, flags } = ALU.inc(this.getRegister("D"))
                 this.setRegister("D", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -496,7 +488,7 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
-            case Opcode.DEC_D: {
+            case Opcode.DEC_D: { // D = D - 1
                 const { result, flags } = ALU.dec(this.getRegister("D"))
                 this.setRegister("D", result);
                 this.setFlags(flags.zero, flags.carry);
@@ -505,11 +497,11 @@ class CpuCore extends EventEmitter {
             }
 
             // ===== JUMP INSTRUCTIONS =====
-            case Opcode.JMP:
+            case Opcode.JMP: // Jump
                 this.setRegister("PC", this.cpu.readMem16(pc));
                 break;
 
-            case Opcode.JZ:
+            case Opcode.JZ: // Jump if Zero Flag
                 if (this.getFlag('zero')) {
                     this.setRegister("PC", this.cpu.readMem16(pc));
                 } else {
@@ -517,7 +509,7 @@ class CpuCore extends EventEmitter {
                 }
                 break;
 
-            case Opcode.JNZ:
+            case Opcode.JNZ: // Jump if Not Zero Flag
                 if (!this.getFlag('zero')) {
                     this.setRegister("PC", this.cpu.readMem16(pc));
                 } else {
@@ -525,7 +517,7 @@ class CpuCore extends EventEmitter {
                 }
                 break;
 
-            case Opcode.JC:
+            case Opcode.JC: // Jump if Carry Flag
                 if (this.getFlag('carry')) {
                     this.setRegister("PC", this.cpu.readMem16(pc));
                 } else {
@@ -533,7 +525,7 @@ class CpuCore extends EventEmitter {
                 }
                 break;
 
-            case Opcode.JNC:
+            case Opcode.JNC: // Jump if Not Carry Flag
                 if (!this.getFlag('carry')) {
                     this.setRegister("PC", this.cpu.readMem16(pc));
                 } else {
@@ -542,50 +534,55 @@ class CpuCore extends EventEmitter {
                 break;
 
             // ===== PUSH =====
-            case Opcode.PUSH_A: {
+            case Opcode.PUSH_A: { // PUSH A
                 this.pushValue(this.getRegister("A"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
 
-            case Opcode.PUSH_B:
+            case Opcode.PUSH_B: // PUSH B
                 this.pushValue(this.getRegister("B"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.PUSH_C:
+            case Opcode.PUSH_C: // PUSH C
                 this.pushValue(this.getRegister("C"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.PUSH_D:
+            case Opcode.PUSH_D: // PUSH D
                 this.pushValue(this.getRegister("D"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
             // ===== POP =====
-            case Opcode.POP_A:
+            case Opcode.POP_A: // POP A
                 this.setRegister("A", this.popValue());
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.POP_B:
+            case Opcode.POP_B: // POP B
                 this.setRegister("B", this.popValue());
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.POP_C:
+            case Opcode.POP_C: // POP C
                 this.setRegister("C", this.popValue());
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.POP_D:
+            case Opcode.POP_D: // POP D
                 this.setRegister("D", this.popValue());
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
             // ===== STACK =====
-            case Opcode.SET_SP:
+            case Opcode.GET_SP: // A = SP
+                this.setRegister("A", this.getRegister("SP"));
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+
+            case Opcode.SET_SP: // SP = imm16
                 // SET_SP imm16 : SP = valeur immédiate 16-bit
                 this.setRegister("SP", this.cpu.readMem16(pc));
                 this.setRegister("PC", (pc + 3) as u16);
@@ -677,28 +674,28 @@ class CpuCore extends EventEmitter {
 
             // ===== MOV register-immediate (set flags) ===== => TODO: ne pas modifier les flags
             case Opcode.MOV_A_IMM:  // MOV A, imm8
-                const immA = this.cpu.memoryBus.readMemory((pc + 1) as u16);
+                const immA = this.cpu.readMem8(pc);
                 this.setRegister("A", immA);
                 this.setFlags(immA === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.MOV_B_IMM:  // MOV B, imm8
-                const immB = this.cpu.memoryBus.readMemory((pc + 1) as u16);
+                const immB = this.cpu.readMem8(pc);
                 this.setRegister("B", immB);
                 this.setFlags(immB === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.MOV_C_IMM:  // MOV C, imm8
-                const immC = this.cpu.memoryBus.readMemory((pc + 1) as u16);
+                const immC = this.cpu.readMem8(pc);
                 this.setRegister("C", immC);
                 this.setFlags(immC === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.MOV_D_IMM:  // MOV D, imm8
-                const immD = this.cpu.memoryBus.readMemory((pc + 1) as u16);
+                const immD = this.cpu.readMem8(pc);
                 this.setRegister("D", immD);
                 this.setFlags(immD === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 2) as u16);
@@ -809,7 +806,7 @@ class CpuCore extends EventEmitter {
     handleSyscall(pc: u16) {
         if (!this.cpu.memoryBus) throw new Error("Missing MemoryBus")
 
-        const syscallNum = this.cpu.memoryBus.readMemory((pc + 1) as u16);
+        const syscallNum = this.cpu.readMem8(pc);
 
         switch (syscallNum) {
             case 0: // exit
@@ -1009,8 +1006,8 @@ export class Cpu extends BaseCpu {
     public idx: number;
     public cores: CpuCore[] = [];
     public cpuHalted: boolean = true;
-    public paused: boolean = false;
-    public clockCycle: number = 0;
+    public cpuPaused: boolean = false;
+    public cpuCycle: number = 0;
     //public registers: Map<string, u8 | u16> = new Map;
     //public breakpoints: Set<number> = new Set;
 
@@ -1020,7 +1017,7 @@ export class Cpu extends BaseCpu {
     //public clock: Clock | null = null;
 
     public currentBreakpoint: number | null = null;
-    public interruptsEnabled: boolean = false;
+    public interruptsEnabled: boolean = true;
     public inInterruptHandler: boolean = false;
 
 
@@ -1099,10 +1096,10 @@ export class Cpu extends BaseCpu {
         if (this.status !== 'ready') return;
 
         this.status = 'executingCycle';
-        this.clockCycle++
+        this.cpuCycle++
 
         this.emit('state', {
-            clockCycle: this.clockCycle,
+            cpuCycle: this.cpuCycle,
         })
 
 
@@ -1132,10 +1129,10 @@ export class Cpu extends BaseCpu {
 
 
     reset() {
-        this.clockCycle = 0;
+        this.cpuCycle = 0;
         //this.setPaused(true);
 
-        this.interruptsEnabled = false;
+        this.interruptsEnabled = true;
         this.inInterruptHandler = false;
         this.currentBreakpoint = null;
 
@@ -1153,7 +1150,7 @@ export class Cpu extends BaseCpu {
         // Update UI State
         this.emit('state', {
             //cpuHalted: this.cpuHalted,
-            clockCycle: this.clockCycle,
+            cpuCycle: this.cpuCycle,
             //registers: this.registers,
             interruptsEnabled: this.interruptsEnabled,
             inInterruptHandler: this.inInterruptHandler,

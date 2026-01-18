@@ -9,6 +9,7 @@ import { Interrupt } from './Interrupt';
 
 import type { u16, u8 } from '@/types/cpu.types';
 import { delayer } from '@/lib/delayer';
+import { CpuRegisters } from './Registers';
 
 
 export type CpuProps = {
@@ -33,10 +34,10 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     const [interruptInstance, setInterruptInstance] = useState<cpuApi.Interrupt | null>(null);
 
     // UI snapshot state
-    const [paused, setPaused] = useState(false);
-    const [halted, setHalted] = useState(true);
+    const [cpuPaused, setCpuPaused] = useState(false);
+    const [CpuHalted, setCpuHalted] = useState(true);
     const [clockPaused, setClockPaused] = useState(true);
-    const [clockCycle, setClockCycle] = useState(0);
+    const [cpuCycle, setCpuCycle] = useState(0);
     const [coresRegisters, setCoresRegisters] = useState<Map<number, Map<string, u8 | u16>>>(new Map);
     const [coresCoreCycle, setCoresCoreCycle] = useState<Map<number, number>>(new Map);
     const [coresHalted, setCoresHalted] = useState<Map<number, boolean>>(new Map);
@@ -69,15 +70,15 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 //console.log('CPU state update', state)
 
                 if (state.cpuHalted !== undefined) {
-                    setHalted(state.cpuHalted)
+                    setCpuHalted(state.cpuHalted)
                 }
 
-                if (state.clockCycle !== undefined) {
-                    setClockCycle(state.clockCycle)
+                if (state.cpuCycle !== undefined) {
+                    setCpuCycle(state.cpuCycle)
                 }
 
-                if (state.paused !== undefined) {
-                    setPaused(state.paused)
+                if (state.cpuPaused !== undefined) {
+                    setCpuPaused(state.cpuPaused)
                 }
             })
 
@@ -141,8 +142,8 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             // Emit initial CPU state
             cpu.emit('state', {
                 //registers: this.cores[0].registers,
-                clockCycle: cpu.clockCycle,
-                paused: cpu.paused,
+                cpuCycle: cpu.cpuCycle,
+                cpuPaused: cpu.cpuPaused,
                 cpuHalted: cpu.cpuHalted,
             })
 
@@ -221,7 +222,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     const runStep = () => {
         if (!cpuInstance) return;
 
-        console.log(`runStep cycle #${clockCycle + 1}`);
+        console.log(`runStep cycle #${cpuCycle + 1}`);
 
         cpuInstance.executeCycle();
     };
@@ -229,7 +230,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     const enableCpu = () => {
         if (!cpuInstance) return;
 
-        console.log(`runLoop cycle #${clockCycle + 1}`);
+        console.log(`runLoop cycle #${cpuCycle + 1}`);
 
         cpuInstance.togglePaused();
     };
@@ -280,20 +281,20 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     </button>
 
                     <button
-                        disabled={halted}
+                        disabled={CpuHalted}
                         onClick={() => enableCpu()}
-                        className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${!paused
+                        className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${!cpuPaused
                             ? "bg-green-900 hover:bg-green-700"
                             : "bg-blue-900 hover:bg-blue-700"
                             }`}
                     >
-                        <span className={`${paused ? "" :"font-bold"}`}>Auto</span>
+                        <span className={`${cpuPaused ? "" :"font-bold"}`}>Auto</span>
                         /
-                        <span className={`${paused ? "font-bold" :""}`}>Manual</span>
+                        <span className={`${cpuPaused ? "font-bold" :""}`}>Manual</span>
                     </button>
 
                     <button
-                        disabled={halted || (!paused && !clockPaused)}
+                        disabled={CpuHalted || (!cpuPaused && !clockPaused)}
                         onClick={() => runStep()}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
                     >
@@ -304,7 +305,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 {/* Cycles */}
                 {/*
                 <div className="p-2 rounded bg-background-light-2xl">
-                    CPU Cycle #{clockCycle}
+                    CPU Cycle #{cpuCycle}
                 </div>
                 */}
 
@@ -316,78 +317,17 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 )}
 
                 {/* Registers */}
-                {coresIds.map(coreIdx => (
-                    <Registers key={coreIdx}
-                        coreIdx={coreIdx}
-                        coreHalted={coresHalted.get(coreIdx) ?? true}
-                        coreCycle={coresCoreCycle.get(coreIdx) ?? 0}
-                        registers={coresRegisters.get(coreIdx) ?? new Map}
-                        paused={paused}
-                        cpuHalted={halted}
-                        clockPaused={clockPaused}
-                        clockCycle={clockCycle}
+                <CpuRegisters
+                    cpuHalted={CpuHalted}
+                    cpuPaused={cpuPaused}
+                    clockPaused={clockPaused}
+                    coresIds={coresIds}
+                    coresHalted={coresHalted}
+                    coresCoreCycle={coresCoreCycle}
+                    coresRegisters={coresRegisters}
                     />
-                ))}
             </div>
         </div>
     );
 };
 
-
-const Registers: React.FC<{ coreIdx: number, coreHalted: boolean, cpuHalted: boolean, paused: boolean, clockPaused: boolean, clockCycle: number, coreCycle: number, registers: Map<string, u8 | u16> }> = (props) => {
-    const { coreIdx, coreHalted, cpuHalted, paused, clockPaused, clockCycle, coreCycle, registers } = props;
-
-    return (
-        <div className={`p-2 rounded bg-background-light-2xl`}>
-            <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Registers Core #{coreIdx}</h3>
-
-            <div className="grid grid-cols-2 space-x-2 space-y-2">
-                {Array.from(registers.entries()).map(([reg, value]) => (
-                    <div
-                        key={reg}
-                        className={`flex w-full h-full border justify-between px-2 pt-2 rounded ${(reg === "PC")
-                            ? "bg-blue-900/50"
-                            : (reg === "A" && coreHalted)
-                                ? "bg-green-900/50 border border-green-500"
-                                : "bg-slate-900/50"
-                            }`}
-                    >
-                        <span className="text-cyan-400">{reg}:</span>
-                        <span className="text-green-400 ps-2 min-w-20 text-right">
-                            {reg !== "FLAGS" && (
-                                <>
-                                    {value} (0x{value.toString(16).padStart(
-                                        (reg === "PC" || reg === "SP" ? 4 : 2),  // 4 digits pour PC/SP, 2 pour les autres
-                                        "0"
-                                    )})
-                                </>
-                            )}
-                            {reg === "FLAGS" && ` [Z:${(!!(value & 0b10)) ? 1 : 0} C:${(!!(value & 0b01)) ? 1 : 0}]`}
-                        </span>
-                    </div>
-                ))}
-
-                <div className="flex w-full h-full justify-between px-2 pt-2 rounded bg-slate-900/50 border border-red-500/30">
-                    <span className="text-red-400">Status:</span>
-                    <span className={(cpuHalted || coreHalted) ? "text-red-400" : (paused ? "text-slate-400" : "text-yellow-400")}>
-                        {
-                            cpuHalted
-                                ? "CPU HALTED"
-                                : coreHalted
-                                    ? "CORE HALTED"
-                                    : paused
-                                        ? "MANUAL"
-                                        : clockPaused
-                                            ? "ACTIVE"
-                                            : "RUNNING"
-                        }
-                    </span>
-                </div>
-                <div className="flex w-full h-full justify-between px-2 pt-2 rounded bg-slate-900/50 border border-cyan-500/30">
-                    <span className="text-cyan-400">Core Cycles:</span>
-                    <span className="text-green-400">{coreCycle}</span>
-                </div>
-            </div>
-        </div>
-    );
-}

@@ -16,8 +16,8 @@ export interface ICpu {
     // État
     //halted: boolean;
     motherboard: Motherboard;
-    paused: boolean;
-    clockCycle: number;
+    cpuPaused: boolean;
+    cpuCycle: number;
     //breakpoints: Set<number>;
 
     // Composants

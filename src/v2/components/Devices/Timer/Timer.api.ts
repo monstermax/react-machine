@@ -6,6 +6,8 @@ import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 import { U8 } from "@/lib/integers";
 
 import type { IoDeviceType, u8 } from "@/types/cpu.types";
+import type { DevicesManager } from "../DevicesManager.api";
+import type { Interrupt } from "@/v2/api";
 
 
 export class Timer extends EventEmitter {
@@ -14,13 +16,13 @@ export class Timer extends EventEmitter {
     public type: IoDeviceType;
     public ioPort: u8;
 
-
+    public devicesManager: DevicesManager;
     public counter = 0 as u8;
     public period = 10 as u8; // Interrupt toutes les 10 "tick"
     public enabled = false;
 
 
-    constructor(name: string, ioPort: u8 | null = null, width=30, height=15, maxLines=100) {
+    constructor(devicesManager: DevicesManager, name: string, ioPort: u8 | null = null, width=30, height=15, maxLines=100) {
         //console.log(`Initializing Console`);
         super();
 
@@ -28,12 +30,13 @@ export class Timer extends EventEmitter {
         this.name = name;
         this.type = 'Time';
         this.ioPort = ioPort ?? 0 as u8; // TODO: find free io port
+        this.devicesManager = devicesManager;
     }
 
 
-    // Tick appelé à chaque cycle CPU ou à intervalle fixe => A REVOIR
+    // Tick appelé à chaque cycle CPU ou à intervalle fixe
     tick() {
-        //console.log(`⏰ Timer tick: enabled=${enabled}, counter=${counter}, period=${period}`);
+        //console.log(`⏰ Timer tick: enabled=${this.enabled}, counter=${this.counter}, period=${this.period}`);
         if (!this.enabled) return;
 
         const newVal = (this.counter + 1) as u8;
@@ -42,8 +45,18 @@ export class Timer extends EventEmitter {
         if (newVal >= this.period) {
             // Déclencher interruption
             //console.log('⏰ TIMER INTERRUPT! Requesting IRQ 0');
-            //interruptHook.requestInterrupt(U8(MEMORY_MAP.IRQ_TIMER));
-            return 0 as u8;
+
+            const interrupt = this.devicesManager.getDeviceByName('interrupt') as Interrupt | undefined;
+
+            if (interrupt) {
+                interrupt.requestInterrupt(U8(MEMORY_MAP.IRQ_TIMER));
+
+            } else {
+                console.warn(`Missing Interrupt for Timer`);
+            }
+
+            this.counter = 0 as u8
+            return
         }
 
         this.counter = newVal;
@@ -63,6 +76,10 @@ export class Timer extends EventEmitter {
 
             case 0x02: // TIMER_PRESCALER (0xFF22)
                 return this.period;
+
+            case 0x03: // TIMER_TICK (0xFF23)
+                return 0 as u8; // write-only method
+
             default:
                 return 0 as u8;
         }
@@ -86,6 +103,10 @@ export class Timer extends EventEmitter {
             case 0x02: // TIMER_PRESCALER/PERIOD (0xFF22)
                 this.period = (value & 0xFF) as u8;
                 this.emit('state', { period: this.period })
+                break;
+
+            case 0x03: // TIMER_TICK (0xFF23)
+                this.tick()
                 break;
         }
     }

@@ -27,23 +27,7 @@ export const SevenSegmentDisplay: React.FC<SevenSegmentDisplayProps> = (props) =
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.SevenSegmentDisplay | null>(null);
 
     // UI snapshot state
-    /*
-    const [currentValue, setCurrentValue] = useState<number>(0)
-    const [rawSegments, setRawSegments] = useState<number>(0)
-
-    const segments = useMemo(() => {
-        const segments: boolean[] = [];
-
-        for (let i = 0; i < 8; i++) {
-            segments[i] = ((rawSegments >> i) & 1) === 1;
-        }
-
-        return segments;
-    }, [rawSegments])
-    */
-
     const [displays, setDisplays] = useState<{ currentValue: u8, rawSegments: u8 }[]>([])
-
 
     // UI
     const [contentVisible, setContentVisible] = useState(open);
@@ -64,15 +48,7 @@ export const SevenSegmentDisplay: React.FC<SevenSegmentDisplayProps> = (props) =
 
             // Handle state updates
             device.on('state', (state) => {
-                console.log('SevenSegmentDisplay state update', state)
-
-                //if (state.currentValue !== undefined) {
-                //    setCurrentValue(state.currentValue)
-                //}
-
-                //if (state.rawSegments !== undefined) {
-                //    setRawSegments(state.rawSegments)
-                //}
+                //console.log('SevenSegmentDisplay state update', state)
 
                 if (state.displays !== undefined) {
                     setDisplays(state.displays)

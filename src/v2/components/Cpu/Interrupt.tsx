@@ -27,6 +27,7 @@ export const Interrupt: React.FC<InterruptProps> = (props) => {
     const [interruptInstance, setInterruptInstance] = useState<cpuApi.Interrupt | null>(null);
 
     // UI
+    const [contentVisible, setContentVisible] = useState(true);
     const [enabled, setEnabled] = useState(0 as u8);      // IRQs activées
     const [pending, setPending] = useState(0 as u8);      // IRQs en attente
     const [mask, setMask] = useState(0 as u8);            // IRQs masquées
@@ -93,10 +94,24 @@ export const Interrupt: React.FC<InterruptProps> = (props) => {
 
 
     return (
-        <div className={`w-full p-2 rounded bg-background-light-2xl ${hidden ? "hidden" : ""}`}>
-            <h3 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Interrupt</h3>
+        <div className={`w-auto p-2 rounded bg-background-light-2xl ${hidden ? "hidden" : ""}`}>
 
-            <div>
+            {/* Interrupt Head */}
+            <div className="w-full flex bg-background-light-xl p-2 rounded">
+                <h2 className="font-bold">Interrupt</h2>
+
+                {true && (
+                    <button
+                        className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
+                        onClick={() => setContentVisible(b => !b)}
+                    >
+                        {contentVisible ? "-" : "+"}
+                    </button>
+                )}
+            </div>
+
+            {/* Interrupt Content */}
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1 min-w-[300px]`}>
                 <div className="flex items-center gap-2 px-1">
 
                     <div className="w-full grid grid-cols-1 gap-4">
@@ -108,7 +123,7 @@ export const Interrupt: React.FC<InterruptProps> = (props) => {
                                     const _enabled = (enabled >> irq) & 1;
                                     const _pending = (pending >> irq) & 1;
                                     const _masked = (mask >> irq) & 1;
-                                    const active = enabled && pending && !_masked;
+                                    const active = _enabled && _pending && !_masked;
 
                                     return (
                                         <div key={irq} className="flex items-center justify-between p-2 rounded bg-slate-900/50">
@@ -135,11 +150,11 @@ export const Interrupt: React.FC<InterruptProps> = (props) => {
                             </div>
                         </div>
                     </div>
-
                 </div>
-            </div>
-            <div>
-                {children}
+
+                <div>
+                    {children}
+                </div>
             </div>
         </div>
     );

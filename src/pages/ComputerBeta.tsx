@@ -62,14 +62,12 @@ export const ComputerBeta: React.FC = () => {
 
                         <Cpu>
                             {/* <Registers /> */}
-                            <Interrupt ioPort={4} hidden />
-                            {/* <CpuTimer /> */}
+                            <Interrupt ioPort={4}  />
                         </Cpu>
 
                         <Memory >
                             <Rom data={bootloader} />
                             <Ram />
-                            {/* <Io /> */}
                         </Memory>
 
                         <InternalDevices>
