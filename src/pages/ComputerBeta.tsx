@@ -60,12 +60,11 @@ export const ComputerBeta: React.FC = () => {
                     <Motherboard>
                         <Clock frequency={1} />
 
-                        <Cpu>
-                            {/* <Registers /> */}
+                        <Cpu registers>
                             <Interrupt ioPort={4}  />
                         </Cpu>
 
-                        <Memory >
+                        <Memory open={false}>
                             <Rom data={bootloader} />
                             <Ram />
                         </Memory>
@@ -82,15 +81,16 @@ export const ComputerBeta: React.FC = () => {
                             {/* Storage */}
                             <StorageDisk ioPort={0x00} name="os_disk" open={false} />
                             <StorageDisk ioPort={0x01} name="program_disk" open={false} />
-                            <StorageDisk ioPort={0x0E} name="data_1" persistent />
+                            <StorageDisk ioPort={0x0E} name="data_1" persistent open={false} />
                             <StorageDisk ioPort={0x0F} name="data_2" open={false} />
+                            {/* <StorageDisk ioPort={0x10} name="swap_disk" open={false} /> */}
 
                             {/* <Gpu /> */}
                             {/* <Network /> */}
                         </InternalDevices>
                     </Motherboard>
 
-                    <ExternalDevices >
+                    <ExternalDevices open={false} >
                         {/* Console */}
                         <Console ioPort={0x07} name="console" />
 

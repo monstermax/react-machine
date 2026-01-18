@@ -10,13 +10,14 @@ import { useComputer } from '../Computer/ComputerContext';
 
 type MemoryBusProps = {
     hidden?: boolean
+    open?: boolean
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.MemoryBus) => void,
 
 }
 
 export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
-    const { hidden, children, onInstanceCreated } = props;
+    const { hidden, open=true, children, onInstanceCreated } = props;
     const { motherboardRef, memoryBusRef } = useComputer();
 
     // Core
@@ -27,7 +28,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open);
 
 
     // Instanciate MemoryBus

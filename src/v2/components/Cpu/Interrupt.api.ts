@@ -18,6 +18,8 @@ export class Interrupt extends EventEmitter {
     public pending = 0 as u8;      // IRQs en attente
     public mask = 0 as u8;         // IRQs masquées
     public handlerAddr = MEMORY_MAP.OS_START as u16; // Default handler
+    public defaultIrqCpuHandler: { cpu: number, core: number };
+    public irqsCpuHandler: Map<u8, { cpu: number, core: number }>;
 
 
     constructor(ioPort: u8 | null = null) {
@@ -28,6 +30,9 @@ export class Interrupt extends EventEmitter {
         this.name = 'interrupt';
         this.type = 'Interrupt';
         this.ioPort = ioPort ?? 0 as u8; // TODO: find free io port
+
+        this.defaultIrqCpuHandler = { cpu: 0, core: 0 }
+        this.irqsCpuHandler = new Map;
     }
 
 
@@ -57,6 +62,12 @@ export class Interrupt extends EventEmitter {
 
             case 0x05: // INTERRUPT_HANDLER_HIGH
                 return ((this.handlerAddr >> 8) & 0xFF) as u8;
+
+            case 0x06: // INTERRUPT_CPU_HANDLER
+                return 0 as u8 // Write-only (a revoir)
+
+            case 0x07: // INTERRUPT_CORE_HANDLER
+                return 0 as u8 // Write-only (a revoir)
 
             default:
                 return (0) as u8;
@@ -92,12 +103,38 @@ export class Interrupt extends EventEmitter {
                 this.handlerAddr = ((this.handlerAddr & 0xFF00) | (value & 0xFF)) as u16;
                 this.emit('state', { handlerAddr: this.handlerAddr })
                 break;
+
             case 0x05: // INTERRUPT_HANDLER_HIGH
                 this.handlerAddr = ((this.handlerAddr & 0x00FF) | ((value & 0xFF) << 8)) as u16;
                 this.emit('state', { handlerAddr: this.handlerAddr })
                 break;
 
-            // INTERRUPT_PENDING (0x01) est read-only
+            case 0x06: { // INTERRUPT_CPU_HANDLER
+                const irq = U8(value >> 4); // high nibble
+                const irqCpuHandler = this.irqsCpuHandler.get(irq)
+
+                if (irqCpuHandler) {
+                    irqCpuHandler.cpu = U8(value & 0x0F); // low nibble
+
+                } else {
+                    console.warn(`IRQ CPU Handler not found`);
+                }
+                break;
+            }
+
+            case 0x07: { // INTERRUPT_CORE_HANDLER
+                const irq = U8(value >> 4); // high nibble
+                const irqCpuHandler = this.irqsCpuHandler.get(irq)
+
+                if (irqCpuHandler) {
+                    irqCpuHandler.core = U8(value & 0x0F); // low nibble
+
+                } else {
+                    console.warn(`IRQ CPU Handler not found`);
+                }
+                break;
+            }
+
         }
     }
 
@@ -110,6 +147,8 @@ export class Interrupt extends EventEmitter {
             console.warn(`Invalid IRQ number: ${irq}`);
             return;
         }
+
+        this.irqsCpuHandler.set(irq, this.defaultIrqCpuHandler);
 
         this.pending = (this.pending | (1 << irq)) as u8;
         //console.log(`🔔 [IRQ ${irq}] New pending: 0b${this.pending.toString(2).padStart(8, '0')}`);
@@ -126,14 +165,22 @@ export class Interrupt extends EventEmitter {
 
 
     // Obtenir l'IRQ la plus prioritaire en attente
-    getPendingIRQ(): u8 | null {
+    getPendingIRQ(callerCpuIdx?: number, callerCoreIdx?: number): u8 | null {
         const active = this.pending & this.enabled & ~this.mask;
 
         if (active === 0) return null;
 
         // Priorité simple: bit le plus bas (IRQ 0 = plus haute priorité)
-        for (let i = 0; i < 8; i++) {
-            if (active & (1 << i)) return i as u8;
+        for (let irq = 0; irq < 8; irq++) {
+
+            // envoyer l'IRQ à 1 seul CPU et 1 seul core
+            const irqCpuHandler = this.irqsCpuHandler.get(irq as u8)
+            if (callerCpuIdx  !== undefined && irqCpuHandler && callerCpuIdx  !== irqCpuHandler.cpu) continue;
+            if (callerCoreIdx !== undefined && irqCpuHandler && callerCoreIdx !== irqCpuHandler.core) continue;
+
+            if (active & (1 << irq)) {
+                return irq as u8;
+            }
         }
 
         return null;

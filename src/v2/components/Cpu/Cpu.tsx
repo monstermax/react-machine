@@ -15,15 +15,18 @@ import { CpuRegisters } from './Registers';
 export type CpuProps = {
     hidden?: boolean,
     cores?: number,
-    type?: string,
+    type?: string, // simple, z80, 8086, ...
     active?: boolean,
+    controls?: boolean,
+    registers?: boolean,
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Cpu) => void,
 }
 
 
 export const Cpu: React.FC<CpuProps> = (props) => {
-    const { hidden, cores: coresCount, type: cpuType, active: cpuActiveAtInit, children, onInstanceCreated } = props;
+    const { hidden, cores: coresCount, type: cpuType, active: cpuActiveAtInit, controls: showControls=false, registers: showRegisters=false, children } = props;
+    const { onInstanceCreated } = props;
     const { motherboardRef, devicesManagerRef } = useComputer();
 
     // Core
@@ -83,7 +86,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             })
 
             // Handle CORES state updates for UI
-            for (let i=0; i<cpu.cores.length; i++) {
+            for (let i = 0; i < cpu.cores.length; i++) {
                 const core = cpu.cores[i];
                 //const coreIdx = core.idx;
 
@@ -271,36 +274,40 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             {/* CPU Content */}
             <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1 min-w-[400px]`}>
 
-                {/* Buttons */}
-                <div className="p-2 rounded bg-background-light-2xl flex gap-2">
-                    <button
-                        onClick={() => resetCpu()}
-                        className="bg-red-900 hover:bg-red-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
-                    >
-                        ⟳ Reset
-                    </button>
+                {showControls && (
+                    <>
+                        {/* Buttons */}
+                        <div className="p-2 rounded bg-background-light-2xl flex gap-2">
+                            <button
+                                onClick={() => resetCpu()}
+                                className="bg-red-900 hover:bg-red-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                            >
+                                ⟳ Reset
+                            </button>
 
-                    <button
-                        disabled={CpuHalted}
-                        onClick={() => enableCpu()}
-                        className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${!cpuPaused
-                            ? "bg-green-900 hover:bg-green-700"
-                            : "bg-blue-900 hover:bg-blue-700"
-                            }`}
-                    >
-                        <span className={`${cpuPaused ? "" :"font-bold"}`}>Auto</span>
-                        /
-                        <span className={`${cpuPaused ? "font-bold" :""}`}>Manual</span>
-                    </button>
+                            <button
+                                disabled={CpuHalted}
+                                onClick={() => enableCpu()}
+                                className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${!cpuPaused
+                                    ? "bg-green-900 hover:bg-green-700"
+                                    : "bg-blue-900 hover:bg-blue-700"
+                                    }`}
+                            >
+                                <span className={`${cpuPaused ? "" : "font-bold"}`}>Auto</span>
+                                /
+                                <span className={`${cpuPaused ? "font-bold" : ""}`}>Manual</span>
+                            </button>
 
-                    <button
-                        disabled={CpuHalted || (!cpuPaused && !clockPaused)}
-                        onClick={() => runStep()}
-                        className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
-                    >
-                        ⏭ Step
-                    </button>
-                </div>
+                            <button
+                                disabled={CpuHalted || (!cpuPaused && !clockPaused)}
+                                onClick={() => runStep()}
+                                className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
+                            >
+                                ⏭ Step
+                            </button>
+                        </div>
+                    </>
+                )}
 
                 {/* Cycles */}
                 {/*
@@ -309,23 +316,28 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 </div>
                 */}
 
+
+                {showRegisters && (
+                    <>
+                        {/* Registers */}
+                        <CpuRegisters
+                            cpuHalted={CpuHalted}
+                            cpuPaused={cpuPaused}
+                            clockPaused={clockPaused}
+                            coresIds={coresIds}
+                            coresHalted={coresHalted}
+                            coresCoreCycle={coresCoreCycle}
+                            coresRegisters={coresRegisters}
+                        />
+                    </>
+                )}
+
                 {/* CPU Children */}
                 {childrenWithProps && (
                     <div className="cpu-children flex space-x-4 space-y-4">
                         {childrenWithProps}
                     </div>
                 )}
-
-                {/* Registers */}
-                <CpuRegisters
-                    cpuHalted={CpuHalted}
-                    cpuPaused={cpuPaused}
-                    clockPaused={clockPaused}
-                    coresIds={coresIds}
-                    coresHalted={coresHalted}
-                    coresCoreCycle={coresCoreCycle}
-                    coresRegisters={coresRegisters}
-                    />
             </div>
         </div>
     );

@@ -169,7 +169,7 @@ class CpuCore extends EventEmitter {
         if (!this.cpu.memoryBus) throw new Error("Missing MemoryBus")
         if (!this.cpu.interrupt) throw new Error("Missing Interrupt")
 
-        const irq = this.cpu.interrupt.getPendingIRQ();
+        const irq = this.cpu.interrupt.getPendingIRQ(this.cpu.idx, this.idx);
         if (irq === null) return;
 
         //console.log(`🎯 Handling IRQ ${irq}, handlerAddr = ${this.cpu.interrupt.handlerAddr.toString(16)}`);

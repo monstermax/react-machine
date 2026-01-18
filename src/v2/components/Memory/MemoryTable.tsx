@@ -92,7 +92,7 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
         const pcElement = addressRefs.current.get(pc);
 
         if (followInstruction && pcElement) {
-            scrollInContainer(pcElement, -200);
+            scrollInContainer(pcElement, -400);
         }
     }, [coresPc, followInstruction]);
 

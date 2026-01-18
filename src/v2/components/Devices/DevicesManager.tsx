@@ -19,20 +19,21 @@ const validDeviceTypes = ['Input', 'DiskStorage', 'Display', 'Audio', 'Time', 'R
 
 export type DevicesManagerProps = {
     hidden?: boolean
+    open?: boolean
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.DevicesManager) => void,
 }
 
 
 export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
-    const { hidden, children, onInstanceCreated } = props;
+    const { hidden, open=true, children, onInstanceCreated } = props;
     const { computerRef, devicesManagerRef } = useComputer();
 
     // Core
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null); // aka ioInstance
 
     // UI
-    const [childrenVisible, setChildrenVisible] = useState(true);
+    const [childrenVisible, setChildrenVisible] = useState(open);
 
 
     // Instanciate Devices
