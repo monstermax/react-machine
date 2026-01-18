@@ -23,6 +23,7 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
 
     const [motherboardInstance, setMotherboardInstance] = useState<cpuApi.Motherboard | null>(null);
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null);
+    const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
 
     //const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
     //const cpuInstance = cpuRef.current;
@@ -33,6 +34,7 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
     const [loadedOs, setLoadedOs] = useState<string | null>(null);
     const [loadedProgram, setLoadedProgram] = useState<string | null>(null);
     const [view, setView] = useState<ViewType>(initialView);
+    const [clockActive, setClockActive] = useState(false);
 
 
     // Instanciate Computer
@@ -61,6 +63,8 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
                     setLoadedProgram(state.loadedProgram)
                 }
             })
+
+            // .on(clockStatus) => setClockActive(motherboardInstance?.clock?.status)
         }
 
         const timer = setTimeout(_instanciateComputer, 100);
@@ -69,12 +73,26 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
 
 
     const addMotherboard = (motherboard: cpuApi.Motherboard) => {
+        if (motherboardInstance) return;
+
         // Save Instance
         setMotherboardInstance(motherboard);
+
+        motherboard.on('clock-mounted', () => {
+            if (!motherboard.clock) return;
+
+            motherboard.clock.on('state', (state) => {
+                if (state.status !== undefined) {
+                    setClockActive(state.status);
+                }
+            })
+        })
     }
 
 
     const addDevicesManager = (devicesManager: cpuApi.DevicesManager) => {
+        if (devicesManagerInstance) return;
+
         // Save Instance
         setDevicesManagerInstance(devicesManager);
     }
@@ -88,9 +106,20 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
     }
 
     const onPower = () => {
-        //computerInstance?.motherboard?.cpu?.setPaused(false)
+        if (!motherboardInstance?.clock) return;
+
+        if (motherboardInstance.clock.status) {
+            motherboardInstance.clock.stop()
+
+        } else {
+            motherboardInstance.clock.start()
+        }
     }
 
+    const resetComputer = () => {
+        if (!computerInstance) return;
+        computerInstance.reset()
+    }
 
     const childrenWithProps = React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
@@ -124,25 +153,31 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
     if (view === 'open_simple') {
         return (
             <div className={`computer`}>
-                <ComputerCase powerOn={true} onOpenCase={onOpenCase} onPower={onPower} />
+                <ComputerCase
+                    powerOn={true}
+                    onOpenCase={onOpenCase}
+                    onPower={onPower}
+                />
             </div>
         )
     }
 
 
     return (
-        <div className={`computer bg-background-light-2xl m-2 p-1 rounded ${view === 'hidden' ? "hidden" : ""}`}>
+        <div className={`computer w-auto bg-background-light-2xl m-2 p-1 rounded ${view === 'hidden' ? "hidden" : ""}`}>
 
             {/* Computer Head */}
             <div className="w-full flex bg-background-light p-2 rounded">
                 <h2 className="font-bold">Computer</h2>
 
+                {/*
                 <button
                     className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
                     onClick={() => onCloseCase()}
                 >
                     x
                 </button>
+                */}
 
                 <button
                     className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
@@ -155,20 +190,45 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
             {/* Computer Content */}
             <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
 
-                <ComputerControls
-                    loadedProgram={loadedProgram}
-                    loadedOs={loadedOs}
-                    devicesManagerInstance={devicesManagerInstance}
-                    computerInstance={computerInstance}
-                    //ramInstance={ramInstance}
-                    //cpuInstance={cpuInstance}
-                    setLoadedOs={setLoadedOs}
-                    setLoadedProgram={setLoadedProgram}
-                />
+                <div className="flex gap-4">
+                    {/* Buttons */}
+                    <div className="p-2 rounded bg-background-light-2xl flex gap-2">
+                        <button
+                            onClick={() => onPower()}
+                            className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${clockActive
+                                ? "bg-green-900 hover:bg-green-700"
+                                : "bg-blue-900 hover:bg-blue-700"
+                            }`}
+                        >
+                            ⏻ Power
+                        </button>
+                    </div>
+
+                    <ComputerControls
+                        loadedProgram={loadedProgram}
+                        loadedOs={loadedOs}
+                        devicesManagerInstance={devicesManagerInstance}
+                        computerInstance={computerInstance}
+                        //ramInstance={ramInstance}
+                        //cpuInstance={cpuInstance}
+                        setLoadedOs={setLoadedOs}
+                        setLoadedProgram={setLoadedProgram}
+                    />
+
+                    {/* Buttons */}
+                    <div className="p-2 rounded bg-background-light-2xl flex gap-2">
+                        <button
+                            onClick={() => resetComputer()}
+                            className="bg-red-900 hover:bg-red-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+                        >
+                            ⟳ Reset
+                        </button>
+                    </div>
+                </div>
 
                 {/* Computer Children */}
                 {childrenWithProps && (
-                    <div className="computer-children flex space-x-4 space-y-4">
+                    <div className="computer-children flex space-x-2 space-y-4">
                         {childrenWithProps}
                     </div>
                 )}
@@ -232,7 +292,7 @@ export const ComputerControls: React.FC<ComputerControls> = (props) => {
 
     return (
         <>
-            <div className="p-2 rounded bg-background-light-2xl flex gap-2 justify-around">
+            <div className="p-2 rounded bg-background-light-2xl flex gap-2 ">
                 <div className="w-5/12 bg-background-light-xl px-2 py-1 rounded flex gap-2 items-center">
                     <div>
                         Main OS:
@@ -360,8 +420,8 @@ export const ComputerCase: React.FC<ComputerCaseProps> = ({
                     {/* Power LED */}
                     <div className="absolute top-20 left-8 flex items-center gap-3">
                         <div className={`w-3 h-3 rounded-full transition-all duration-300 ${powerOn
-                                ? 'bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse'
-                                : 'bg-slate-800'
+                            ? 'bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse'
+                            : 'bg-slate-800'
                             }`} />
                         <span className="text-xs text-slate-400 font-mono">POWER</span>
                     </div>
@@ -369,8 +429,8 @@ export const ComputerCase: React.FC<ComputerCaseProps> = ({
                     {/* HDD LED */}
                     <div className="absolute top-28 left-8 flex items-center gap-3">
                         <div className={`w-3 h-3 rounded-full transition-all duration-100 ${powerOn
-                                ? 'bg-amber-500 shadow-[0_0_8px_#f59e0b]'
-                                : 'bg-slate-800'
+                            ? 'bg-amber-500 shadow-[0_0_8px_#f59e0b]'
+                            : 'bg-slate-800'
                             }`} />
                         <span className="text-xs text-slate-400 font-mono">HDD</span>
                     </div>
@@ -388,7 +448,7 @@ export const ComputerCase: React.FC<ComputerCaseProps> = ({
                     {/* Power Button */}
                     <div
                         className="absolute bottom-8 left-8 w-12 h-12 bg-slate-900 border-2 border-slate-600 rounded-full flex items-center justify-center cursor-pointer hover:border-slate-500 transition-colors"
-                        onClick={() => {if (onPower) onPower()}}
+                        onClick={() => { if (onPower) onPower() }}
                     >
                         <div className="w-6 h-6 border-2 border-slate-500 rounded-full relative">
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-3 bg-slate-500" />

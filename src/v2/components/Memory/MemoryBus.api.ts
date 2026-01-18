@@ -33,6 +33,7 @@ export class MemoryBus extends EventEmitter {
 
         if (!this.rom) {
             this.rom = rom;
+            this.emit('rom-connected', { rom });
             //console.log('ROM monté dans MemoryBus.');
         }
 
@@ -45,6 +46,7 @@ export class MemoryBus extends EventEmitter {
 
         if (!this.ram) {
             this.ram = ram;
+            this.emit('ram-connected', { ram });
             //console.log('RAM monté dans MemoryBus.');
         }
 
@@ -55,6 +57,7 @@ export class MemoryBus extends EventEmitter {
     connectDevicesManager(devicesManager: DevicesManager): void {
         if (!this.io && devicesManager) {
             this.io = devicesManager;
+            this.emit('io-connected', { devicesManager });
             //console.log('DevicesManager connecté à MemoryBus.');
         }
     }

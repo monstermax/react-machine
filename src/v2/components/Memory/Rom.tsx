@@ -88,7 +88,7 @@ export const Rom: React.FC<RomProps> = (props) => {
     });
 
     return (
-        <div className="rom w-96">
+        <div className="rom w-auto">
 
             {/* ROM Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
@@ -105,7 +105,7 @@ export const Rom: React.FC<RomProps> = (props) => {
             </div>
 
             {/* ROM Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1 min-w-[350px]`}>
 
                 {/* Storage */}
                 <div className="p-2 rounded bg-background-light-2xl">

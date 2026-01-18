@@ -116,7 +116,7 @@ export const Ram: React.FC<RamProps> = (props) => {
 
 
     return (
-        <div className="ram w-96">
+        <div className="ram w-auto">
 
             {/* RAM Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
@@ -133,7 +133,7 @@ export const Ram: React.FC<RamProps> = (props) => {
             </div>
 
             {/* RAM Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1 min-w-[350px]`}>
 
                 {/* Storage */}
                 <div className="p-2 rounded bg-background-light-2xl">
@@ -148,7 +148,7 @@ export const Ram: React.FC<RamProps> = (props) => {
                         onClick={() => loadOsInRam('MINI_OS_V1')}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                         >
-                        Load OS
+                        Load OS v1
                     </button>
 
                     <button
@@ -156,13 +156,6 @@ export const Ram: React.FC<RamProps> = (props) => {
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
                         >
                         Load LEDs
-                    </button>
-
-                    <button
-                        onClick={() => loadProgramInRam('FS_CREATE_FILE_COMPILED')}
-                        className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
-                        >
-                        Load Test FS
                     </button>
                 </div>
 

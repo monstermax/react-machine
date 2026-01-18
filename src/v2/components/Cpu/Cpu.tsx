@@ -249,7 +249,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     }
 
     return (
-        <div className={`cpu w-120 ${hidden ? "hidden" : ""}`}>
+        <div className={`cpu w-auto ${hidden ? "hidden" : ""}`}>
 
             {/* CPU Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
@@ -266,7 +266,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             </div>
 
             {/* CPU Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1 min-w-[400px]`}>
 
                 {/* Buttons */}
                 <div className="p-2 rounded bg-background-light-2xl flex gap-2">
@@ -281,11 +281,13 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                         disabled={halted}
                         onClick={() => enableCpu()}
                         className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${!paused
-                            ? "bg-yellow-600 hover:bg-yellow-700"
-                            : "bg-green-900 hover:bg-green-700"
+                            ? "bg-green-900 hover:bg-green-700"
+                            : "bg-blue-900 hover:bg-blue-700"
                             }`}
                     >
-                        {paused ? "Auto" : "Manual"}
+                        <span className={`${paused ? "" :"font-bold"}`}>Auto</span>
+                        /
+                        <span className={`${paused ? "font-bold" :""}`}>Manual</span>
                     </button>
 
                     <button
@@ -349,7 +351,7 @@ const Registers: React.FC<{ coreIdx: number, coreHalted: boolean, cpuHalted: boo
                             }`}
                     >
                         <span className="text-cyan-400">{reg}:</span>
-                        <span className="text-green-400 ps-2 min-w-24 text-right">
+                        <span className="text-green-400 ps-2 min-w-20 text-right">
                             {reg !== "FLAGS" && (
                                 <>
                                     {value} (0x{value.toString(16).padStart(

@@ -76,11 +76,6 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
         if (!motherboardInstance) return;
         if (cpuInstances.get(cpuInstance.idx)) return;
 
-        //if (cpuInstance && !motherboardInstance.cpus.get(cpuIndex)) {
-        //    motherboardInstance.cpus.set(cpuIndex, cpuInstance);
-        //    console.log(`CPU ${cpuIndex} monté dans Motherboard:`, cpuInstance);
-        //}
-
         setCpuInstances(old => new Map(old).set(cpuInstance.idx, cpuInstance))
     }
 
@@ -88,17 +83,6 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
     const addClock = (clock: cpuApi.Clock) => {
         if (!motherboardInstance) return;
         if (clockInstance) return;
-
-        // Handle tick - Dispatch to all CPUs
-        clock.on('tick', ({ cycle }) => {
-            //console.log('Mother tick', cycle)
-
-            for (const cpuInstance of motherboardInstance.getCpus()) {
-                if (!cpuInstance) continue;
-                if (cpuInstance.paused || cpuInstance.cpuHalted) continue;
-                cpuInstance.executeCycle()
-            }
-        })
 
         //console.log(`Clock montée dans Motherboard:`, clock);
 
@@ -143,7 +127,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
 
 
     return (
-        <div className={`motherboard min-w-48 grow ${hidden ? "hidden" : ""}`}>
+        <div className={`motherboard w-auto ${hidden ? "hidden" : ""}`}>
             {/* Motherboard Head */}
             <div className="flex bg-background-light-xl p-2 rounded">
                 <h2 className="font-bold">Motherboard</h2>
@@ -163,7 +147,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
 
                 {/* Motherboard Children */}
                 {childrenWithProps && (
-                    <div className="motherboard-children bg-background-light-2xl p-1 ps-2 flex space-x-1 space-y-1">
+                    <div className="motherboard-children bg-background-light-2xl p-1 flex space-x-1 space-y-1">
                         {childrenWithProps}
                     </div>
                 )}

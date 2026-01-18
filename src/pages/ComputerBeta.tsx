@@ -71,6 +71,7 @@ export const ComputerBeta: React.FC = () => {
                             <Ram />
                             {/* <Io /> */}
                         </Memory>
+
                     </Motherboard>
 
                     <Devices >

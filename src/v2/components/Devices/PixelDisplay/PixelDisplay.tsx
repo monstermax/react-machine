@@ -118,7 +118,7 @@ export const PixelDisplay: React.FC<PixelDisplayProps> = (props) => {
 
 
     return (
-        <div className={`device w-full ${hidden ? "hidden" : ""}`}>
+        <div className={`device w-auto ${hidden ? "hidden" : ""}`}>
 
             {/* Device Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
@@ -135,7 +135,7 @@ export const PixelDisplay: React.FC<PixelDisplayProps> = (props) => {
             </div>
 
             {/* Device Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1 min-w-[400px]`}>
 
                 <div
                     className="bg-black border-4 border-slate-600 rounded-lg p-2 mx-auto"

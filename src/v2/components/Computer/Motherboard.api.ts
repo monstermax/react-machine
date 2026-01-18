@@ -35,6 +35,7 @@ export class Motherboard extends EventEmitter {
         const cpu = new Cpu(this, cpuIdx, coresCount);
 
         this.cpus.set(cpuIdx, cpu)
+        this.emit('cpu-mounted', { idx: cpuIdx, cpu });
 
         // Connect CPU to MemoryBus
         if (this.memoryBus) {
@@ -49,6 +50,18 @@ export class Motherboard extends EventEmitter {
         const clock = new Clock(this, initialFrequency);
 
         this.clock = clock;
+        this.emit('clock-mounted', { clock });
+
+        // Handle tick - Dispatch to all CPUs
+        clock.on('tick', ({ cycle }) => {
+            //console.log('Mother tick', cycle)
+
+            for (const cpuInstance of this.getCpus()) {
+                if (!cpuInstance) continue;
+                if (cpuInstance.paused || cpuInstance.cpuHalted) continue;
+                cpuInstance.executeCycle()
+            }
+        })
 
         return clock;
     }
@@ -58,6 +71,7 @@ export class Motherboard extends EventEmitter {
         const memoryBus = new MemoryBus(this);
 
         this.memoryBus = memoryBus;
+        this.emit('memorybus-mounted', { memoryBus });
 
         // Connect MemoryBus to CPUs
         for (const cpu of this.getCpus()) {

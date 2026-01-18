@@ -124,7 +124,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     }
 
     return (
-        <div className={`memory-bus min-w-48 grow ${hidden ? "hidden" : ""}`}>
+        <div className={`memory-bus w-auto ${hidden ? "hidden" : ""}`}>
 
             {/* MemoryBus Head */}
             <div className="flex bg-background-light-xl p-2 rounded">
@@ -145,7 +145,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
                 {/* MemoryBus Children */}
                 {childrenWithProps && (
-                    <div className="memory-bus-children bg-background-light-2xl p-1 ps-2 flex space-x-1 space-y-1">
+                    <div className="memory-bus-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
                         {childrenWithProps}
                     </div>
                 )}

@@ -47,6 +47,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
     // Instanciate Clock
     useEffect(() => {
         if (!motherboardRef.current) return;
+        if (motherboardRef.current.clock) return;
 
         const _instanciateClock = () => {
             if (!motherboardRef.current) return;
@@ -151,12 +152,6 @@ export const Clock: React.FC<ClockProps> = (props) => {
     }
 
 
-    const resetComputer = () => {
-        if (!motherboardRef.current) return;
-        motherboardRef.current.computer.reset()
-    }
-
-
     const runStep = () => {
         if (!clockInstance) return;
 
@@ -185,11 +180,11 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
 
     return (
-        <div className={`w-96 p-2 rounded bg-background-light-2xl space-y-2 ${hidden ? "hidden" : ""}`}>
+        <div className={`w-auto rounded bg-background-light-2xl space-y-2 ${hidden ? "hidden" : ""}`}>
 
             {/* Clock Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
-                <h2 className="bg-background-light-xl mb-1 px-2 py-1 rounded">Clock</h2>
+                <h2 className="font-bold">Clock</h2>
 
                 {true && (
                     <button
@@ -202,17 +197,10 @@ export const Clock: React.FC<ClockProps> = (props) => {
             </div>
 
             {/* Clock Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1 min-w-[200px]`}>
 
                 {/* Buttons */}
                 <div className="p-2 rounded bg-background-light-2xl flex gap-2">
-                    <button
-                        onClick={() => resetComputer()}
-                        className="bg-red-900 hover:bg-red-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
-                    >
-                        ⟳ Reset
-                    </button>
-
                     <button
                         disabled={!paused  /*|| halted*/}
                         onClick={() => runStep()}
@@ -225,15 +213,15 @@ export const Clock: React.FC<ClockProps> = (props) => {
                         disabled={false /*halted*/}
                         onClick={() => runLoop()}
                         className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${!paused
-                            ? "bg-yellow-600 hover:bg-yellow-700"
-                            : "bg-green-900 hover:bg-green-700"
+                            ? "bg-green-900 hover:bg-green-700"
+                            : "bg-blue-900 hover:bg-blue-700"
                             }`}
                     >
                         {paused ? "▶ Start" : "⏸ Pause"}
                     </button>
                 </div>
 
-                <div className="flex items-center gap-2 px-1">
+                <div className="flex flex-col items-center gap-2 px-1">
                     <label className="text-sm font-medium text-slate-300">Freq.:</label>
 
                     <select

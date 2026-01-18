@@ -155,7 +155,7 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
 
 
     return (
-        <div className={`devices min-w-48 grow ${hidden ? "hidden" : ""}`}>
+        <div className={`devices w-auto ${hidden ? "hidden" : ""}`}>
 
             {/* Devices Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

@@ -87,7 +87,7 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
 
 
     return (
-        <div className={`device w-full ${hidden ? "hidden" : ""}`}>
+        <div className={`device w-auto ${hidden ? "hidden" : ""}`}>
 
             {/* Device Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
@@ -104,7 +104,7 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
             </div>
 
             {/* Device Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1 min-w-[350px]`}>
 
                 {/* LEDS */}
                 <div className="p-2 rounded bg-background-light-2xl flex gap-4 items-center">

@@ -1090,6 +1090,7 @@ export class Cpu extends BaseCpu {
     // Connect CPU to MemoryBus
     connectToMemoryBus(memoryBus: MemoryBus) {
         this.memoryBus = memoryBus;
+        this.emit('memorybus-connected', { memoryBus });
     }
 
 
