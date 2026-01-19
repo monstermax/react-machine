@@ -39,7 +39,7 @@ MAIN:
         CALL @OS_START ; Lance l'OS
 
     OS_RETURN:
-        JMP $RESET_LEDS ; Retour à WAIT_FOR_OS
+        JMP $INIT ; Retour à INIT
 
 
 IDLE:

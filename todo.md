@@ -55,10 +55,12 @@
 
 $ run leds_blinker
 
-$ tasks
+$ ps
 cpu core pid
 0 0 1
 0 1 2
+
+$ quit
 
 ```
 
