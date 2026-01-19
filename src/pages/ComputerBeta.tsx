@@ -61,13 +61,13 @@ export const ComputerBeta: React.FC = () => {
                     <Motherboard>
                         <Clock frequency={1} />
 
-                        <Cpu registers>
+                        <Cpu registers controls>
                             <Interrupt ioPort={4} open={false} />
                         </Cpu>
 
                         <Memory>
                             <Rom data={bootloader} />
-                            <Ram open={false} />
+                            <Ram open={true} />
                         </Memory>
 
                         <InternalDevices>

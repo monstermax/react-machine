@@ -17,6 +17,10 @@ const frequencies = [
     { label: "50 Hz", value: 50 },
     { label: "100 Hz", value: 100 },
     { label: "150 Hz", value: 150 },
+    { label: "200 Hz", value: 200 },
+    { label: "300 Hz", value: 300 },
+    { label: "500 Hz", value: 500 },
+    { label: "1 KHz", value: 1000 },
 ];
 
 
@@ -76,7 +80,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
                 //console.log('Clock tick', cycle)
                 delayer('clock-cycle', (cycle: number) => {
                     setClockCycle(cycle)
-                }, 10, 100, [cycle]);
+                }, 100, 500, [cycle]);
             })
 
             // Emit initial state

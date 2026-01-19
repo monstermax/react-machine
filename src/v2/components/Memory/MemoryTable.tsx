@@ -66,16 +66,16 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
                         const coreIdx = state.idx;
 
                         if (state.registers) {
-                            const pc = state.registers.get('PC');
+                            const pc: u16 = state.registers.get('PC');
                             const cpuIdx = cpuInstance.idx;
 
-                            //delayer('memory-core-register', (cpuIdx: number, coreIdx: number) => {
+                            delayer('memory-core-register', (cpuIdx: number, coreIdx: number, pc: u16) => {
                                 setCoresPc(o => {
                                     const n = new Map(o);
                                     n.set(`${cpuIdx}-${coreIdx}`, pc);
                                     return n;
                                 })
-                            //}, 10, 100, [cpuIdx, coreIdx]);
+                            }, 100, 500, [cpuIdx, coreIdx, pc]);
                         }
                     });
                 }

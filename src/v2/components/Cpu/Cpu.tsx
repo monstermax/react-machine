@@ -69,7 +69,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             setCpuInstance(cpu);
 
             // Handle CPU state updates for UI
-            cpu.on('state', (state) => {
+            cpu.on('state', (state) => {;
                 //console.log('CPU state update', state)
 
                 if (state.cpuHalted !== undefined) {
@@ -77,7 +77,9 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 }
 
                 if (state.cpuCycle !== undefined) {
-                    setCpuCycle(state.cpuCycle)
+                    delayer('cpu-cycle', (cycle: number) => {
+                        setCpuCycle(cycle)
+                    }, 100, 500, [state.cpuCycle]);
                 }
 
                 if (state.cpuPaused !== undefined) {
