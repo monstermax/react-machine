@@ -8,10 +8,10 @@
 INIT:
 
 MAIN:
-    SET_SP @STACK_END # Initialiser le Stack Pointer
+    SET_SP @BOOTLOADER_STACK_END ; Initialiser le Stack Pointer
     SET_FREQ $INITIAL_FREQ
 
-    # Eteint les LED
+    ; Eteint les LED
     RESET_LEDS:
         MOV_B_IMM $LEDS_STATE_ALL_OFF
         MOV_MEM_B @LEDS_BASE
@@ -19,27 +19,27 @@ MAIN:
     INC_B
 
     WAIT_FOR_OS:
-        MOV_MEM_B @LEDS_BASE # Allume les LED
+        MOV_MEM_B @LEDS_BASE ; Allume les LED
 
-        # double la valeur de B (decalage de bits)
+        ; double la valeur de B (decalage de bits)
         MOV_BA
         ADD
-        JZ $RESET_LEDS # Go back to RESET_LEDS
+        JZ $RESET_LEDS ; Go back to RESET_LEDS
 
         MOV_AB
-        MOV_A_MEM @OS_START # Vérifie si un OS est chargé en mémoire
+        MOV_A_MEM @OS_START ; Vérifie si un OS est chargé en mémoire
 
-        JZ $WAIT_FOR_OS # Si pas d'OS détecté on retourne à WAIT_FOR_OS
+        JZ $WAIT_FOR_OS ; Si pas d'OS détecté on retourne à WAIT_FOR_OS
 
     RUN_OS:
         MOV_A_IMM 0x00
-        MOV_MEM_A @LEDS_BASE # Eteint les LED
+        MOV_MEM_A @LEDS_BASE ; Eteint les LED
 
-        #SET_FREQ 10
-        CALL @OS_START # Lance l'OS
+        ;SET_FREQ 10
+        CALL @OS_START ; Lance l'OS
 
     OS_RETURN:
-        JMP $RESET_LEDS # Retour à WAIT_FOR_OS
+        JMP $RESET_LEDS ; Retour à WAIT_FOR_OS
 
 
 IDLE:

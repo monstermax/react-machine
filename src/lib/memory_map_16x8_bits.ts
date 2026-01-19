@@ -8,7 +8,7 @@ Memory Map:
 - RAM (0x0100-0xFDFF)     : OS + Programme utilisateur
   - OS Zone (0x0100-0x01FF) : Mini OS
   - Program Zone (0x0200+)  : Programme utilisateur chargé par l'OS
-- Stack (0xFE00-0xFEFF)   : Pile
+- Stack (0xEE00-0xEFFF)   : Pile
 - I/O (0xF000-0xFFFF)     : Ports d'entrée/sortie
 
 At power-on:
@@ -54,7 +54,7 @@ export const MEMORY_MAP = createMemoryMap({
 
     // STACK (0xEE00-0xEFFF) - 256 bytes
     STACK_START: 0xEE00,
-    STACK_END: 0xEEFF,
+    STACK_END: 0xEFFF,
 
     // STACK BOOTLOADER (0xEE00-0xEE0F) - 16 bytes
     BOOTLOADER_STACK_START: 0xEE00,
@@ -64,7 +64,7 @@ export const MEMORY_MAP = createMemoryMap({
     OS_STACK_START: 0xEE10,
     OS_STACK_END: 0xEEFF,
 
-    // STACK PROGRAMS (0xEE30-0xEEFF) - 256 bytes
+    // STACK PROGRAMS (0xEF00-0xEFFF) - 256 bytes
     PROGAMS_STACK_START: 0xEF00,
     PROGAMS_STACK_END: 0xEFFF,
 

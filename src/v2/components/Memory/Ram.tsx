@@ -15,12 +15,14 @@ import type { CompiledCode, OsInfo, ProgramInfo, u16, u8 } from '@/types/cpu.typ
 export type RamProps = {
     data?: Map<u16, u8> | [u16, u8][];
     size?: number;
+    open?: boolean;
+    hidden?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Ram) => void,
 }
 
 export const Ram: React.FC<RamProps> = (props) => {
-    const { data, size: maxSize=1+MEMORY_MAP.RAM_END-MEMORY_MAP.RAM_START, children, onInstanceCreated } = props;
+    const { data, open=true, hidden=false, size: maxSize=1+MEMORY_MAP.RAM_END-MEMORY_MAP.RAM_START, children, onInstanceCreated } = props;
     const { memoryBusRef } = useComputer();
 
     // Core
@@ -30,7 +32,7 @@ export const Ram: React.FC<RamProps> = (props) => {
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open);
 
 
     // Instanciate Ram
@@ -118,10 +120,10 @@ export const Ram: React.FC<RamProps> = (props) => {
 
 
     return (
-        <div className="ram w-auto">
+        <div className={`ram w-auto ${hidden ? "hidden" : ""}`}>
 
             {/* RAM Head */}
-            <div className="w-full flex bg-background-light-xl p-2 rounded">
+            <div className={`w-full flex bg-background-light-xl p-2 rounded`}>
                 <h2 className="font-bold">RAM</h2>
 
                 {true && (

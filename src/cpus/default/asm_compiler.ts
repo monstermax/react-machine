@@ -32,12 +32,19 @@ export async function compileFile(filePath: string, memoryOffset: u16 = 0 as u16
 
 
 export async function compileCode(inputCode: string, memoryOffset: u16 = 0 as u16): Promise<{ code: CompiledCode, comments: CompiledCodeComments, labels: CompiledCodeLabels }> {
-
     // Compile le code (au format PreCompiledCode)
-    const stage2: { code: PreCompiledCode, includedFiles: string[] } = await preCompileCode(inputCode, memoryOffset)
+    const preCompiled: { code: PreCompiledCode, includedFiles: string[] } = await preCompileCode(inputCode, memoryOffset)
+
+    const finalized = finalizeCompilation(preCompiled.code);
+
+    return finalized;
+}
+
+
+export function finalizeCompilation(preCompiledCode: PreCompiledCode): { code: CompiledCode, comments: CompiledCodeComments, labels: CompiledCodeLabels } {
 
     // Converti en format final (CompiledCode + CompiledCodeComments + CompiledCodeLabels)
-    const codeArr: [line: u16, code: u8][] = stage2.code.map(codeParts => {
+    const codeArr: [line: u16, code: u8][] = preCompiledCode.map(codeParts => {
         const val = [
             codeParts[0],
             (new Function('Opcode', 'return ' + codeParts[1]))(Opcode),
@@ -46,8 +53,8 @@ export async function compileCode(inputCode: string, memoryOffset: u16 = 0 as u1
     });
 
     const code: CompiledCode = new Map<u16, u8>(codeArr);
-    const comments: CompiledCodeComments = stage2.code.map(codeParts => [codeParts[0], codeParts[2]] as [line: u16, comment: string]);
-    const labels: CompiledCodeLabels = stage2.code.map(codeParts => [codeParts[0], codeParts[3]] as [line: u16, labels: string[]]);
+    const comments: CompiledCodeComments = preCompiledCode.map(codeParts => [codeParts[0], codeParts[2]] as [line: u16, comment: string]);
+    const labels: CompiledCodeLabels = preCompiledCode.map(codeParts => [codeParts[0], codeParts[3]] as [line: u16, labels: string[]]);
 
     return { code, comments, labels };
 }
@@ -77,7 +84,7 @@ function preCompileStage1(code: string): { opcode: string, params: string[], com
     // Step 1 : String to Lines Array + Discard empty lines + Discard comment lines
     const step1: string[] = code
         .split('\n') // split lines
-        .filter(line => line.trim() && !line.trim().startsWith('#')) // discard empty lines
+        .filter(line => line.trim() && !line.trim().startsWith(';')) // discard empty lines
 
 
     type Stage1Line = { opcode: string, params: string[], comment: string };
@@ -86,9 +93,9 @@ function preCompileStage1(code: string): { opcode: string, params: string[], com
     const step2: Stage1Line[] = [];
 
     for (const line of step1) {
-        const partsComment = line.split('#');
+        const partsComment = line.split(';');
         const instructionLine = partsComment[0]?.trim() || '';
-        const comment = partsComment.slice(1)?.join('#').trim() || '';
+        const comment = partsComment.slice(1)?.join(';').trim() || '';
 
         //const partsTmp = instructionLine.split(' ');
         const partsTmp = splitSpaceSafe(instructionLine);
@@ -701,7 +708,7 @@ function decompileStage2(inputCode: { line: string, opcode: string, value: strin
 const demoCodeSource: string = `
 :INIT
     SET_SP MEMORY_MAP.STACK_END
-    MOV_A_IMM 0x01 # Commande clear
+    MOV_A_IMM 0x01 ; Commande clear
     MOV_MEM_A MEMORY_MAP.LCD_COMMAND
 
 :START

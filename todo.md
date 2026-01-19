@@ -47,3 +47,18 @@
 
 # Multi coeurs
 - HALT arrete uniquement le coeur. Il reste à l'ecoute des interruptions (timer, device, ...)
+
+
+
+# Shell
+```bash
+
+$ run leds_blinker
+
+$ tasks
+cpu core pid
+0 0 1
+0 1 2
+
+```
+

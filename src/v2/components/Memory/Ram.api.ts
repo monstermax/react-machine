@@ -81,6 +81,11 @@ export class Ram extends EventEmitter {
     async loadCodeInRam (code: CompiledCode | null, memoryOffset: u16=0 as u16) {
         console.log('Loaded code size in RAM:', code?.size ?? 0)
 
+        if (memoryOffset < MEMORY_MAP.RAM_START || memoryOffset + (code?.size ?? 0) > MEMORY_MAP.RAM_END) {
+            console.warn(`Write memory out of range`);
+            return;
+        }
+
         // Write Memory
         const data = code
             ? code.entries()

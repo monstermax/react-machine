@@ -75,15 +75,15 @@
 
 
 TEXT_DEMO:
-    #.string "Welcome on OS v1"
+    ;.string "Welcome on OS v1"
     .string "OS v1"
 
 TEXT_START_PROGRAM:
-    #.string "Starting Program"
+    ;.string "Starting Program"
     .string "RUN"
 
 TEXT_STOP_PROGRAM:
-    #.string "Program Complete"
+    ;.string "Program Complete"
     .string "END"
 
 STR_OK:
@@ -99,21 +99,21 @@ STR_ERROR:
 
 CONSOLE_PRINT_STRING():
     CONSOLE_PRINT_STRING_LOOP:
-        # Lire caractère depuis buffer
+        ; Lire caractère depuis buffer
         MOV_A_PTR_CD
 
-        # Vérifier si \0 (fin de string)
-        MOV_AB              # B = A (sauvegarder le caractère)
-        MOV_A_IMM 0x00      # A = 0
-        SUB                 # A = B - 0 (set zero flag si B = 0)
-        JZ $CONSOLE_PRINT_STRING_END             # Si \0, terminer
+        ; Vérifier si \0 (fin de string)
+        MOV_AB              ; B = A (sauvegarder le caractère)
+        MOV_A_IMM 0x00      ; A = 0
+        SUB                 ; A = B - 0 (set zero flag si B = 0)
+        JZ $CONSOLE_PRINT_STRING_END             ; Si \0, terminer
 
-        # Afficher le caractère
-        MOV_BA              # A = B (restaurer)
-        #MOV_MEM_A @CONSOLE_CHAR
+        ; Afficher le caractère
+        MOV_BA              ; A = B (restaurer)
+        ;MOV_MEM_A @CONSOLE_CHAR
         CALL $PRINT_CHAR()
 
-        # Incrémenter pointeur C:D
+        ; Incrémenter pointeur C:D
         INC_C
         JNC $CONSOLE_PRINT_STRING_LOOP
         INC_D
@@ -123,22 +123,22 @@ CONSOLE_PRINT_STRING():
         RET
 
 
-# Affiche une string depuis un buffer mémoire
-# Input: C:D = adresse du buffer, B = taille
+; Affiche une string depuis un buffer mémoire
+; Input: C:D = adresse du buffer, B = taille
 CONSOLE_PRINT_SIZED_STRING():
     DEQUEUE:
-        # Lire caractère depuis buffer
+        ; Lire caractère depuis buffer
         MOV_A_PTR_CD
-        #MOV_MEM_A @CONSOLE_CHAR
+        ;MOV_MEM_A @CONSOLE_CHAR
         CALL $PRINT_CHAR()
 
-        # Incrémenter pointeur C:D
+        ; Incrémenter pointeur C:D
         INC_C
         JNC $NO_CARRY_PRINT
         INC_D
 
     NO_CARRY_PRINT:
-        # Décrémenter compteur
+        ; Décrémenter compteur
         DEC_B
         JNZ $DEQUEUE
 
@@ -197,41 +197,41 @@ CONSOLE_PRINT_SIZED_STRING_DEMO():
 
 
 CONSOLE_PRINT_SIZED_ALLOC_STRING_DEMO():
-    # Allouer 5 bytes pour "YOP!\n"
+    ; Allouer 5 bytes pour "YOP!\n"
     MOV_A_IMM 0x05
     PUSH_A
     CALL $MALLOC()
-    # C:D = adresse du buffer
+    ; C:D = adresse du buffer
 
-    # Écrire string avec helper
+    ; Écrire string avec helper
     MOV_A_IMM $ASCII_Y
-    CALL $WRITE_CHAR_AND_INC # Y
+    CALL $WRITE_CHAR_AND_INC ; Y
 
     MOV_A_IMM $ASCII_O
-    CALL $WRITE_CHAR_AND_INC # O
+    CALL $WRITE_CHAR_AND_INC ; O
 
     MOV_A_IMM $ASCII_P
-    CALL $WRITE_CHAR_AND_INC # P
+    CALL $WRITE_CHAR_AND_INC ; P
 
     MOV_A_IMM $ASCII_EXCLAM
-    CALL $WRITE_CHAR_AND_INC # !
+    CALL $WRITE_CHAR_AND_INC ; !
 
     MOV_A_IMM $ASCII_EOL
-    CALL $WRITE_CHAR_AND_INC # EOL
+    CALL $WRITE_CHAR_AND_INC ; EOL
 
-    # Reculer pointeur au début (soustraire 5)
+    ; Reculer pointeur au début (soustraire 5)
     POP_A
     PUSH_A
     CALL $SUB16_CD_A()
 
-    # Afficher
+    ; Afficher
     POP_B
     CALL $CONSOLE_PRINT_SIZED_STRING()
     RET
 
 
 
-# Helper: Écrire A à [C:D] puis C:D++
+; Helper: Écrire A à [C:D] puis C:D++
 WRITE_CHAR_AND_INC:
     MOV_PTR_CD_A
     INC_C

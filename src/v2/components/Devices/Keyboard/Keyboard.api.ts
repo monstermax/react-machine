@@ -38,7 +38,7 @@ export class Keyboard extends EventEmitter {
             if (event.ctrlKey || event.altKey || event.metaKey) return;
 
             // Ignorer si la touche ne produit pas de caractère
-            if (event.key.length !== 1) return;
+            if (event.key?.length !== 1) return;
 
             const charCode = event.key.charCodeAt(0);
 

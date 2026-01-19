@@ -12,12 +12,14 @@ import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits';
 export type RomProps = {
     data?: Map<u16, u8> | [u16, u8][];
     size?: number;
+    open?: boolean;
+    hidden?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Rom) => void,
 }
 
 export const Rom: React.FC<RomProps> = (props) => {
-    const { data, size: maxSize=1+MEMORY_MAP.ROM_END-MEMORY_MAP.ROM_START, children, onInstanceCreated } = props;
+    const { data, open=true, hidden=false, size: maxSize=1+MEMORY_MAP.ROM_END-MEMORY_MAP.ROM_START, children, onInstanceCreated } = props;
     const { memoryBusRef } = useComputer();
 
     // Core
@@ -27,7 +29,7 @@ export const Rom: React.FC<RomProps> = (props) => {
     const [storage, setStorage] = useState<Map<u16, u8>>(new Map);
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open);
 
 
     // Instanciate Rom
@@ -88,7 +90,7 @@ export const Rom: React.FC<RomProps> = (props) => {
     });
 
     return (
-        <div className="rom w-auto">
+        <div className={`rom w-auto ${hidden ? "hidden" : ""}`}>
 
             {/* ROM Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

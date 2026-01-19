@@ -5,13 +5,9 @@ import * as cpuApi from '@/v2/api';
 import { DevicesManager } from '../Devices/DevicesManager';
 import { os_list } from '@/cpus/default/programs/mini_os';
 import { programs } from '@/cpus/default/programs/programs_index';
-import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits';
-import { compileFile } from '@/cpus/default/asm_compiler';
-import { U16 } from '@/lib/integers';
 import { useComputer, type ViewType } from './ComputerContext';
 import { Motherboard } from './Motherboard';
-
-import type { CompiledCode, OsInfo, ProgramInfo, u16, u8 } from '@/types/cpu.types';
+import { IDE } from '../Devices/IDE';
 
 
 export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.ReactNode }> = (props) => {
@@ -127,6 +123,9 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
 
             switch (childElement.type) {
                 case ComputerControls:
+                    return childElement;
+
+                case IDE:
                     return childElement;
 
                 case DevicesManager:
