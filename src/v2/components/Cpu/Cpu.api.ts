@@ -3,7 +3,7 @@ import { EventEmitter } from "eventemitter3";
 
 import { toHex, U16, U8 } from "@/lib/integers";
 import { Opcode } from "@/cpus/default/cpu_instructions";
-import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
+import { isRAM, MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 import { BaseCpu } from "./BaseCpu.api";
 
 import type { MemoryBus } from "../Memory/MemoryBus.api";
@@ -1149,14 +1149,18 @@ export class Cpu extends BaseCpu {
 
     readMemory(address: u16) {
         // read cache
-        const cached = this.readMemoryCache(address)
-        if (cached !== null) return cached
+        if (isRAM(address)) {
+            const cached = this.readMemoryCache(address)
+            if (cached !== null) return cached
+        }
 
         if (!this.memoryBus) return U8(0);
         const value = this.memoryBus.readMemory(address);
 
         // write cache
-        this.writeMemoryCache(address, value)
+        if (isRAM(address)) {
+            this.writeMemoryCache(address, value)
+        }
  
         return value;
     }
@@ -1167,8 +1171,10 @@ export class Cpu extends BaseCpu {
 
         this.memoryBus.writeMemory(address, value);
 
-        this.deleteMemoryCache(address)
-        //this.writeMemoryCache(address, value)
+        if (isRAM(address)) {
+            this.deleteMemoryCache(address)
+            //this.writeMemoryCache(address, value)
+        }
     }
 
 

@@ -310,11 +310,10 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 )}
 
                 {/* Cycles */}
-                {/*
-                <div className="p-2 rounded bg-background-light-2xl">
-                    CPU Cycle #{cpuCycle}
+                <div className="p-2 rounded bg-background-light-2xl flex gap-4">
+                    <div>CPU Cycle #{cpuCycle}</div>
+                    <div>Cache L1 {cpuInstance.cacheL1.size} bytes</div>
                 </div>
-                */}
 
 
                 {showRegisters && (

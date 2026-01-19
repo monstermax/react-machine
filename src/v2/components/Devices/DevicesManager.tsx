@@ -4,14 +4,14 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXEleme
 import * as cpuApi from '@/v2/api';
 import { StorageDisk } from './StorageDisk/StorageDisk';
 import { LedsDisplay } from './LedsDisplay/LedsDisplay';
-import { compileCode } from '@/cpus/default/asm_compiler';
+import { compileCode, loadSourceCodeFromFile } from '@/cpus/default/asm_compiler';
 import { Buzzer } from './Buzzer/Buzzer';
 import { useComputer } from '../Computer/ComputerContext';
 
 import type { u16, u8 } from '@/types/cpu.types';
 import type { IoDevice } from '@/v2/types/cpu_v2.types';
 
-import ledTestCodeSource from '@/cpus/default/asm/os/devices/led/led.lib.test.asm?raw'
+//import ledTestCodeSource from '@/cpus/default/asm/os/devices/led/led.lib.test.asm?raw'
 
 
 const validDeviceTypes = ['Input', 'DiskStorage', 'Display', 'Audio', 'Time', 'Random', 'Interrupt'];
@@ -129,6 +129,7 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
         if (!devicesManagerInstance) return;
 
         const memoryOffset = 0x2000; // adresse mémoire où le code executable sera chargé pour etre executé
+        const ledTestCodeSource = await loadSourceCodeFromFile("os/devices/led/led.lib.test.asm");
         const demoProgramCompiled = await compileCode(ledTestCodeSource, memoryOffset as u16)
 
         const disk = devicesManagerInstance.getDeviceByName(diskName) as cpuApi.StorageDisk | undefined

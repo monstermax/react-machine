@@ -10,11 +10,11 @@ import { os_list } from "@/cpus/default/programs/mini_os";
 import { programs } from "@/cpus/default/programs/programs_index";
 import { mapAddress16, MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 import { U16 } from "@/lib/integers";
-import { compileCode, compileFile } from "@/cpus/default/asm_compiler";
+import { compileCode, compileFile, loadSourceCodeFromFile } from "@/cpus/default/asm_compiler";
 
 import type { OsInfo, ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
-import ledTestCodeSource from '@/cpus/default/asm/os/devices/led/led.lib.test.asm?raw'
+//import ledTestCodeSource from '@/cpus/default/asm/os/devices/led/led.lib.test.asm?raw'
 
 
 
@@ -98,6 +98,7 @@ export const useComputer = (): ComputerHook => {
         const memoryOffset = 0x2000;
 
         const _load_data_disk_2 = async () => {
+            const ledTestCodeSource = await loadSourceCodeFromFile("os/devices/led/led.lib.test.asm");
             const demoProgramCompiled = await compileCode(ledTestCodeSource, memoryOffset as u16)
             ioHook.dataDisk2.setStorage(demoProgramCompiled.code)
         }

@@ -75,6 +75,12 @@ export const MEMORY_MAP = createMemoryMap({
     IO_START: 0xF000,
     IO_END: 0xFFFF,
 
+    BUS_1_START: 0xF000, //  2048 ports (128 devices x 16 ports)
+    BUS_1_END: 0xF7FF,
+
+    BUS_2_START: 0xF800, //  2048 ports (128 devices x 16 ports)
+    BUS_2_END: 0xFFFF,
+
     // Device 0: OS Disk (0xF000-0xFF0F)
     OS_DISK_BASE: 0xF000,
     OS_DISK_DATA: 0xF000,           // Port  0: Read/Write data (RAW)

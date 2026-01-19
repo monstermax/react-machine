@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'wouter';
 
-import { compileCode } from '@/cpus/default/asm_compiler';
+import { compileCode, loadSourceCodeFromFile } from '@/cpus/default/asm_compiler';
 import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits';
 
 import { Computer } from '@/v2/components/Computer/ComputerContext';
@@ -29,7 +29,7 @@ import { IDE } from '@/v2/components/Devices/IDE';
 
 import type { u16, u8 } from '@/types/cpu.types';
 
-import BootloaderSourceCode from '@/cpus/default/asm/bootloader/bootloader_v1.asm?raw'
+//import bootloaderSourceCode from '@/cpus/default/asm/bootloader/bootloader_v1.asm?raw'
 
 
 export const ComputerBeta: React.FC = () => {
@@ -40,7 +40,8 @@ export const ComputerBeta: React.FC = () => {
     // Load BOOTLOADER
     useEffect(() => {
         const _compile = async () => {
-            const compiled = await compileCode(BootloaderSourceCode, MEMORY_MAP.ROM_START);
+            const bootloaderSourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v1.asm");
+            const compiled = await compileCode(bootloaderSourceCode, MEMORY_MAP.ROM_START);
             setBootloader(compiled.code)
         }
 

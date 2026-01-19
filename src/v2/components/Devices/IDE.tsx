@@ -13,12 +13,14 @@ import "prism-react-editor/themes/github-dark.css"
 import { formatCompiledCodeArray } from '../../../pages/CompilePage';
 import { U16 } from '@/lib/integers';
 import { finalizeCompilation, preCompileCode } from '@/cpus/default/asm_compiler';
+import { useComputer } from '../Computer/ComputerContext'
+import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits'
 
 import type { CompiledCode, u16, u8 } from '@/types/cpu.types';
 
-import OsV1SourceCode from '@/cpus/default/asm/os/os_v1.asm?raw'
-import { useComputer } from '../Computer/ComputerContext'
-import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits'
+
+// const bootloaderSourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v1.asm");
+// const OsV1SourceCode = await loadSourceCodeFromFile("os/os_v1.asm");
 
 
 export const IDE: React.FC<{ open?: boolean }> = (props) => {

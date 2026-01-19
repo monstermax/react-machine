@@ -7,11 +7,28 @@ import type { CompiledCode, CompiledCodeComments, CompiledCodeLabels, PreCompile
 
 
 export async function loadSourceCodeFromFile(sourceFile: string): Promise<string> {
-    const sourceCodeModule = sourceFile.endsWith('.ts')
-        ? await import(`../../cpus/default/asm/${sourceFile}`)
-        : await import(`../../cpus/default/asm/${sourceFile}?raw`);
-    const sourceCode = sourceCodeModule.default;
-    return sourceCode;
+    //const sourceCodeModule = sourceFile.endsWith('.ts')
+    //    ? await import(`../../cpus/default/asm/${sourceFile}`)
+    //    : await import(`../../cpus/default/asm/${sourceFile}?raw`);
+    //const sourceCode = sourceCodeModule.default;
+
+    if (sourceFile.endsWith('.ts')) {
+        const sourceCodeModule = await import(`../../cpus/default/asm/${sourceFile}`)
+        const sourceCode = sourceCodeModule.default;
+        return sourceCode;
+    }
+
+    if (false) {
+        const sourceCodeModule = await import(`../../cpus/default/asm/${sourceFile}?raw`)
+        const sourceCode = sourceCodeModule.default;
+        return sourceCode;
+    }
+
+    const response = await fetch(`/asm/${sourceFile}`);
+    if (!response.ok) return '';
+
+    const content = await response.text();
+    return content;
 }
 
 

@@ -463,3 +463,10 @@ const useMemory = () => {
 ## Mémoire
 - La mémoire est connecté au CPU via un bus d'adresse, de données et de controle
 - La mémoire contient les programmes à executer et les données nécessaires
+
+
+1. CPU
+- registres
+- instructions
+2. Mémoire (ROM + RAM)
+3. IO
