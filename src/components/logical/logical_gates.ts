@@ -19,7 +19,7 @@ export enum GateType {
 type LogicalGate = {
     inputs: number,
     outputs: number,
-    resolve: (inputs: boolean[]) => boolean,
+    resolve: (inputs: any) => boolean,
 }
 
 
