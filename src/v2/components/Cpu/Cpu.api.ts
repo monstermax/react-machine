@@ -4,13 +4,12 @@ import { EventEmitter } from "eventemitter3";
 import { toHex, U16, U8 } from "@/lib/integers";
 import { Opcode } from "@/cpus/default/cpu_instructions";
 import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
+import { BaseCpu } from "./BaseCpu.api";
 
 import type { MemoryBus } from "../Memory/MemoryBus.api";
-import type { Clock } from "./Clock.api";
 import type { Register, Register16, u16, u8 } from "@/types/cpu.types";
 import type { Interrupt } from "./Interrupt.api";
 import type { ICpu } from "./ICpu";
-import { BaseCpu } from "./BaseCpu.api";
 import type { Motherboard } from "../Computer/Motherboard.api";
 
 
@@ -140,7 +139,7 @@ class CpuCore extends EventEmitter {
         this.coreCycle++
 
 
-        const instruction = this.cpu.memoryBus.readMemory(pc);
+        const instruction = this.cpu.readMemory(pc);
         this.setRegister("IR", instruction);
 
         // 2. Decode
@@ -184,12 +183,12 @@ class CpuCore extends EventEmitter {
         const flags = this.getRegister("FLAGS");
 
         // PUSH Flags
-        this.cpu.memoryBus.writeMemory(sp, flags);
+        this.cpu.writeMemory(sp, flags);
         this.setRegister("SP", (sp - 1) as u16);
 
         // PUSH PC (little-endian)
-        this.cpu.memoryBus.writeMemory((sp - 1) as u16, ((pc >> 8) & 0xFF) as u8); // High byte
-        this.cpu.memoryBus.writeMemory((sp - 2) as u16, (pc & 0xFF) as u8);      // Low byte
+        this.cpu.writeMemory((sp - 1) as u16, ((pc >> 8) & 0xFF) as u8); // High byte
+        this.cpu.writeMemory((sp - 2) as u16, (pc & 0xFF) as u8);      // Low byte
         this.setRegister("SP", (sp - 3) as u16);
 
         // 3. Acquitter l'interruption
@@ -704,7 +703,7 @@ class CpuCore extends EventEmitter {
             // ===== MOV memory-register (set flags) ===== => TODO: ne pas modifier les flags
             case Opcode.MOV_A_MEM:  // MOV A, [addr16]
                 const addrA = this.cpu.readMem16(pc);
-                const memValueA = this.cpu.memoryBus.readMemory(addrA);
+                const memValueA = this.cpu.readMemory(addrA);
                 this.setRegister("A", memValueA);
                 this.setFlags(memValueA === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 3) as u16);
@@ -712,7 +711,7 @@ class CpuCore extends EventEmitter {
 
             case Opcode.MOV_B_MEM:  // MOV B, [addr16]
                 const addrB = this.cpu.readMem16(pc);
-                const memValueB = this.cpu.memoryBus.readMemory(addrB);
+                const memValueB = this.cpu.readMemory(addrB);
                 this.setRegister("B", memValueB);
                 this.setFlags(memValueB === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 3) as u16);
@@ -720,7 +719,7 @@ class CpuCore extends EventEmitter {
 
             case Opcode.MOV_C_MEM:  // MOV C, [addr16]
                 const addrC = this.cpu.readMem16(pc);
-                const memValueC = this.cpu.memoryBus.readMemory(addrC);
+                const memValueC = this.cpu.readMemory(addrC);
                 this.setRegister("C", memValueC);
                 this.setFlags(memValueC === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 3) as u16);
@@ -728,7 +727,7 @@ class CpuCore extends EventEmitter {
 
             case Opcode.MOV_D_MEM:  // MOV D, [addr16]
                 const addrD = this.cpu.readMem16(pc);
-                const memValueD = this.cpu.memoryBus.readMemory(addrD);
+                const memValueD = this.cpu.readMemory(addrD);
                 this.setRegister("D", memValueD);
                 this.setFlags(memValueD === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 3) as u16);
@@ -737,31 +736,31 @@ class CpuCore extends EventEmitter {
             // ===== MOV register-memory =====
             case Opcode.MOV_MEM_A:  // MOV [addr16], A
                 const addrMemA = this.cpu.readMem16(pc);
-                this.cpu.memoryBus.writeMemory(addrMemA, this.getRegister("A"));
+                this.cpu.writeMemory(addrMemA, this.getRegister("A"));
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.MOV_MEM_B:  // MOV [addr16], B
                 const addrMemB = this.cpu.readMem16(pc);
-                this.cpu.memoryBus.writeMemory(addrMemB, this.getRegister("B"));
+                this.cpu.writeMemory(addrMemB, this.getRegister("B"));
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.MOV_MEM_C:  // MOV [addr16], C
                 const addrMemC = this.cpu.readMem16(pc);
-                this.cpu.memoryBus.writeMemory(addrMemC, this.getRegister("C"));
+                this.cpu.writeMemory(addrMemC, this.getRegister("C"));
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.MOV_MEM_D:  // MOV [addr16], D
                 const addrMemD = this.cpu.readMem16(pc);
-                this.cpu.memoryBus.writeMemory(addrMemD, this.getRegister("D"));
+                this.cpu.writeMemory(addrMemD, this.getRegister("D"));
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
             case Opcode.MOV_A_PTR_CD:  // MOV A, *[C:D] => TODO: ne pas modifier les flags
                 const ptrCD_LoadA = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
-                const valuePtr_A = this.cpu.memoryBus.readMemory(ptrCD_LoadA);
+                const valuePtr_A = this.cpu.readMemory(ptrCD_LoadA);
                 this.setRegister("A", valuePtr_A);
                 this.setFlags(valuePtr_A === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 1) as u16);
@@ -769,7 +768,7 @@ class CpuCore extends EventEmitter {
 
             case Opcode.MOV_B_PTR_CD:  // MOV B, *[C:D] => TODO: ne pas modifier les flags
                 const ptrCD_LoadB = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
-                const valuePtr_B = this.cpu.memoryBus.readMemory(ptrCD_LoadB);
+                const valuePtr_B = this.cpu.readMemory(ptrCD_LoadB);
                 this.setRegister("B", valuePtr_B);
                 this.setFlags(valuePtr_B === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 1) as u16);
@@ -777,13 +776,13 @@ class CpuCore extends EventEmitter {
 
             case Opcode.MOV_PTR_CD_A:  // MOV *[C:D], A
                 const ptrCD_StoreA = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
-                this.cpu.memoryBus.writeMemory(ptrCD_StoreA, this.getRegister("A"));
+                this.cpu.writeMemory(ptrCD_StoreA, this.getRegister("A"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
             case Opcode.MOV_PTR_CD_B:  // MOV *[C:D], B
                 const ptrCD_StoreB = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
-                this.cpu.memoryBus.writeMemory(ptrCD_StoreB, this.getRegister("B"));
+                this.cpu.writeMemory(ptrCD_StoreB, this.getRegister("B"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
@@ -818,9 +817,9 @@ class CpuCore extends EventEmitter {
                 }
 
                 // Clear program memory - pour eviter que le programme ne se relance automatiquement (si mini_os v1)
-                //this.cpu.memoryBus.writeMemory(MEMORY_MAP.OS_START, U8(0))
+                //this.cpu.writeMemory(MEMORY_MAP.OS_START, U8(0))
                 for (let addr = MEMORY_MAP.PROGRAM_START; addr <= MEMORY_MAP.PROGRAM_END; addr++) {
-                    //this.cpu.memoryBus.writeMemory(addr, 0 as u8);
+                    //this.cpu.writeMemory(addr, 0 as u8);
                     //break; // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
 
                     if (this.cpu.memoryBus.ram) {
@@ -851,11 +850,11 @@ class CpuCore extends EventEmitter {
         let sp = this.getRegister("SP");
 
         // PUSH high byte
-        this.cpu.memoryBus.writeMemory(sp, ((returnAddr >> 8) & 0xFF) as u8);
+        this.cpu.writeMemory(sp, ((returnAddr >> 8) & 0xFF) as u8);
         sp = ((sp - 1) & 0xFFFF) as u16;
 
         // PUSH low byte
-        this.cpu.memoryBus.writeMemory(sp, (returnAddr & 0xFF) as u8);
+        this.cpu.writeMemory(sp, (returnAddr & 0xFF) as u8);
         sp = ((sp - 1) & 0xFFFF) as u16;
 
         this.setRegister("SP", sp);
@@ -876,11 +875,11 @@ class CpuCore extends EventEmitter {
 
         // POP low byte
         sp = ((sp + 1) & 0xFFFF) as u16;
-        const low = this.cpu.memoryBus.readMemory(sp);
+        const low = this.cpu.readMemory(sp);
 
         // POP high byte
         sp = ((sp + 1) & 0xFFFF) as u16;
-        const high = this.cpu.memoryBus.readMemory(sp);
+        const high = this.cpu.readMemory(sp);
 
         const retAddr = ((high << 8) | low) as u16;
 
@@ -900,16 +899,16 @@ class CpuCore extends EventEmitter {
 
         // POP PC - low
         sp = ((sp + 1) & 0xFFFF) as u16;
-        const pcLow = this.cpu.memoryBus.readMemory(sp);
+        const pcLow = this.cpu.readMemory(sp);
 
         // POP PC - high
         sp = ((sp + 1) & 0xFFFF) as u16;
-        const pcHigh = this.cpu.memoryBus.readMemory(sp);
+        const pcHigh = this.cpu.readMemory(sp);
         const returnAddr = ((pcHigh << 8) | pcLow) as u16;
 
         // POP Flags
         sp = ((sp + 1) & 0xFFFF) as u16;
-        const flags = this.cpu.memoryBus.readMemory(sp);
+        const flags = this.cpu.readMemory(sp);
 
         // Mettre à jour registres
         this.setRegister("SP", sp);
@@ -929,7 +928,7 @@ class CpuCore extends EventEmitter {
         let sp = this.getRegister("SP");
 
         // Écrire la valeur à [SP]
-        this.cpu.memoryBus.writeMemory(sp, value);
+        this.cpu.writeMemory(sp, value);
 
         // Décrémenter SP (pile descend)
         sp = ((sp - 1) & 0xFFFF) as u16;
@@ -947,7 +946,7 @@ class CpuCore extends EventEmitter {
         sp = ((sp + 1) & 0xFFFF) as u16;
 
         // Lire la valeur à [SP]
-        const value = this.cpu.memoryBus.readMemory(sp);
+        const value = this.cpu.readMemory(sp);
 
         // Mettre à jour SP
         this.setRegister("SP", sp);
@@ -1008,6 +1007,8 @@ export class Cpu extends BaseCpu {
     public cpuHalted: boolean = true;
     public cpuPaused: boolean = false;
     public cpuCycle: number = 0;
+    public cacheL1: Map<u16, u8> = new Map;
+    public cacheL1MaxSize = 128; // bytes
     //public registers: Map<string, u8 | u16> = new Map;
     //public breakpoints: Set<number> = new Set;
 
@@ -1111,6 +1112,66 @@ export class Cpu extends BaseCpu {
     }
 
 
+    clearMemoryCache() {
+        this.cacheL1 = new Map;
+    }
+
+
+    readMemoryCache(address: u16): u8 | null {
+        const cached = this.cacheL1.get(address);
+        return cached ?? null;
+    }
+
+
+    writeMemoryCache(address: u16, value: u8) {
+        // update cache
+        this.cacheL1.set(address, value);
+
+        // delete overload
+        if (this.cacheL1.size > this.cacheL1MaxSize) {
+            const deleteCount = this.cacheL1.size - this.cacheL1MaxSize
+            const keysToDelete = Array.from(this.cacheL1.keys()).slice(0, deleteCount)
+
+            for (const key of keysToDelete) {
+                this.cacheL1.delete(key);
+            }
+        }
+    }
+
+
+    deleteMemoryCache(address: u16) {
+        // delete cache
+        if (this.cacheL1.has(address)) {
+            this.cacheL1.delete(address);
+        }
+    }
+
+
+    readMemory(address: u16) {
+        // read cache
+        const cached = this.readMemoryCache(address)
+        if (cached !== null) return cached
+
+        if (!this.memoryBus) return U8(0);
+        const value = this.memoryBus.readMemory(address);
+
+        // write cache
+        this.writeMemoryCache(address, value)
+ 
+        return value;
+    }
+
+
+    writeMemory(address: u16, value: u8) {
+        if (!this.memoryBus) throw new Error("Missing MemoryBus")
+
+        this.memoryBus.writeMemory(address, value);
+
+        this.deleteMemoryCache(address)
+        //this.writeMemoryCache(address, value)
+    }
+
+
     readMem8(pc: u16): u8 {
         if (!this.memoryBus) return U8(0);
         const value = this.memoryBus.readMemory((pc + 1) as u16);
@@ -1135,6 +1196,7 @@ export class Cpu extends BaseCpu {
         this.interruptsEnabled = true;
         this.inInterruptHandler = false;
         this.currentBreakpoint = null;
+        this.cacheL1 = new Map
 
         //this.registers = new Map(initialRegisters);
         //this.cpuHalted = false;

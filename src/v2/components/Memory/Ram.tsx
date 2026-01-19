@@ -96,10 +96,11 @@ export const Ram: React.FC<RamProps> = (props) => {
 
         const computerInstance = memoryBusRef.current.motherboard.computer
         if (!computerInstance) return;
+        if (!ramInstance) return;
 
         const osCode: CompiledCode | null = await computerInstance.loadOsCode(osName);
         const memoryOffset = MEMORY_MAP.OS_START;
-        await computerInstance.loadCodeInRam(osCode, memoryOffset);
+        await ramInstance.loadCodeInRam(osCode, memoryOffset);
     }
 
 
@@ -108,10 +109,11 @@ export const Ram: React.FC<RamProps> = (props) => {
 
         const computerInstance = memoryBusRef.current.motherboard.computer
         if (!computerInstance) return;
+        if (!ramInstance) return;
 
         const programCode: CompiledCode | null = await computerInstance.loadProgramCode(programName);
         const memoryOffset = MEMORY_MAP.PROGRAM_START;
-        await computerInstance.loadCodeInRam(programCode, memoryOffset);
+        await ramInstance.loadCodeInRam(programCode, memoryOffset);
     }
 
 

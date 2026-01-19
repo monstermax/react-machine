@@ -16,18 +16,19 @@ const irqNames = [
 export type InterruptProps = {
     ioPort?: number | u8 | null;
     hidden?: boolean;
+    open?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Interrupt) => void,
 }
 
 export const Interrupt: React.FC<InterruptProps> = (props) => {
-    const { hidden, ioPort, children, onInstanceCreated } = props;
+    const { hidden, open=false, ioPort, children, onInstanceCreated } = props;
 
     // Core
     const [interruptInstance, setInterruptInstance] = useState<cpuApi.Interrupt | null>(null);
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open);
     const [enabled, setEnabled] = useState(0 as u8);      // IRQs activées
     const [pending, setPending] = useState(0 as u8);      // IRQs en attente
     const [mask, setMask] = useState(0 as u8);            // IRQs masquées

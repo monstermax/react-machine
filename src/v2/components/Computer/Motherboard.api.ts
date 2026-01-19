@@ -88,5 +88,13 @@ export class Motherboard extends EventEmitter {
         return memoryBus;
     }
 
+
+    clearCpuCaches() {
+        for (const cpu of this.getCpus()) {
+            if (!cpu) continue;
+            cpu.clearMemoryCache()
+        }
+    }
+
 }
 

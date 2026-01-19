@@ -7,7 +7,7 @@ import type { u8 } from "@/types/cpu.types";
 import type { IoDevice } from "@/v2/types/cpu_v2.types";
 
 
-// Device Map: commence à 0xFF00, chaque device a 16 ports (0xFF00-0xFF0F, 0xFF10-0xFF1F, etc.)
+// Device Map: commence à 0xFE00, chaque device a 16 ports (0xFE00-0xFE0F, 0xFE10-0xFE1F, etc.)
 const DEVICE_PORT_SIZE = 0x10;
 
 

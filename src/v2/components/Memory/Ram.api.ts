@@ -78,11 +78,21 @@ export class Ram extends EventEmitter {
     }
 
 
-    async loadCodeInRam (code: CompiledCode, memoryOffset: u16=0 as u16) {
-        console.log('Loaded code size in RAM:', code.size)
+    async loadCodeInRam (code: CompiledCode | null, memoryOffset: u16=0 as u16) {
+        console.log('Loaded code size in RAM:', code?.size ?? 0)
 
-        for (const [addr, value] of code.entries()) {
+        // Write Memory
+        const data = code
+            ? code.entries()
+            : new Map([[U16(0), U8(0)]])
+
+        for (const [addr, value] of data) {
             this.write(U16(memoryOffset + addr), value);
+        }
+
+        // Clear CPUs cache
+        if (this.memoryBus.motherboard) {
+            this.memoryBus.motherboard.clearCpuCaches();
         }
     }
 }

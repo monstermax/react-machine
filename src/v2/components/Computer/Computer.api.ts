@@ -7,7 +7,7 @@ import { os_list } from "@/cpus/default/programs/mini_os";
 import { compileFile } from "@/cpus/default/asm_compiler";
 import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 import { programs } from "@/cpus/default/programs/programs_index";
-import { U16 } from "@/lib/integers";
+import { U16, U8 } from "@/lib/integers";
 
 
 export class Computer extends EventEmitter {
@@ -73,19 +73,6 @@ export class Computer extends EventEmitter {
     }
 
 
-    async loadCodeInRam(code: CompiledCode | null, memoryOffset: u16) {
-        const ramInstance = this?.motherboard?.memoryBus?.ram;
-        if (!ramInstance) return;
-
-        if (code) {
-            ramInstance.loadCodeInRam(code, memoryOffset); // load in ram
-
-        } else {
-            ramInstance.write(memoryOffset, 0 as u8);
-        }
-    }
-
-
     async loadCodeOnDisk(diskName: string, code: CompiledCode) {
         if (!this.devicesManager) return;
 
@@ -110,6 +97,9 @@ export class Computer extends EventEmitter {
 
 
     async loadOs(osName: string) {
+        const ramInstance = this?.motherboard?.memoryBus?.ram;
+        if (!ramInstance) return;
+
         const osCode: CompiledCode | null = await this.loadOsCode(osName);
 
          // Load on disk (for debug)
@@ -117,7 +107,7 @@ export class Computer extends EventEmitter {
 
          // Load in RAM
         const memoryOffset = MEMORY_MAP.OS_START;
-        await this.loadCodeInRam(osCode, memoryOffset);
+        await ramInstance.loadCodeInRam(osCode, memoryOffset);
 
         // Check Program Counter
         if (this.motherboard) {
@@ -164,6 +154,10 @@ export class Computer extends EventEmitter {
                 ramInstance.storage.delete(U16(addr)); // le delete est rapide
             }
 
+            if (this.motherboard) {
+                this.motherboard.clearCpuCaches();
+            }
+
             ramInstance.emit('state', { storage: new Map(ramInstance.storage) })
         }
 
@@ -197,12 +191,15 @@ export class Computer extends EventEmitter {
 
 
     async loadProgram(programName: string) {
+        const ramInstance = this?.motherboard?.memoryBus?.ram;
+        if (!ramInstance) return;
+
         const programCode: CompiledCode | null = await this.loadProgramCode(programName);
 
         await this.loadCodeOnDisk('program_disk', programCode ?? new Map); // load on disk too (for debug)
 
         const memoryOffset = MEMORY_MAP.PROGRAM_START;
-        await this.loadCodeInRam(programCode, memoryOffset);
+        await ramInstance.loadCodeInRam(programCode, memoryOffset);
 
         if (this.motherboard) {
             for (const cpu of this.motherboard.getCpus()) {
@@ -260,6 +257,10 @@ export class Computer extends EventEmitter {
                 //ramInstance.storage.set(U16(addr), 0x00 as u8); // TRES TRES LENT !!! => solution : on ne vide que la 1ere adresse
                 //break;
                 ramInstance.storage.delete(U16(addr)); // le delete est rapide
+            }
+
+            if (this.motherboard) {
+                this.motherboard.clearCpuCaches();
             }
 
             ramInstance.emit('state', { storage: new Map(ramInstance.storage) })

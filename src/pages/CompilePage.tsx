@@ -155,41 +155,6 @@ export const CompilePage: React.FC = () => {
     };
 
 
-
-    const formatCompiledCodeArray = (code: PreCompiledCode): string => {
-        return '[\n' + code.map(([line, value, comment, labels], idx) => {
-            let result = "";
-
-            if (labels?.length) {
-                const prefix = idx === 0 ? "" : "\n";
-                result += `${prefix}    // [${labels.join(' - ')}]\n`;
-            }
-
-            result += `    [${toHex(line)}, ${value}],${comment ? ` // ${comment}` : ""}`;
-
-            return result;
-        }).join('\n') + '\n]';
-    };
-
-    const formatCompiledCodeReadable = (code: PreCompiledCode): string => {
-        return code.map(([line, value, comment, labels]) => {
-            const lineStr = toHex(line);
-            const valueStr = value.startsWith('Opcode.') ? value : toHex(parseInt(value));
-            return `${lineStr}: ${valueStr}${comment ? `  # ${comment}` : ""}${labels?.length ? ` # [${labels.join(' - ')}]` : ""}`;
-        }).join('\n');
-    };
-
-    const parseCompiledCode = (text: string): PreCompiledCode => {
-        const outputCode: PreCompiledCode = text
-            .split('\n') // split by line
-            .filter(line => line.trim() && line.includes('[') && line.includes(']') && line.trim().startsWith('[')) // discard empty lines
-            .map(line => line.replace('[', '').replace(']', '').trim().split(',').slice(0, 2))
-            .map(parts => [U16(Number(parts[0])), parts[1].trim() as string])
-
-        return outputCode;
-    };
-
-
     const renderCompiledCode = () => {
         if (!compiledCode) {
             return <p className="text-gray-400 italic">Compilez du code pour voir le résultat</p>;
@@ -405,5 +370,41 @@ export const CompilePage: React.FC = () => {
         </div>
     );
 };
+
+
+
+export const formatCompiledCodeArray = (code: PreCompiledCode): string => {
+    return '[\n' + code.map(([line, value, comment, labels], idx) => {
+        let result = "";
+
+        if (labels?.length) {
+            const prefix = idx === 0 ? "" : "\n";
+            result += `${prefix}    // [${labels.join(' - ')}]\n`;
+        }
+
+        result += `    [${toHex(line)}, ${value}],${comment ? ` // ${comment}` : ""}`;
+
+        return result;
+    }).join('\n') + '\n]';
+};
+
+export const formatCompiledCodeReadable = (code: PreCompiledCode): string => {
+    return code.map(([line, value, comment, labels]) => {
+        const lineStr = toHex(line);
+        const valueStr = value.startsWith('Opcode.') ? value : toHex(parseInt(value));
+        return `${lineStr}: ${valueStr}${comment ? `  # ${comment}` : ""}${labels?.length ? ` # [${labels.join(' - ')}]` : ""}`;
+    }).join('\n');
+};
+
+export const parseCompiledCode = (text: string): PreCompiledCode => {
+    const outputCode: PreCompiledCode = text
+        .split('\n') // split by line
+        .filter(line => line.trim() && line.includes('[') && line.includes(']') && line.trim().startsWith('[')) // discard empty lines
+        .map(line => line.replace('[', '').replace(']', '').trim().split(',').slice(0, 2))
+        .map(parts => [U16(Number(parts[0])), parts[1].trim() as string])
+
+    return outputCode;
+};
+
 
 export default CompilePage;
