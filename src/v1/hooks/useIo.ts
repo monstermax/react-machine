@@ -17,7 +17,8 @@ import { useRtc, type RtcHook } from "./devices/useRtc";
 import { useRng, type RngHook } from "./devices/useRng";
 import { useBuzzer, type BuzzerHook } from "./devices/useBuzzer";
 
-import type { Device, u16, u8 } from "@/types/cpu.types";
+import type { u16, u8 } from "@/types/cpu.types";
+import type { Device } from "@/v1/types/cpu_v1.types";
 
 
 // Device Map: commence à 0xFF00, chaque device a 16 ports (0xFF00-0xFF0F, 0xFF10-0xFF1F, etc.)
