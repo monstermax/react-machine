@@ -7,7 +7,7 @@
 @include os/devices/led/led.lib.asm
 
 
-# TODO: "Booting from hardisk..."
+; TODO: "Booting from hardisk..."
 
 
 OS_START:
