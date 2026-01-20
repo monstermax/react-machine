@@ -3,31 +3,28 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXEleme
 
 import * as cpuApi from '@/v2/api';
 import { useComputer } from '../Computer/ComputerContext';
-import { Rom } from './Rom';
-import { Ram } from './Ram';
-import { DevicesManager } from '../Devices/DevicesManager';
-import { Dma } from './Dma';
+import { MemoryTable } from './MemoryTable';
+
+import type { u16, u8 } from '@/types/cpu.types';
+import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits';
 
 
-type MemoryBusProps = {
-    hidden?: boolean
-    open?: boolean
+export type DmaProps = {
+    ioPort?: number | u8 | null;
+    open?: boolean;
+    hidden?: boolean;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.MemoryBus) => void,
-
+    onInstanceCreated?: (cpu: cpuApi.Dma) => void,
 }
 
-export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
-    const { hidden, open = true, children, onInstanceCreated } = props;
-    const { motherboardRef, memoryBusRef } = useComputer();
+export const Dma: React.FC<DmaProps> = (props) => {
+    const { open = true, hidden = false, ioPort=null, children, onInstanceCreated } = props;
+    const { memoryBusRef } = useComputer();
 
     // Core
-    const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
-
-    // Core Children
-    const [romInstance, setRomInstance] = useState<cpuApi.Rom | null>(null);
-    const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
     const [dmaInstance, setDmaInstance] = useState<cpuApi.Dma | null>(null);
+
+    // UI snapshot state
 
     // UI
     const [contentVisible, setContentVisible] = useState(open);
@@ -36,69 +33,43 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     const divRef = useRef<HTMLDivElement>(null);
 
 
-    // Instanciate MemoryBus
+    // Instanciate Dma
     useEffect(() => {
-        if (!motherboardRef.current) return;
-        if (memoryBusInstance) return;
+        if (!memoryBusRef.current) return;
+        //if (dmaRef.current) return;
+        if (memoryBusRef.current.dma) return;
+        if (dmaInstance) return;
 
-        if (memoryBusRef.current) {
-            setMemoryBusInstance(memoryBusRef.current);
-            return;
-        }
-
-        const _instanciateMemoryBus = () => {
-            if (!motherboardRef.current) return;
+        const _instanciateDma = () => {
+            if (!memoryBusRef.current) return;
 
             // Save Instance for UI
-            const memoryBusInstance = motherboardRef.current.addMemoryBus();
-            setMemoryBusInstance(memoryBusInstance);
-
-            // Save MemoryBus Ref
-            memoryBusRef.current = memoryBusInstance;
+            const dma = memoryBusRef.current.addDma(ioPort as u8 | null);
+            setDmaInstance(dma);
 
             // Handle state updates for UI
-            memoryBusInstance.on('state', (state) => {
-                console.log('MemoryBus state update', state)
+            dma.on('state', (state) => {
+                //console.log('DMA state update', state)
 
             })
 
             // Emit initial state
-            // TODO
+            //dma.emit('state', {  })
 
             //setInstanciated(true)
-
-            //console.log(`MemoryBus Initialized`)
         }
 
-        const timer = setTimeout(_instanciateMemoryBus, 100);
+        const timer = setTimeout(_instanciateDma, 100);
         return () => clearTimeout(timer);
-    }, [motherboardRef.current]);
+    }, [memoryBusRef.current]);
 
 
-    // Notifie le parent quand le MemoryBus est créé
+    // Notifie le parent quand le Dma est créé
     useEffect(() => {
-        if (memoryBusInstance && onInstanceCreated) {
-            onInstanceCreated(memoryBusInstance);
+        if (dmaInstance && onInstanceCreated) {
+            onInstanceCreated(dmaInstance);
         }
-    }, [memoryBusInstance, onInstanceCreated]);
-
-
-    const addRom = (romInstance: cpuApi.Rom) => {
-        if (!memoryBusInstance) return;
-        setRomInstance(romInstance);
-    }
-
-
-    const addRam = (ramInstance: cpuApi.Ram) => {
-        if (!memoryBusInstance) return;
-        setRamInstance(ramInstance)
-    }
-
-
-    const addDma = (dmaInstance: cpuApi.Dma) => {
-        if (!memoryBusInstance) return;
-        setDmaInstance(dmaInstance)
-    }
+    }, [dmaInstance, onInstanceCreated]);
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -106,18 +77,12 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
             const childElement = child as React.ReactElement<any>;
 
             switch (childElement.type) {
-                case Rom:
-                    return React.cloneElement(childElement, { onInstanceCreated: addRom });
-
-                case Ram:
-                    return React.cloneElement(childElement, { onInstanceCreated: addRam });
-
-                case Dma:
-                    return React.cloneElement(childElement, { onInstanceCreated: addDma });
 
                 default:
-                    console.log(`Invalid component mounted into MemoryBus :`, (childElement.type as JSXElementConstructor<any>).name);
+                    console.log(`Invalid component mounted into Dma : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
                     return null;
+                    break;
+
             }
         }
         return child;
@@ -180,19 +145,20 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
         }
     }
 
-    if (!memoryBusInstance) {
-        return <>Loading Memory</>;
+
+    if (! dmaInstance) {
+        return <>Loading DMA</>
     }
 
 
     return (
-        <div ref={divRef} className={`memory-bus w-auto ${hidden ? "hidden" : ""}`}>
+        <div ref={divRef} className={`dma w-auto ${hidden ? "hidden" : ""}`}>
 
-            {/* MemoryBus Head */}
-            <div className="flex bg-background-light-xl p-2 rounded cursor-move" onMouseDown={(event) => handleMouseDown(event)}>
-                <h2 className="font-bold">Memory</h2>
+            {/* Dma Head */}
+            <div className="w-full flex bg-background-light-xl p-2 rounded cursor-move" onMouseDown={(event) => handleMouseDown(event)}>
+                <h2 className="font-bold">Direct Memory Access</h2>
 
-                {childrenWithProps && (
+                {true && (
                     <div className="ms-auto ">
                         {isDivAbsolute && (
                             <button
@@ -213,21 +179,20 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
                 )}
             </div>
 
-            {/* MemoryBus Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
+            {/* Dma Content */}
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1 min-w-[350px]`}>
 
-                {/* MemoryBus Children */}
-                {childrenWithProps && (
-                    <div className="memory-bus-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
-                        {childrenWithProps}
-                    </div>
-                )}
+                {/* Dma Children */}
+                <div className={`flex-col space-y-1 bg-background-light-3xl p-1`}>
+                    {childrenWithProps && (
+                        <div className="dma-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
+                            {childrenWithProps}
+                        </div>
+                    )}
+                </div>
 
             </div>
         </div>
     );
 }
-
-
-export const Memory = MemoryBus;
 

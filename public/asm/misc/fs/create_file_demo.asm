@@ -22,7 +22,7 @@ MAIN:
 
     ; 5. End
     END:
-    ;SYSCALL 0
+    ;SYSCALL 60
     RET
 
 

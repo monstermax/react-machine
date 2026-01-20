@@ -97,8 +97,10 @@ export class Computer extends EventEmitter {
 
 
     async loadOs(osName: string) {
-        const ramInstance = this?.motherboard?.memoryBus?.ram;
-        if (!ramInstance) return;
+        //const ramInstance = this?.motherboard?.memoryBus?.ram;
+        //if (!ramInstance) return;
+        const dmaInstance = this?.motherboard?.memoryBus?.dma;
+        if (!dmaInstance) return;
 
         const osCode: CompiledCode | null = await this.loadOsCode(osName);
 
@@ -107,7 +109,7 @@ export class Computer extends EventEmitter {
 
          // Load in RAM
         const memoryOffset = MEMORY_MAP.OS_START;
-        await ramInstance.loadCodeInRam(osCode, memoryOffset);
+        await dmaInstance.loadCodeInRam(osCode, memoryOffset);
 
         // Check Program Counter
         if (this.motherboard) {
@@ -191,15 +193,17 @@ export class Computer extends EventEmitter {
 
 
     async loadProgram(programName: string) {
-        const ramInstance = this?.motherboard?.memoryBus?.ram;
-        if (!ramInstance) return;
+        //const ramInstance = this?.motherboard?.memoryBus?.ram;
+        //if (!ramInstance) return;
+        const dmaInstance = this?.motherboard?.memoryBus?.dma;
+        if (!dmaInstance) return;
 
         const programCode: CompiledCode | null = await this.loadProgramCode(programName);
 
         await this.loadCodeOnDisk('program_disk', programCode ?? new Map); // load on disk too (for debug)
 
         const memoryOffset = MEMORY_MAP.PROGRAM_START;
-        await ramInstance.loadCodeInRam(programCode, memoryOffset);
+        await dmaInstance.loadCodeInRam(programCode, memoryOffset);
 
         if (this.motherboard) {
             for (const cpu of this.motherboard.getCpus()) {

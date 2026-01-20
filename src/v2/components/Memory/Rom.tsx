@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor, type MouseEvent } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '@/v2/api';
 import { useComputer } from '../Computer/ComputerContext';
@@ -19,7 +19,7 @@ export type RomProps = {
 }
 
 export const Rom: React.FC<RomProps> = (props) => {
-    const { data, open=true, hidden=false, size: maxSize=1+MEMORY_MAP.ROM_END-MEMORY_MAP.ROM_START, children, onInstanceCreated } = props;
+    const { data, open = true, hidden = false, size: maxSize = 1 + MEMORY_MAP.ROM_END - MEMORY_MAP.ROM_START, children, onInstanceCreated } = props;
     const { memoryBusRef } = useComputer();
 
     // Core
@@ -31,7 +31,7 @@ export const Rom: React.FC<RomProps> = (props) => {
     // UI
     const [contentVisible, setContentVisible] = useState(open);
     const [mouseDownOffset, setMouseDownOffset] = useState<null | { x: number, y: number }>(null);
-    const [isDivAbsolute, setIsDivAbsolute] = useState(true)
+    const [isDivAbsolute, setIsDivAbsolute] = useState(false)
     const divRef = useRef<HTMLDivElement>(null);
 
 
@@ -40,9 +40,10 @@ export const Rom: React.FC<RomProps> = (props) => {
         if (!memoryBusRef.current) return;
         //if (romRef.current) return;
         if (memoryBusRef.current.rom) return;
+        if (romInstance) return;
 
         const _instanciateRom = () => {
-        if (!memoryBusRef.current) return;
+            if (!memoryBusRef.current) return;
 
             // Save Instance for UI
             const rom = memoryBusRef.current.addRom(data, maxSize);
@@ -101,8 +102,8 @@ export const Rom: React.FC<RomProps> = (props) => {
             window.addEventListener('mousemove', handleMouseMove)
             window.addEventListener('mouseup', handleMouseUp)
 
-            divRef.current.style.position = 'absolute';
-            setIsDivAbsolute(true)
+            //divRef.current.style.position = 'absolute';
+            //setIsDivAbsolute(true)
 
             return () => {
                 window.removeEventListener('mousemove', handleMouseMove)
@@ -120,7 +121,7 @@ export const Rom: React.FC<RomProps> = (props) => {
         setIsDivAbsolute(false)
     }
 
-    const handleMouseDown = (event: MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const handleMouseDown: React.MouseEventHandler<HTMLDivElement> = (event) => {
         if (!divRef.current) return;
         const rect = divRef.current.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
@@ -137,9 +138,21 @@ export const Rom: React.FC<RomProps> = (props) => {
 
     const handleMouseMove = (event: MouseEvent) => {
         if (divRef.current && mouseDownOffset) {
-            divRef.current.style.left = (event.pageX - mouseDownOffset.x) + 'px';
-            divRef.current.style.top = (event.pageY - mouseDownOffset.y) + 'px';
+            if (!isDivAbsolute) {
+                divRef.current.style.position = 'absolute';
+                setIsDivAbsolute(true)
+            }
+
+            const newX = event.pageX - mouseDownOffset.x;
+            const newY = event.pageY - mouseDownOffset.y;
+            divRef.current.style.left = newX + 'px';
+            divRef.current.style.top = newY + 'px';
         }
+    }
+
+
+    if (! romInstance) {
+        return <>Loading ROM</>
     }
 
 

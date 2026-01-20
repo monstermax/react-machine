@@ -2,9 +2,10 @@
 import { EventEmitter } from "eventemitter3";
 
 import type { IoDeviceType, u8 } from "@/types/cpu.types";
+import type { IoDevice } from "@/v2/types/cpu_v2.types";
 
 
-export class Keyboard extends EventEmitter {
+export class Keyboard extends EventEmitter implements IoDevice {
     public id: number;
     public name: string;
     public type: IoDeviceType;

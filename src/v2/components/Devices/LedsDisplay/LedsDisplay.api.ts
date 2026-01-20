@@ -4,9 +4,10 @@ import { EventEmitter } from "eventemitter3";
 import { U16, U8 } from "@/lib/integers";
 
 import type { IoDeviceType, u16, u8 } from "@/types/cpu.types";
+import type { IoDevice } from "@/v2/types/cpu_v2.types";
 
 
-export class LedsDisplay extends EventEmitter {
+export class LedsDisplay extends EventEmitter implements IoDevice {
     public id: number;
     public name: string;
     public type: IoDeviceType;

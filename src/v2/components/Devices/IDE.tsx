@@ -24,7 +24,7 @@ import type { CompiledCode, u16, u8 } from '@/types/cpu.types';
 
 
 export const IDE: React.FC<{ open?: boolean }> = (props) => {
-    const { computerRef } = useComputer();
+    const { computerRef, memoryBusRef } = useComputer();
 
     const { open=false } = props
     let initialContent = '\n\n\n';
@@ -67,6 +67,12 @@ export const IDE: React.FC<{ open?: boolean }> = (props) => {
 
     const handleLoad = () => {
         if (!compiledCode) return;
+        if (!memoryBusRef.current) return;
+
+        if (!memoryBusRef.current.dma) {
+            console.warn(`Cannot load custom code in RAM. DMA not loaded.`);
+            return;
+        }
 
         if (compileMemoryOffsetUint <= MEMORY_MAP.ROM_END) {
             if (!computerRef.current?.motherboard?.memoryBus?.rom) return;
@@ -76,9 +82,13 @@ export const IDE: React.FC<{ open?: boolean }> = (props) => {
         }
 
         if (compileMemoryOffsetUint >= MEMORY_MAP.RAM_START && compileMemoryOffsetUint <= MEMORY_MAP.RAM_END) {
-            if (!computerRef.current?.motherboard?.memoryBus?.ram) return;
-            const ram = computerRef.current.motherboard.memoryBus.ram;
-            ram.loadCodeInRam(compiledCode)
+            memoryBusRef.current.dma.loadCodeInRam(compiledCode)
+
+            //if (!memoryBusRef.current.dma) {
+            //    if (!computerRef.current?.motherboard?.memoryBus?.ram) return;
+            //    const ram = computerRef.current.motherboard.memoryBus.ram;
+            //    ram.loadCodeInRam(compiledCode)
+            //}
         }
 
     }

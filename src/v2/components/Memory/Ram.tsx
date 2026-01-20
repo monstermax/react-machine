@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor, type MouseEvent } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '@/v2/api';
 import { compileFile } from '@/cpus/default/asm_compiler';
@@ -22,7 +22,7 @@ export type RamProps = {
 }
 
 export const Ram: React.FC<RamProps> = (props) => {
-    const { data, open=true, hidden=false, size: maxSize=1+MEMORY_MAP.RAM_END-MEMORY_MAP.RAM_START, children, onInstanceCreated } = props;
+    const { data, open = true, hidden = false, size: maxSize = 1 + MEMORY_MAP.RAM_END - MEMORY_MAP.RAM_START, children, onInstanceCreated } = props;
     const { memoryBusRef } = useComputer();
 
     // Core
@@ -34,7 +34,7 @@ export const Ram: React.FC<RamProps> = (props) => {
     // UI
     const [contentVisible, setContentVisible] = useState(open);
     const [mouseDownOffset, setMouseDownOffset] = useState<null | { x: number, y: number }>(null);
-    const [isDivAbsolute, setIsDivAbsolute] = useState(true)
+    const [isDivAbsolute, setIsDivAbsolute] = useState(false)
     const divRef = useRef<HTMLDivElement>(null);
 
 
@@ -43,9 +43,10 @@ export const Ram: React.FC<RamProps> = (props) => {
         if (!memoryBusRef.current) return;
         //if (ramRef.current) return;
         if (memoryBusRef.current.ram) return;
+        if (ramInstance) return;
 
         const _instanciateRam = () => {
-        if (!memoryBusRef.current) return;
+            if (!memoryBusRef.current) return;
 
             // Save Instance for UI
             const ram = memoryBusRef.current.addRam(data, maxSize);
@@ -99,26 +100,34 @@ export const Ram: React.FC<RamProps> = (props) => {
     const loadOsInRam = async (osName: string) => {
         if (!memoryBusRef.current) return;
 
+        if (!memoryBusRef.current.dma) {
+            console.warn(`Cannot load program in RAM. DMA not loaded.`);
+            return;
+        }
+
         const computerInstance = memoryBusRef.current.motherboard.computer
         if (!computerInstance) return;
-        if (!ramInstance) return;
 
         const osCode: CompiledCode | null = await computerInstance.loadOsCode(osName);
         const memoryOffset = MEMORY_MAP.OS_START;
-        await ramInstance.loadCodeInRam(osCode, memoryOffset);
+        await memoryBusRef.current.dma.loadCodeInRam(osCode, memoryOffset);
     }
 
 
     const loadProgramInRam = async (programName: string) => {
         if (!memoryBusRef.current) return;
 
+        if (!memoryBusRef.current.dma) {
+            console.warn(`Cannot load program in RAM. DMA not loaded.`);
+            return;
+        }
+
         const computerInstance = memoryBusRef.current.motherboard.computer
         if (!computerInstance) return;
-        if (!ramInstance) return;
 
         const programCode: CompiledCode | null = await computerInstance.loadProgramCode(programName);
         const memoryOffset = MEMORY_MAP.PROGRAM_START;
-        await ramInstance.loadCodeInRam(programCode, memoryOffset);
+        await memoryBusRef.current.dma.loadCodeInRam(programCode, memoryOffset);
     }
 
 
@@ -130,8 +139,8 @@ export const Ram: React.FC<RamProps> = (props) => {
             window.addEventListener('mousemove', handleMouseMove)
             window.addEventListener('mouseup', handleMouseUp)
 
-            divRef.current.style.position = 'absolute';
-            setIsDivAbsolute(true)
+            //divRef.current.style.position = 'absolute';
+            //setIsDivAbsolute(true)
 
             return () => {
                 window.removeEventListener('mousemove', handleMouseMove)
@@ -149,7 +158,7 @@ export const Ram: React.FC<RamProps> = (props) => {
         setIsDivAbsolute(false)
     }
 
-    const handleMouseDown = (event: MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const handleMouseDown: React.MouseEventHandler<HTMLDivElement> = (event) => {
         if (!divRef.current) return;
         const rect = divRef.current.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
@@ -166,9 +175,21 @@ export const Ram: React.FC<RamProps> = (props) => {
 
     const handleMouseMove = (event: MouseEvent) => {
         if (divRef.current && mouseDownOffset) {
-            divRef.current.style.left = (event.pageX - mouseDownOffset.x) + 'px';
-            divRef.current.style.top = (event.pageY - mouseDownOffset.y) + 'px';
+            if (!isDivAbsolute) {
+                divRef.current.style.position = 'absolute';
+                setIsDivAbsolute(true)
+            }
+
+            const newX = event.pageX - mouseDownOffset.x;
+            const newY = event.pageY - mouseDownOffset.y;
+            divRef.current.style.left = newX + 'px';
+            divRef.current.style.top = newY + 'px';
         }
+    }
+
+
+    if (! ramInstance) {
+        return <>Loading RAM</>
     }
 
 
@@ -215,14 +236,14 @@ export const Ram: React.FC<RamProps> = (props) => {
                     <button
                         onClick={() => loadOsInRam('MINI_OS_V1')}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
-                        >
+                    >
                         Load OS v1
                     </button>
 
                     <button
                         onClick={() => loadProgramInRam('leds_test_2')}
                         className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
-                        >
+                    >
                         Load LEDs
                     </button>
                 </div>

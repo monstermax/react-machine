@@ -751,7 +751,7 @@ const demoCodeSource: string = `
     RET
 
 :END
-    SYSCALL 0
+    SYSCALL 60
 `;
 
 

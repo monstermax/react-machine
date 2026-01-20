@@ -805,6 +805,8 @@ class CpuCore extends EventEmitter {
     handleSyscall(pc: u16) {
         if (!this.cpu.memoryBus) throw new Error("Missing MemoryBus")
 
+        // Linux Syscalls : https://www.chromium.org/chromium-os/developer-library/reference/linux-constants/syscalls/
+
         const syscallNum = this.cpu.readMem8(pc);
 
         switch (syscallNum) {

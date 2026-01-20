@@ -77,29 +77,6 @@ export class Ram extends EventEmitter {
         this.emit('state', { storage: new Map(this.storage) })
     }
 
-
-    async loadCodeInRam (code: CompiledCode | null, memoryOffset: u16=0 as u16) {
-        console.log('Loaded code size in RAM:', code?.size ?? 0)
-
-        if (memoryOffset < MEMORY_MAP.RAM_START || memoryOffset + (code?.size ?? 0) > MEMORY_MAP.RAM_END) {
-            console.warn(`Write memory out of range`);
-            return;
-        }
-
-        // Write Memory
-        const data = code
-            ? code.entries()
-            : new Map([[U16(0), U8(0)]])
-
-        for (const [addr, value] of data) {
-            this.write(U16(memoryOffset + addr), value);
-        }
-
-        // Clear CPUs cache
-        if (this.memoryBus.motherboard) {
-            this.memoryBus.motherboard.clearCpuCaches();
-        }
-    }
 }
 
 

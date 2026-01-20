@@ -214,18 +214,21 @@ export const MEMORY_MAP = createMemoryMap({
     DATA_DISK_2_FS_HANDLE_HIGH: 0xF0FD, // Port 13: File handle high
 
     // Device 16: Data Disk (0xF100-0xF10F)
-    SWAP_DISK_BASE: 0xF0F0,
-    SWAP_DISK_DATA: 0xF0F0,           // Port  0: Read/Write data (RAW)
-    SWAP_DISK_SIZE_LOW: 0xF0F1,       // Port  1: Get size (RAW) - low
-    SWAP_DISK_SIZE_HIGH: 0xF0F2,      // Port  2: Get size (RAW) - high
-    SWAP_DISK_ADDR_LOW: 0xF0F3,       // Port  3: Set address (RAW) - low
-    SWAP_DISK_ADDR_HIGH: 0xF0F4,      // Port  4: Set address (RAW) - high
-    SWAP_DISK_FS_STATUS: 0xF0F8,      // Port  8: FS status (nombre de fichiers)
-    SWAP_DISK_FS_COMMAND: 0xF0F9,     // Port  9: FS command / result
-    SWAP_DISK_FS_DATA: 0xF0FA,        // Port 10: FS data read/write
-    SWAP_DISK_FS_FILENAME: 0xF0FB,    // Port 11: FS filename char
-    SWAP_DISK_FS_HANDLE_LOW: 0xF0FC,  // Port 12: File handle low
-    SWAP_DISK_FS_HANDLE_HIGH: 0xF0FD, // Port 13: File handle high
+    SWAP_DISK_BASE: 0xF100,
+    SWAP_DISK_DATA: 0xF100,           // Port  0: Read/Write data (RAW)
+    SWAP_DISK_SIZE_LOW: 0xF101,       // Port  1: Get size (RAW) - low
+    SWAP_DISK_SIZE_HIGH: 0xF102,      // Port  2: Get size (RAW) - high
+    SWAP_DISK_ADDR_LOW: 0xF103,       // Port  3: Set address (RAW) - low
+    SWAP_DISK_ADDR_HIGH: 0xF104,      // Port  4: Set address (RAW) - high
+    SWAP_DISK_FS_STATUS: 0xF108,      // Port  8: FS status (nombre de fichiers)
+    SWAP_DISK_FS_COMMAND: 0xF109,     // Port  9: FS command / result
+    SWAP_DISK_FS_DATA: 0xF10A,        // Port 10: FS data read/write
+    SWAP_DISK_FS_FILENAME: 0xF10B,    // Port 11: FS filename char
+    SWAP_DISK_FS_HANDLE_LOW: 0xF10C,  // Port 12: File handle low
+    SWAP_DISK_FS_HANDLE_HIGH: 0xF10D, // Port 13: File handle high
+
+    // Device 17: DMA (0xF110-0xF11F) // Direct Memory Access
+    DMA_BASE: 0xF110,
 
 
     // IRQ //

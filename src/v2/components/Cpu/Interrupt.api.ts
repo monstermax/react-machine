@@ -6,9 +6,10 @@ import { isIO, isROM, MEMORY_MAP, memoryToIOPort } from "@/lib/memory_map_16x8_b
 import type { DevicesManager } from "../Devices/DevicesManager.api";
 
 import type { IoDeviceType, u16, u8 } from "@/types/cpu.types";
+import type { IoDevice } from "@/v2/types/cpu_v2.types";
 
 
-export class Interrupt extends EventEmitter {
+export class Interrupt extends EventEmitter implements IoDevice {
     public id: number;
     public name: string;
     public type: IoDeviceType;

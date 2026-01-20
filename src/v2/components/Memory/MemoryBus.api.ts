@@ -6,15 +6,17 @@ import { isIO, isROM, memoryToIOPort } from "@/lib/memory_map_16x8_bits";
 import { Rom } from "./Rom.api";
 import { Ram } from "./Ram.api";
 import { DevicesManager } from "../Devices/DevicesManager.api";
+import { Dma } from "./Dma.api";
 
-import type { u16, u8 } from "@/types/cpu.types";
 import type { Motherboard } from "../Computer/Motherboard.api";
+import type { u16, u8 } from "@/types/cpu.types";
 
 
 export class MemoryBus extends EventEmitter {
     public id: number;
     public rom: Rom | null = null;
     public ram: Ram | null = null;
+    public dma: Dma | null = null;
     public io: DevicesManager | null = null;
     public motherboard: Motherboard;
 
@@ -51,6 +53,19 @@ export class MemoryBus extends EventEmitter {
         }
 
         return ram;
+    }
+
+
+    addDma(ioPort: u8 | null = null): Dma {
+        const dma = new Dma(this, ioPort);
+
+        if (!this.dma) {
+            this.dma = dma;
+            this.emit('dma-connected', { dma });
+            //console.log('DMA monté dans MemoryBus.');
+        }
+
+        return dma;
     }
 
 

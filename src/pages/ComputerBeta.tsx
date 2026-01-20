@@ -26,10 +26,9 @@ import { Interrupt } from '@/v2/components/Cpu/Interrupt';
 import { Motherboard } from '@/v2/components/Computer/Motherboard';
 import { Timer } from '@/v2/components/Devices/Timer/Timer';
 import { IDE } from '@/v2/components/Devices/IDE';
+import { Dma } from '@/v2/components/Memory/Dma';
 
 import type { u16, u8 } from '@/types/cpu.types';
-
-//import bootloaderSourceCode from '@/cpus/default/asm/bootloader/bootloader_v1.asm?raw'
 
 
 export const ComputerBeta: React.FC = () => {
@@ -68,6 +67,7 @@ export const ComputerBeta: React.FC = () => {
                         <Memory>
                             <Rom data={bootloader} />
                             <Ram open={true} />
+                            <Dma ioPort={0x11} />
                         </Memory>
 
                         <InternalDevices>

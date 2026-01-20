@@ -22,7 +22,7 @@ export type InterruptProps = {
 }
 
 export const Interrupt: React.FC<InterruptProps> = (props) => {
-    const { hidden, open=false, ioPort, children, onInstanceCreated } = props;
+    const { hidden, open=false, ioPort=null, children, onInstanceCreated } = props;
 
     // Core
     const [interruptInstance, setInterruptInstance] = useState<cpuApi.Interrupt | null>(null);

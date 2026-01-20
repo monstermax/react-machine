@@ -8,9 +8,10 @@ import { U8 } from "@/lib/integers";
 import type { IoDeviceType, u8 } from "@/types/cpu.types";
 import type { DevicesManager } from "../DevicesManager.api";
 import type { Interrupt } from "@/v2/api";
+import type { IoDevice } from "@/v2/types/cpu_v2.types";
 
 
-export class Timer extends EventEmitter {
+export class Timer extends EventEmitter implements IoDevice {
     public id: number;
     public name: string;
     public type: IoDeviceType;

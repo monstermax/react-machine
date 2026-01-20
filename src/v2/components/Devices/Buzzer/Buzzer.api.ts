@@ -2,6 +2,7 @@
 import { EventEmitter } from "eventemitter3";
 
 import type { IoDeviceType, u8 } from "@/types/cpu.types";
+import type { IoDevice } from "@/v2/types/cpu_v2.types";
 
 
 /**
@@ -21,7 +22,7 @@ const PORTS = {
 } as const;
 
 
-export class Buzzer extends EventEmitter {
+export class Buzzer extends EventEmitter implements IoDevice {
     public id: number;
     public name: string;
     public type: IoDeviceType;

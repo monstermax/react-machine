@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor, type MouseEvent } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '@/v2/api';
 import { Clock } from './Clock';
@@ -25,7 +25,7 @@ export type CpuProps = {
 
 
 export const Cpu: React.FC<CpuProps> = (props) => {
-    const { hidden, cores: coresCount, type: cpuType, active: cpuActiveAtInit, controls: showControls=false, registers: showRegisters=false, children } = props;
+    const { hidden, cores: coresCount, type: cpuType, active: cpuActiveAtInit, controls: showControls = false, registers: showRegisters = false, children } = props;
     const { onInstanceCreated } = props;
     const { motherboardRef, devicesManagerRef } = useComputer();
 
@@ -48,7 +48,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     // UI
     const [contentVisible, setContentVisible] = useState(true);
     const [mouseDownOffset, setMouseDownOffset] = useState<null | { x: number, y: number }>(null);
-    const [isDivAbsolute, setIsDivAbsolute] = useState(true)
+    const [isDivAbsolute, setIsDivAbsolute] = useState(false)
     const divRef = useRef<HTMLDivElement>(null);
 
     const coresIds = useMemo(() => {
@@ -72,7 +72,8 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             setCpuInstance(cpu);
 
             // Handle CPU state updates for UI
-            cpu.on('state', (state) => {;
+            cpu.on('state', (state) => {
+                ;
                 //console.log('CPU state update', state)
 
                 if (state.cpuHalted !== undefined) {
@@ -263,8 +264,8 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             window.addEventListener('mousemove', handleMouseMove)
             window.addEventListener('mouseup', handleMouseUp)
 
-            divRef.current.style.position = 'absolute';
-            setIsDivAbsolute(true)
+            //divRef.current.style.position = 'absolute';
+            //setIsDivAbsolute(true)
 
             return () => {
                 window.removeEventListener('mousemove', handleMouseMove)
@@ -282,7 +283,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
         setIsDivAbsolute(false)
     }
 
-    const handleMouseDown = (event: MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const handleMouseDown: React.MouseEventHandler<HTMLDivElement> = (event) => {
         if (!divRef.current) return;
         const rect = divRef.current.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
@@ -299,8 +300,15 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
     const handleMouseMove = (event: MouseEvent) => {
         if (divRef.current && mouseDownOffset) {
-            divRef.current.style.left = (event.pageX - mouseDownOffset.x) + 'px';
-            divRef.current.style.top = (event.pageY - mouseDownOffset.y) + 'px';
+            if (!isDivAbsolute) {
+                divRef.current.style.position = 'absolute';
+                setIsDivAbsolute(true)
+            }
+
+            const newX = event.pageX - mouseDownOffset.x;
+            const newY = event.pageY - mouseDownOffset.y;
+            divRef.current.style.left = newX + 'px';
+            divRef.current.style.top = newY + 'px';
         }
     }
 

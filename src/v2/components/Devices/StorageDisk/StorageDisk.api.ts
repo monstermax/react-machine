@@ -5,9 +5,10 @@ import { high16, low16, U16, U8 } from "@/lib/integers";
 import { StorageFileSystem } from "./StorageFileSystem.api";
 
 import type { CompiledCode, IoDeviceType, u16, u8 } from "@/types/cpu.types";
+import type { IoDevice } from "@/v2/types/cpu_v2.types";
 
 
-export class StorageDisk extends EventEmitter {
+export class StorageDisk extends EventEmitter implements IoDevice {
     public id: number;
     public name: string;
     public type: IoDeviceType;

@@ -141,27 +141,65 @@ export enum Opcode {
 - NEG (negate)
 - DJNZ (decrement and jump if not zero - super utile pour les loops)
 
-# I/O
-SYSCALL 0x01  # print_char(A) - Afficher caractère
-SYSCALL 0x02  # read_char() -> A - Lire caractère
-SYSCALL 0x03  # print_string(C:D) - Afficher string
-SYSCALL 0x04  # clear_screen()
+# Syscalls
+
+arch	syscall NR	return	arg0	arg1	arg2	arg3	arg4	arg5
+arm	    r7	        r0      r0	    r1	    r2	    r3	    r4	    r5
+arm64	x8	        x0	    x0	    x1	    x2	    x3	    x4	    x5
+x86	    eax	        eax	    ebx	    ecx	    edx	    esi	    edi	    ebp
+x86_64	rax	        rax	    rdi	    rsi	    rdx	    r10	    r8	    r9
+
+SYSCALL = int 80h
+
+SYSCALL 0x00  (0)  # read
+SYSCALL 0x01  (1)  # write
+SYSCALL 0x02  (2)  # open
+SYSCALL 0x03  (3)  # close
+SYSCALL 0x04  (4)  # stat
+SYSCALL 0x05  (5)  # fstat
+SYSCALL 0x13 (19)  # readv
+SYSCALL 0x14 (20)  # writev
+SYSCALL 0x16 (22)  # pipe
+SYSCALL 0x23 (35)  # nanosleep
+SYSCALL 0x27 (39)  # getpid
+SYSCALL 0x30 (48)  # shutdown
+SYSCALL 0x39 (57)  # fork
+SYSCALL 0x3b (59)  # execve
+SYSCALL 0x3d (61)  # wait4
+SYSCALL 0x3e (62)  # kill
+SYSCALL 0x50 (80)  # chdir
+SYSCALL 0x52 (82)  # rename
+SYSCALL 0x53 (83)  # mkdir
+SYSCALL 0x54 (84)  # rmdir
+SYSCALL 0x57 (87)  # unlink
+SYSCALL 0x5A (90)  # chmod
+SYSCALL 0x5C (92)  # chown
+SYSCALL 0x63 (99)  # sysinfo
+SYSCALL 0x66 (102)  # getuid
+SYSCALL 0xA9 (169)  # reboot
+
+SYSCALL -  # print_char(A) - Afficher caractère
+SYSCALL -  # print_char(A) - Afficher caractère
+SYSCALL -  # read_char() -> A - Lire caractère
+SYSCALL -  # print_string(C:D) - Afficher string
+SYSCALL -  # clear_screen()
 
 # Fichiers
-SYSCALL 0x10  # open(C:D=filename, A=mode) -> A=handle
-SYSCALL 0x11  # read(A=handle) -> B=byte
-SYSCALL 0x12  # write(A=handle, B=byte)
-SYSCALL 0x13  # close(A=handle)
-SYSCALL 0x14  # delete(C:D=filename)
+SYSCALL -  # open(C:D=filename, A=mode) -> A=handle
+SYSCALL -  # read(A=handle) -> B=byte
+SYSCALL -  # write(A=handle, B=byte)
+SYSCALL -  # close(A=handle)
+SYSCALL -  # delete(C:D=filename)
 
 # Processus
-SYSCALL 0x20  # exit(A=code)
-SYSCALL 0x21  # sleep(A=ticks)
-SYSCALL 0x22  # get_time() -> C:D=timestamp
+SYSCALL 0x3C (60)  # exit(A=code)
+SYSCALL -  # sleep(A=ticks)
+SYSCALL -  # get_time() -> C:D=timestamp
 
 # Mémoire
-SYSCALL 0x30  # malloc(C:D=size) -> C:D=ptr
-SYSCALL 0x31  # free(C:D=ptr)
+SYSCALL -  # malloc(C:D=size) -> C:D=ptr
+SYSCALL -  # free(C:D=ptr)
+
 */
 
 
