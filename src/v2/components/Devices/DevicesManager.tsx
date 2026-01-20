@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor, type MouseEvent } from 'react'
 
 import * as cpuApi from '@/v2/api';
 import { StorageDisk } from './StorageDisk/StorageDisk';
@@ -33,7 +33,10 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null); // aka ioInstance
 
     // UI
-    const [childrenVisible, setChildrenVisible] = useState(open);
+    const [contentVisible, setContentVisible] = useState(open);
+    const [mouseDownOffset, setMouseDownOffset] = useState<null | { x: number, y: number }>(null);
+    const [isDivAbsolute, setIsDivAbsolute] = useState(true)
+    const divRef = useRef<HTMLDivElement>(null);
 
 
     // Instanciate Devices
@@ -157,30 +160,91 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     });
 
 
+    // Handle Absolute Position + Draggable
+    useEffect(() => {
+        if (!divRef.current) return;
+
+        if (mouseDownOffset) {
+            window.addEventListener('mousemove', handleMouseMove)
+            window.addEventListener('mouseup', handleMouseUp)
+
+            divRef.current.style.position = 'absolute';
+            setIsDivAbsolute(true)
+
+            return () => {
+                window.removeEventListener('mousemove', handleMouseMove)
+                window.removeEventListener('mouseup', handleMouseUp)
+            }
+
+        } else {
+            //setDivStatic();
+        }
+    }, [mouseDownOffset])
+
+    const setDivStatic = () => {
+        if (!divRef.current) return;
+        divRef.current.style.position = 'static';
+        setIsDivAbsolute(false)
+    }
+
+    const handleMouseDown = (event: MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (!divRef.current) return;
+        const rect = divRef.current.getBoundingClientRect();
+        const offsetX = event.clientX - rect.left;
+        const offsetY = event.clientY - rect.top;
+        setMouseDownOffset({ x: offsetX, y: offsetY })
+        document.body.classList.add('select-none');
+    }
+
+    const handleMouseUp = () => {
+        if (!divRef.current) return;
+        setMouseDownOffset(null)
+        document.body.classList.remove('select-none');
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+        if (divRef.current && mouseDownOffset) {
+            divRef.current.style.left = (event.pageX - mouseDownOffset.x) + 'px';
+            divRef.current.style.top = (event.pageY - mouseDownOffset.y) + 'px';
+        }
+    }
+
+
     if (! devicesManagerInstance) {
         return <>Loading Devices</>
     }
 
 
     return (
-        <div className={`devices w-auto ${hidden ? "hidden" : ""}`}>
+        <div ref={divRef} className={`devices w-auto ${hidden ? "hidden" : ""}`}>
 
             {/* Devices Head */}
-            <div className="w-full flex bg-background-light-xl p-2 rounded">
+            <div className="w-full flex bg-background-light-xl p-2 rounded cursor-move" onMouseDown={(event) => handleMouseDown(event)}>
                 <h2 className="font-bold">Devices</h2>
 
                 {childrenWithProps && (
-                    <button
-                        className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
-                        onClick={() => setChildrenVisible(b => !b)}
-                    >
-                        {childrenVisible ? "-" : "+"}
-                    </button>
+                    <div className="ms-auto ">
+                        {isDivAbsolute && (
+                            <button
+                                className="cursor-pointer px-3 bg-background-light-xl rounded"
+                                onClick={() => setDivStatic()}
+                            >
+                                ⤴
+                            </button>
+                        )}
+
+                        <button
+                            className="cursor-pointer px-3 bg-background-light-xl rounded"
+                            onClick={() => setContentVisible(b => !b)}
+                        >
+                            {contentVisible ? "-" : "+"}
+                        </button>
+                    </div>
                 )}
             </div>
 
             {/* Devices Content */}
-            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
 
                 {/* Devices Children */}
                 {childrenWithProps && (

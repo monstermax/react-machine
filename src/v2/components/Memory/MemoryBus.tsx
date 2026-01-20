@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor, type MouseEvent } from 'react'
 
 import * as cpuApi from '@/v2/api';
 import { Rom } from './Rom';
@@ -29,6 +29,9 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
     // UI
     const [contentVisible, setContentVisible] = useState(open);
+    const [mouseDownOffset, setMouseDownOffset] = useState<null | { x: number, y: number }>(null);
+    const [isDivAbsolute, setIsDivAbsolute] = useState(true)
+    const divRef = useRef<HTMLDivElement>(null);
 
 
     // Instanciate MemoryBus
@@ -120,24 +123,85 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
         return child;
     });
 
+
+    // Handle Absolute Position + Draggable
+    useEffect(() => {
+        if (!divRef.current) return;
+
+        if (mouseDownOffset) {
+            window.addEventListener('mousemove', handleMouseMove)
+            window.addEventListener('mouseup', handleMouseUp)
+
+            divRef.current.style.position = 'absolute';
+            setIsDivAbsolute(true)
+
+            return () => {
+                window.removeEventListener('mousemove', handleMouseMove)
+                window.removeEventListener('mouseup', handleMouseUp)
+            }
+
+        } else {
+            //setDivStatic();
+        }
+    }, [mouseDownOffset])
+
+    const setDivStatic = () => {
+        if (!divRef.current) return;
+        divRef.current.style.position = 'static';
+        setIsDivAbsolute(false)
+    }
+
+    const handleMouseDown = (event: MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (!divRef.current) return;
+        const rect = divRef.current.getBoundingClientRect();
+        const offsetX = event.clientX - rect.left;
+        const offsetY = event.clientY - rect.top;
+        setMouseDownOffset({ x: offsetX, y: offsetY })
+        document.body.classList.add('select-none');
+    }
+
+    const handleMouseUp = () => {
+        if (!divRef.current) return;
+        setMouseDownOffset(null)
+        document.body.classList.remove('select-none');
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+        if (divRef.current && mouseDownOffset) {
+            divRef.current.style.left = (event.pageX - mouseDownOffset.x) + 'px';
+            divRef.current.style.top = (event.pageY - mouseDownOffset.y) + 'px';
+        }
+    }
+
     if (!memoryBusInstance) {
         return <>Loading Memory</>;
     }
 
     return (
-        <div className={`memory-bus w-auto ${hidden ? "hidden" : ""}`}>
+        <div ref={divRef} className={`memory-bus w-auto ${hidden ? "hidden" : ""}`}>
 
             {/* MemoryBus Head */}
-            <div className="flex bg-background-light-xl p-2 rounded">
+            <div className="flex bg-background-light-xl p-2 rounded cursor-move" onMouseDown={(event) => handleMouseDown(event)}>
                 <h2 className="font-bold">Memory</h2>
 
                 {childrenWithProps && (
-                    <button
-                        className="ms-auto cursor-pointer px-3 bg-background-light-xl rounded"
-                        onClick={() => setContentVisible(b => !b)}
-                    >
-                        {contentVisible ? "-" : "+"}
-                    </button>
+                    <div className="ms-auto ">
+                        {isDivAbsolute && (
+                            <button
+                                className="cursor-pointer px-3 bg-background-light-xl rounded"
+                                onClick={() => setDivStatic()}
+                            >
+                                ⤴
+                            </button>
+                        )}
+
+                        <button
+                            className="cursor-pointer px-3 bg-background-light-xl rounded"
+                            onClick={() => setContentVisible(b => !b)}
+                        >
+                            {contentVisible ? "-" : "+"}
+                        </button>
+                    </div>
                 )}
             </div>
 
