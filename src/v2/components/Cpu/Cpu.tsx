@@ -364,7 +364,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                                 onClick={() => resetCpu()}
                                 className="bg-red-900 hover:bg-red-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                             >
-                                ⟳ Reset
+                                ⟳ CPU Reset
                             </button>
 
                             <button
@@ -385,7 +385,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                                 onClick={() => runStep()}
                                 className="bg-cyan-900 hover:bg-cyan-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ms-auto"
                             >
-                                ⏭ Step
+                                ⏭ CPU Step
                             </button>
                         </div>
                     </>

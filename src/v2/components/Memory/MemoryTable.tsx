@@ -20,7 +20,7 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
     // UI snapshot state
     const [breakpoints, setBreakpoints] = useState<Set<number>>(new Set);
-    const [coresPc, setCoresPc] = useState<Map<string, u16>>(new Map);
+    const [coresPc, setCoresPc] = useState<Map<string, u16 | null>>(new Map);
 
     // UI
     const [followInstruction, setFollowInstruction] = useState(true);
@@ -56,14 +56,14 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
         if (motherBoardInstance) {
             for (const cpuInstance of motherBoardInstance.getCpus()) {
                 if (!cpuInstance) continue;
-                //console.log('init cpu', cpuInstance.idx)
+                //console.log('init cpu', cpuInstance.idx, cpuInstance.cores)
 
                 // CPU CORES State updates
                 for (const core of cpuInstance.cores) {
 
                     core.on('state', (state) => {
-                        //console.log('update', Object.keys(state))
                         const coreIdx = state.idx;
+                        //console.log('update core pc', coreIdx, Object.keys(state))
 
                         if (state.registers) {
                             const pc: u16 = state.registers.get('PC');
@@ -74,12 +74,17 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
                                 setCoresPc(o => {
                                     const n = new Map(o);
-                                    n.set(`${cpuIdx}-${coreIdx}`, pc);
+                                    n.set(`${cpuIdx}-${coreIdx}`, core.coreHalted ? null : pc);
                                     return n;
                                 })
                             //}, 100, 500, [cpuIdx, coreIdx, pc]);
                         }
                     });
+
+                    core.emit('state', {
+                        idx: core.idx,
+                        registers: core.registers,
+                    })
                 }
             }
         }

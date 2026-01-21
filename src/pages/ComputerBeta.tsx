@@ -62,7 +62,7 @@ export const ComputerBeta: React.FC = () => {
                     <Motherboard>
                         <Clock frequency={1} />
 
-                        <Cpu registers cores={4}>
+                        <Cpu registers>
                             <Interrupt ioPort={4} open={false} />
                         </Cpu>
 

@@ -277,6 +277,121 @@ export const getOpcodeName = (opcode: u8): string => {
 
 };
 
+
+
+export const getOpcodeDescription = (opcode: u8): string => {
+    switch (opcode) {
+        // Contrôle
+        case Opcode.NOP: return "No operation : does nothing, advances PC";
+        case Opcode.SYSCALL: return "System call : invokes OS service with A as syscall number";
+        case Opcode.GET_FREQ: return "Get frequency : returns current CPU frequency in A";
+        case Opcode.SET_FREQ: return "Set frequency : sets CPU frequency to A";
+        case Opcode.BREAKPOINT: return "Breakpoint : triggers debugger breakpoint (assembly)";
+        case Opcode.BREAKPOINT_JS: return "Breakpoint JS : triggers JavaScript debugger breakpoint";
+        case Opcode.HALT: return "Halt : stops CPU execution completely";
+
+        // Cores
+        case Opcode.CORE_START: return "Core start : starts execution on specified core";
+        case Opcode.CORE_HALT: return "Core halt : halts execution on specified core";
+        case Opcode.CORE_INIT: return "Core init : initializes core with configuration";
+        case Opcode.CORE_STATUS: return "Core status : returns status of specified core in A";
+        case Opcode.CORES_COUNT: return "Cores count : returns number of available cores in A";
+
+        // CPUs
+        case Opcode.CPU_START: return "CPU start : starts execution on specified CPU";
+        case Opcode.CPU_HALT: return "CPU halt : halts execution on specified CPU";
+        case Opcode.CPU_INIT: return "CPU init : initializes CPU with configuration";
+        case Opcode.CPU_STATUS: return "CPU status : returns status of specified CPU in A";
+        case Opcode.CPUS_COUNT: return "CPUs count : returns number of available CPUs in A";
+
+        // ALU
+        case Opcode.ADD: return "Add : A = A + B (with carry flag update)";
+        case Opcode.SUB: return "Subtract : A = A - B (with borrow flag update)";
+        case Opcode.AND: return "Bitwise AND : A = A & B";
+        case Opcode.OR: return "Bitwise OR : A = A | B";
+        case Opcode.XOR: return "Bitwise XOR : A = A ^ B";
+        case Opcode.INC_A: return "Increment A : A = A + 1";
+        case Opcode.DEC_A: return "Decrement A : A = A - 1";
+        case Opcode.INC_B: return "Increment B : B = B + 1";
+        case Opcode.DEC_B: return "Decrement B : B = B - 1";
+        case Opcode.INC_C: return "Increment C : C = C + 1";
+        case Opcode.DEC_C: return "Decrement C : C = C - 1";
+        case Opcode.INC_D: return "Increment D : D = D + 1";
+        case Opcode.DEC_D: return "Decrement D : D = D - 1";
+
+        // Sauts
+        case Opcode.JMP: return "Jump unconditional : PC = address";
+        case Opcode.JZ: return "Jump if zero : PC = address if Z flag is set";
+        case Opcode.JNZ: return "Jump if not zero : PC = address if Z flag is clear";
+        case Opcode.JC: return "Jump if carry : PC = address if C flag is set";
+        case Opcode.JNC: return "Jump if not carry : PC = address if C flag is clear";
+
+        // Stack
+        case Opcode.PUSH_A: return "Push A : store A on stack, decrement SP";
+        case Opcode.PUSH_B: return "Push B : store B on stack, decrement SP";
+        case Opcode.PUSH_C: return "Push C : store C on stack, decrement SP";
+        case Opcode.PUSH_D: return "Push D : store D on stack, decrement SP";
+        case Opcode.POP_A: return "Pop A : load A from stack, increment SP";
+        case Opcode.POP_B: return "Pop B : load B from stack, increment SP";
+        case Opcode.POP_C: return "Pop C : load C from stack, increment SP";
+        case Opcode.POP_D: return "Pop D : load D from stack, increment SP";
+
+        // Contrôle Stack
+        case Opcode.GET_SP: return "Get SP : load stack pointer value into A:B";
+        case Opcode.SET_SP: return "Set SP : set stack pointer to immediate 16-bit value";
+        case Opcode.CALL: return "Call subroutine : push return address, jump to address";
+        case Opcode.RET: return "Return from subroutine : pop return address into PC";
+
+        // Interrupts
+        case Opcode.EI: return "Enable interrupts : allow hardware interrupts";
+        case Opcode.DI: return "Disable interrupts : block hardware interrupts";
+        case Opcode.IRET: return "Return from interrupt : restore flags and return";
+
+        // MOV Register to Register
+        case Opcode.MOV_AB: return "Move A to B : B = A";
+        case Opcode.MOV_AC: return "Move A to C : C = A";
+        case Opcode.MOV_AD: return "Move A to D : D = A";
+        case Opcode.MOV_BA: return "Move B to A : A = B";
+        case Opcode.MOV_BC: return "Move B to C : C = B";
+        case Opcode.MOV_BD: return "Move B to D : D = B";
+        case Opcode.MOV_CA: return "Move C to A : A = C";
+        case Opcode.MOV_CB: return "Move C to B : B = C";
+        case Opcode.MOV_CD: return "Move C to D : D = C";
+        case Opcode.MOV_DA: return "Move D to A : A = D";
+        case Opcode.MOV_DB: return "Move D to B : B = D";
+        case Opcode.MOV_DC: return "Move D to C : C = D";
+
+        // MOV avec Immediate
+        case Opcode.MOV_A_IMM: return "Move immediate to A : A = 8-bit immediate value";
+        case Opcode.MOV_B_IMM: return "Move immediate to B : B = 8-bit immediate value";
+        case Opcode.MOV_C_IMM: return "Move immediate to C : C = 8-bit immediate value";
+        case Opcode.MOV_D_IMM: return "Move immediate to D : D = 8-bit immediate value";
+
+        // MOV Memory to Register
+        case Opcode.MOV_A_MEM: return "Move memory to A : A = [16-bit address]";
+        case Opcode.MOV_B_MEM: return "Move memory to B : B = [16-bit address]";
+        case Opcode.MOV_C_MEM: return "Move memory to C : C = [16-bit address]";
+        case Opcode.MOV_D_MEM: return "Move memory to D : D = [16-bit address]";
+
+        // MOV Register to Memory
+        case Opcode.MOV_MEM_A: return "Move A to memory : [16-bit address] = A";
+        case Opcode.MOV_MEM_B: return "Move B to memory : [16-bit address] = B";
+        case Opcode.MOV_MEM_C: return "Move C to memory : [16-bit address] = C";
+        case Opcode.MOV_MEM_D: return "Move D to memory : [16-bit address] = D";
+
+        // MOV Memory to Register (indirect via C:D)
+        case Opcode.MOV_A_PTR_CD: return "Move indirect to A : A = [[C:D]] (double indirection)";
+        case Opcode.MOV_B_PTR_CD: return "Move indirect to B : B = [[C:D]] (double indirection)";
+
+        // MOV Register to Memory (indirect via C:D)
+        case Opcode.MOV_PTR_CD_A: return "Move A to indirect : [C:D] = A";
+        case Opcode.MOV_PTR_CD_B: return "Move B to indirect : [C:D] = B";
+
+        default: return "Unknown instruction";
+    }
+};
+
+
 // Utile pour incrémenter PC correctement
 export const getInstructionLength = (opcode: u8): number => {
     if (INSTRUCTIONS_WITH_OPERAND.includes(opcode)) {

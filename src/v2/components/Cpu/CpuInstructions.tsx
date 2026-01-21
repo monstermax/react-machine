@@ -1,7 +1,8 @@
 
 import React, { useState } from "react";
 
-import { Opcode } from "@/cpus/default/cpu_instructions";
+import { getOpcodeDescription, Opcode } from "@/cpus/default/cpu_instructions";
+import type { u8 } from "@/types/cpu.types";
 
 
 interface InstructionInfo {
@@ -9,6 +10,7 @@ interface InstructionInfo {
     mnemonic: string;
     hex: string;
     binary: string;
+    description: string;
 }
 
 export type InstructionsProps = {
@@ -32,13 +34,15 @@ export const CpuInstructions: React.FC<InstructionsProps> = (props) => {
             key === String(Number(key)) // S'assurer que c'est bien une clé numérique
         )
         .map(([opcode, mnemonic]) => {
-            const decimal = parseInt(opcode, 10);
+            const decimal = parseInt(opcode, 10) as u8;
+
             return {
                 opcode: opcode.toString(),
                 mnemonic: mnemonic as string,
                 hex: "0x" + decimal.toString(16).toUpperCase().padStart(2, '0'),
                 binary: decimal.toString(2).padStart(8, '0'),
-                decimal: decimal
+                decimal: decimal,
+                description: getOpcodeDescription(decimal),
             };
         })
         .sort((a, b) => a.decimal - b.decimal);
@@ -93,6 +97,7 @@ export const CpuInstructions: React.FC<InstructionsProps> = (props) => {
                                 <th className="text-left py-3 px-4 font-semibold">Mnemonic</th>
                                 <th className="text-left py-3 px-4 font-semibold">Decimal Opcode</th>
                                 {showBinary && <th className="text-left py-3 px-4 font-semibold">Binary Opcode</th>}
+                                <th className="text-left py-3 px-4 font-semibold">Description</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -124,6 +129,9 @@ export const CpuInstructions: React.FC<InstructionsProps> = (props) => {
                                                 {instruction.binary}
                                             </td>
                                         )}
+                                        <td className="py-3 px-4 font-mono text-blue-300">
+                                            {instruction.description}
+                                        </td>
                                     </tr>
                                 ))
                             )}
