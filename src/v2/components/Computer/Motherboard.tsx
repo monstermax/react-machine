@@ -184,6 +184,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
                 {/* Motherboard Children */}
                 <div className="motherboard-children flex space-x-1 space-y-1">
 
+                    {/* Motherboard Known Children */}
                     <div className="motherboard-known-children grid grid-cols-3 w-full space-x-4">
 
                         <div className="motherboard-cpu-and-clock space-y-4">

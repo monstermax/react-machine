@@ -117,7 +117,11 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
         computerInstance.reset()
     }
 
-    const childrenWithProps = React.Children.map(children, (child) => {
+
+    const childrenWithPropsMotherboard: React.ReactElement<any, string | React.JSXElementConstructor<any>>[] = []
+    const childrenWithPropsDevicesManager: React.ReactElement<any, string | React.JSXElementConstructor<any>>[] = []
+
+    const childrenWithProps = React.Children.map(children, (child, childIdx) => {
         if (React.isValidElement(child)) {
             const childElement = child as React.ReactElement<any>;
 
@@ -128,11 +132,21 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
                 case IDE:
                     return childElement;
 
-                case DevicesManager:
-                    return React.cloneElement(childElement, { onInstanceCreated: addDevicesManager });
+                case DevicesManager: {
+                    //return React.cloneElement(childElement, { onInstanceCreated: addDevicesManager });
+                    const key = `${childElement.type.name}-${childIdx}`;
+                    const element = React.cloneElement(childElement, { onInstanceCreated: addDevicesManager, key });
+                    childrenWithPropsDevicesManager.push(element);
+                    return null;
+                }
 
-                case Motherboard:
-                    return React.cloneElement(childElement, { onInstanceCreated: addMotherboard });
+                case Motherboard: {
+                    //return React.cloneElement(childElement, { onInstanceCreated: addMotherboard });
+                    const key = `${childElement.type.name}-${childIdx}`;
+                    const element = React.cloneElement(childElement, { onInstanceCreated: addMotherboard, key });
+                    childrenWithPropsMotherboard.push(element);
+                    return null;
+                }
 
                 default:
                     console.log(`Invalid component mounted into Computer :`, (childElement.type as JSXElementConstructor<any>).name);
@@ -226,11 +240,55 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
                 </div>
 
                 {/* Computer Children */}
-                {childrenWithProps && (
-                    <div className="computer-children flex flex-col space-y-4">
-                        {childrenWithProps}
+                <div className="computer-children flex flex-col space-y-4 w-full">
+
+                    {/* Computer Known Children */}
+                    <div className="computer-known-children w-full flex flex-col space-y-4">
+
+                        {/* Motherboard */}
+                        <div className="computer-motherboard w-full">
+                            {childrenWithPropsMotherboard.length > 0 && (
+                                <>
+                                    {childrenWithPropsMotherboard}
+                                </>
+                            )}
+
+                            {childrenWithPropsMotherboard.length === 0 && (
+                                <>
+                                    <div className="bg-background-light-2xl w-96 h-[600px] border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
+                                        <i>Insert <strong>Motherboard</strong> here</i>
+                                        {/* <MotherboardIcon /> */}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {/* DevicesManager */}
+                        <div className="computer-devices-manager w-full">
+                            {childrenWithPropsDevicesManager.length > 0 && (
+                                <>
+                                    {childrenWithPropsDevicesManager}
+                                </>
+                            )}
+
+                            {childrenWithPropsDevicesManager.length === 0 && (
+                                <>
+                                    <div className="bg-background-light-2xl w-96 h-[600px] border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
+                                        <i>Insert <strong>External Devices</strong> here</i>
+                                        {/* <DevicesManagerIcon /> */}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
-                )}
+
+                    {/* Computer Other Children */}
+                    {childrenWithProps && (
+                        <div className="computer-other-children">
+                            {childrenWithProps}
+                        </div>
+                    )}
+                </div>
 
             </div>
         </div>

@@ -107,8 +107,6 @@ export const ComputerBeta: React.FC = () => {
 
                         {/* Input */}
                         <Keyboard ioPort={0x05} name="keyboard" open={false} />
-
-                        {/* <IDE /> adapter la page de compilation en composant Device + permettre l'execution du code */}
                     </ExternalDevices>
 
                     <IDE />
