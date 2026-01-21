@@ -294,6 +294,7 @@ export class CodeGenerator {
 
         if (typeof opcodeOrFunc === 'function') {
             debugger;
+            // @ts-ignore
             return opcodeOrFunc(); // ??
         }
         return opcodeOrFunc;
@@ -478,6 +479,7 @@ export class CodeGenerator {
     private addComment(comment: string): void {
         this.output.push({
             address: this.addressCounter,
+            // @ts-ignore
             value: `// ${comment}`,
             comment: `// ${comment}`,
         });

@@ -2,7 +2,6 @@
 import type { Plugin } from 'vite';
 import { execSync } from 'child_process';
 import fs from 'fs';
-import path from 'path';
 
 /**
  * Plugin Vite ultra-simple pour générer la liste des fichiers ASM
@@ -23,7 +22,7 @@ export function asmDirectoryPlugin(): Plugin {
 
             try {
                 // Utilise find pour lister tous les fichiers
-                const command = `find "${asmPath}" -type f`;
+                const command = `find "${asmPath}" -type f -name "*.asm"`;
                 const output = execSync(command).toString();
 
                 // Nettoie les chemins
