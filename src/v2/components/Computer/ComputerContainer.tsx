@@ -7,7 +7,6 @@ import { os_list } from '@/cpus/default/programs/mini_os';
 import { programs } from '@/cpus/default/programs/programs_index';
 import { useComputer, type ViewType } from './ComputerContext';
 import { Motherboard } from './Motherboard';
-import { IDE } from '../Devices/IDE';
 
 
 export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.ReactNode }> = (props) => {

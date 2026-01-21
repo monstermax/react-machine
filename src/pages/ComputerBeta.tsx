@@ -27,7 +27,8 @@ import { Motherboard } from '@/v2/components/Computer/Motherboard';
 import { Timer } from '@/v2/components/Devices/Timer/Timer';
 import { IDE } from '@/v2/components/Devices/IDE';
 import { Dma } from '@/v2/components/Memory/Dma';
-import { Instructions } from '@/v2/components/Cpu/Instructions';
+import { CpuInstructions } from '@/v2/components/Cpu/CpuInstructions';
+import { MemoryMap } from '@/v2/components/Memory/MemoryMap';
 
 import type { u16, u8 } from '@/types/cpu.types';
 
@@ -106,7 +107,9 @@ export const ComputerBeta: React.FC = () => {
                         <Keyboard ioPort={0x05} name="keyboard" open={false} />
                     </ExternalDevices>
 
-                    <Instructions />
+                    <MemoryMap />
+
+                    <CpuInstructions />
 
                     <IDE />
                 </Computer>

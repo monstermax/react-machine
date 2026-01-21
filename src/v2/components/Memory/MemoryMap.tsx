@@ -1,22 +1,24 @@
 
+import { toHex } from "@/lib/integers";
+import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 import React, { useState } from "react";
 
-import { Opcode } from "@/cpus/default/cpu_instructions";
 
 
-interface InstructionInfo {
-    opcode: string;
-    mnemonic: string;
+
+interface MemoryMapInfo {
+    address: string;
+    label: string;
     hex: string;
     binary: string;
 }
 
-export type InstructionsProps = {
+export type MemoryMapProps = {
     hidden?: boolean;
     open?: boolean;
 }
 
-export const Instructions: React.FC<InstructionsProps> = (props) => {
+export const MemoryMap: React.FC<MemoryMapProps> = (props) => {
     const { hidden=false, open=false } = props
 
     const [childrenVisible, setChildrenVisible] = useState(open);
@@ -25,38 +27,42 @@ export const Instructions: React.FC<InstructionsProps> = (props) => {
     const [showBinary, setShowBinary] = useState(true);
 
     // Filtrer les opcodes (exclure les clés numériques inverses)
-    const instructions: InstructionInfo[] = Object.entries(Opcode)
-        .filter(([key, value]) =>
-            typeof value === 'string' &&
-            !isNaN(Number(key)) &&
-            key === String(Number(key)) // S'assurer que c'est bien une clé numérique
-        )
-        .map(([opcode, mnemonic]) => {
-            const decimal = parseInt(opcode, 10);
+    const memoryMap: MemoryMapInfo[] = Object.entries(MEMORY_MAP)
+        .map(([key, address], idx) => {
+            const decimal = address;
+
             return {
-                opcode: opcode.toString(),
-                mnemonic: mnemonic as string,
-                hex: "0x" + decimal.toString(16).toUpperCase().padStart(2, '0'),
-                binary: decimal.toString(2).padStart(8, '0'),
-                decimal: decimal
+                address: address.toString(),
+                label: key as string,
+                hex: toHex(decimal, 4),
+                binary: decimal.toString(2).padStart(16, '0'),
+                decimal: decimal,
+                idx,
             };
         })
-        .sort((a, b) => a.decimal - b.decimal);
+        .sort((a, b) => {
+            if (a.decimal != b.decimal) {
+                return a.decimal - b.decimal
+            }
+            return a.idx - b.idx
+            //return a.label.length - b.label.length
+        });
 
     // Filtrer par recherche
-    const filteredInstructions = instructions.filter(instruction =>
-        instruction.mnemonic.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const filteredMemoryMap = memoryMap.filter(instruction =>
+        instruction.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
         instruction.hex.toLowerCase().includes(searchTerm.toLowerCase()) ||
         instruction.binary.includes(searchTerm) ||
-        instruction.opcode.includes(searchTerm)
+        instruction.address.includes(searchTerm)
     );
 
-    return (
-        <div className={`instructions w-auto bg-violet-950 p-1 ${hidden ? "hidden" : ""}`}>
 
-            {/* IDE Head */}
+    return (
+        <div className={`memory-map w-auto bg-slate-800 p-1 ${hidden ? "hidden" : ""}`}>
+
+            {/* MemoryMap Head */}
             <div className="w-full flex bg-background-light p-2 rounded">
-                <h2 className="font-bold">CPU Instructions</h2>
+                <h2 className="font-bold">Memory Map</h2>
 
                 {true && (
                     <button
@@ -68,7 +74,7 @@ export const Instructions: React.FC<InstructionsProps> = (props) => {
                 )}
             </div>
 
-            {/* IDE Content */}
+            {/* MemoryMap Content */}
             <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-2 p-1`}>
 
                 <div className="mt-2 rounded">
@@ -76,7 +82,7 @@ export const Instructions: React.FC<InstructionsProps> = (props) => {
                     <div className="">
                         <input
                             type="text"
-                            placeholder="Search instructions..."
+                            placeholder="Search memory map..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full px-4 py-2 bg-background-light-2xl border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -84,44 +90,44 @@ export const Instructions: React.FC<InstructionsProps> = (props) => {
                     </div>
                 </div>
 
-                {/* Table des instructions */}
+                {/* Table des memory-map */}
                 <div className="overflow-x-auto bg-background-light-3xl p-1 rounded max-h-[50vh]">
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="border-b border-gray-700 bg-background-light-2xl">
-                                <th className="text-left py-3 px-4 font-semibold">Opcode</th>
+                                {showHex && <th className="text-left py-3 px-4 font-semibold">Hex Address</th>}
                                 <th className="text-left py-3 px-4 font-semibold">Mnemonic</th>
-                                {showHex && <th className="text-left py-3 px-4 font-semibold">Hex</th>}
-                                {showBinary && <th className="text-left py-3 px-4 font-semibold">Binary</th>}
+                                <th className="text-left py-3 px-4 font-semibold">Decimal Address</th>
+                                {showBinary && <th className="text-left py-3 px-4 font-semibold">Binary Address</th>}
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredInstructions.length === 0 ? (
+                            {filteredMemoryMap.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="text-center py-4 text-gray-500">
-                                        No instructions found
+                                        No address found
                                     </td>
                                 </tr>
                             ) : (
-                                filteredInstructions.map((instruction, index) => (
+                                filteredMemoryMap.map((adressMap, index) => (
                                     <tr
-                                        key={instruction.opcode}
+                                        key={adressMap.label}
                                         className={`border-b border-gray-800 hover:bg-gray-800 ${index % 2 === 0 ? 'bg-gray-850' : ''}`}
                                     >
-                                        <td className="py-3 px-4 font-mono text-blue-300">
-                                            {instruction.opcode}
-                                        </td>
-                                        <td className="py-3 px-4 font-mono text-green-300">
-                                            {instruction.mnemonic}
-                                        </td>
                                         {showHex && (
                                             <td className="py-3 px-4 font-mono text-yellow-300">
-                                                {instruction.hex}
+                                                {adressMap.hex}
                                             </td>
                                         )}
+                                        <td className="py-3 px-4 font-mono text-green-300">
+                                            {adressMap.label}
+                                        </td>
+                                        <td className="py-3 px-4 font-mono text-blue-300">
+                                            {adressMap.address}
+                                        </td>
                                         {showBinary && (
                                             <td className="py-3 px-4 font-mono text-purple-300">
-                                                {instruction.binary}
+                                                {adressMap.binary}
                                             </td>
                                         )}
                                     </tr>
@@ -135,16 +141,16 @@ export const Instructions: React.FC<InstructionsProps> = (props) => {
                 <div className="py-2 px-4 border-t border-gray-700 bg-background-light-3xl p-1 rounded">
                     <div className="flex flex-wrap gap-4 text-sm">
                         <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-blue-300"></div>
-                            <span>Opcode</span>
+                            <div className="w-3 h-3 bg-yellow-300"></div>
+                            <span>Hexadecimal</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 bg-green-300"></div>
                             <span>Mnemonic</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-yellow-300"></div>
-                            <span>Hexadecimal</span>
+                            <div className="w-3 h-3 bg-blue-300"></div>
+                            <span>Decimal</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 bg-purple-300"></div>

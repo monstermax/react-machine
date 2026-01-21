@@ -2,7 +2,7 @@
 import { useCallback, useState, useEffect } from "react";
 
 import type { InterruptHook } from "../useInterrupt";
-import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
+import { IRQ_MAP, MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 import { U8 } from "@/lib/integers";
 
 import type { u8 } from "@/types/cpu.types";
@@ -39,7 +39,7 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
 
             // Déclencher interruption clavier (IRQ 1)
             if (irqEnabled && interruptHook?.requestInterrupt) {
-                interruptHook.requestInterrupt(U8(MEMORY_MAP.IRQ_KEYBOARD));
+                interruptHook.requestInterrupt(U8(IRQ_MAP.IRQ_KEYBOARD));
             }
         };
 
@@ -103,7 +103,7 @@ export const useKeyboard = (interruptHook?: InterruptHook): KeyboardDevice => {
         setHasChar(true);
 
         if (interruptHook?.requestInterrupt) {
-            interruptHook.requestInterrupt(U8(MEMORY_MAP.IRQ_KEYBOARD));
+            interruptHook.requestInterrupt(U8(IRQ_MAP.IRQ_KEYBOARD));
         }
     }, [interruptHook?.requestInterrupt, setLastChar, setHasChar]);
 

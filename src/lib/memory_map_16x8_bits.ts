@@ -113,7 +113,7 @@ export const MEMORY_MAP = createMemoryMap({
     TIMER_BASE: 0xF020,
     TIMER_COUNTER: 0xF020,  // Lecture seule: compteur incrémenté à chaque cycle
     TIMER_CONTROL: 0xF021,  // Écriture: 0=stop, 1=start, 2=reset
-    TIMER_PRESCALER: 0xF0, // Diviseur de fréquence
+    TIMER_PRESCALER: 0xF022, // Diviseur de fréquence
     TIMER_TICK: 0xF023, // Declenchement de tick
 
     // Device 3: LEDs
@@ -230,8 +230,13 @@ export const MEMORY_MAP = createMemoryMap({
     // Device 17: DMA (0xF110-0xF11F) // Direct Memory Access
     DMA_BASE: 0xF110,
 
+});
 
-    // IRQ //
+
+
+// IRQ //
+
+export const IRQ_MAP = createMemoryMap({
 
     // IRQ Sources (pour référence)
     IRQ_TIMER: 0,      // Bit 0 - Timer

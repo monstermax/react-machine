@@ -1,7 +1,7 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
+import { IRQ_MAP, MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 
 import { U8 } from "@/lib/integers";
 
@@ -50,7 +50,7 @@ export class Timer extends EventEmitter implements IoDevice {
             const interrupt = this.devicesManager.getDeviceByName('interrupt') as Interrupt | undefined;
 
             if (interrupt) {
-                interrupt.requestInterrupt(U8(MEMORY_MAP.IRQ_TIMER));
+                interrupt.requestInterrupt(U8(IRQ_MAP.IRQ_TIMER));
 
             } else {
                 console.warn(`Missing Interrupt for Timer`);

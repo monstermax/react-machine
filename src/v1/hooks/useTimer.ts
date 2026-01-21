@@ -1,7 +1,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
+import { IRQ_MAP, MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
 import type { InterruptHook } from "./useInterrupt";
 import { U8 } from "@/lib/integers";
 
@@ -28,7 +28,7 @@ export const useTimer = (interruptHook: InterruptHook): TimerHook => {
             if (newVal >= period) {
                 // Déclencher interruption
                 //console.log('⏰ TIMER INTERRUPT! Requesting IRQ 0');
-                interruptHook.requestInterrupt(U8(MEMORY_MAP.IRQ_TIMER));
+                interruptHook.requestInterrupt(U8(IRQ_MAP.IRQ_TIMER));
                 return 0 as u8;
             }
 
