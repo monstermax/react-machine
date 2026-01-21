@@ -10,9 +10,9 @@ export function asmDirectoryPlugin(): Plugin {
     return {
         name: 'vite-plugin-asm-directory',
 
-        closeBundle() {
+        buildStart() {
             const asmPath = './public/asm';
-            const outputPath = './dist/asm-files.json';
+            const outputPath = './public/asm-files.json';
 
             // Vérifie si le dossier existe
             if (!fs.existsSync(asmPath)) {

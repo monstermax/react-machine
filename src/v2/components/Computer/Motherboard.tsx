@@ -200,6 +200,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
                                     <>
                                         <div className="bg-background-light-2xl w-96 h-48 border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
                                             <i>Insert <strong>Clock</strong> here</i>
+                                        <pre className="m-2">{`<Clock />`}</pre>
                                             <ClockIcon />
                                         </div>
                                     </>
@@ -221,6 +222,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
                                     <>
                                         <div className="bg-background-light-2xl w-96 h-full min-h-96 flex flex-col justify-center border border-foreground-light-xl items-center border-dashed">
                                             <i>Insert <strong>CPU</strong> here</i>
+                                        <pre className="m-2">{`<Cpu />`}</pre>
                                             <CpuIcon />
                                         </div>
                                     </>
@@ -239,7 +241,8 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
                             {childrenWithPropsMemoryBus.length === 0 && (
                                 <>
                                     <div className="bg-background-light-2xl w-96 h-[600px] border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
-                                        <i>Insert <strong>MemoryBus</strong> here</i>
+                                        <i>Insert <strong>Memory</strong> here</i>
+                                        <pre className="m-2">{`<Memory />`}</pre>
                                         <RAMIcon />
                                     </div>
                                 </>
@@ -258,6 +261,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
                                 <>
                                     <div className="bg-background-light-2xl w-96 h-[600px] border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
                                         <i>Insert <strong>Internal Devices</strong> here</i>
+                                        <pre className="m-2">{`<InternalDevices />`}</pre>
                                     </div>
                                 </>
                             )}

@@ -29,6 +29,7 @@ import { IDE } from '@/v2/components/Devices/IDE';
 import { Dma } from '@/v2/components/Memory/Dma';
 
 import type { u16, u8 } from '@/types/cpu.types';
+import { Instructions } from '@/v2/components/Cpu/Instructions';
 
 
 export const ComputerBeta: React.FC = () => {
@@ -55,14 +56,10 @@ export const ComputerBeta: React.FC = () => {
                 <Link to="/">Computer Simulator</Link>
             </h1>
 
-            <div>
+            <div className="pb-1">
                 <Computer>
                     <Motherboard>
                         <Clock frequency={1} />
-
-                        <Cpu registers>
-                            <Interrupt ioPort={4} open={false} />
-                        </Cpu>
 
                         <Cpu registers>
                             <Interrupt ioPort={4} open={false} />
@@ -108,6 +105,8 @@ export const ComputerBeta: React.FC = () => {
                         {/* Input */}
                         <Keyboard ioPort={0x05} name="keyboard" open={false} />
                     </ExternalDevices>
+
+                    <Instructions />
 
                     <IDE />
                 </Computer>

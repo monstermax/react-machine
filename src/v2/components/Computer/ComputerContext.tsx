@@ -11,7 +11,7 @@ const ComputerContext = createContext<ComputerContextType | undefined>(undefined
 export type ViewType = 'hidden' | 'closed' | 'open_simple' | 'open_advanced'
 
 
-export const Computer: React.FC<{ view?: ViewType, children: React.ReactNode }> = ({ view='open_advanced', children }) => {
+export const Computer: React.FC<{ view?: ViewType, children?: React.ReactNode }> = ({ view='open_advanced', children }) => {
     const computerRef = useRef<cpuApi.Computer | null>(null)
     const motherboardRef = useRef<cpuApi.Motherboard | null>(null)
     const memoryBusRef = useRef<cpuApi.MemoryBus | null>(null)

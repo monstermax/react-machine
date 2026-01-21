@@ -126,11 +126,6 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
             const childElement = child as React.ReactElement<any>;
 
             switch (childElement.type) {
-                case ComputerControls:
-                    return childElement;
-
-                case IDE:
-                    return childElement;
 
                 case DevicesManager: {
                     //return React.cloneElement(childElement, { onInstanceCreated: addDevicesManager });
@@ -149,8 +144,9 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
                 }
 
                 default:
-                    console.log(`Invalid component mounted into Computer :`, (childElement.type as JSXElementConstructor<any>).name);
-                    return null;
+                    //console.log(`Invalid component mounted into Computer :`, (childElement.type as JSXElementConstructor<any>).name);
+                    //return null;
+                    return childElement;
             }
         }
         return child;
@@ -243,7 +239,7 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
                 <div className="computer-children flex flex-col space-y-4 w-full">
 
                     {/* Computer Known Children */}
-                    <div className="computer-known-children w-full flex flex-col space-y-4">
+                    <div className={`computer-known-children w-full flex space-y-4 ${childrenWithPropsMotherboard.length && childrenWithPropsMotherboard.length ? "flex-col" : ""}`}>
 
                         {/* Motherboard */}
                         <div className="computer-motherboard w-full">
@@ -255,8 +251,9 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
 
                             {childrenWithPropsMotherboard.length === 0 && (
                                 <>
-                                    <div className="bg-background-light-2xl w-96 h-[600px] border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
+                                    <div className="bg-background-light-2xl m-auto w-96 h-[600px] border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
                                         <i>Insert <strong>Motherboard</strong> here</i>
+                                        <pre className="m-2">{`<Motherboard />`}</pre>
                                         {/* <MotherboardIcon /> */}
                                     </div>
                                 </>
@@ -273,8 +270,9 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
 
                             {childrenWithPropsDevicesManager.length === 0 && (
                                 <>
-                                    <div className="bg-background-light-2xl w-96 h-[600px] border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
+                                    <div className="bg-background-light-2xl m-auto w-96 h-[600px] border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
                                         <i>Insert <strong>External Devices</strong> here</i>
+                                        <pre className="m-2">{`<ExternalDevices />`}</pre>
                                         {/* <DevicesManagerIcon /> */}
                                     </div>
                                 </>
@@ -284,7 +282,7 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
 
                     {/* Computer Other Children */}
                     {childrenWithProps && (
-                        <div className="computer-other-children">
+                        <div className="computer-other-children space-y-4">
                             {childrenWithProps}
                         </div>
                     )}

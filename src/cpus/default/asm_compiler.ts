@@ -13,15 +13,15 @@ export async function loadSourceCodeFromFile(sourceFile: string): Promise<string
     //const sourceCode = sourceCodeModule.default;
 
     if (sourceFile.endsWith('.ts')) {
-        const sourceCodeModule = await import(`../../cpus/default/asm/${sourceFile}`)
-        const sourceCode = sourceCodeModule.default;
-        return sourceCode;
+        //const sourceCodeModule = await import(`../../cpus/default/asm/${sourceFile}`)
+        //const sourceCode = sourceCodeModule.default;
+        //return sourceCode;
     }
 
     if (false) {
-        const sourceCodeModule = await import(`../../cpus/default/asm/${sourceFile}?raw`)
-        const sourceCode = sourceCodeModule.default;
-        return sourceCode;
+        //const sourceCodeModule = await import(`../../cpus/default/asm/${sourceFile}?raw`)
+        //const sourceCode = sourceCodeModule.default;
+        //return sourceCode;
     }
 
     const response = await fetch(`/asm/${sourceFile}`);

@@ -19,19 +19,12 @@ import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits'
 import type { CompiledCode, u16, u8 } from '@/types/cpu.types';
 
 
-// const bootloaderSourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v1.asm");
-// const OsV1SourceCode = await loadSourceCodeFromFile("os/os_v1.asm");
-
-
-export const IDE: React.FC<{ open?: boolean }> = (props) => {
+export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
     const { computerRef, memoryBusRef } = useComputer();
-    const { open=false } = props
-
-    let initialContent = '\n\n\n';
-    //initialContent = BootloaderSourceCode;
-    //initialContent = OsV1SourceCode;
+    const { hidden=false, open=false } = props
 
     const [childrenVisible, setChildrenVisible] = useState(open);
+    const [initialContent, setInitialContent] = useState('\n'.repeat(3));
     const [editorContent, setEditorContent] = useState(initialContent);
     const [compiledCode, setCompiledCode] = useState<CompiledCode | null>(null);
     const [compiledContent, setCompiledContent] = useState("");
@@ -40,6 +33,8 @@ export const IDE: React.FC<{ open?: boolean }> = (props) => {
     const [compileMemoryOffsetUint, setCompileMemoryOffsetUint] = useState<u16>(0 as u16);
     const [compileLineOffsetStr, setCompileLineOffsetStr] = useState('0x00');
     const [compileLineOffsetUint, setCompileLineOffsetUint] = useState<u16>(0 as u16);
+
+    const [isFileModalOpen, setIsFileModalOpen] = useState(false);
 
 
     // Synchronize compileMemoryOffsetStr & compileMemoryOffsetUint
@@ -65,7 +60,18 @@ export const IDE: React.FC<{ open?: boolean }> = (props) => {
         setCompiledCode(finalized.code)
     }
 
-    const handleLoad = () => {
+    const handleOpenFile = async () => {
+        setIsFileModalOpen(true)
+    }
+
+    const openFile = async (filePath: string) => {
+        const response = await fetch(`/asm/${filePath}`);
+        const value = await response.text();
+        setInitialContent(value)
+    }
+
+
+    const handleLoadCode = () => {
         if (!compiledCode) return;
         if (!memoryBusRef.current) return;
 
@@ -99,10 +105,10 @@ export const IDE: React.FC<{ open?: boolean }> = (props) => {
 
 
     return (
-        <div className={`ide w-auto ${false ? "hidden" : ""}`}>
+        <div className={`ide w-auto bg-teal-900 p-1 ${hidden ? "hidden" : ""}`}>
 
             {/* IDE Head */}
-            <div className="w-full flex bg-background-light-xl p-2 rounded">
+            <div className="w-full flex bg-background-light p-2 rounded">
                 <h2 className="font-bold">IDE</h2>
 
                 {true && (
@@ -116,14 +122,23 @@ export const IDE: React.FC<{ open?: boolean }> = (props) => {
             </div>
 
             {/* IDE Content */}
-            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
-                <div className="flex justify-end gap-2 px-2">
+            <div className={`${childrenVisible ? "flex" : "hidden"} flex-col space-y-2 p-1`}>
+
+                {/* Toolbar */}
+                <div className="ide-toolbar bg-background-light-xl flex justify-end gap-2 p-2">
+
+                    <button
+                        onClick={() => handleOpenFile()}
+                        className="cursor-pointer px-3 bg-background-light-2xl hover:bg-background-light-3xl rounded"
+                    >
+                        Open File
+                    </button>
 
                     <div className="ms-auto flex gap-2 items-center">
                         <div>Offset Memory:</div>
 
                         <input
-                            type="text"
+                            type="search"
                             value={'0x' + (compileMemoryOffsetStr.startsWith('0x') ? compileMemoryOffsetStr.slice(2) : compileMemoryOffsetStr)}
                             placeholder="0x0000"
                             list="ide-offset-memory"
@@ -161,33 +176,140 @@ export const IDE: React.FC<{ open?: boolean }> = (props) => {
 
                     <button
                         onClick={() => handleCompile()}
-                        className="cursor-pointer px-3 bg-background-light-xl rounded"
-                        >
+                        className="cursor-pointer px-3 bg-background-light-2xl hover:bg-background-light-3xl rounded"
+                    >
                         Compile
                     </button>
 
                     <button
-                        onClick={() => handleLoad()}
-                        className="cursor-pointer px-3 bg-background-light-xl rounded"
-                        >
+                        onClick={() => handleLoadCode()}
+                        className="cursor-pointer px-3 bg-background-light-2xl hover:bg-background-light-3xl rounded"
+                    >
                         Load
                     </button>
 
                 </div>
 
-                <div className="h-96">
-                    <div className="grid grid-cols-2 gap-8 mx-2">
-                        <div>
-                            <Editor className="h-full" language="nasm" value={initialContent} onUpdate={(value, editor) => codeChanged(value, editor)}></Editor>
+                <div className="ide-editors">
+                    <div className="ide-editors-inner grid grid-cols-2 gap-8 mx-2">
+                        <div className="flex flex-col">
+                            <h2>Source Code</h2>
+                            <Editor className="ide-editor-source h-full" language="nasm" value={initialContent} onUpdate={(value, editor) => codeChanged(value, editor)}></Editor>
                         </div>
-                        <div>
-                            <Editor className="h-full" language="javascript" value={compiledContent}></Editor>
+                        <div className="flex flex-col">
+                            <h2>Compiled Code</h2>
+                            <Editor className="ide-editor-compiled h-full" language="javascript" value={compiledContent}></Editor>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <FileModal
+                isOpen={isFileModalOpen}
+                onClose={() => setIsFileModalOpen(false)}
+                onSelectFile={openFile}
+            />
         </div>
     );
 }
+
+
+
+interface FileModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSelectFile: (filePath: string) => void;
+}
+
+interface FileIndex {
+    generated: string;
+    count: number;
+    files: string[];
+}
+
+
+export const FileModal: React.FC<FileModalProps> = ({
+    isOpen,
+    onClose,
+    onSelectFile
+}) => {
+    const [files, setFiles] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            loadFileList();
+        }
+    }, [isOpen]);
+
+    const loadFileList = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('/asm-files.json');
+            const fileIndex: FileIndex = await response.json();
+            setFiles(fileIndex.files);
+
+        } catch (error) {
+            console.error('Failed to load file list:', error);
+            setFiles([]);
+
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    const handleFileClick = (filePath: string) => {
+        onSelectFile(filePath);
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-gray-800 rounded-lg p-6 w-96 overflow-hidden flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold">Select a File</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-400 hover:text-white text-xl"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto mb-4">
+                    {loading ? (
+                        <div className="text-center py-4">Loading files...</div>
+                    ) : files.length === 0 ? (
+                        <div className="text-center py-4">No files found</div>
+                    ) : (
+                        <ul className="space-y-1">
+                            {files.map((file, index) => (
+                                <li key={index}>
+                                    <button
+                                        onClick={() => handleFileClick(file)}
+                                        className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded truncate cursor-pointer"
+                                    >
+                                        {file}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+
+                <div className="flex justify-end">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 
