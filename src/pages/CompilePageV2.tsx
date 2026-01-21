@@ -11,8 +11,9 @@ import "prism-react-editor/layout.css"
 import "prism-react-editor/themes/github-dark.css"
 import type { PreCompiledCode } from "@/types/cpu.types";
 import { createLexer } from "@/cpus/default/asm_compiler_v2";
-import { createParser, printAST } from "@/cpus/default/asm_compiler_v2_parser";
-import { generateCode, generateFormattedCode } from "@/cpus/default/asm_compiler_v2_generator";
+import { createParser, printAST } from "@/cpus/default/v2/asm_compiler_v2_parser";
+import { generateCode, generateFormattedCode } from "@/cpus/default/v2/asm_compiler_v2_generator";
+import { compile, formatBytecode } from "@/cpus/default/v2";
 //import "prism-react-editor/search.css"
 
 
@@ -54,6 +55,7 @@ export const CompilePageV2: React.FC = () => {
             //const result = await preCompileCode(sourceCode, compileMemoryOffsetUint, compileLineOffsetUint);
             //setCompiledCode(result.code);
 
+            /*
             const lexer = createLexer(editorContent);
             const tokens = lexer.tokenize();
 
@@ -71,17 +73,14 @@ export const CompilePageV2: React.FC = () => {
                 }
             });
 
-            const parser = createParser(tokens);
+            const parser = createParser(editorContent);
             const ast = parser.parse();
-
-            //printAST(ast);
-
-
-            // Génération du code
-            //const output = generateCode(ast);
-            //setCompileConsole(JSON.stringify(output))
-
             const output = generateFormattedCode(ast);
+            */
+
+            const result = compile(editorContent);
+            const output = formatBytecode(result);
+
             setCompileConsole(output)
 
             //console.log(output);

@@ -1,5 +1,5 @@
 
-import { Opcode, INSTRUCTIONS_WITH_OPERAND, INSTRUCTIONS_WITH_TWO_OPERANDS } from './cpu_instructions';
+import { Opcode, INSTRUCTIONS_WITH_OPERAND, INSTRUCTIONS_WITH_TWO_OPERANDS } from '../cpu_instructions';
 
 import type { ASTNode, Operand } from './asm_compiler_v2_parser';
 
