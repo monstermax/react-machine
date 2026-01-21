@@ -7,13 +7,12 @@
 @include os/devices/led/led.lib.asm
 
 
-; TODO: "Booting from hardisk..."
-
-
 OS_START:
 
 MAIN:
     SET_SP @OS_STACK_END ; Initialiser le Stack Pointer
+
+    CALL $CLEAR_CONSOLE() ; Efface la console
 
     SET_FREQ 50
     CALL $MALLOC_INIT()

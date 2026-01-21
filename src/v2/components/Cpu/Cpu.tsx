@@ -14,6 +14,7 @@ import { CpuRegisters } from './Registers';
 
 export type CpuProps = {
     hidden?: boolean,
+    open?: boolean,
     cores?: number,
     type?: string, // simple, z80, 8086, ...
     active?: boolean,
@@ -25,7 +26,7 @@ export type CpuProps = {
 
 
 export const Cpu: React.FC<CpuProps> = (props) => {
-    const { hidden, cores: coresCount, type: cpuType, active: cpuActiveAtInit, controls: showControls = false, registers: showRegisters = false, children } = props;
+    const { hidden, cores: coresCount, type: cpuType, active: cpuActiveAtInit, controls: showControls = false, registers: showRegisters = false, open=false, children } = props;
     const { onInstanceCreated } = props;
     const { motherboardRef, devicesManagerRef } = useComputer();
 
@@ -46,7 +47,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     const [coresHalted, setCoresHalted] = useState<Map<number, boolean>>(new Map);
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open);
     const [mouseDownOffset, setMouseDownOffset] = useState<null | { x: number, y: number }>(null);
     const [isDivAbsolute, setIsDivAbsolute] = useState(false)
     const divRef = useRef<HTMLDivElement>(null);
@@ -345,6 +346,11 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 )}
             </div>
 
+            {/* CPU Preview */}
+            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center bg-background-light-3xl p-1 min-w-[200px]`}>
+                <CpuIcon />
+            </div>
+
             {/* CPU Content */}
             <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1 min-w-[400px]`}>
 
@@ -415,4 +421,61 @@ export const Cpu: React.FC<CpuProps> = (props) => {
         </div>
     );
 };
+
+
+
+const CpuIcon: React.FC = () => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+
+            {/* Corps principal du CPU */}
+            <rect className="cpu-body fill-[#4a6fa5]" x="10" y="10" width="80" height="80" rx="5" ry="5" />
+
+            {/* Cœur intérieur */}
+            <rect className="cpu-inner fill-[#3a5a8c]" x="20" y="20" width="60" height="60" rx="3" ry="3" />
+
+            {/* Connecteurs latéraux - Haut */}
+            <rect className="cpu-pins fill-[#2d4466]" x="15" y="5" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="25" y="5" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="35" y="5" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="45" y="5" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="55" y="5" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="65" y="5" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="75" y="5" width="5" height="5" rx="1" ry="1" />
+
+            {/* Connecteurs latéraux - Bas */}
+            <rect className="cpu-pins fill-[#2d4466]" x="15" y="90" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="25" y="90" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="35" y="90" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="45" y="90" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="55" y="90" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="65" y="90" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="75" y="90" width="5" height="5" rx="1" ry="1" />
+
+            {/* Connecteurs latéraux - Gauche */}
+            <rect className="cpu-pins fill-[#2d4466]" x="5" y="15" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="5" y="25" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="5" y="35" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="5" y="45" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="5" y="55" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="5" y="65" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="5" y="75" width="5" height="5" rx="1" ry="1" />
+
+            {/* Connecteurs latéraux - Droite */}
+            <rect className="cpu-pins fill-[#2d4466]" x="90" y="15" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="90" y="25" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="90" y="35" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="90" y="45" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="90" y="55" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="90" y="65" width="5" height="5" rx="1" ry="1" />
+            <rect className="cpu-pins fill-[#2d4466]" x="90" y="75" width="5" height="5" rx="1" ry="1" />
+
+            {/* Texte CPU */}
+            <text className="cpu-text fill-[#4a6fa5]" x="50" y="55" textAnchor="middle" dominantBaseline="central">CPU</text>
+
+            {/* Marqueur de coin (repère d'orientation) */}
+            <rect className="cpu-pins fill-[#2d4466]" x="15" y="15" width="8" height="8" rx="1" ry="1" />
+        </svg>
+    );
+}
 

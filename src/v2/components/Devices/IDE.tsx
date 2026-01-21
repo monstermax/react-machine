@@ -25,8 +25,8 @@ import type { CompiledCode, u16, u8 } from '@/types/cpu.types';
 
 export const IDE: React.FC<{ open?: boolean }> = (props) => {
     const { computerRef, memoryBusRef } = useComputer();
-
     const { open=false } = props
+
     let initialContent = '\n\n\n';
     //initialContent = BootloaderSourceCode;
     //initialContent = OsV1SourceCode;

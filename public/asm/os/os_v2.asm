@@ -34,12 +34,10 @@ STR_INVALID_KEY:
 
 
 HANDLE_USER_MENU:
-    CLEAR_CONSOLE:
-        MOV_A_IMM 0x01
-        MOV_MEM_A @CONSOLE_CLEAR
+    CALL $CLEAR_CONSOLE()
 
-        CALL_PRINT_MENU:
-        CALL $PRINT_MENU()
+    CALL_PRINT_MENU:
+    CALL $PRINT_MENU()
 
 
     WAIT_KEY_INIT:
@@ -80,7 +78,7 @@ HANDLE_USER_MENU:
         DISPATCH_KEY_3:
             MOV_B_IMM 0x33 ; valeur de la touche "3"
             SUB
-            JZ $CLEAR_CONSOLE ; Go to Clear Console
+            JZ $HANDLE_USER_MENU ; Go to Clear Console
 
         DISPATCH_KEY_OTHER:
             ; Touche inconnue
@@ -118,7 +116,7 @@ HANDLE_USER_MENU:
 
         ;SET_FREQ 50
         ;CALL $CONSOLE_PRINT_STOP_PROGRAM() ; display STOP PROGRAM
-        ;JMP $CLEAR_CONSOLE
+        ;JMP $HANDLE_USER_MENU
 
 
     PRINT_MENU():

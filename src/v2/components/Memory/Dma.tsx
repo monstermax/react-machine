@@ -18,7 +18,7 @@ export type DmaProps = {
 }
 
 export const Dma: React.FC<DmaProps> = (props) => {
-    const { open = true, hidden = false, ioPort=null, children, onInstanceCreated } = props;
+    const { open = false, hidden = false, ioPort = null, children, onInstanceCreated } = props;
     const { memoryBusRef } = useComputer();
 
     // Core
@@ -146,7 +146,7 @@ export const Dma: React.FC<DmaProps> = (props) => {
     }
 
 
-    if (! dmaInstance) {
+    if (!dmaInstance) {
         return <>Loading DMA</>
     }
 
@@ -158,7 +158,7 @@ export const Dma: React.FC<DmaProps> = (props) => {
             <div className="w-full flex bg-background-light-xl p-2 rounded cursor-move" onMouseDown={(event) => handleMouseDown(event)}>
                 <h2 className="font-bold">Direct Memory Access</h2>
 
-                {true && (
+                {childrenWithProps?.length && (
                     <div className="ms-auto ">
                         {isDivAbsolute && (
                             <button
@@ -179,6 +179,11 @@ export const Dma: React.FC<DmaProps> = (props) => {
                 )}
             </div>
 
+            {/* Dma Preview */}
+            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center bg-background-light-3xl p-1 min-w-[200px]`}>
+                <ChipIcon />
+            </div>
+
             {/* Dma Content */}
             <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1 min-w-[350px]`}>
 
@@ -196,3 +201,70 @@ export const Dma: React.FC<DmaProps> = (props) => {
     );
 }
 
+
+const ChipIcon = () => {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 100 100"
+            width="100"
+            height="100"
+        >
+            {/* Boîtier du chip */}
+            <rect x="15" y="15" width="70" height="70" rx="3" fill="#1e293b" stroke="#0f172a" strokeWidth="2" />
+
+            {/* Die/silicium interne */}
+            <rect x="25" y="25" width="50" height="50" rx="2" fill="#374151" />
+
+            {/* Pads de connexion */}
+            <g fill="#d97706">
+                {/* Haut */}
+                <rect x="20" y="10" width="5" height="5" />
+                <rect x="30" y="10" width="5" height="5" />
+                <rect x="40" y="10" width="5" height="5" />
+                <rect x="50" y="10" width="5" height="5" />
+                <rect x="60" y="10" width="5" height="5" />
+                <rect x="70" y="10" width="5" height="5" />
+
+                {/* Bas */}
+                <rect x="20" y="85" width="5" height="5" />
+                <rect x="30" y="85" width="5" height="5" />
+                <rect x="40" y="85" width="5" height="5" />
+                <rect x="50" y="85" width="5" height="5" />
+                <rect x="60" y="85" width="5" height="5" />
+                <rect x="70" y="85" width="5" height="5" />
+
+                {/* Gauche */}
+                <rect x="10" y="20" width="5" height="5" />
+                <rect x="10" y="30" width="5" height="5" />
+                <rect x="10" y="40" width="5" height="5" />
+                <rect x="10" y="50" width="5" height="5" />
+                <rect x="10" y="60" width="5" height="5" />
+                <rect x="10" y="70" width="5" height="5" />
+
+                {/* Droite */}
+                <rect x="85" y="20" width="5" height="5" />
+                <rect x="85" y="30" width="5" height="5" />
+                <rect x="85" y="40" width="5" height="5" />
+                <rect x="85" y="50" width="5" height="5" />
+                <rect x="85" y="60" width="5" height="5" />
+                <rect x="85" y="70" width="5" height="5" />
+            </g>
+
+            {/* Marquage/repere */}
+            <circle cx="18" cy="18" r="2" fill="#fbbf24" />
+
+            {/* Circuits internes stylisés */}
+            <g stroke="#60a5fa" strokeWidth="0.5" fill="none">
+                <path d="M30,35 L45,35 L45,50 L60,50" />
+                <path d="M40,40 L40,60 L55,60" />
+                <path d="M50,30 L50,45 L65,45" />
+            </g>
+
+            {/* Étiquette */}
+            <text x="50" y="50" textAnchor="middle" fontSize="8" fill="#f3f4f6" fontFamily="monospace">
+                µC
+            </text>
+        </svg>
+    );
+};

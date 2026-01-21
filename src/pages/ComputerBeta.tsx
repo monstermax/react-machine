@@ -60,14 +60,14 @@ export const ComputerBeta: React.FC = () => {
                     <Motherboard>
                         <Clock frequency={1} />
 
-                        <Cpu registers controls>
+                        <Cpu registers>
                             <Interrupt ioPort={4} open={false} />
                         </Cpu>
 
                         <Memory>
                             <Rom data={bootloader} />
-                            <Ram open={true} />
-                            <Dma ioPort={0x11} />
+                            <Ram />
+                            <Dma ioPort={0x11} hidden />
                         </Memory>
 
                         <InternalDevices>
@@ -107,7 +107,7 @@ export const ComputerBeta: React.FC = () => {
                         {/* <IDE /> adapter la page de compilation en composant Device + permettre l'execution du code */}
                     </ExternalDevices>
 
-                    <IDE open={true} />
+                    <IDE />
                 </Computer>
             </div>
 

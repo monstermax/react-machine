@@ -19,7 +19,7 @@ export type RomProps = {
 }
 
 export const Rom: React.FC<RomProps> = (props) => {
-    const { data, open = true, hidden = false, size: maxSize = 1 + MEMORY_MAP.ROM_END - MEMORY_MAP.ROM_START, children, onInstanceCreated } = props;
+    const { data, open = false, hidden = false, size: maxSize = 1 + MEMORY_MAP.ROM_END - MEMORY_MAP.ROM_START, children, onInstanceCreated } = props;
     const { memoryBusRef } = useComputer();
 
     // Core
@@ -151,7 +151,7 @@ export const Rom: React.FC<RomProps> = (props) => {
     }
 
 
-    if (! romInstance) {
+    if (!romInstance) {
         return <>Loading ROM</>
     }
 
@@ -184,6 +184,11 @@ export const Rom: React.FC<RomProps> = (props) => {
                 )}
             </div>
 
+            {/* ROM Preview */}
+            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center bg-background-light-3xl p-1 min-w-[200px]`}>
+                <ROMIcon />
+            </div>
+
             {/* ROM Content */}
             <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1 min-w-[350px]`}>
 
@@ -208,3 +213,48 @@ export const Rom: React.FC<RomProps> = (props) => {
     );
 }
 
+
+const ROMIcon = () => {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 120 80"
+            width="120"
+            height="80"
+        >
+            {/* Corps de l'EPROM */}
+            <path d="M10,10 L110,10 L110,70 L10,70 Z M60,0 L70,0 L70,10 L60,10 Z"
+                fill="#1e293b" stroke="#0f172a" strokeWidth="1" />
+
+            {/* Fenêtre de quartz (transparente) */}
+            <rect x="40" y="15" width="40" height="20" fill="#60a5fa" opacity="0.3" stroke="#3b82f6" strokeWidth="1" />
+
+            {/* Pins */}
+            <g fill="#ca8a04">
+                {/* Pin 1 (carré - repère) */}
+                <path d="M5,15 L10,15 L10,20 L5,20 Z" />
+                {/* Autres pins */}
+                <path d="M5,25 L10,25 L10,30 L5,30 Z" />
+                <path d="M5,35 L10,35 L10,40 L5,40 Z" />
+                <path d="M5,45 L10,45 L10,50 L5,50 Z" />
+                <path d="M5,55 L10,55 L10,60 L5,60 Z" />
+                <path d="M5,65 L10,65 L10,70 L5,70 Z" />
+
+                <path d="M110,15 L115,15 L115,20 L110,20 Z" />
+                <path d="M110,25 L115,25 L115,30 L110,30 Z" />
+                <path d="M110,35 L115,35 L115,40 L110,40 Z" />
+                <path d="M110,45 L115,45 L115,50 L110,50 Z" />
+                <path d="M110,55 L115,55 L115,60 L110,60 Z" />
+                <path d="M110,65 L115,65 L115,70 L110,70 Z" />
+            </g>
+
+            {/* Étiquette */}
+            <text x="60" y="50" textAnchor="middle" fontSize="8" fill="#fbbf24" fontFamily="monospace">
+                EPROM
+            </text>
+            <text x="60" y="60" textAnchor="middle" fontSize="6" fill="#d1d5db" fontFamily="monospace">
+                27C256
+            </text>
+        </svg>
+    );
+};

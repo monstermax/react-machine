@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor, type MouseEvent } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '@/v2/api';
 import { useComputer } from '../Computer/ComputerContext';
@@ -27,21 +27,23 @@ const frequencies = [
 export type ClockProps = {
     frequency?: number;
     hidden?: boolean;
+    open?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.Clock) => void,
 }
 
+
 export const Clock: React.FC<ClockProps> = (props) => {
-    const { hidden, frequency: initialFrequency, children, onInstanceCreated } = props;
+    const { hidden = false, open = false, frequency: initialFrequency, children, onInstanceCreated } = props;
     const { motherboardRef } = useComputer();
 
     // Core
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open);
     const [mouseDownOffset, setMouseDownOffset] = useState<null | { x: number, y: number }>(null);
-    const [isDivAbsolute, setIsDivAbsolute] = useState(true)
+    const [isDivAbsolute, setIsDivAbsolute] = useState(false)
     const divRef = useRef<HTMLDivElement>(null);
     const [paused, setPaused] = useState(true);
     const [clockCycle, setClockCycle] = useState(0);
@@ -195,8 +197,8 @@ export const Clock: React.FC<ClockProps> = (props) => {
             window.addEventListener('mousemove', handleMouseMove)
             window.addEventListener('mouseup', handleMouseUp)
 
-            divRef.current.style.position = 'absolute';
-            setIsDivAbsolute(true)
+            //divRef.current.style.position = 'absolute';
+            //setIsDivAbsolute(true)
 
             return () => {
                 window.removeEventListener('mousemove', handleMouseMove)
@@ -214,7 +216,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
         setIsDivAbsolute(false)
     }
 
-    const handleMouseDown = (event: MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const handleMouseDown: React.MouseEventHandler<HTMLDivElement> = (event) => {
         if (!divRef.current) return;
         const rect = divRef.current.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
@@ -231,8 +233,15 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
     const handleMouseMove = (event: MouseEvent) => {
         if (divRef.current && mouseDownOffset) {
-            divRef.current.style.left = (event.pageX - mouseDownOffset.x) + 'px';
-            divRef.current.style.top = (event.pageY - mouseDownOffset.y) + 'px';
+            if (!isDivAbsolute) {
+                divRef.current.style.position = 'absolute';
+                setIsDivAbsolute(true)
+            }
+
+            const newX = event.pageX - mouseDownOffset.x;
+            const newY = event.pageY - mouseDownOffset.y;
+            divRef.current.style.left = newX + 'px';
+            divRef.current.style.top = newY + 'px';
         }
     }
 
@@ -268,6 +277,11 @@ export const Clock: React.FC<ClockProps> = (props) => {
                         </button>
                     </div>
                 )}
+            </div>
+
+            {/* Clock Preview */}
+            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center bg-background-light-3xl p-1 min-w-[200px]`}>
+                <ClockIcon />
             </div>
 
             {/* Clock Content */}
@@ -327,3 +341,41 @@ export const Clock: React.FC<ClockProps> = (props) => {
         </div>
     );
 }
+
+
+
+const ClockIcon = () => {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 100 60"
+            width="100"
+            height="60"
+        >
+            {/* Boîtier du quartz/oscillateur */}
+            <rect x="20" y="10" width="60" height="40" rx="3" fill="#1f2937" stroke="#374151" strokeWidth="1" />
+
+            {/* Métallisation */}
+            <rect x="20" y="10" width="60" height="8" fill="#9ca3af" />
+            <rect x="20" y="42" width="60" height="8" fill="#9ca3af" />
+
+            {/* Étiquette */}
+            <text x="50" y="35" textAnchor="middle" fontSize="7" fill="#f3f4f6" fontFamily="monospace">
+                16.000 MHz
+            </text>
+
+            {/* Pins */}
+            <g fill="#6b7280">
+                <rect x="15" y="15" width="5" height="10" rx="1" />
+                <rect x="15" y="35" width="5" height="10" rx="1" />
+                <rect x="80" y="15" width="5" height="10" rx="1" />
+                <rect x="80" y="35" width="5" height="10" rx="1" />
+            </g>
+
+            {/* Symbole d'oscillation */}
+            <path d="M40,25 Q45,20 50,25 Q55,30 60,25" stroke="#60a5fa" strokeWidth="1.5" fill="none" />
+            <circle cx="50" cy="25" r="2" fill="#60a5fa" />
+        </svg>
+    );
+};
+

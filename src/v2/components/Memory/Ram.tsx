@@ -22,7 +22,7 @@ export type RamProps = {
 }
 
 export const Ram: React.FC<RamProps> = (props) => {
-    const { data, open = true, hidden = false, size: maxSize = 1 + MEMORY_MAP.RAM_END - MEMORY_MAP.RAM_START, children, onInstanceCreated } = props;
+    const { data, open = false, hidden = false, size: maxSize = 1 + MEMORY_MAP.RAM_END - MEMORY_MAP.RAM_START, children, onInstanceCreated } = props;
     const { memoryBusRef } = useComputer();
 
     // Core
@@ -188,7 +188,7 @@ export const Ram: React.FC<RamProps> = (props) => {
     }
 
 
-    if (! ramInstance) {
+    if (!ramInstance) {
         return <>Loading RAM</>
     }
 
@@ -219,6 +219,11 @@ export const Ram: React.FC<RamProps> = (props) => {
                         </button>
                     </div>
                 )}
+            </div>
+
+            {/* RAM Preview */}
+            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center bg-background-light-3xl p-1 min-w-[200px]`}>
+                <RAMIcon />
             </div>
 
             {/* RAM Content */}
@@ -262,5 +267,50 @@ export const Ram: React.FC<RamProps> = (props) => {
         </div>
     );
 }
+
+
+const RAMIcon = () => {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 160 60"
+            width="160"
+            height="60"
+        >
+            {/* Corps principal de la barrette RAM (longue et fine) */}
+            <path
+                d="M10,10 L150,10 L150,50 L10,50 Z M95,0 Z"
+                fill="#2563eb"
+                stroke="#1d4ed8"
+                strokeWidth="1"
+            />
+
+            {/* Pins sur le côté long inférieur */}
+            <g fill="#ca8a04">
+                <path d="M15,50 L20,50 L20,60 L15,60 Z" />
+                <path d="M30,50 L35,50 L35,60 L30,60 Z" />
+                <path d="M45,50 L50,50 L50,60 L45,60 Z" />
+                <path d="M60,50 L65,50 L65,60 L60,60 Z" />
+                <path d="M75,50 L80,50 L80,60 L75,60 Z" />
+                <path d="M90,50 L95,50 L95,60 L90,60 Z" />
+                <path d="M105,50 L110,50 L110,60 L105,60 Z" />
+                <path d="M120,50 L125,50 L125,60 L120,60 Z" />
+                <path d="M135,50 L140,50 L140,60 L135,60 Z" />
+            </g>
+
+            {/* Puces mémoire simplifiées */}
+            <g fill="#1e293b">
+                <path d="M20,15 L40,15 L40,25 L20,25 Z" />
+                <path d="M50,15 L70,15 L70,25 L50,25 Z" />
+                <path d="M80,15 L100,15 L100,25 L80,25 Z" />
+                <path d="M110,15 L130,15 L130,25 L110,25 Z" />
+                <path d="M20,35 L40,35 L40,45 L20,45 Z" />
+                <path d="M50,35 L70,35 L70,45 L50,45 Z" />
+                <path d="M80,35 L100,35 L100,45 L80,45 Z" />
+                <path d="M110,35 L130,35 L130,45 L110,45 Z" />
+            </g>
+        </svg>
+    );
+};
 
 

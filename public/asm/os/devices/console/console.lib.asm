@@ -4,9 +4,27 @@
 @include os/arithmetic/math2.lib.asm
 
 
+
 @define8 ASCII_EOL 0x0A
+@define8 ASCII_RET 0x0D
+@define8 ASCII_ESCAPE 0x1B
 @define8 ASCII_SPACE 0x20
 @define8 ASCII_EXCLAM 0x21
+@define8 ASCII_DBLQUOTE 0x22
+@define8 ASCII_SHARP 0x23
+@define8 ASCII_DOLLAR 0x24
+@define8 ASCII_PERCENT 0x25
+@define8 ASCII_AND 0x26
+@define8 ASCII_QUOTE 0x27
+@define8 ASCII_PARENTH_OPEN 0x28
+@define8 ASCII_PARENTH_CLOSE 0x29
+@define8 ASCII_MUL 0x2A
+@define8 ASCII_ADD 0x2B
+@define8 ASCII_COMMA 0x2C
+@define8 ASCII_SUB 0x2D
+@define8 ASCII_DOT 0x2E
+@define8 ASCII_SLASH 0x2F
+@define8 ASCII_AROBASE 0x40
 
 @define8 ASCII_0 0x30
 @define8 ASCII_1 0x31
@@ -77,6 +95,14 @@
 TEXT_DEMO:
     ;.string "Welcome on OS v1"
     .string "OS v1"
+
+STR_WELCOME:
+    ;.string "Welcome on OS v1"
+    .string "OS v1"
+
+STR_WAITING_PROGRAM:
+    ;.string "Welcome on OS v1"
+    .string "Waiting for program..."
 
 TEXT_START_PROGRAM:
     ;.string "Starting Program"
@@ -168,9 +194,14 @@ CONSOLE_PRINT_ERROR():
 
 
 CONSOLE_PRINT_WELCOME():
-    MOV_C_IMM <$TEXT_DEMO
-    MOV_D_IMM >$TEXT_DEMO
+    MOV_C_IMM <$STR_WELCOME
+    MOV_D_IMM >$STR_WELCOME
     CALL $CONSOLE_PRINT_STRING()
+
+    MOV_C_IMM <$STR_WAITING_PROGRAM
+    MOV_D_IMM >$STR_WAITING_PROGRAM
+    CALL $CONSOLE_PRINT_STRING()
+
     RET
 
 

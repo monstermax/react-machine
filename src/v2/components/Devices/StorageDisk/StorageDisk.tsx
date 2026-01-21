@@ -22,7 +22,7 @@ export type StorageDiskProps = {
 
 
 export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
-    const { hidden, name, ioPort, persistent, open=true, data, size: maxSize, children, onInstanceCreated } = props
+    const { hidden, name, ioPort, persistent, open = true, data, size: maxSize, children, onInstanceCreated } = props
 
     // Core
     const [storageDiskInstance, setStorageDiskInstance] = useState<cpuApi.StorageDisk | null>(null);
@@ -47,7 +47,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
         //console.log('buildMemoryInstructionMap:', name, storage)
         return buildMemoryInstructionMap(storage);
     },
-    [storageDiskInstance, storage]);
+        [storageDiskInstance, storage]);
 
 
     // Instanciate StorageDisk
@@ -187,6 +187,12 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
                 )}
             </div>
 
+            {/* StorageDisk Preview */}
+            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center bg-background-light-3xl p-1 min-w-[200px]`}>
+                <HardDriveIcon />
+            </div>
+
+
             {/* StorageDisk Content */}
             <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
 
@@ -248,7 +254,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
                         </button>
 
                         <button
-                            onClick={() => { if (confirm(`Format Disk Filesystem ${name}`)) { if (storageDiskInstance) {storageDiskInstance.formatDisk()} } }}
+                            onClick={() => { if (confirm(`Format Disk Filesystem ${name}`)) { if (storageDiskInstance) { storageDiskInstance.formatDisk() } } }}
                             className={`cursor-pointer px-2 py-1 font-medium transition-colors rounded bg-red-400`}
                         >
                             Format FS
@@ -270,4 +276,41 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
         </div>
     );
 }
+
+
+const HardDriveIcon = () => {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 100 70"
+            width="100"
+            height="70"
+        >
+            {/* Plaquettes/plateaux */}
+            <circle cx="50" cy="35" r="30" fill="#374151" stroke="#1f2937" strokeWidth="1" />
+            <circle cx="50" cy="35" r="25" fill="#4b5563" stroke="#374151" strokeWidth="1" />
+            <circle cx="50" cy="35" r="15" fill="#6b7280" stroke="#4b5563" strokeWidth="1" />
+
+            {/* Bras de lecture/écriture */}
+            <path d="M50,35 L70,20" stroke="#dc2626" strokeWidth="1.5" strokeLinecap="round" />
+            <rect x="68" y="18" width="4" height="4" rx="1" fill="#dc2626" transform="rotate(45 70 20)" />
+
+            {/* Moyeu central */}
+            <circle cx="50" cy="35" r="8" fill="#9ca3af" />
+            <circle cx="50" cy="35" r="3" fill="#d1d5db" />
+
+            {/* Contour boîtier */}
+            <rect x="5" y="5" width="90" height="60" rx="5" fill="none" stroke="#111827" strokeWidth="2" />
+
+            {/* Connecteurs */}
+            <rect x="80" y="20" width="10" height="15" fill="#d97706" rx="1" />
+            <rect x="82" y="22" width="6" height="11" fill="#b45309" />
+
+            {/* Étiquette */}
+            <text x="50" y="60" textAnchor="middle" fontSize="6" fill="#9ca3af" fontFamily="monospace">
+                HDD
+            </text>
+        </svg>
+    );
+};
 

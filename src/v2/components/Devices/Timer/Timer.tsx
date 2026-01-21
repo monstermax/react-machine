@@ -81,11 +81,15 @@ export const Timer: React.FC<TimerProps> = (props) => {
             }
 
             // Emit initial state
-            timer.emit('state', { counter: timer.counter, period: timer.period, enabled: timer.enabled })
+            timer.emit('state', {
+                counter: timer.counter,
+                period: timer.period,
+                enabled: timer.enabled,
+            })
 
             //setInstanciated(true)
 
-            console.log(`Timer Initialized`)
+            //console.log(`Timer Initialized`)
         }
 
         const timer = setTimeout(_instanciateTimer, 100);
