@@ -22,7 +22,7 @@ export const CpuRegisters: React.FC<CpuRegistersProps> = (props) => {
     //const [contentVisible, setContentVisible] = useState(true);
 
     return (
-        <div className={`w-auto rounded bg-background-light-2xl space-y-2 ${hidden ? "hidden" : ""}`}>
+        <div className={`w-auto rounded space-y-2 ${hidden ? "hidden" : ""}`}>
             {props.coresIds.map(coreIdx => (
                 <CoreRegisters key={coreIdx}
                     coreIdx={coreIdx}

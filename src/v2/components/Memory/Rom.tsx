@@ -230,8 +230,7 @@ const ROMIcon = () => {
             height="80"
         >
             {/* Corps de l'EPROM */}
-            <path d="M10,10 L110,10 L110,70 L10,70 Z M60,0 L70,0 L70,10 L60,10 Z"
-                fill="#1e293b" stroke="#0f172a" strokeWidth="1" />
+            <path d="M10,10 L110,10 L110,70 L10,70 Z M70,0 Z" fill="#1e293b" stroke="#0f172a" strokeWidth="1" />
 
             {/* Fenêtre de quartz (transparente) */}
             <rect x="40" y="15" width="40" height="20" fill="#60a5fa" opacity="0.3" stroke="#3b82f6" strokeWidth="1" />

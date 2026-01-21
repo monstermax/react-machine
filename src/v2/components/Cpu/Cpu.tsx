@@ -354,7 +354,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             </div>
 
             {/* CPU Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1 min-w-[400px]`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 p-1 min-w-[400px]`}>
 
                 {showControls && (
                     <>
@@ -431,10 +431,10 @@ export const CpuIcon: React.FC = () => {
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
 
             {/* Corps principal du CPU */}
-            <rect className="cpu-body fill-[#4a6fa5]" x="10" y="10" width="80" height="80" rx="5" ry="5" />
+            <rect className="cpu-body fill-[#2e4c79]" x="10" y="10" width="80" height="80" rx="5" ry="5" />
 
             {/* Cœur intérieur */}
-            <rect className="cpu-inner fill-[#3a5a8c]" x="20" y="20" width="60" height="60" rx="3" ry="3" />
+            <rect className="cpu-inner fill-[#111e33]" x="20" y="20" width="60" height="60" rx="3" ry="3" />
 
             {/* Connecteurs latéraux - Haut */}
             <rect className="cpu-pins fill-[#2d4466]" x="15" y="5" width="5" height="5" rx="1" ry="1" />
