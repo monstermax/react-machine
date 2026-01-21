@@ -27,9 +27,9 @@ import { Motherboard } from '@/v2/components/Computer/Motherboard';
 import { Timer } from '@/v2/components/Devices/Timer/Timer';
 import { IDE } from '@/v2/components/Devices/IDE';
 import { Dma } from '@/v2/components/Memory/Dma';
+import { Instructions } from '@/v2/components/Cpu/Instructions';
 
 import type { u16, u8 } from '@/types/cpu.types';
-import { Instructions } from '@/v2/components/Cpu/Instructions';
 
 
 export const ComputerBeta: React.FC = () => {
