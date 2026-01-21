@@ -163,7 +163,7 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
 
 
     return (
-        <div className={`computer w-auto bg-background-light-2xl m-2 p-1 rounded ${view === 'hidden' ? "hidden" : ""}`}>
+        <div className={`computer w-auto m-2 bg-stone-700 p-1 rounded ${view === 'hidden' ? "hidden" : ""}`}>
 
             {/* Computer Head */}
             <div className="w-full flex bg-background-light p-2 rounded">
@@ -187,7 +187,7 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
             </div>
 
             {/* Computer Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 p-1`}>
 
                 <div className="flex gap-4">
                     {/* Buttons */}

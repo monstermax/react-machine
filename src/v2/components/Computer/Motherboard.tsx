@@ -3,10 +3,11 @@ import React, { useCallback, useEffect, useState, type JSXElementConstructor } f
 
 import * as cpuApi from '@/v2/api';
 import { useComputer } from './ComputerContext';
-import { Cpu } from '../Cpu/Cpu';
+import { Cpu, CpuIcon } from '../Cpu/Cpu';
 import { MemoryBus } from '../Memory/MemoryBus';
-import { Clock } from '../Cpu/Clock';
+import { Clock, ClockIcon } from '../Cpu/Clock';
 import { DevicesManager } from '../Devices/DevicesManager';
+import { Ram, RAMIcon } from '../Memory/Ram';
 
 
 export type MotherboardProps = {
@@ -110,22 +111,47 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
     }
 
 
+    const childrenWithPropsCpu: React.ReactElement<any, string | React.JSXElementConstructor<any>>[] = []
+    const childrenWithPropsClock: React.ReactElement<any, string | React.JSXElementConstructor<any>>[] = []
+    const childrenWithPropsMemoryBus: React.ReactElement<any, string | React.JSXElementConstructor<any>>[] = []
+    const childrenWithPropsDevicesManager: React.ReactElement<any, string | React.JSXElementConstructor<any>>[] = []
+
     const childrenWithProps = React.Children.map(children, (child, childIdx) => {
         if (React.isValidElement(child)) {
             const childElement = child as React.ReactElement<any>;
 
             switch (childElement.type) {
-                case Cpu:
-                    return React.cloneElement(childElement, { onInstanceCreated: (cpuInstance: cpuApi.Cpu) => addCpu(cpuInstance, childIdx) });
+                case Cpu: {
+                    //return React.cloneElement(childElement, { onInstanceCreated: (cpuInstance: cpuApi.Cpu) => addCpu(cpuInstance, childIdx) });
+                    const key = `${childElement.type.name}-${childIdx}`;
+                    const element = React.cloneElement(childElement, { onInstanceCreated: addCpu, key });
+                    childrenWithPropsCpu.push(element);
+                    return null;
+                }
 
-                case Clock:
-                    return React.cloneElement(childElement, { onInstanceCreated: addClock });
+                case Clock: {
+                    //return React.cloneElement(childElement, { onInstanceCreated: addClock });
+                    const key = `${childElement.type.name}-${childIdx}`;
+                    const element = React.cloneElement(childElement, { onInstanceCreated: addClock, key });
+                    childrenWithPropsClock.push(element);
+                    return null;
+                }
 
-                case MemoryBus:
-                    return React.cloneElement(childElement, { onInstanceCreated: addMemoryBus });
+                case MemoryBus: {
+                    //return React.cloneElement(childElement, { onInstanceCreated: addMemoryBus });
+                    const key = `${childElement.type.name}-${childIdx}`;
+                    const element = React.cloneElement(childElement, { onInstanceCreated: addMemoryBus, key });
+                    childrenWithPropsMemoryBus.push(element);
+                    return null;
+                }
 
-                case DevicesManager:
-                    return React.cloneElement(childElement, { onInstanceCreated: addDevicesManager });
+                case DevicesManager: {
+                    //return React.cloneElement(childElement, { onInstanceCreated: addDevicesManager });
+                    const key = `${childElement.type.name}-${childIdx}`;
+                    const element = React.cloneElement(childElement, { onInstanceCreated: addDevicesManager, key, internal: true });
+                    childrenWithPropsDevicesManager.push(element);
+                    return null;
+                }
 
                 default:
                     console.log(`Invalid component mounted into Motherboard : ${null}`, (childElement.type as JSXElementConstructor<any>).name);
@@ -137,9 +163,9 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
 
 
     return (
-        <div className={`motherboard w-auto ${hidden ? "hidden" : ""}`}>
+        <div className={`motherboard w-auto bg-lime-900 p-1 ${hidden ? "hidden" : ""}`}>
             {/* Motherboard Head */}
-            <div className="flex bg-background-light-xl p-2 rounded">
+            <div className="flex bg-background-light p-2 rounded">
                 <h2 className="font-bold">Motherboard</h2>
 
                 {childrenWithProps && (
@@ -153,14 +179,98 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
             </div>
 
             {/* Motherboard Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 mt-2`}>
 
                 {/* Motherboard Children */}
-                {childrenWithProps && (
-                    <div className="motherboard-children bg-background-light-2xl p-1 flex space-x-1 space-y-1">
-                        {childrenWithProps}
+                <div className="motherboard-children flex space-x-1 space-y-1">
+
+                    <div className="motherboard-known-children grid grid-cols-3 w-full space-x-4">
+
+                        <div className="motherboard-cpu-and-clock space-y-4">
+                            {/* Clock */}
+                            <div className="motherboard-clock">
+                                {childrenWithPropsClock.length > 0 && (
+                                    <>
+                                        {childrenWithPropsClock}
+                                    </>
+                                )}
+
+                                {childrenWithPropsClock.length === 0 && (
+                                    <>
+                                        <div className="bg-background-light-2xl w-96 h-48 border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
+                                            <i>Insert <strong>Clock</strong> here</i>
+                                            <ClockIcon />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Cpu */}
+                            <div className="motherboard-cpu">
+
+                                {/* Cpu OK */}
+                                {childrenWithPropsCpu.length > 0 && (
+                                    <div className="min-w-96 min-h-[200px] h-full justify-center flex flex-col gap-4">
+                                        {childrenWithPropsCpu}
+                                    </div>
+                                )}
+
+                                {/* Cpu Not Found */}
+                                {childrenWithPropsCpu.length === 0 && (
+                                    <>
+                                        <div className="bg-background-light-2xl w-96 h-full min-h-96 flex flex-col justify-center border border-foreground-light-xl items-center border-dashed">
+                                            <i>Insert <strong>CPU</strong> here</i>
+                                            <CpuIcon />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* MemoryBus */}
+                        <div className="motherboard-memorybus">
+                            {childrenWithPropsMemoryBus.length > 0 && (
+                                <>
+                                    {childrenWithPropsMemoryBus}
+                                </>
+                            )}
+
+                            {childrenWithPropsMemoryBus.length === 0 && (
+                                <>
+                                    <div className="bg-background-light-2xl w-96 h-[600px] border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
+                                        <i>Insert <strong>MemoryBus</strong> here</i>
+                                        <RAMIcon />
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {/* DevicesManager */}
+                        <div className="motherboard-device-manager max-w-[30vw]">
+                            {childrenWithPropsDevicesManager.length > 0 && (
+                                <>
+                                    {childrenWithPropsDevicesManager}
+                                </>
+                            )}
+
+                            {childrenWithPropsDevicesManager.length === 0 && (
+                                <>
+                                    <div className="bg-background-light-2xl w-96 h-[600px] border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
+                                        <i>Insert <strong>Internal Devices</strong> here</i>
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
-                )}
+
+                    {/* Motherboard Other Children */}
+                    {childrenWithProps && (
+                        <div className="motherboard-other-children">
+                            {childrenWithProps}
+                        </div>
+                    )}
+
+                </div>
 
             </div>
         </div>

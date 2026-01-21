@@ -95,7 +95,7 @@ export const Interrupt: React.FC<InterruptProps> = (props) => {
 
 
     return (
-        <div className={`w-auto p-2 rounded bg-background-light-2xl ${hidden ? "hidden" : ""}`}>
+        <div className={`w-full p-2 rounded bg-background-light-2xl ${hidden ? "hidden" : ""}`}>
 
             {/* Interrupt Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

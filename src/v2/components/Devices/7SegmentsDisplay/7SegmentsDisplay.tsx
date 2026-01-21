@@ -113,7 +113,7 @@ export const SevenSegmentDisplay: React.FC<SevenSegmentDisplayProps> = (props) =
 
 
     return (
-        <div className={`device w-auto ${hidden ? "hidden" : ""}`}>
+        <div className={`device w-auto bg-violet-950 p-1 rounded ${hidden ? "hidden" : ""}`}>
 
             {/* Device Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

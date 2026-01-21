@@ -64,6 +64,10 @@ export const ComputerBeta: React.FC = () => {
                             <Interrupt ioPort={4} open={false} />
                         </Cpu>
 
+                        <Cpu registers>
+                            <Interrupt ioPort={4} open={false} />
+                        </Cpu>
+
                         <Memory>
                             <Rom data={bootloader} />
                             <Ram />

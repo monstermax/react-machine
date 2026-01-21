@@ -57,7 +57,7 @@ const CoreRegisters: React.FC<CoreRegistersProps> = (props) => {
     const [contentVisible, setContentVisible] = useState(true);
 
     return (
-        <div className={`p-2 rounded bg-background-light-2xl`}>
+        <div className={`w-full p-2 rounded bg-background-light-2xl`}>
 
             {/* Registers Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">

@@ -123,6 +123,7 @@ export const Rom: React.FC<RomProps> = (props) => {
 
     const handleMouseDown: React.MouseEventHandler<HTMLDivElement> = (event) => {
         if (!divRef.current) return;
+        if (event.button !== 0) return;
         const rect = divRef.current.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
         const offsetY = event.clientY - rect.top;
@@ -157,11 +158,11 @@ export const Rom: React.FC<RomProps> = (props) => {
 
 
     return (
-        <div ref={divRef} className={`rom w-auto ${hidden ? "hidden" : ""}`}>
+        <div ref={divRef} className={`rom w-auto bg-slate-700 p-1 rounded ${hidden ? "hidden" : ""}`}>
 
             {/* ROM Head */}
-            <div className="w-full flex bg-background-light-xl p-2 rounded cursor-move" onMouseDown={(event) => handleMouseDown(event)}>
-                <h2 className="font-bold">ROM</h2>
+            <div className="w-full flex bg-background-light-xl p-2 rounded">
+                <h2 className="font-bold cursor-move" onMouseDown={(event) => handleMouseDown(event)}>ROM</h2>
 
                 {true && (
                     <div className="ms-auto ">
@@ -185,16 +186,22 @@ export const Rom: React.FC<RomProps> = (props) => {
             </div>
 
             {/* ROM Preview */}
-            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center bg-background-light-3xl p-1 min-w-[200px]`}>
+            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center p-1 min-w-[200px]`}>
                 <ROMIcon />
             </div>
 
             {/* ROM Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1 min-w-[350px]`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 p-1 min-w-[350px]`}>
 
                 {/* Storage */}
                 <div className="p-2 rounded bg-background-light-2xl">
-                    <h3>ROM Storage</h3>
+                    <div className="flex justify-between items-center">
+                        <h3>ROM Storage</h3>
+
+                        <div className="text-xs text-slate-400 mb-2">
+                            Total: {storage.size} bytes
+                        </div>
+                    </div>
 
                     <MemoryTable name="rom" storage={storage} />
                 </div>

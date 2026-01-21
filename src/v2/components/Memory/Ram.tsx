@@ -160,6 +160,7 @@ export const Ram: React.FC<RamProps> = (props) => {
 
     const handleMouseDown: React.MouseEventHandler<HTMLDivElement> = (event) => {
         if (!divRef.current) return;
+        if (event.button !== 0) return;
         const rect = divRef.current.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
         const offsetY = event.clientY - rect.top;
@@ -175,13 +176,20 @@ export const Ram: React.FC<RamProps> = (props) => {
 
     const handleMouseMove = (event: MouseEvent) => {
         if (divRef.current && mouseDownOffset) {
+            const newX = event.pageX - mouseDownOffset.x;
+            const newY = event.pageY - mouseDownOffset.y;
+
+            const diffX = Math.abs(newX - parseInt(divRef.current.style.left));
+            const diffY = Math.abs(newY - parseInt(divRef.current.style.top));
+            //console.log({diffX, diffY})
+
+            if (diffX < 5 && diffY < 5) return;
+
             if (!isDivAbsolute) {
                 divRef.current.style.position = 'absolute';
                 setIsDivAbsolute(true)
             }
 
-            const newX = event.pageX - mouseDownOffset.x;
-            const newY = event.pageY - mouseDownOffset.y;
             divRef.current.style.left = newX + 'px';
             divRef.current.style.top = newY + 'px';
         }
@@ -194,11 +202,11 @@ export const Ram: React.FC<RamProps> = (props) => {
 
 
     return (
-        <div ref={divRef} className={`ram w-auto ${hidden ? "hidden" : ""}`}>
+        <div ref={divRef} className={`ram w-auto bg-cyan-900 p-1 rounded ${hidden ? "hidden" : ""}`}>
 
             {/* RAM Head */}
-            <div className="w-full flex bg-background-light-xl p-2 rounded cursor-move" onMouseDown={(event) => handleMouseDown(event)}>
-                <h2 className="font-bold">RAM</h2>
+            <div className="w-full flex bg-background-light-xl p-2 rounded">
+                <h2 className="font-bold cursor-move" onMouseDown={(event) => handleMouseDown(event)}>RAM</h2>
 
                 {true && (
                     <div className="ms-auto ">
@@ -222,16 +230,22 @@ export const Ram: React.FC<RamProps> = (props) => {
             </div>
 
             {/* RAM Preview */}
-            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center bg-background-light-3xl p-1 min-w-[200px]`}>
+            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center p-1 min-w-[200px]`}>
                 <RAMIcon />
             </div>
 
             {/* RAM Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1 min-w-[350px]`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 p-1 min-w-[350px]`}>
 
                 {/* Storage */}
                 <div className="p-2 rounded bg-background-light-2xl">
-                    <h3>RAM Storage</h3>
+                    <div className="flex justify-between items-center">
+                        <h3>RAM Storage</h3>
+
+                        <div className="text-xs text-slate-400 mb-2">
+                            Total: {storage.size} bytes
+                        </div>
+                    </div>
 
                     <MemoryTable name="ram" storage={storage} />
                 </div>
@@ -269,7 +283,7 @@ export const Ram: React.FC<RamProps> = (props) => {
 }
 
 
-const RAMIcon = () => {
+export const RAMIcon = () => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"

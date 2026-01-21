@@ -171,10 +171,10 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
 
 
     return (
-        <div className={`storage-disk ${hidden ? "hidden" : ""}`}>
+        <div className={`storage-disk p-1 bg-purple-900 rounded ${hidden ? "hidden" : ""}`}>
 
             {/* StorageDisk Head */}
-            <div className="w-full flex bg-background-light-xl p-2 rounded">
+            <div className="w-full flex bg-background-light-xl p-2">
                 <h2 className="font-bold">Storage Disk "{name}"</h2>
 
                 {true && (
@@ -188,13 +188,13 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
             </div>
 
             {/* StorageDisk Preview */}
-            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center bg-background-light-3xl p-1 min-w-[200px]`}>
+            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center p-1 min-w-[200px]`}>
                 <HardDriveIcon />
             </div>
 
 
             {/* StorageDisk Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 p-1`}>
 
                 <>
                     <div className="font-mono text-sm space-y-1 max-h-[600px] overflow-y-auto overscroll-contain">

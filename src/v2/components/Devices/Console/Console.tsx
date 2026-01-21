@@ -126,7 +126,7 @@ export const Console: React.FC<ConsoleProps> = (props) => {
 
 
     return (
-        <div className={`device w-auto ${hidden ? "hidden" : ""}`}>
+        <div className={`device w-auto bg-indigo-900 p-1 rounded ${hidden ? "hidden" : ""}`}>
 
             {/* Device Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
@@ -143,14 +143,27 @@ export const Console: React.FC<ConsoleProps> = (props) => {
             </div>
 
             {/* Device Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1 min-w-[450px]`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 p-1 min-w-[450px]`}>
 
                 {/* Console */}
-                <div className="p-2 rounded bg-background-light-2xl flex gap-4 items-center">
+                <div className="flex justify-between gap-4">
+
+                    <div>
+
+                        <div className="flex gap-4">
+                            <button
+                                onClick={handleClear}
+                                className="mt-1 mx-2 ms-auto bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition-colors"
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+
                     <div
                         ref={scrollRef}
-                        className="bg-black rounded-lg p-4 font-mono text-sm overflow-y-auto border border-green-500/30 mx-auto"
-                        style={{ height: `${height*1.15}em`, width: `${width*1.1}ch` }}
+                        className="bg-black mx-auto rounded-lg p-4 font-mono text-sm overflow-y-auto border border-green-500/30"
+                        style={{ height: `${height * 1.15}em`, width: `${width * 1.1}ch` }}
                     >
                         {lines.length === 0 && !currentLine ? (
                             <div className="text-green-500/50 italic">
@@ -174,23 +187,14 @@ export const Console: React.FC<ConsoleProps> = (props) => {
                     </div>
                 </div>
 
-                <div className="flex gap-4">
-                    <button
-                        onClick={handleClear}
-                        className="mt-1 mx-2 ms-auto bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition-colors"
-                    >
-                        Clear
-                    </button>
-                </div>
-
                 {/* Device Children */}
-                <div className={`flex-col space-y-1 bg-background-light-3xl p-1`}>
-                    {childrenWithProps && (
+                {childrenWithProps && (
+                    <div className={`flex-col space-y-1 p-1`}>
                         <div className="device-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
                             {childrenWithProps}
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
             </div>
         </div>

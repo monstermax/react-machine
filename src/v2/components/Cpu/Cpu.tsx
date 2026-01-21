@@ -82,9 +82,10 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 }
 
                 if (state.cpuCycle !== undefined) {
-                    delayer('cpu-cycle', (cycle: number) => {
+                    const cycle = state.cpuCycle;
+                    //delayer('cpu-cycle', (cycle: number) => {
                         setCpuCycle(cycle)
-                    }, 100, 500, [state.cpuCycle]);
+                    //}, 100, 500, [state.cpuCycle]);
                 }
 
                 if (state.cpuPaused !== undefined) {
@@ -107,23 +108,23 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     }
 
                     if (state.coreCycle) {
-                        delayer('cpu-core-cycle', (coreIdx: number) => {
+                        //delayer('cpu-core-cycle', (coreIdx: number) => {
                             setCoresCoreCycle(r => {
                                 const n = new Map(r);
                                 n.set(coreIdx, state.coreCycle);
                                 return n;
                             })
-                        }, 10, 100, [coreIdx]);
+                        //}, 10, 100, [coreIdx]);
                     }
 
                     if (state.registers) {
-                        delayer('cpu-core-register', (coreIdx: number) => {
+                        //delayer('cpu-core-register', (coreIdx: number) => {
                             setCoresRegisters(r => {
                                 const n = new Map(r);
                                 n.set(coreIdx, state.registers);
                                 return n;
                             })
-                        }, 10, 100, [coreIdx]);
+                        //}, 10, 100, [coreIdx]);
                     }
 
                     if (state.coreHalted !== undefined) {
@@ -286,6 +287,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
     const handleMouseDown: React.MouseEventHandler<HTMLDivElement> = (event) => {
         if (!divRef.current) return;
+        if (event.button !== 0) return;
         const rect = divRef.current.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
         const offsetY = event.clientY - rect.top;
@@ -319,14 +321,14 @@ export const Cpu: React.FC<CpuProps> = (props) => {
     }
 
     return (
-        <div ref={divRef} className={`cpu w-auto ${hidden ? "hidden" : ""}`}>
+        <div ref={divRef} className={`cpu w-auto bg-rose-950 p-1 ${hidden ? "hidden" : ""}`}>
 
             {/* CPU Head */}
-            <div className="w-full flex bg-background-light-xl p-2 rounded cursor-move" onMouseDown={(event) => handleMouseDown(event)}>
-                <h2 className="font-bold">CPU #{cpuInstance.idx}</h2>
+            <div className="w-full flex bg-background-light p-2 rounded">
+                <h2 className="font-bold cursor-move" onMouseDown={(event) => handleMouseDown(event)}>CPU #{cpuInstance.idx}</h2>
 
                 {true && (
-                    <div className="ms-auto ">
+                    <div className="ms-auto flex gap-2">
                         {isDivAbsolute && (
                             <button
                                 className="cursor-pointer px-3 bg-background-light-xl rounded"
@@ -347,7 +349,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
             </div>
 
             {/* CPU Preview */}
-            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center bg-background-light-3xl p-1 min-w-[200px]`}>
+            <div className={`${contentVisible ? "hidden" : "flex"} flex-col space-y-2 p-1 min-w-[200px] items-center justify-center`}>
                 <CpuIcon />
             </div>
 
@@ -424,7 +426,7 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
 
 
-const CpuIcon: React.FC = () => {
+export const CpuIcon: React.FC = () => {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
 

@@ -153,6 +153,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
     const handleMouseDown: React.MouseEventHandler<HTMLDivElement> = (event) => {
         if (!divRef.current) return;
+        if (event.button !== 0) return;
         const rect = divRef.current.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
         const offsetY = event.clientY - rect.top;
@@ -186,14 +187,14 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
 
     return (
-        <div ref={divRef} className={`memory-bus w-auto ${hidden ? "hidden" : ""}`}>
+        <div ref={divRef} className={`memory-bus w-auto max-w-[30vw] bg-slate-800 p-1 rounded ${hidden ? "hidden" : ""}`}>
 
             {/* MemoryBus Head */}
-            <div className="flex bg-background-light-xl p-2 rounded cursor-move" onMouseDown={(event) => handleMouseDown(event)}>
-                <h2 className="font-bold">Memory</h2>
+            <div className="flex bg-background-light p-2 rounded">
+                <h2 className="font-bold cursor-move" onMouseDown={(event) => handleMouseDown(event)}>Memory</h2>
 
                 {childrenWithProps && (
-                    <div className="ms-auto ">
+                    <div className="ms-auto flex gap-2">
                         {isDivAbsolute && (
                             <button
                                 className="cursor-pointer px-3 bg-background-light-xl rounded"
@@ -214,11 +215,11 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
             </div>
 
             {/* MemoryBus Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col mt-2 space-y-2`}>
 
                 {/* MemoryBus Children */}
                 {childrenWithProps && (
-                    <div className="memory-bus-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
+                    <div className="memory-bus-children flex flex-col gap-2">
                         {childrenWithProps}
                     </div>
                 )}

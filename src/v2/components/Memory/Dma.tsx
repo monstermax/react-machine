@@ -118,6 +118,7 @@ export const Dma: React.FC<DmaProps> = (props) => {
 
     const handleMouseDown: React.MouseEventHandler<HTMLDivElement> = (event) => {
         if (!divRef.current) return;
+        if (event.button !== 0) return;
         const rect = divRef.current.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
         const offsetY = event.clientY - rect.top;

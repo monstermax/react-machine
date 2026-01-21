@@ -13,6 +13,7 @@ import NotFound from "@/pages/NotFound";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 import '@/App.css';
+import { CompilePageV2 } from "./pages/CompilePageV2";
 
 
 function App() {
@@ -47,6 +48,7 @@ function Router() {
             <Route path={"/cpu"} component={ComputerPage} />
             <Route path={"/cpu-beta"} component={ComputerBeta} />
             <Route path={"/compiler"} component={CompilePage} />
+            <Route path={"/compiler2"} component={CompilePageV2} />
             <Route path={"/logic"} component={LogicPage} />
             <Route path={"/404"} component={NotFound} />
             {/* Final fallback route */}

@@ -218,6 +218,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
     const handleMouseDown: React.MouseEventHandler<HTMLDivElement> = (event) => {
         if (!divRef.current) return;
+        if (event.button !== 0) return;
         const rect = divRef.current.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
         const offsetY = event.clientY - rect.top;
@@ -252,14 +253,14 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
 
     return (
-        <div ref={divRef} className={`w-auto rounded bg-background-light-2xl space-y-2 ${hidden ? "hidden" : ""}`}>
+        <div ref={divRef} className={`clock w-auto rounded bg-violet-950 p-1 ${hidden ? "hidden" : ""}`}>
 
             {/* Clock Head */}
-            <div className="w-full flex bg-background-light-xl p-2 rounded cursor-move" onMouseDown={(event) => handleMouseDown(event)}>
-                <h2 className="font-bold">Clock</h2>
+            <div className="w-full flex bg-background-light p-2 rounded">
+                <h2 className="font-bold cursor-move" onMouseDown={(event) => handleMouseDown(event)}>Clock</h2>
 
                 {true && (
-                    <div className="ms-auto ">
+                    <div className="ms-auto flex gap-2">
                         {isDivAbsolute && (
                             <button
                                 className="cursor-pointer px-3 bg-background-light-xl rounded"
@@ -280,12 +281,12 @@ export const Clock: React.FC<ClockProps> = (props) => {
             </div>
 
             {/* Clock Preview */}
-            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center bg-background-light-3xl p-1 min-w-[200px]`}>
+            <div className={`${contentVisible ? "hidden" : "flex"} flex justify-center p-1 min-w-[200px]`}>
                 <ClockIcon />
             </div>
 
             {/* Clock Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1 min-w-[200px]`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 p-1 min-w-[200px]`}>
 
                 {/* Buttons */}
                 <div className="p-2 rounded bg-background-light-2xl flex gap-2">
@@ -344,7 +345,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
 
 
 
-const ClockIcon = () => {
+export const ClockIcon = () => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"

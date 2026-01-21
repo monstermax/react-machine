@@ -99,7 +99,7 @@ export const LcdDisplay: React.FC<LcdDisplayProps> = (props) => {
 
 
     return (
-        <div className={`device w-auto ${hidden ? "hidden" : ""}`}>
+        <div className={`device w-auto bg-violet-900 p-1 rounded ${hidden ? "hidden" : ""}`}>
 
             {/* Device Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
@@ -116,12 +116,12 @@ export const LcdDisplay: React.FC<LcdDisplayProps> = (props) => {
             </div>
 
             {/* Device Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1 min-w-[350px]`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 p-1 min-w-[350px]`}>
 
                 {/* LCD */}
-                <div className="p-2 rounded bg-background-light-2xl flex gap-4 items-center">
+                <div className="p-2 rounded flex gap-4 items-center">
 
-                    <div className="bg-green-900/30 border-4 border-slate-600 rounded-lg p-3 mx-auto">
+                    <div className="bg-green-900 border-4 border-slate-600 rounded-lg p-3 mx-auto">
                         {display.map((row, rowIndex) => (
                             <div key={rowIndex} className="font-mono text-lg leading-tight">
                                 {row.map((char, colIndex) => {
@@ -147,13 +147,13 @@ export const LcdDisplay: React.FC<LcdDisplayProps> = (props) => {
                 </div>
 
                 {/* Device Children */}
-                <div className={`flex-col space-y-1 bg-background-light-3xl p-1`}>
-                    {childrenWithProps && (
+                {childrenWithProps && childrenWithProps.length > 0 && (
+                    <div className={`flex-col space-y-1 p-1`}>
                         <div className="device-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
                             {childrenWithProps}
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
             </div>
         </div>

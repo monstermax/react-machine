@@ -70,7 +70,8 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
                             const cpuIdx = cpuInstance.idx;
 
                             //delayer('memory-core-register', (cpuIdx: number, coreIdx: number, pc: u16) => {
-                                console.log('setCoresPc', cpuIdx, coreIdx)
+                                //console.log('setCoresPc', cpuIdx, coreIdx)
+
                                 setCoresPc(o => {
                                     const n = new Map(o);
                                     n.set(`${cpuIdx}-${coreIdx}`, pc);
@@ -133,10 +134,6 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
 
     return (
         <div>
-            <div className="text-xs text-slate-400 mb-2">
-                Total: {storage.size} bytes
-            </div>
-
             <div
                 ref={scrollContainerRef}
                 className="font-mono text-sm space-y-1 h-[400px] overflow-y-auto overscroll-contain"

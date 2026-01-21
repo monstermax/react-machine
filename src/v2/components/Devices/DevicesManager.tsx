@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor, type ReactNode } from 'react'
 
 import * as cpuApi from '@/v2/api';
 import { StorageDisk } from './StorageDisk/StorageDisk';
@@ -20,13 +20,14 @@ const validDeviceTypes = ['Input', 'DiskStorage', 'Display', 'Audio', 'Time', 'R
 export type DevicesManagerProps = {
     hidden?: boolean
     open?: boolean
+    internal?: boolean
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.DevicesManager) => void,
 }
 
 
 export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
-    const { hidden, open=true, children, onInstanceCreated } = props;
+    const { hidden, open=true, internal, children, onInstanceCreated } = props;
     const { computerRef, devicesManagerRef } = useComputer();
 
     // Core
@@ -189,6 +190,7 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
 
     const handleMouseDown: React.MouseEventHandler<HTMLDivElement> = (event) => {
         if (!divRef.current) return;
+        if (event.button !== 0) return;
         const rect = divRef.current.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
         const offsetY = event.clientY - rect.top;
@@ -223,14 +225,22 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
 
 
     return (
-        <div ref={divRef} className={`devices w-auto ${hidden ? "hidden" : ""}`}>
+        <div ref={divRef} className={`devices ${internal ? "w-auto max-w-[30vw]" : "w-full"} bg-amber-900 p-1 rounded ${hidden ? "hidden" : ""}`}>
 
             {/* Devices Head */}
-            <div className="w-full flex bg-background-light-xl p-2 rounded cursor-move" onMouseDown={(event) => handleMouseDown(event)}>
-                <h2 className="font-bold">Devices</h2>
+            <div className="w-full flex bg-background-light p-2 rounded">
+                <h2 className="font-bold cursor-move" onMouseDown={(event) => handleMouseDown(event)}>
+                    {internal && (
+                        <>Internal Devices</>
+                    )}
+
+                    {!internal && (
+                        <>External Devices</>
+                    )}
+                </h2>
 
                 {childrenWithProps && (
-                    <div className="ms-auto ">
+                    <div className="ms-auto flex gap-2">
                         {isDivAbsolute && (
                             <button
                                 className="cursor-pointer px-3 bg-background-light-xl rounded"
@@ -251,11 +261,11 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
             </div>
 
             {/* Devices Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 bg-background-light-3xl p-1`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-2 mt-2`}>
 
                 {/* Devices Children */}
                 {childrenWithProps && (
-                    <div className="devices-children bg-background-light-2xl p-1 ps-2 grid grid-cols-1 space-x-2 space-y-2">
+                    <div className="devices-children p-1 ps-2 grid grid-cols-1 space-x-2 space-y-2">
                         {childrenWithProps}
                     </div>
                 )}

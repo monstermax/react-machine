@@ -21,7 +21,7 @@ export type PixelDisplayProps = {
 
 
 export const PixelDisplay: React.FC<PixelDisplayProps> = (props) => {
-    const { hidden, open=true, name, ioPort, width=32, height=32, children, onInstanceCreated } = props;
+    const { hidden, open = true, name, ioPort, width = 32, height = 32, children, onInstanceCreated } = props;
 
     // Core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.PixelDisplay | null>(null);
@@ -118,7 +118,7 @@ export const PixelDisplay: React.FC<PixelDisplayProps> = (props) => {
 
 
     return (
-        <div className={`device w-auto ${hidden ? "hidden" : ""}`}>
+        <div className={`device w-auto bg-pink-950 p-1 rounded ${hidden ? "hidden" : ""}`}>
 
             {/* Device Head */}
             <div className="w-full flex bg-background-light-xl p-2 rounded">
@@ -135,56 +135,69 @@ export const PixelDisplay: React.FC<PixelDisplayProps> = (props) => {
             </div>
 
             {/* Device Content */}
-            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 bg-background-light-3xl p-1 min-w-[400px]`}>
+            <div className={`${contentVisible ? "flex" : "hidden"} flex-col space-y-1 p-1 min-w-[400px]`}>
 
-                <div
-                    className="bg-black border-4 border-slate-600 rounded-lg p-2 mx-auto"
-                    style={{
-                        imageRendering: 'pixelated',
-                        width: 'fit-content'
-                    }}
-                >
-                    <div className="grid gap-0" style={{
-                        gridTemplateColumns: `repeat(${width}, 1fr)`,
-                        gap: '1px'
-                    }}>
-                        {Array.from({ length: height }).map((_, y) =>
-                            Array.from({ length: width }).map((_, x) => {
-                                const isPixelOn = getPixel(x, y);
-                                const isCursor = deviceInstance && (x === currentX) && (y === currentY);
+                <div className="flex justify-between gap-4">
 
-                                return (
-                                    <div
-                                        key={`${y}-${x}`}
-                                        className={`w-2 h-2 ${isPixelOn
-                                            ? 'bg-green-400'
-                                            : isCursor
-                                                ? 'bg-red-500/50'
-                                                : 'bg-slate-900'
-                                        }`}
-                                        style={{
-                                            transition: 'background-color 0.1s'
-                                        }}
-                                    />
-                                );
-                            })
-                        )}
-                    </div>
-                </div>
+                    <div>
+                        <div className="flex flex-col gap-2">
+                            <div className="mt-3 text-xs text-slate-400 p-2 bg-slate-900/30 rounded">
+                                Cursor: X={currentX}, Y={currentY}
+                            </div>
 
-                <div className="flex gap-4">
-                    <div className="mt-3 text-xs text-slate-400 p-2 bg-slate-900/30 rounded">
-                        Cursor: X={currentX}, Y={currentY}
+                            <button
+                                onClick={handleClear}
+                                className="cursor-pointer bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition-colors"
+                            >
+                                Clear
+                            </button>
+                        </div>
                     </div>
 
-                    <button
-                        onClick={handleClear}
-                        className="ms-auto cursor-pointer bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition-colors"
+                    <div
+                        className="bg-black border-4 border-slate-600 rounded-lg p-2 mx-auto"
+                        style={{
+                            imageRendering: 'pixelated',
+                            width: 'fit-content'
+                        }}
                     >
-                        Clear
-                    </button>
+                        <div className="grid gap-0" style={{
+                            gridTemplateColumns: `repeat(${width}, 1fr)`,
+                            gap: '1px'
+                        }}>
+                            {Array.from({ length: height }).map((_, y) =>
+                                Array.from({ length: width }).map((_, x) => {
+                                    const isPixelOn = getPixel(x, y);
+                                    const isCursor = deviceInstance && (x === currentX) && (y === currentY);
+
+                                    return (
+                                        <div
+                                            key={`${y}-${x}`}
+                                            className={`w-2 h-2 ${isPixelOn
+                                                ? 'bg-green-400'
+                                                : isCursor
+                                                    ? 'bg-red-500/50'
+                                                    : 'bg-slate-900'
+                                                }`}
+                                            style={{
+                                                transition: 'background-color 0.1s'
+                                            }}
+                                        />
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
                 </div>
 
+                {/* Device Children */}
+                {childrenWithProps && (
+                    <div className={`flex-col space-y-1 p-1`}>
+                        <div className="device-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1">
+                            {childrenWithProps}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
