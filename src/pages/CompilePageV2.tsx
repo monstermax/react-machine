@@ -1,25 +1,18 @@
-
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "wouter";
 import { Editor, type PrismEditor } from "prism-react-editor"
 
-import "prism-react-editor/prism/languages/nasm" // Adding the language grammar
-import "prism-react-editor/prism/languages/jsx" // Adding the language grammar
-import "prism-react-editor/languages/asm" // Adds comment toggling and auto-indenting for language
-import "prism-react-editor/languages/jsx" // Adds comment toggling and auto-indenting for language
+import "prism-react-editor/prism/languages/nasm"
+import "prism-react-editor/languages/asm"
 import "prism-react-editor/layout.css"
 import "prism-react-editor/themes/github-dark.css"
-import type { PreCompiledCode } from "@/types/cpu.types";
-import { createLexer } from "@/cpus/default/asm_compiler_v2";
-import { createParser, printAST } from "@/cpus/default/v2/asm_compiler_v2_parser";
-import { generateCode, generateFormattedCode } from "@/cpus/default/v2/asm_compiler_v2_generator";
 import { compile, formatBytecode } from "@/cpus/default/v2";
-//import "prism-react-editor/search.css"
+
+import type { CompiledCode, PreCompiledCode } from "@/types/cpu.types";
 
 
 
-
-const demoSourceCode = `
+const demoSourceCode_x86 = `
 section .data
     message db 'Hello, World!', 0
     count   dw 100
@@ -37,88 +30,158 @@ _start:
     mov eax, 1          ; exit system call
     xor ebx, ebx        ; exit code 0
     int 0x80
-`
+`;
+
+
+const demoSourceCode_custom = `
+; Programme de démonstration
+.org 0x100
+
+section .data
+    message db 'Hello, World!', 0
+    count   dw 100
+
+section .text
+    global _start
+
+_start:
+    ; Initialisation
+    MOV A, 0
+    MOV B, 10
+
+loop:
+    ; Incrémenter A
+    INC_A
+
+    ; Comparer avec B
+    MOV C, A
+    MOV D, B
+    ; (utiliser SUB pour comparer)
+
+    ; Continuer si pas égal
+    JNZ loop
+
+    ; Fin
+    MOV A, [message]
+    HALT
+
+end_program:
+    HALT
+`;
 
 
 export const CompilePageV2: React.FC = () => {
-    const [editorContent, setEditorContent] = useState("");
-    const [compiledCode, setCompiledCode] = useState<PreCompiledCode | null>(null);
-    const [compileConsole, setCompileConsole] = useState<string>("The compilation result will appear here.");
-
+    const [editorContent, setEditorContent] = useState(demoSourceCode_x86);
+    const [compiledCode, setCompiledCode] = useState<string | null>(null);
+    const [compileConsole, setCompileConsole] = useState<string>("Cliquez sur Compile pour voir le résultat.");
 
     const codeChanged = (value: string, editor: PrismEditor) => {
-        setEditorContent(value)
-    }
+        setEditorContent(value);
+    };
 
-    const handleCompile = async () => {
+    const handleCompile = () => {
         try {
-            //const result = await preCompileCode(sourceCode, compileMemoryOffsetUint, compileLineOffsetUint);
-            //setCompiledCode(result.code);
+            const compiled = compile(editorContent);
 
-            /*
-            const lexer = createLexer(editorContent);
-            const tokens = lexer.tokenize();
+            const bytecode = formatBytecode(compiled);
+            const compiledFormatted = `[\n${bytecode}]`;
+            setCompiledCode(compiledFormatted)
 
-            //console.log('tokens:', tokens)
 
-            // Afficher les tokens (sauf NEWLINE et EOF pour plus de lisibilité)
-            let resultInfo = '';
+            let output = compiled.errors.length
+                ? "⚠️ Compiled with warnings\n\n"
+                : "✅ Compiled with success\n\n";
 
-            tokens.forEach(token => {
-                if (token.type !== 'NEWLINE' && token.type !== 'EOF') {
-                    resultInfo += `L${token.line.toString().padStart(3)}:C${token.column.toString().padStart(3)} | ${token.type.padEnd(12)} | "${token.value}"\n`;
+            if (compiled.errors.length > 0) {
+                console.error(compiled.errors);
+                //setCompileConsole("❌ ERREURS DE COMPILATION:\n\n" + compiled.errors.join('\n'));
+                //return;
+                output += "❌ ERREURS DE COMPILATION:\n\n" + compiled.errors.map(error => JSON.stringify(error)).join('\n') + "\n";
+            }
 
-                } else if (token.type === 'NEWLINE') {
-                    resultInfo += `L${token.line.toString().padStart(3)} | NEWLINE\n`;
-                }
-            });
+            // Afficher les labels
+            if (compiled.labels.size > 0) {
+                output += "=== LABELS ===\n";
+                compiled.labels.forEach((addr, name) => {
+                    output += `  ${name.padEnd(20)} : 0x${addr.toString(16).padStart(4, '0')} (${addr})\n`;
+                });
+                output += "\n";
+            }
 
-            const parser = createParser(editorContent);
-            const ast = parser.parse();
-            const output = generateFormattedCode(ast);
-            */
+            // Afficher les statistiques
+            output += "=== STATISTIQUES ===\n";
+            output += `  Taille du code       : ${bytecode.length} bytes\n`;
+            output += `  Nombre de labels     : ${compiled.labels.size}\n`;
+            output += "\n";
 
-            const result = compile(editorContent);
-            const output = formatBytecode(result);
+            // Afficher le bytecode formaté
+            //output += "=== BYTECODE ===\n";
+            //output += "const program: [number, number][] = [\n";
+            //output += bytecode;
+            //output += "\n];";
 
-            setCompileConsole(output)
-
-            //console.log(output);
+            setCompileConsole(output);
 
         } catch (error: any) {
             console.error("Erreur de compilation:", error);
-            setCompileConsole(error.message);
+            setCompileConsole("❌ ERREUR FATALE:\n\n" + error.message);
         }
-    }
-
+    };
 
     return (
         <div className="p-4 bg-gray-900 text-gray-100 min-h-screen flex flex-col">
-            <h1 className="text-2xl font-bold mb-6 text-white"><Link to="/">Assembler Compiler</Link></h1>
+            <h1 className="text-2xl font-bold mb-6 text-white">
+                <Link to="/">Compilateur Assembleur (Version Simplifiée)</Link>
+            </h1>
 
-            <div>
-                <Editor className="h-full" language="nasm" value={demoSourceCode} onUpdate={(value, editor) => codeChanged(value, editor)}></Editor>
+            {/* Editeurs */}
+            <div className="flex gap-8 grow w-full">
+                {/* Code Source */}
+                <div className="mb-4 border border-gray-700 rounded w-full overflow-hidden">
+                    <Editor
+                        className="h-96"
+                        language="nasm"
+                        value={demoSourceCode_x86}
+                        onUpdate={(value, editor) => codeChanged(value, editor)}
+                    />
+                </div>
+
+                {/* Code Compilé */}
+                <div className="mb-4 border border-gray-700 rounded w-full overflow-hidden">
+                    <Editor
+                        className="h-96"
+                        language="nasm"
+                        value={compiledCode ?? ''}
+                        //onUpdate={(value, editor) => codeChanged(value, editor)}
+                    />
+                </div>
             </div>
 
-            <div>
+            {/* Boutons */}
+            <div className="mb-4">
                 <button
                     onClick={() => handleCompile()}
-                    className="m-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors cursor-pointer"
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors cursor-pointer font-semibold"
                 >
-                    Compile
+                    🔨 Compiler
+                </button>
+
+                <button
+                    onClick={() => {
+                        setEditorContent(demoSourceCode_x86);
+                        setCompileConsole("Code réinitialisé. Cliquez sur Compile pour compiler.");
+                    }}
+                    className="ml-2 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors cursor-pointer"
+                >
+                    🔄 Réinitialiser
                 </button>
             </div>
 
-            <div className="bg-background-light h-auto rounded p-1 font-mono grow m-2">
-                {compileConsole.split('\n').map((line, idx) => (
-                    <div key={idx}>
-                        {line}
-                        <br />
-                    </div>
-                ))}
+            {/* Console de sortie */}
+            <div className="bg-gray-800 rounded p-4 font-mono text-sm overflow-auto">
+                <pre className="whitespace-pre-wrap">{compileConsole}</pre>
             </div>
 
         </div>
     );
 };
-

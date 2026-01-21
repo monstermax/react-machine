@@ -100,7 +100,7 @@ export class Compiler {
             'SECTION', 'GLOBAL', 'EXTERN',
             '.DATA', '.CODE', '.TEXT', '.BSS', '.ORG',
             'RESB', 'RESW', 'RESD', 'RESQ',
-            'EQU', 'TIMES'
+            'EQU', 'TIMES',
         ];
 
         const lexer = new Lexer(source, instructions, registers, directives, this.caseSensitive);
@@ -369,10 +369,12 @@ export class Compiler {
                     this.emitByte(token.value.charCodeAt(i), `'${token.value[i]}'`);
                 }
                 this.advance();
+
             } else if (token.type === 'NUMBER') {
                 const value = this.parseNumber(token.value);
                 this.emitByte(value, token.value);
                 this.advance();
+
             } else if (token.type === 'IDENTIFIER') {
                 const addr = this.labels.get(token.value);
                 if (addr !== undefined) {
@@ -393,8 +395,10 @@ export class Compiler {
                     }
                 }
                 this.advance();
+
             } else if (token.type === 'COMMA') {
                 this.advance();
+
             } else {
                 break;
             }
@@ -450,6 +454,7 @@ export class Compiler {
                     register: this.mapRegister(token.value)
                 });
                 this.advance();
+
             } else if (token.type === 'NUMBER') {
                 operands.push({
                     type: 'IMMEDIATE',
@@ -457,11 +462,13 @@ export class Compiler {
                     address: this.parseNumber(token.value)
                 });
                 this.advance();
+
             } else if (token.type === 'LBRACKET') {
                 this.advance();
                 const memOperand = this.parseMemoryOperand();
                 this.skip('RBRACKET');
                 operands.push(memOperand);
+
             } else if (token.type === 'IDENTIFIER') {
                 operands.push({
                     type: 'LABEL',
@@ -469,8 +476,10 @@ export class Compiler {
                     address: this.labels.get(token.value)
                 });
                 this.advance();
+
             } else if (token.type === 'COMMA') {
                 this.advance();
+
             } else {
                 break;
             }
@@ -491,10 +500,12 @@ export class Compiler {
             operand.address = this.parseNumber(token.value);
             operand.value = token.value;
             this.advance();
+
         } else if (token.type === 'IDENTIFIER') {
             operand.value = token.value;
             operand.address = this.labels.get(token.value);
             this.advance();
+
         } else if (token.type === 'REGISTER') {
             operand.base = this.mapRegister(token.value);
             operand.value = token.value;
@@ -529,7 +540,9 @@ export class Compiler {
     }
 
     private matchesOperandPattern(pattern: string, operands: ParsedOperand[]): boolean {
-        if (pattern === 'NONE') return operands.length === 0;
+        if (pattern === 'NONE') {
+            return operands.length === 0;
+        }
 
         const parts = pattern.split('_');
         if (parts.length !== operands.length) return false;
@@ -560,11 +573,13 @@ export class Compiler {
             if (part === 'IMM8') {
                 const value = op.address !== undefined ? op.address : this.parseNumber(op.value);
                 this.emitByte(value & 0xFF, op.value);
+
             } else if (part === 'IMM16' || part === 'MEM') {
                 let value = 0;
 
                 if (op.address !== undefined) {
                     value = op.address;
+
                 } else if (op.type === 'LABEL') {
                     const addr = this.labels.get(op.value);
                     if (addr !== undefined) {
@@ -577,6 +592,7 @@ export class Compiler {
                             size: 2
                         });
                     }
+
                 } else {
                     value = this.parseNumber(op.value);
                 }
@@ -584,6 +600,7 @@ export class Compiler {
                 if (this.arch.endianness === 'little') {
                     this.emitByte(value & 0xFF, `${op.value} (low)`);
                     this.emitByte((value >> 8) & 0xFF, `${op.value} (high)`);
+
                 } else {
                     this.emitByte((value >> 8) & 0xFF, `${op.value} (high)`);
                     this.emitByte(value & 0xFF, `${op.value} (low)`);
@@ -615,14 +632,18 @@ export class Compiler {
             if (token.type === 'STRING') {
                 size += token.value.length;
                 this.advance();
+
             } else if (token.type === 'NUMBER') {
                 size += 1;
                 this.advance();
+
             } else if (token.type === 'IDENTIFIER') {
                 size += this.arch.addressSize > 8 ? 2 : 1;
                 this.advance();
+
             } else if (token.type === 'COMMA') {
                 this.advance();
+
             } else {
                 break;
             }
@@ -653,6 +674,7 @@ export class Compiler {
                 if (this.arch.endianness === 'little') {
                     section.data[offset].value = addr & 0xFF;
                     section.data[offset + 1].value = (addr >> 8) & 0xFF;
+
                 } else {
                     section.data[offset].value = (addr >> 8) & 0xFF;
                     section.data[offset + 1].value = addr & 0xFF;
