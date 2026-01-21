@@ -455,14 +455,14 @@ export const ComputerCase: React.FC<ComputerCaseProps> = ({
     const [hover, setHover] = useState(false);
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 p-8">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-linear-to-b from-slate-900 to-slate-950 p-8">
             {/* Computer Tower */}
             <div className="relative">
                 {/* Main Case Body */}
-                <div className="w-64 h-96 bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg border-4 border-slate-600 shadow-2xl relative">
+                <div className="w-64 h-96 bg-linear-to-br from-slate-700 to-slate-800 rounded-lg border-4 border-slate-600 shadow-2xl relative">
 
                     {/* Front Panel */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-slate-600/20 to-transparent rounded-lg" />
+                    <div className="absolute inset-0 bg-linear-to-b from-slate-600/20 to-transparent rounded-lg" />
 
                     {/* Top Vent */}
                     <div className="absolute top-4 left-8 right-8 h-8 bg-slate-900/50 rounded grid grid-cols-8 gap-1 p-1">
