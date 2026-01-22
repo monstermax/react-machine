@@ -74,9 +74,10 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
             const compiled = compile(editorContent);
             const bytecode = formatBytecode(compiled);
             const compiledFormatted = `[\n${bytecode}]`;
-            //code = Array.from(getMemoryMap(compiled).entries()) as CompiledCode;
+            code = getBytecodeArray(compiled)
             //debugger
             setCompiledContent(compiledFormatted)
+            console.log('code:', code)
         }
 
         if (code) {

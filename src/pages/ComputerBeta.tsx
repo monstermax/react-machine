@@ -32,6 +32,7 @@ import { MemoryMap } from '@/v2/components/Memory/MemoryMap';
 
 import type { u16, u8 } from '@/types/cpu.types';
 import { PowerSupply } from '@/v2/components/Computer/PowerSupply';
+import { universalCompiler } from '@/lib/compilation';
 
 
 export const ComputerBeta: React.FC = () => {
@@ -43,8 +44,13 @@ export const ComputerBeta: React.FC = () => {
     useEffect(() => {
         const _compile = async () => {
             const bootloaderSourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v1.asm");
-            const compiled = await compileCode(bootloaderSourceCode, MEMORY_MAP.ROM_START);
-            setBootloader(compiled.code)
+            //const compiled = await compileCode(bootloaderSourceCode, MEMORY_MAP.ROM_START);
+            //setBootloader(compiled.code)
+
+            const compiled = await universalCompiler(bootloaderSourceCode, MEMORY_MAP.ROM_START);
+            if (compiled) {
+                setBootloader(compiled)
+            }
         }
 
         const timer = setTimeout(_compile, 100)

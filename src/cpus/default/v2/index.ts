@@ -1,4 +1,5 @@
 
+import type { CompiledCode, u16, u8 } from '@/types/cpu.types';
 import { CUSTOM_CPU } from './arch_custom';
 import { Compiler } from './compiler';
 
@@ -41,18 +42,18 @@ export function formatBytecode(program: CompiledProgram): string {
     return lines.join(',\n');
 }
 
-export function getBytecodeArray(program: CompiledProgram, sectionName?: string): number[] {
-    const bytes: number[] = [];
+export function getBytecodeArray(program: CompiledProgram, sectionName?: string): Map<u16, u8> {
+    const code: Map<u16, u8> = new Map;
 
     for (const section of program.sections) {
         if (sectionName && section.name !== sectionName) continue;
 
         for (const entry of section.data) {
-            bytes.push(entry.value);
+            code.set(entry.address as u16, entry.value as u8);
         }
     }
 
-    return bytes;
+    return code;
 }
 
 export function getMemoryMap(program: CompiledProgram): Map<number, number> {
