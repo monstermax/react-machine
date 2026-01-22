@@ -1,0 +1,292 @@
+
+import { high16, low16 } from "@/lib/integers";
+import { Opcode } from "@/cpus/default/cpu_instructions";
+import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
+
+import type { ProgramInfo, u16, u8 } from "@/types/cpu.types";
+
+
+/**
+ * PROGRAMME 1: Horloge LCD
+ * Affiche "HH:MM:SS" sur le LCD (16x2)
+ */
+export const LCD_CLOCK: ProgramInfo = {
+    name: "LCD Clock",
+    description: "Affiche l'heure sur LCD 16x2",
+    code: new Map([
+        [0x00, Opcode.SET_SP],
+        [0x01, 0xFF], [0x02, 0xFE],
+
+        // Clear LCD
+        [0x03, Opcode.MOV_A_IMM], [0x04, 0x01],
+        [0x05, Opcode.MOV_MEM_A],
+        [0x06, 0xA1], [0x07, 0xFF], // LCD_COMMAND
+
+        // LOOP:
+        // Position curseur (0,0)
+        [0x08, Opcode.MOV_A_IMM], [0x09, 0x00],
+        [0x0A, Opcode.MOV_MEM_A],
+        [0x0B, 0xA2], [0x0C, 0xFF], // LCD_CURSOR
+
+        // Afficher "Time: "
+        [0x0D, Opcode.MOV_A_IMM], [0x0E, 0x54], // 'T'
+        [0x0F, Opcode.MOV_MEM_A], [0x10, 0xA0], [0x11, 0xFF],
+        [0x12, Opcode.MOV_A_IMM], [0x13, 0x69], // 'i'
+        [0x14, Opcode.MOV_MEM_A], [0x15, 0xA0], [0x16, 0xFF],
+        [0x17, Opcode.MOV_A_IMM], [0x18, 0x6D], // 'm'
+        [0x19, Opcode.MOV_MEM_A], [0x1A, 0xA0], [0x1B, 0xFF],
+        [0x1C, Opcode.MOV_A_IMM], [0x1D, 0x65], // 'e'
+        [0x1E, Opcode.MOV_MEM_A], [0x1F, 0xA0], [0x20, 0xFF],
+        [0x21, Opcode.MOV_A_IMM], [0x22, 0x3A], // ':'
+        [0x23, Opcode.MOV_MEM_A], [0x24, 0xA0], [0x25, 0xFF],
+        [0x26, Opcode.MOV_A_IMM], [0x27, 0x20], // ' '
+        [0x28, Opcode.MOV_MEM_A], [0x29, 0xA0], [0x2A, 0xFF],
+
+        // Lire heures
+        [0x2B, Opcode.MOV_A_MEM],
+        [0x2C, 0xC4], [0x2D, 0xFF], // RTC_HOURS
+
+        // Convertir en ASCII (simplification: affiche hex)
+        [0x2E, Opcode.PUSH_A],
+        [0x2F, Opcode.MOV_B_IMM], [0x30, 0x30], // '0'
+        [0x31, Opcode.ADD], // A = heures + '0' (approximation)
+        [0x32, Opcode.MOV_MEM_A],
+        [0x33, 0xA0], [0x34, 0xFF], // LCD_DATA
+
+        [0x35, Opcode.POP_A],
+
+        // Afficher ':'
+        [0x36, Opcode.MOV_A_IMM], [0x37, 0x3A],
+        [0x38, Opcode.MOV_MEM_A],
+        [0x39, 0xA0], [0x3A, 0xFF],
+
+        // Lire minutes
+        [0x3B, Opcode.MOV_A_MEM],
+        [0x3C, 0xC5], [0x3D, 0xFF], // RTC_MINUTES
+        [0x3E, Opcode.MOV_B_IMM], [0x3F, 0x30],
+        [0x40, Opcode.ADD],
+        [0x41, Opcode.MOV_MEM_A],
+        [0x42, 0xA0], [0x43, 0xFF],
+
+        // Afficher ':'
+        [0x44, Opcode.MOV_A_IMM], [0x45, 0x3A],
+        [0x46, Opcode.MOV_MEM_A],
+        [0x47, 0xA0], [0x48, 0xFF],
+
+        // Lire secondes
+        [0x49, Opcode.MOV_A_MEM],
+        [0x4A, 0xC6], [0x4B, 0xFF], // RTC_SECONDS
+        [0x4C, Opcode.MOV_B_IMM], [0x4D, 0x30],
+        [0x4E, Opcode.ADD],
+        [0x4F, Opcode.MOV_MEM_A],
+        [0x50, 0xA0], [0x51, 0xFF],
+
+        // Délai
+        [0x52, Opcode.MOV_C_IMM], [0x53, 0xFF],
+        [0x54, Opcode.DEC_C],
+        [0x55, Opcode.JNZ], [0x56, 0x54], [0x57, 0x02],
+
+        // Loop
+        [0x58, Opcode.JMP],
+        [0x59, 0x08], [0x5A, 0x02],
+    ] as [u16, u8][]),
+};
+
+
+/**
+ * PROGRAMME 2: Date sur Console
+ * Affiche "DD/MM/YY" dans la console
+ */
+export const CONSOLE_DATE: ProgramInfo = {
+    name: "Console Date",
+    description: "Affiche la date dans la console",
+    code: new Map([
+        [0x00, Opcode.SET_SP],
+        [0x01, 0xFF], [0x02, 0xFE],
+
+        // Afficher "Date: "
+        [0x03, Opcode.MOV_A_IMM], [0x04, 0x44], // 'D'
+        [0x05, Opcode.MOV_MEM_A], [0x06, 0x70], [0x07, 0xFF],
+        [0x08, Opcode.MOV_A_IMM], [0x09, 0x61], // 'a'
+        [0x0A, Opcode.MOV_MEM_A], [0x0B, 0x70], [0x0C, 0xFF],
+        [0x0D, Opcode.MOV_A_IMM], [0x0E, 0x74], // 't'
+        [0x0F, Opcode.MOV_MEM_A], [0x10, 0x70], [0x11, 0xFF],
+        [0x12, Opcode.MOV_A_IMM], [0x13, 0x65], // 'e'
+        [0x14, Opcode.MOV_MEM_A], [0x15, 0x70], [0x16, 0xFF],
+        [0x17, Opcode.MOV_A_IMM], [0x18, 0x3A], // ':'
+        [0x19, Opcode.MOV_MEM_A], [0x1A, 0x70], [0x1B, 0xFF],
+        [0x1C, Opcode.MOV_A_IMM], [0x1D, 0x20], // ' '
+        [0x1E, Opcode.MOV_MEM_A], [0x1F, 0x70], [0x20, 0xFF],
+
+        // Jour
+        [0x21, Opcode.MOV_A_MEM],
+        [0x22, 0xC3], [0x23, 0xFF], // RTC_DAYS
+        [0x24, Opcode.MOV_B_IMM], [0x25, 0x30], // '0'
+        [0x26, Opcode.ADD],
+        [0x27, Opcode.MOV_MEM_A],
+        [0x28, 0x70], [0x29, 0xFF], // CONSOLE_CHAR
+
+        // '/'
+        [0x2A, Opcode.MOV_A_IMM], [0x2B, 0x2F],
+        [0x2C, Opcode.MOV_MEM_A],
+        [0x2D, 0x70], [0x2E, 0xFF],
+
+        // Mois
+        [0x2F, Opcode.MOV_A_MEM],
+        [0x30, 0xC2], [0x31, 0xFF], // RTC_MONTHS
+        [0x32, Opcode.MOV_B_IMM], [0x33, 0x30],
+        [0x34, Opcode.ADD],
+        [0x35, Opcode.MOV_MEM_A],
+        [0x36, 0x70], [0x37, 0xFF],
+
+        // '/'
+        [0x38, Opcode.MOV_A_IMM], [0x39, 0x2F],
+        [0x3A, Opcode.MOV_MEM_A],
+        [0x3B, 0x70], [0x3C, 0xFF],
+
+        // Année
+        [0x3D, Opcode.MOV_A_MEM],
+        [0x3E, 0xC1], [0x3F, 0xFF], // RTC_YEARS
+        [0x40, Opcode.MOV_B_IMM], [0x41, 0x30],
+        [0x42, Opcode.ADD],
+        [0x43, Opcode.MOV_MEM_A],
+        [0x44, 0x70], [0x45, 0xFF],
+
+        // '\n'
+        [0x46, Opcode.MOV_A_IMM], [0x47, 0x0A],
+        [0x48, Opcode.MOV_MEM_A],
+        [0x49, 0x70], [0x4A, 0xFF],
+
+        [0x4B, Opcode.HALT],
+    ] as [u16, u8][]),
+};
+
+
+/**
+ * PROGRAMME 3: Full DateTime sur Console
+ * Affiche date et heure complètes
+ */
+export const CONSOLE_DATETIME: ProgramInfo = {
+    name: "Console DateTime",
+    description: "Affiche date et heure complètes",
+    code: new Map([
+        [0x00, Opcode.SET_SP],
+        [0x01, 0xFF], [0x02, 0xFE],
+
+        // "DD/MM/YY HH:MM:SS\n"
+
+        // Jour
+        [0x03, Opcode.MOV_A_MEM], [0x04, 0xC3], [0x05, 0xFF],
+        [0x06, Opcode.MOV_B_IMM], [0x07, 0x30],
+        [0x08, Opcode.ADD],
+        [0x09, Opcode.MOV_MEM_A], [0x0A, 0x70], [0x0B, 0xFF],
+
+        [0x0C, Opcode.MOV_A_IMM], [0x0D, 0x2F], // '/'
+        [0x0E, Opcode.MOV_MEM_A], [0x0F, 0x70], [0x10, 0xFF],
+
+        // Mois
+        [0x11, Opcode.MOV_A_MEM], [0x12, 0xC2], [0x13, 0xFF],
+        [0x14, Opcode.MOV_B_IMM], [0x15, 0x30],
+        [0x16, Opcode.ADD],
+        [0x17, Opcode.MOV_MEM_A], [0x18, 0x70], [0x19, 0xFF],
+
+        [0x1A, Opcode.MOV_A_IMM], [0x1B, 0x2F], // '/'
+        [0x1C, Opcode.MOV_MEM_A], [0x1D, 0x70], [0x1E, 0xFF],
+
+        // Année
+        [0x1F, Opcode.MOV_A_MEM], [0x20, 0xC1], [0x21, 0xFF],
+        [0x22, Opcode.MOV_B_IMM], [0x23, 0x30],
+        [0x24, Opcode.ADD],
+        [0x25, Opcode.MOV_MEM_A], [0x26, 0x70], [0x27, 0xFF],
+
+        [0x28, Opcode.MOV_A_IMM], [0x29, 0x20], // ' '
+        [0x2A, Opcode.MOV_MEM_A], [0x2B, 0x70], [0x2C, 0xFF],
+
+        // Heure
+        [0x2D, Opcode.MOV_A_MEM], [0x2E, 0xC4], [0x2F, 0xFF],
+        [0x30, Opcode.MOV_B_IMM], [0x31, 0x30],
+        [0x32, Opcode.ADD],
+        [0x33, Opcode.MOV_MEM_A], [0x34, 0x70], [0x35, 0xFF],
+
+        [0x36, Opcode.MOV_A_IMM], [0x37, 0x3A], // ':'
+        [0x38, Opcode.MOV_MEM_A], [0x39, 0x70], [0x3A, 0xFF],
+
+        // Minutes
+        [0x3B, Opcode.MOV_A_MEM], [0x3C, 0xC5], [0x3D, 0xFF],
+        [0x3E, Opcode.MOV_B_IMM], [0x3F, 0x30],
+        [0x40, Opcode.ADD],
+        [0x41, Opcode.MOV_MEM_A], [0x42, 0x70], [0x43, 0xFF],
+
+        [0x44, Opcode.MOV_A_IMM], [0x45, 0x3A], // ':'
+        [0x46, Opcode.MOV_MEM_A], [0x47, 0x70], [0x48, 0xFF],
+
+        // Secondes
+        [0x49, Opcode.MOV_A_MEM], [0x4A, 0xC6], [0x4B, 0xFF],
+        [0x4C, Opcode.MOV_B_IMM], [0x4D, 0x30],
+        [0x4E, Opcode.ADD],
+        [0x4F, Opcode.MOV_MEM_A], [0x50, 0x70], [0x51, 0xFF],
+
+        [0x52, Opcode.MOV_A_IMM], [0x53, 0x0A], // '\n'
+        [0x54, Opcode.MOV_MEM_A], [0x55, 0x70], [0x56, 0xFF],
+
+        [0x57, Opcode.HALT],
+    ] as [u16, u8][]),
+};
+
+
+/**
+ * PROGRAMME 4: Horloge LCD qui se rafraîchit
+ */
+export const LCD_LIVE_CLOCK: ProgramInfo = {
+    name: "LCD Live Clock",
+    description: "Horloge LCD mise à jour en temps réel",
+    code: new Map([
+        [0x00, Opcode.SET_SP],
+        [0x01, 0xFF], [0x02, 0xFE],
+
+        // Clear LCD une fois
+        [0x03, Opcode.MOV_A_IMM], [0x04, 0x01],
+        [0x05, Opcode.MOV_MEM_A],
+        [0x06, 0xA1], [0x07, 0xFF],
+
+        // LOOP: Retour curseur home
+        [0x08, Opcode.MOV_A_IMM], [0x09, 0x00],
+        [0x0A, Opcode.MOV_MEM_A],
+        [0x0B, 0xA2], [0x0C, 0xFF], // LCD_CURSOR = 0
+
+        // HH:MM:SS
+        [0x0D, Opcode.MOV_A_MEM], [0x0E, 0xC4], [0x0F, 0xFF],
+        [0x10, Opcode.MOV_B_IMM], [0x11, 0x30],
+        [0x12, Opcode.ADD],
+        [0x13, Opcode.MOV_MEM_A], [0x14, 0xA0], [0x15, 0xFF],
+
+        [0x16, Opcode.MOV_A_IMM], [0x17, 0x3A],
+        [0x18, Opcode.MOV_MEM_A], [0x19, 0xA0], [0x1A, 0xFF],
+
+        [0x1B, Opcode.MOV_A_MEM], [0x1C, 0xC5], [0x1D, 0xFF],
+        [0x1E, Opcode.MOV_B_IMM], [0x1F, 0x30],
+        [0x20, Opcode.ADD],
+        [0x21, Opcode.MOV_MEM_A], [0x22, 0xA0], [0x23, 0xFF],
+
+        [0x24, Opcode.MOV_A_IMM], [0x25, 0x3A],
+        [0x26, Opcode.MOV_MEM_A], [0x27, 0xA0], [0x28, 0xFF],
+
+        [0x29, Opcode.MOV_A_MEM], [0x2A, 0xC6], [0x2B, 0xFF],
+        [0x2C, Opcode.MOV_B_IMM], [0x2D, 0x30],
+        [0x2E, Opcode.ADD],
+        [0x2F, Opcode.MOV_MEM_A], [0x30, 0xA0], [0x31, 0xFF],
+
+        // Délai
+        [0x32, Opcode.MOV_C_IMM],
+        [0x33, 0xFF],
+        [0x34, Opcode.DEC_C],
+        [0x35, Opcode.JNZ],
+        [0x36, low16(MEMORY_MAP.PROGRAM_START + 0x34 as u16)],   // PROGRAM_START + 0x34 - Low
+        [0x37, high16(MEMORY_MAP.PROGRAM_START + 0x34 as u16)],  // PROGRAM_START + 0x34 - High
+
+        [0x38, Opcode.JMP],
+        [0x39, low16(MEMORY_MAP.OS_START + 0x02 as u16)],   // OS_START + 0x02 - Low
+        [0x3A, high16(MEMORY_MAP.OS_START + 0x02 as u16)],  // OS_START + 0x02 - High
+    ] as [u16, u8][]),
+};
+
