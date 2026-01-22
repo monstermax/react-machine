@@ -88,7 +88,7 @@ export const CompilePageV2: React.FC = () => {
             const compiled = compile(editorContent);
 
             const bytecode = formatBytecode(compiled);
-            const compiledFormatted = `[\n${bytecode}]`;
+            const compiledFormatted = `[\n${bytecode}\n]`;
             setCompiledCode(compiledFormatted)
 
 

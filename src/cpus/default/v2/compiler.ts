@@ -24,7 +24,7 @@ export class Compiler {
     private currentSection: string = '.text';
     private currentAddress = 0;
 
-    private labels: Map<string, number> = new Map();
+    private labels: Map<string, { section: string, address: number }> = new Map();
     private symbols: Map<string, SymbolInfo> = new Map();
     private unresolvedRefs: Array<{
         address: number;
@@ -126,6 +126,10 @@ export class Compiler {
     }
 
     private resetSections(): void {
+        const textEnd = this.currentAddress;  // Sauvegarde où .text se termine
+        const dataSection = this.sections.get('.data')!;
+        dataSection.startAddress = textEnd;
+
         for (const section of this.sections.values()) {
             section.data = [];
         }
@@ -148,7 +152,8 @@ export class Compiler {
 
             if (token.type === 'LABEL') {
                 const labelName = token.value;
-                this.labels.set(labelName, this.currentAddress);
+                this.labels.set(labelName, { section: this.currentSection, address: this.currentAddress });
+
                 this.symbols.set(labelName, {
                     address: this.currentAddress,
                     section: this.currentSection,
@@ -167,7 +172,8 @@ export class Compiler {
 
                     if (['DB', 'DW', 'DD', 'DQ', 'RESB', 'RESW', 'RESD', 'RESQ'].includes(directive)) {
                         const varName = token.value;
-                        this.labels.set(varName, this.currentAddress);
+                        this.labels.set(varName, { section: this.currentSection, address: this.currentAddress });
+
                         this.symbols.set(varName, {
                             address: this.currentAddress,
                             section: this.currentSection,
@@ -183,6 +189,17 @@ export class Compiler {
                         // Skip les données
                         while (!this.isAtEnd()) {
                             const t = this.peek();
+
+                            if (t.type === 'IDENTIFIER') {
+                                // Vérifier si c'est une nouvelle variable
+                                const nextToken = this.peek(1);
+
+                                if (nextToken?.type === 'DIRECTIVE' || nextToken?.type === 'INSTRUCTION' || nextToken?.type === 'LABEL') {
+                                    // C'est une nouvelle variable, on arrête
+                                    break;
+                                }
+                            }
+
                             if (t.type === 'NUMBER' || t.type === 'STRING' || t.type === 'IDENTIFIER' || t.type === 'COMMA') {
                                 this.advance();
 
@@ -257,11 +274,12 @@ export class Compiler {
                     }
 
                     if (symbolName === '_start' || symbolName === 'start' || symbolName === 'main') {
-                        const addr = this.labels.get(symbolName);
-                        if (addr !== undefined) {
-                            this.entryPoint = addr;
+                        const labelInfo = this.labels.get(symbolName);
+                        if (labelInfo !== undefined) {
+                            this.entryPoint = labelInfo.address;
                         }
                     }
+
                 } else {
                     this.symbols.set(symbolName, {
                         address: 0,
@@ -301,6 +319,7 @@ export class Compiler {
 
             if (token.type === 'IDENTIFIER') {
                 const next = this.peek(1);
+
                 if (next?.type === 'DIRECTIVE') {
                     const directive = this.normalize(next.value);
                     if (['DB', 'DW', 'DD', 'DQ'].includes(directive)) {
@@ -308,9 +327,10 @@ export class Compiler {
 
                         this.advance(); // IDENTIFIER
                         const directiveToken = this.peek();  // Lire la DIRECTIVE sans avancer
-                        this.generateData(varName, directiveToken.value);
+                        this.generateData(varName, this.normalize(directiveToken.value));
                         continue;
                     }
+
                     if (['RESB', 'RESW', 'RESD', 'RESQ'].includes(directive)) {
                         this.advance();
                         this.advance();
@@ -318,6 +338,7 @@ export class Compiler {
                         continue;
                     }
                 }
+
             }
 
             if (token.type === 'INSTRUCTION') {
@@ -338,6 +359,7 @@ export class Compiler {
             let sectionName = directive;
             if (directive === 'SECTION' && !this.isAtEnd()) {
                 const nameToken = this.peek();
+
                 if (nameToken.type === 'IDENTIFIER' || nameToken.type === 'DIRECTIVE') {
                     sectionName = this.normalize(nameToken.value);
                     this.advance();
@@ -346,8 +368,10 @@ export class Compiler {
 
             if (sectionName === '.DATA' || sectionName === 'DATA') {
                 this.currentSection = '.data';
+
             } else if (sectionName === '.BSS' || sectionName === 'BSS') {
                 this.currentSection = '.bss';
+
             } else {
                 this.currentSection = '.text';
             }
@@ -403,16 +427,30 @@ export class Compiler {
                 const value = this.parseNumber(token.value);
 
                 for (let i = 0; i < itemSize; i++) {
-                    this.emitByte((value >> (i * 8)) & 0xFF, i === 0 ? token.value : undefined);
+                    const byte = (value >> (i * 8)) & 0xFF;
+                    this.emitByte(byte, i === 0 ? token.value : undefined);
                 }
                 this.advance();
 
             } else if (token.type === 'IDENTIFIER') {
-                const addr = this.labels.get(token.value);
+                // Vérifier si c'est une nouvelle variable
+                const nextToken = this.peek(1);
 
-                if (addr !== undefined) {
+                if (nextToken?.type === 'DIRECTIVE' && ['DB', 'DW', 'DD', 'DQ'].includes(this.normalize(nextToken.value))) {
+                    // Nouvelle variable, on arrête
+                    break;
+                }
+
+                if (nextToken?.type === 'INSTRUCTION' || nextToken?.type === 'LABEL') {
+                    break;
+                }
+
+                // Sinon, c'est une référence à un label
+                const labelInfo = this.labels.get(token.value);
+
+                if (labelInfo !== undefined) {
                     for (let i = 0; i < itemSize; i++) {
-                        this.emitByte((addr >> (i * 8)) & 0xFF);
+                        this.emitByte((labelInfo.address >> (i * 8)) & 0xFF);
                     }
 
                 } else {
@@ -506,7 +544,7 @@ export class Compiler {
                 operands.push({
                     type: 'LABEL',
                     value: token.value,
-                    address: this.labels.get(token.value)
+                    address: this.labels.get(token.value)?.address,
                 });
                 this.advance();
 
@@ -536,7 +574,7 @@ export class Compiler {
 
         } else if (token.type === 'IDENTIFIER') {
             operand.value = token.value;
-            operand.address = this.labels.get(token.value);
+            operand.address = this.labels.get(token.value)?.address;
             this.advance();
 
         } else if (token.type === 'REGISTER') {
@@ -610,23 +648,25 @@ export class Compiler {
             } else if (part === 'IMM16' || part === 'MEM') {
                 let value = 0;
 
-                if (op.address !== undefined) {
-                    value = op.address;
+                if (op.type === 'LABEL') {
+                    const labelInfo = this.labels.get(op.value);
+                    const labelSection = this.sections.get(labelInfo?.section || '.none')
 
-                } else if (op.type === 'LABEL') {
-                    const addr = this.labels.get(op.value);
-
-                    if (addr !== undefined) {
-                        value = addr;
+                    if (labelInfo !== undefined && labelSection !== undefined) {
+                        value = labelSection.startAddress + labelInfo.address;
 
                     } else {
                         this.unresolvedRefs.push({
                             address: this.currentAddress,
                             section: this.currentSection,
                             label: op.value,
-                            size: 2
+                            size: 2,
                         });
+
                     }
+
+                } else if (op.address !== undefined) {
+                    value = op.address;
 
                 } else {
                     value = this.parseNumber(op.value);
@@ -673,17 +713,26 @@ export class Compiler {
             const token = this.peek(offset);
             if (!token || token.type === 'EOF') break;
 
+            if (token.type === 'INSTRUCTION' || token.type === 'LABEL') break;
+
             if (token.type === 'STRING') {
                 size += token.value.length;
                 offset++;
+
             } else if (token.type === 'NUMBER') {
                 size += itemSize;
                 offset++;
+
             } else if (token.type === 'IDENTIFIER') {
+                const next = this.peek(offset+1);
+                if (next.type === 'DIRECTIVE') break
+
                 size += itemSize;
                 offset++;
+
             } else if (token.type === 'COMMA') {
                 offset++;
+
             } else {
                 break;
             }
@@ -720,6 +769,7 @@ export class Compiler {
                     section.data[offset].value = (addr >> 8) & 0xFF;
                     section.data[offset + 1].value = addr & 0xFF;
                 }
+
             } else {
                 section.data[offset].value = addr & 0xFF;
             }
