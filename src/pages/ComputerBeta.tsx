@@ -31,6 +31,7 @@ import { CpuInstructions } from '@/v2/components/Cpu/CpuInstructions';
 import { MemoryMap } from '@/v2/components/Memory/MemoryMap';
 
 import type { u16, u8 } from '@/types/cpu.types';
+import { PowerSupply } from '@/v2/components/Computer/PowerSupply';
 
 
 export const ComputerBeta: React.FC = () => {
@@ -60,6 +61,8 @@ export const ComputerBeta: React.FC = () => {
             <div className="pb-1">
                 <Computer>
                     <Motherboard>
+                        <PowerSupply hidden />
+
                         <Clock frequency={1} />
 
                         <Cpu registers>

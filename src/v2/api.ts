@@ -2,6 +2,7 @@
 // Computer
 export * from '@/v2/components/Computer/Computer.api';
 export * from '@/v2/components/Computer/Motherboard.api';
+export * from '@/v2/components/Computer/PowerSupply.api';
 
 // CPU
 export * from '@/v2/components/Cpu/Cpu.api';

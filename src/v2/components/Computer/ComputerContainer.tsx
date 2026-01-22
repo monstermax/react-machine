@@ -7,6 +7,7 @@ import { os_list } from '@/cpus/default/programs/mini_os';
 import { programs } from '@/cpus/default/programs/programs_index';
 import { useComputer, type ViewType } from './ComputerContext';
 import { Motherboard } from './Motherboard';
+import { PowerSupply } from './PowerSupply';
 
 
 export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.ReactNode }> = (props) => {
@@ -18,11 +19,6 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
 
     const [motherboardInstance, setMotherboardInstance] = useState<cpuApi.Motherboard | null>(null);
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null);
-    const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
-
-    //const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
-    //const cpuInstance = cpuRef.current;
-    //const ramInstance = ramRef.current;
 
     // UI
     const [contentVisible, setContentVisible] = useState(initialView !== 'closed');
@@ -126,19 +122,19 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
 
             switch (childElement.type) {
 
-                case DevicesManager: {
-                    //return React.cloneElement(childElement, { onInstanceCreated: addDevicesManager });
-                    const key = `${childElement.type.name}-${childIdx}`;
-                    const element = React.cloneElement(childElement, { onInstanceCreated: addDevicesManager, key });
-                    childrenWithPropsDevicesManager.push(element);
-                    return null;
-                }
-
                 case Motherboard: {
                     //return React.cloneElement(childElement, { onInstanceCreated: addMotherboard });
                     const key = `${childElement.type.name}-${childIdx}`;
                     const element = React.cloneElement(childElement, { onInstanceCreated: addMotherboard, key });
                     childrenWithPropsMotherboard.push(element);
+                    return null;
+                }
+
+                case DevicesManager: {
+                    //return React.cloneElement(childElement, { onInstanceCreated: addDevicesManager });
+                    const key = `${childElement.type.name}-${childIdx}`;
+                    const element = React.cloneElement(childElement, { onInstanceCreated: addDevicesManager, key });
+                    childrenWithPropsDevicesManager.push(element);
                     return null;
                 }
 

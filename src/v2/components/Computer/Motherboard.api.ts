@@ -4,6 +4,7 @@ import { EventEmitter } from "eventemitter3";
 import { Cpu } from "../Cpu/Cpu.api";
 import { Clock } from "../Cpu/Clock.api";
 import { MemoryBus } from "../Memory/MemoryBus.api";
+import { PowerSupply } from "./PowerSupply.api";
 import type { Computer } from "./Computer.api";
 
 
@@ -11,6 +12,7 @@ import type { Computer } from "./Computer.api";
 export class Motherboard extends EventEmitter {
     public id: number;
     public computer: Computer;
+    public powerSupply: PowerSupply | null = null;
     public cpus: Map<number, Cpu | null> = new Map;
     public clock: Clock | null = null;
     public memoryBus: MemoryBus | null = null;
@@ -86,6 +88,19 @@ export class Motherboard extends EventEmitter {
         }
 
         return memoryBus;
+    }
+
+
+    addPowerSupply() {
+        const powerSupply = new PowerSupply(this);
+
+        // Attach PowerSupply to Computer
+        if (!this.powerSupply) {
+            this.powerSupply = powerSupply;
+            //console.log('PowerSupply montée dans Computer:', powerSupply);
+        }
+
+        return powerSupply;
     }
 
 

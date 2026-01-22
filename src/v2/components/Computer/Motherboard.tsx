@@ -8,6 +8,7 @@ import { MemoryBus } from '../Memory/MemoryBus';
 import { Clock, ClockIcon } from '../Cpu/Clock';
 import { DevicesManager } from '../Devices/DevicesManager';
 import { Ram, RAMIcon } from '../Memory/Ram';
+import { PowerSupply } from './PowerSupply';
 
 
 export type MotherboardProps = {
@@ -29,6 +30,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
     const [memoryBusInstance, setMemoryBusInstance] = useState<cpuApi.MemoryBus | null>(null);
     const [devicesManagerInstance, setDevicesManagerInstance] = useState<cpuApi.DevicesManager | null>(null);
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
+    const [powerSupplyInstance, setPowerSupplyInstance] = useState<cpuApi.PowerSupply | null>(null);
 
     // UI
     const [contentVisible, setContentVisible] = useState(true);
@@ -95,6 +97,15 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
     }
 
 
+    const addPowerSupply = (powerSupply: cpuApi.PowerSupply) => {
+        if (powerSupplyInstance) return;
+
+        // Save Instance
+        setPowerSupplyInstance(powerSupply);
+
+    }
+
+
     const addMemoryBus = (memoryBus: cpuApi.MemoryBus) => {
         if (!motherboardInstance) return;
         if (memoryBusInstance) return;
@@ -111,6 +122,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
     }
 
 
+    const childrenWithPropsPowerSupply: React.ReactElement<any, string | React.JSXElementConstructor<any>>[] = []
     const childrenWithPropsCpu: React.ReactElement<any, string | React.JSXElementConstructor<any>>[] = []
     const childrenWithPropsClock: React.ReactElement<any, string | React.JSXElementConstructor<any>>[] = []
     const childrenWithPropsMemoryBus: React.ReactElement<any, string | React.JSXElementConstructor<any>>[] = []
@@ -121,6 +133,15 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
             const childElement = child as React.ReactElement<any>;
 
             switch (childElement.type) {
+
+                case PowerSupply: {
+                    //return React.cloneElement(childElement, { onInstanceCreated: addPowerSupply });
+                    const key = `${childElement.type.name}-${childIdx}`;
+                    const element = React.cloneElement(childElement, { onInstanceCreated: addPowerSupply, key });
+                    childrenWithPropsPowerSupply.push(element);
+                    return null;
+                }
+
                 case Cpu: {
                     //return React.cloneElement(childElement, { onInstanceCreated: (cpuInstance: cpuApi.Cpu) => addCpu(cpuInstance, childIdx) });
                     const key = `${childElement.type.name}-${childIdx}`;
@@ -188,6 +209,26 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
                     <div className="motherboard-known-children grid grid-cols-3 w-full space-x-4">
 
                         <div className="motherboard-cpu-and-clock space-y-4">
+
+                            {/* PowerSupply */}
+                            <div className="computer-power-supply">
+                                {childrenWithPropsPowerSupply.length > 0 && (
+                                    <>
+                                        {childrenWithPropsPowerSupply}
+                                    </>
+                                )}
+
+                                {childrenWithPropsPowerSupply.length === 0 && (
+                                    <>
+                                        <div className="bg-background-light-2xl m-auto w-96 h-32 border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
+                                            <i>Insert <strong>Power Supply</strong> here</i>
+                                            <pre className="m-2">{`<PowerSupply />`}</pre>
+                                            {/* <PowerSupplyIcon /> */}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
                             {/* Clock */}
                             <div className="motherboard-clock">
                                 {childrenWithPropsClock.length > 0 && (
@@ -198,7 +239,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
 
                                 {childrenWithPropsClock.length === 0 && (
                                     <>
-                                        <div className="bg-background-light-2xl w-96 h-48 border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
+                                        <div className="bg-background-light-2xl m-auto w-96 h-48 border border-dashed border-foreground-light-xl flex flex-col justify-center items-center">
                                             <i>Insert <strong>Clock</strong> here</i>
                                         <pre className="m-2">{`<Clock />`}</pre>
                                             <ClockIcon />
@@ -220,7 +261,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
                                 {/* Cpu Not Found */}
                                 {childrenWithPropsCpu.length === 0 && (
                                     <>
-                                        <div className="bg-background-light-2xl w-96 h-full min-h-96 flex flex-col justify-center border border-foreground-light-xl items-center border-dashed">
+                                        <div className="bg-background-light-2xl m-auto w-96 h-full min-h-96 flex flex-col justify-center border border-foreground-light-xl items-center border-dashed">
                                             <i>Insert <strong>CPU</strong> here</i>
                                         <pre className="m-2">{`<Cpu />`}</pre>
                                             <CpuIcon />
