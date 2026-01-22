@@ -135,7 +135,7 @@ export const CompilePageV2: React.FC = () => {
     return (
         <div className="p-4 bg-gray-900 text-gray-100 min-h-screen flex flex-col">
             <h1 className="text-2xl font-bold mb-6 text-white">
-                <Link to="/">Compilateur Assembleur (Version Simplifiée)</Link>
+                <Link to="/">Assembly Compiler</Link>
             </h1>
 
             {/* Editeurs */}
