@@ -1,3 +1,4 @@
+import type { u16 } from "@/types/cpu.types";
 
 export type OperandType = 
     | 'NONE'
@@ -79,7 +80,7 @@ export interface ByteEntry {
 
 export interface CompiledProgram {
     sections: Section[];
-    labels: Map<string, number>;
+    labels: Map<string, { section: string, address: u16 }>;
     symbols: Map<string, SymbolInfo>;
     entryPoint?: number;
     errors: CompilerError[];

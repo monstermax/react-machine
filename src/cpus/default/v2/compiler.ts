@@ -13,6 +13,7 @@ import type {
     InstructionDef,
     InstructionVariant
 } from './compiler.types';
+import type { u16 } from '@/types/cpu.types';
 
 
 export class Compiler {
@@ -24,7 +25,7 @@ export class Compiler {
     private currentSection: string = '.text';
     private currentAddress = 0;
 
-    private labels: Map<string, { section: string, address: number }> = new Map();
+    private labels: Map<string, { section: string, address: u16 }> = new Map();
     private symbols: Map<string, SymbolInfo> = new Map();
     private unresolvedRefs: Array<{
         address: number;
@@ -152,7 +153,7 @@ export class Compiler {
 
             if (token.type === 'LABEL') {
                 const labelName = token.value;
-                this.labels.set(labelName, { section: this.currentSection, address: this.currentAddress });
+                this.labels.set(labelName, { section: this.currentSection, address: this.currentAddress as u16 });
 
                 this.symbols.set(labelName, {
                     address: this.currentAddress,
@@ -170,9 +171,9 @@ export class Compiler {
                 if (next?.type === 'DIRECTIVE') {
                     const directive = this.normalize(next.value);
 
-                    if (['DB', 'DW', 'DD', 'DQ', 'RESB', 'RESW', 'RESD', 'RESQ'].includes(directive)) {
+                    if (['EQU', 'DB', 'DW', 'DD', 'DQ', 'RESB', 'RESW', 'RESD', 'RESQ'].includes(directive)) {
                         const varName = token.value;
-                        this.labels.set(varName, { section: this.currentSection, address: this.currentAddress });
+                        this.labels.set(varName, { section: this.currentSection, address: this.currentAddress as u16 });
 
                         this.symbols.set(varName, {
                             address: this.currentAddress,
@@ -322,7 +323,7 @@ export class Compiler {
 
                 if (next?.type === 'DIRECTIVE') {
                     const directive = this.normalize(next.value);
-                    if (['DB', 'DW', 'DD', 'DQ'].includes(directive)) {
+                    if (['EQU', 'DB', 'DW', 'DD', 'DQ'].includes(directive)) {
                         const varName = token.value;
 
                         this.advance(); // IDENTIFIER
@@ -436,7 +437,7 @@ export class Compiler {
                 // Vérifier si c'est une nouvelle variable
                 const nextToken = this.peek(1);
 
-                if (nextToken?.type === 'DIRECTIVE' && ['DB', 'DW', 'DD', 'DQ'].includes(this.normalize(nextToken.value))) {
+                if (nextToken?.type === 'DIRECTIVE' && ['EQU', 'DB', 'DW', 'DD', 'DQ'].includes(this.normalize(nextToken.value))) {
                     // Nouvelle variable, on arrête
                     break;
                 }
@@ -743,9 +744,9 @@ export class Compiler {
 
     private resolveReferences(): void {
         for (const ref of this.unresolvedRefs) {
-            const addr = this.labels.get(ref.label);
+            const labelInfo = this.labels.get(ref.label);
 
-            if (addr === undefined) {
+            if (labelInfo === undefined) {
                 this.errors.push({
                     line: 0,
                     column: 0,
@@ -762,16 +763,16 @@ export class Compiler {
 
             if (ref.size === 2) {
                 if (this.arch.endianness === 'little') {
-                    section.data[offset].value = addr & 0xFF;
-                    section.data[offset + 1].value = (addr >> 8) & 0xFF;
+                    section.data[offset].value = labelInfo.address & 0xFF;
+                    section.data[offset + 1].value = (labelInfo.address >> 8) & 0xFF;
 
                 } else {
-                    section.data[offset].value = (addr >> 8) & 0xFF;
-                    section.data[offset + 1].value = addr & 0xFF;
+                    section.data[offset].value = (labelInfo.address >> 8) & 0xFF;
+                    section.data[offset + 1].value = labelInfo.address & 0xFF;
                 }
 
             } else {
-                section.data[offset].value = addr & 0xFF;
+                section.data[offset].value = labelInfo.address & 0xFF;
             }
         }
     }

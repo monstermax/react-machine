@@ -1,10 +1,10 @@
 
 section .data
     ; Variables pour remplacer les références MEMORY_MAP
-    LEDS_BASE           dd 0x00
-    CONSOLE_CHAR        dd 0x00
-    OS_START            dd 0x00
-    BOOTLOADER_STACK_END dd 0x00
+    LEDS_BASE            db 0x00
+    CONSOLE_CHAR         dw 0xF070
+    OS_START             dw 0x0500
+    BOOTLOADER_STACK_END dw 0xEE0F
 
     ; Définitions constantes (équivalents @define8)
     INITIAL_FREQ        equ 10
@@ -96,14 +96,14 @@ WAIT_FOR_OS:
     ; MOV_BA
     ; ADD
     mov al, bl
-    add al, al
-    
+    add al
+
     ; JZ $BOOTLOADER_READY
     jz BOOTLOADER_READY
 
     ; MOV_AB
     mov bl, al
-    
+
     ; MOV_A_MEM @OS_START
     mov al, [OS_START]
 

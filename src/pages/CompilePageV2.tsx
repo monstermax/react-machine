@@ -106,8 +106,12 @@ export const CompilePageV2: React.FC = () => {
             // Afficher les labels
             if (compiled.labels.size > 0) {
                 output += "=== LABELS ===\n";
-                compiled.labels.forEach((addr, name) => {
-                    output += `  ${name.padEnd(20)} : 0x${addr.toString(16).padStart(4, '0')} (${addr})\n`;
+                compiled.labels.forEach((labelInfo, name) => {
+                    const section = compiled.sections.find(s => s.name === labelInfo.section);
+                    const sectionAddress = section?.startAddress ?? 0;
+                    const labelAddress = sectionAddress + labelInfo.address;
+
+                    output += `  ${name.padEnd(20)} : 0x${labelAddress.toString(16).padStart(4, '0')} (section ${labelInfo.section} - ${labelAddress})\n`;
                 });
                 output += "\n";
             }

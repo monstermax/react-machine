@@ -118,18 +118,42 @@ const instructions: InstructionDef[] = [
 
     { mnemonic: 'GET_SP', opcode: 0x39, operands: 'NONE', size: 1 },
     { mnemonic: 'SET_SP', opcode: 0x3A, operands: 'IMM16', size: 3 },
-    { mnemonic: 'CALL', opcode: 0x3B, operands: 'IMM16', size: 3 },
+    {
+        mnemonic: 'CALL', opcode: 0x3B, operands: 'IMM16', size: 3, variants: [
+            { operands: 'MEM', opcode: 0x3B, size: 3, condition: (ops) => true, mnemonic: 'CALL' },
+        ],
+    },
     { mnemonic: 'RET', opcode: 0x3C, operands: 'NONE', size: 1 },
 
     { mnemonic: 'EI', opcode: 0x3D, operands: 'NONE', size: 1 },
     { mnemonic: 'DI', opcode: 0x3E, operands: 'NONE', size: 1 },
     { mnemonic: 'IRET', opcode: 0x3F, operands: 'NONE', size: 1 },
 
-    { mnemonic: 'JMP', opcode: 0x40, operands: 'IMM16', size: 3 },
-    { mnemonic: 'JZ', opcode: 0x41, operands: 'IMM16', size: 3 },
-    { mnemonic: 'JNZ', opcode: 0x42, operands: 'IMM16', size: 3 },
-    { mnemonic: 'JC', opcode: 0x43, operands: 'IMM16', size: 3 },
-    { mnemonic: 'JNC', opcode: 0x44, operands: 'IMM16', size: 3 },
+    {
+        mnemonic: 'JMP', opcode: 0x40, operands: 'IMM16', size: 3, variants: [
+            { operands: 'MEM', opcode: 0x40, size: 3, condition: (ops) => true, mnemonic: 'JMP' },
+        ],
+    },
+    {
+        mnemonic: 'JZ', opcode: 0x41, operands: 'IMM16', size: 3, variants: [
+            { operands: 'MEM', opcode: 0x41, size: 3, condition: (ops) => true, mnemonic: 'JZ' },
+        ],
+    },
+    {
+        mnemonic: 'JNZ', opcode: 0x42, operands: 'IMM16', size: 3, variants: [
+            { operands: 'MEM', opcode: 0x42, size: 3, condition: (ops) => true, mnemonic: 'JNZ' },
+        ],
+    },
+    {
+        mnemonic: 'JC', opcode: 0x43, operands: 'IMM16', size: 3, variants: [
+            { operands: 'MEM', opcode: 0x43, size: 3, condition: (ops) => true, mnemonic: 'JC' },
+        ],
+    },
+    {
+        mnemonic: 'JNC', opcode: 0x44, operands: 'IMM16', size: 3, variants: [
+            { operands: 'MEM', opcode: 0x44, size: 3, condition: (ops) => true, mnemonic: 'JNC' },
+        ],
+    },
 
     {
         mnemonic: 'MOV', opcode: 0x90, operands: 'REG_REG', size: 1, variants: [
@@ -155,6 +179,7 @@ const instructions: InstructionDef[] = [
             { operands: 'REG_MEM', opcode: 0xA1, size: 3, condition: (ops) => ops[0].register === 'B', mnemonic: 'MOV_B_MEM' },
             { operands: 'REG_MEM', opcode: 0xA2, size: 3, condition: (ops) => ops[0].register === 'C', mnemonic: 'MOV_C_MEM' },
             { operands: 'REG_MEM', opcode: 0xA3, size: 3, condition: (ops) => ops[0].register === 'D', mnemonic: 'MOV_D_MEM' },
+            { operands: 'REG_MEM', opcode: 0x3A, size: 3, condition: (ops) => ops[0].register === 'SP', mnemonic: 'SET_SP' },
 
             { operands: 'MEM_REG', opcode: 0xA4, size: 3, condition: (ops) => ops[1].register === 'A', mnemonic: 'MOV_MEM_A' },
             { operands: 'MEM_REG', opcode: 0xA5, size: 3, condition: (ops) => ops[1].register === 'B', mnemonic: 'MOV_MEM_B' },
