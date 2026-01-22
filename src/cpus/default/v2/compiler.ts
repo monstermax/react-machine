@@ -105,6 +105,7 @@ export class Compiler {
 
         const lexer = new Lexer(source, instructions, registers, directives, this.caseSensitive);
         this.tokens = lexer.tokenize().filter(t => t.type !== 'COMMENT' && t.type !== 'NEWLINE');
+        //console.log('lexer tokens:', this.tokens)
 
         this.pass1CollectSymbols();
 
@@ -160,6 +161,7 @@ export class Compiler {
 
             if (token.type === 'IDENTIFIER') {
                 const next = this.peek(1);
+
                 if (next?.type === 'DIRECTIVE') {
                     const directive = this.normalize(next.value);
 
@@ -172,9 +174,22 @@ export class Compiler {
                             type: 'variable'
                         });
 
-                        //this.advance();
-                        this.advance();
-                        this.currentAddress += this.calculateDataSize();
+                        this.advance(); // IDENTIFIER
+                        const directiveToken = this.peek();  // Lire la DIRECTIVE sans avancer
+
+                        this.currentAddress += this.calculateDataSize(directiveToken.value);
+                        this.advance();  // Skip DIRECTIVE maintenant
+
+                        // Skip les données
+                        while (!this.isAtEnd()) {
+                            const t = this.peek();
+                            if (t.type === 'NUMBER' || t.type === 'STRING' || t.type === 'IDENTIFIER' || t.type === 'COMMA') {
+                                this.advance();
+
+                            } else {
+                                break;
+                            }
+                        }
                         continue;
                     }
                 }
@@ -290,9 +305,10 @@ export class Compiler {
                     const directive = this.normalize(next.value);
                     if (['DB', 'DW', 'DD', 'DQ'].includes(directive)) {
                         const varName = token.value;
-                        this.advance();
-                        this.advance();
-                        this.generateData(varName);
+
+                        this.advance(); // IDENTIFIER
+                        const directiveToken = this.peek();  // Lire la DIRECTIVE sans avancer
+                        this.generateData(varName, directiveToken.value);
                         continue;
                     }
                     if (['RESB', 'RESW', 'RESD', 'RESQ'].includes(directive)) {
@@ -364,7 +380,16 @@ export class Compiler {
         this.advance();
     }
 
-    private generateData(varName?: string): void {
+    private generateData(varName: string | undefined, directiveName: string): void {
+        let itemSize = 1;
+
+        const dir = this.normalize(directiveName);
+        if (dir === 'DW') itemSize = 2;
+        else if (dir === 'DD') itemSize = 4;
+        else if (dir === 'DQ') itemSize = 8;
+
+        this.advance();
+
         while (!this.isAtEnd()) {
             const token = this.peek();
 
@@ -376,29 +401,33 @@ export class Compiler {
 
             } else if (token.type === 'NUMBER') {
                 const value = this.parseNumber(token.value);
-                this.emitByte(value, token.value);
+
+                for (let i = 0; i < itemSize; i++) {
+                    this.emitByte((value >> (i * 8)) & 0xFF, i === 0 ? token.value : undefined);
+                }
                 this.advance();
 
             } else if (token.type === 'IDENTIFIER') {
                 const addr = this.labels.get(token.value);
+
                 if (addr !== undefined) {
-                    this.emitByte(addr & 0xFF);
-                    if (this.arch.addressSize > 8) {
-                        this.emitByte((addr >> 8) & 0xFF);
+                    for (let i = 0; i < itemSize; i++) {
+                        this.emitByte((addr >> (i * 8)) & 0xFF);
                     }
+
                 } else {
                     this.unresolvedRefs.push({
                         address: this.currentAddress,
                         section: this.currentSection,
                         label: token.value,
-                        size: this.arch.addressSize > 8 ? 2 : 1
+                        size: itemSize
                     });
-                    this.emitByte(0);
-                    if (this.arch.addressSize > 8) {
+                    for (let i = 0; i < itemSize; i++) {
                         this.emitByte(0);
                     }
                 }
                 this.advance();
+
 
             } else if (token.type === 'COMMA') {
                 this.advance();
@@ -586,8 +615,10 @@ export class Compiler {
 
                 } else if (op.type === 'LABEL') {
                     const addr = this.labels.get(op.value);
+
                     if (addr !== undefined) {
                         value = addr;
+
                     } else {
                         this.unresolvedRefs.push({
                             address: this.currentAddress,
@@ -627,27 +658,32 @@ export class Compiler {
         return variant ? variant.size : 1;
     }
 
-    private calculateDataSize(): number {
+    private calculateDataSize(directiveName: string): number {
         let size = 0;
+        let itemSize = 1;
 
-        while (!this.isAtEnd()) {
-            const token = this.peek();
+        const dir = this.normalize(directiveName);
+        if (dir === 'DW') itemSize = 2;
+        else if (dir === 'DD') itemSize = 4;
+        else if (dir === 'DQ') itemSize = 8;
+
+        let offset = 1; // Start après la DIRECTIVE
+
+        while (true) {
+            const token = this.peek(offset);
+            if (!token || token.type === 'EOF') break;
 
             if (token.type === 'STRING') {
                 size += token.value.length;
-                this.advance();
-
+                offset++;
             } else if (token.type === 'NUMBER') {
-                size += 1;
-                this.advance();
-
+                size += itemSize;
+                offset++;
             } else if (token.type === 'IDENTIFIER') {
-                size += this.arch.addressSize > 8 ? 2 : 1;
-                this.advance();
-
+                size += itemSize;
+                offset++;
             } else if (token.type === 'COMMA') {
-                this.advance();
-
+                offset++;
             } else {
                 break;
             }
@@ -659,6 +695,7 @@ export class Compiler {
     private resolveReferences(): void {
         for (const ref of this.unresolvedRefs) {
             const addr = this.labels.get(ref.label);
+
             if (addr === undefined) {
                 this.errors.push({
                     line: 0,

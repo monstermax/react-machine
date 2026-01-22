@@ -179,8 +179,10 @@ export class Lexer {
                     this.pos++;
                     this.col++;
                 }
+
             } else if (char === delimiter) {
                 break;
+
             } else {
                 if (char === '\n') {
                     this.line++;
@@ -213,6 +215,7 @@ export class Lexer {
                 this.pos++;
                 this.col++;
             }
+
         } else if (this.source[this.pos] === '$') {
             this.pos++;
             this.col++;
@@ -220,6 +223,7 @@ export class Lexer {
                 this.pos++;
                 this.col++;
             }
+
         } else if (this.source[this.pos] === '0' && this.peek(1)?.toLowerCase() === 'b') {
             this.pos += 2;
             this.col += 2;
@@ -227,6 +231,7 @@ export class Lexer {
                 this.pos++;
                 this.col++;
             }
+
         } else {
             while (this.isDigit(this.peek())) {
                 this.pos++;
