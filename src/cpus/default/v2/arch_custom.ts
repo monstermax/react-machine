@@ -120,7 +120,7 @@ const instructions: InstructionDef[] = [
     { mnemonic: 'SET_SP', opcode: 0x3A, operands: 'IMM16', size: 3 },
     {
         mnemonic: 'CALL', opcode: 0x3B, operands: 'IMM16', size: 3, variants: [
-            { operands: 'MEM', opcode: 0x3B, size: 3, condition: (ops) => true, mnemonic: 'CALL' },
+            { operands: 'MEM', opcode: 0x3B, size: 3, condition: (ops) => ops[0].type === 'LABEL', mnemonic: 'CALL' },
         ],
     },
     { mnemonic: 'RET', opcode: 0x3C, operands: 'NONE', size: 1 },

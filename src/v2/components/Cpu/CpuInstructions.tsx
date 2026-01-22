@@ -60,7 +60,7 @@ export const CpuInstructions: React.FC<InstructionsProps> = (props) => {
 
             {/* IDE Head */}
             <div className="w-full flex bg-background-light p-2 rounded">
-                <h2 className="font-bold">CPU Instructions</h2>
+                <h2 className="font-bold">CPU Instructions (documentation)</h2>
 
                 {true && (
                     <button

@@ -11,6 +11,7 @@ export type LcdDisplayProps = {
     name: string;
     ioPort: number | u8 | null;
     hidden?: boolean;
+    open?: boolean;
     width?: number;
     height?: number;
     children?: React.ReactNode,
@@ -19,7 +20,7 @@ export type LcdDisplayProps = {
 
 
 export const LcdDisplay: React.FC<LcdDisplayProps> = (props) => {
-    const { hidden, name, ioPort, width = 16, height = 2, children, onInstanceCreated } = props;
+    const { hidden=false, open=false, name, ioPort, width=16, height=2, children, onInstanceCreated } = props;
 
     // Core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.LcdDisplay | null>(null);
@@ -31,7 +32,7 @@ export const LcdDisplay: React.FC<LcdDisplayProps> = (props) => {
     const [cursorVisible, setCursorVisible] = useState<boolean>(true)
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open);
 
 
     // Instanciate Device

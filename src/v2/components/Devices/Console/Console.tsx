@@ -12,6 +12,7 @@ export type ConsoleProps = {
     name: string;
     ioPort: number | u8 | null;
     hidden?: boolean;
+    open?: boolean;
     width?: number;
     height?: number;
     children?: React.ReactNode,
@@ -20,7 +21,7 @@ export type ConsoleProps = {
 
 
 export const Console: React.FC<ConsoleProps> = (props) => {
-    const { hidden, name, ioPort, width = 35, height = 15, children, onInstanceCreated } = props;
+    const { hidden=false, open=true, name, ioPort, width = 35, height = 15, children, onInstanceCreated } = props;
     const { devicesManagerRef } = useComputer();
 
     // Core
@@ -34,7 +35,7 @@ export const Console: React.FC<ConsoleProps> = (props) => {
     const [currentLine, setCurrentLine] = useState<string>("")
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open);
     const scrollRef = useRef<HTMLDivElement>(null);
 
 

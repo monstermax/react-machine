@@ -116,9 +116,11 @@ export const CompilePageV2: React.FC = () => {
                 output += "\n";
             }
 
+            const codeSize = compiled.sections.map(s => s.data.length).reduce((p, c) => p + c, 0);
+
             // Afficher les statistiques
             output += "=== STATISTIQUES ===\n";
-            output += `  Taille du code       : ${bytecode.length} bytes\n`;
+            output += `  Taille du code       : ${codeSize} bytes\n`;
             output += `  Nombre de labels     : ${compiled.labels.size}\n`;
             output += "\n";
 
@@ -147,7 +149,7 @@ export const CompilePageV2: React.FC = () => {
                 {/* Code Source */}
                 <div className="mb-4 border border-gray-700 rounded w-full overflow-hidden">
                     <Editor
-                        className="h-96"
+                        className="h-[60vh]"
                         language="nasm"
                         value={demoSourceCode_x86}
                         onUpdate={(value, editor) => codeChanged(value, editor)}
@@ -157,7 +159,7 @@ export const CompilePageV2: React.FC = () => {
                 {/* Code Compilé */}
                 <div className="mb-4 border border-gray-700 rounded w-full overflow-hidden">
                     <Editor
-                        className="h-96"
+                        className="h-[60vh]"
                         language="nasm"
                         value={compiledCode ?? ''}
                         onUpdate={(value, editor) => compiledChanged(value, editor)}
@@ -186,7 +188,7 @@ export const CompilePageV2: React.FC = () => {
             </div>
 
             {/* Console de sortie */}
-            <div className="bg-gray-800 rounded p-4 font-mono text-sm overflow-auto">
+            <div className="bg-gray-800 rounded p-4 font-mono text-sm overflow-auto max-h-[30vh]">
                 <pre className="whitespace-pre-wrap">{compileConsole}</pre>
             </div>
 

@@ -62,7 +62,7 @@ export const MemoryMap: React.FC<MemoryMapProps> = (props) => {
 
             {/* MemoryMap Head */}
             <div className="w-full flex bg-background-light p-2 rounded">
-                <h2 className="font-bold">Memory Map</h2>
+                <h2 className="font-bold">Memory Map (documentation)</h2>
 
                 {true && (
                     <button

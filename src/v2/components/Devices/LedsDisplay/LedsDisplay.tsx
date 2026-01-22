@@ -11,13 +11,14 @@ export type LedsDisplayProps = {
     name: string;
     ioPort: number | u8 | null;
     hidden?: boolean;
+    open?: boolean;
     children?: React.ReactNode,
     onInstanceCreated?: (cpu: cpuApi.LedsDisplay) => void,
 }
 
 
 export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
-    const { hidden, name, ioPort, children, onInstanceCreated } = props;
+    const { hidden=false, open=true, name, ioPort, children, onInstanceCreated } = props;
 
     // Core
     const [deviceInstance, setDeviceInstance] = useState<cpuApi.LedsDisplay | null>(null);
@@ -26,7 +27,7 @@ export const LedsDisplay: React.FC<LedsDisplayProps> = (props) => {
     const [leds, setLeds] = useState<u8>(0 as u8)
 
     // UI
-    const [contentVisible, setContentVisible] = useState(true);
+    const [contentVisible, setContentVisible] = useState(open);
 
 
     // Instanciate Device

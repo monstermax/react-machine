@@ -18,6 +18,7 @@ import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits'
 
 import type { CompiledCode, u16, u8 } from '@/types/cpu.types';
 import { compile, formatBytecode, getBytecodeArray, getMemoryMap } from '@/cpus/default/v2'
+import { universalCompiler } from '@/lib/compilation'
 
 
 export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
@@ -128,12 +129,11 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
         setEditorContent(value)
     }
 
-    const compiledChanged = (value: string, editor: PrismEditor) => {
+    const compiledChanged = async (value: string, editor: PrismEditor) => {
         setCompiledContent(value);
 
-        //const code = (new Function('return ' + value))()
-        //const finalized = finalizeCompilation(code);
-        //setCompiledCode(finalized.code)
+        const code = (new Function('return ' + value))()
+        setCompiledCode(code)
     };
 
 
@@ -142,7 +142,7 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
 
             {/* IDE Head */}
             <div className="w-full flex bg-background-light p-2 rounded">
-                <h2 className="font-bold">IDE</h2>
+                <h2 className="font-bold">IDE / Playground</h2>
 
                 {true && (
                     <button
