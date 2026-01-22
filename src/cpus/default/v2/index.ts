@@ -28,7 +28,7 @@ export function formatBytecode(program: CompiledProgram): string {
             const hexAddr = `0x${entry.address.toString(16).padStart(4, '0').toUpperCase()}`;
             const hexValue = `0x${entry.value.toString(16).padStart(2, '0').toUpperCase()}`;
 
-            let line = `            [${hexAddr}, ${hexValue}]`;
+            let line = `    [${hexAddr}, ${hexValue}]`;
 
             if (entry.comment) {
                 line += `, // ${entry.comment}`;

@@ -17,6 +17,7 @@ import { useComputer } from '../Computer/ComputerContext'
 import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits'
 
 import type { CompiledCode, u16, u8 } from '@/types/cpu.types';
+import { compile, formatBytecode, getBytecodeArray, getMemoryMap } from '@/cpus/default/v2'
 
 
 export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
@@ -52,12 +53,35 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
     }, [compileLineOffsetStr])
 
 
-    const handleCompile = async () => {
-        const preCompiled = await preCompileCode(editorContent, compileMemoryOffsetUint, compileLineOffsetUint);
-        setCompiledContent(formatCompiledCodeArray(preCompiled.code))
+    const handleCompile = async (compilerType: 'nasm' | 'custom' | 'auto') => {
+        let code: CompiledCode | null = null;
 
-        const finalized = finalizeCompilation(preCompiled.code);
-        setCompiledCode(finalized.code)
+        if (compilerType === 'auto') {
+            compilerType = editorContent.toLowerCase().includes('section .text')
+                ? 'nasm'
+                : 'custom';
+        }
+
+        if (compilerType === 'custom') {
+            const preCompiled = await preCompileCode(editorContent, compileMemoryOffsetUint, compileLineOffsetUint);
+            const finalized = finalizeCompilation(preCompiled.code);
+            code = finalized.code;
+
+            const codeFormatted = formatCompiledCodeArray(preCompiled.code)
+            setCompiledContent(codeFormatted)
+
+        } else if (compilerType === 'nasm') {
+            const compiled = compile(editorContent);
+            const bytecode = formatBytecode(compiled);
+            const compiledFormatted = `[\n${bytecode}]`;
+            //code = Array.from(getMemoryMap(compiled).entries()) as CompiledCode;
+            //debugger
+            setCompiledContent(compiledFormatted)
+        }
+
+        if (code) {
+            setCompiledCode(code)
+        }
     }
 
     const handleOpenFile = async () => {
@@ -102,6 +126,14 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
     const codeChanged = (value: string, editor: PrismEditor) => {
         setEditorContent(value)
     }
+
+    const compiledChanged = (value: string, editor: PrismEditor) => {
+        setCompiledContent(value);
+
+        //const code = (new Function('return ' + value))()
+        //const finalized = finalizeCompilation(code);
+        //setCompiledCode(finalized.code)
+    };
 
 
     return (
@@ -175,7 +207,7 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
 
 
                     <button
-                        onClick={() => handleCompile()}
+                        onClick={() => handleCompile('auto')}
                         className="cursor-pointer px-3 bg-background-light-2xl hover:bg-background-light-3xl rounded"
                     >
                         Compile
@@ -194,11 +226,23 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
                     <div className="ide-editors-inner grid grid-cols-2 gap-8 mx-2">
                         <div className="flex flex-col">
                             <h2>Source Code</h2>
-                            <Editor className="ide-editor-source h-full" language="nasm" value={initialContent} onUpdate={(value, editor) => codeChanged(value, editor)}></Editor>
+                            <Editor
+                                className="ide-editor-source h-full"
+                                language="nasm"
+                                value={initialContent}
+                                onUpdate={(value, editor) => codeChanged(value, editor)}
+                            >
+                            </Editor>
                         </div>
                         <div className="flex flex-col">
                             <h2>Compiled Code</h2>
-                            <Editor className="ide-editor-compiled h-full" language="javascript" value={compiledContent}></Editor>
+                            <Editor
+                                className="ide-editor-compiled h-full"
+                                language="javascript"
+                                value={compiledContent}
+                                onUpdate={(value, editor) => compiledChanged(value, editor)}
+                            >
+                            </Editor>
                         </div>
                     </div>
                 </div>

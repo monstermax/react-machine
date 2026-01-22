@@ -162,6 +162,7 @@ export class Compiler {
                 const next = this.peek(1);
                 if (next?.type === 'DIRECTIVE') {
                     const directive = this.normalize(next.value);
+
                     if (['DB', 'DW', 'DD', 'DQ', 'RESB', 'RESW', 'RESD', 'RESQ'].includes(directive)) {
                         const varName = token.value;
                         this.labels.set(varName, this.currentAddress);
@@ -170,7 +171,8 @@ export class Compiler {
                             section: this.currentSection,
                             type: 'variable'
                         });
-                        this.advance();
+
+                        //this.advance();
                         this.advance();
                         this.currentAddress += this.calculateDataSize();
                         continue;
@@ -204,8 +206,10 @@ export class Compiler {
 
             if (sectionName === '.DATA' || sectionName === 'DATA') {
                 this.currentSection = '.data';
+
             } else if (sectionName === '.BSS' || sectionName === 'BSS') {
                 this.currentSection = '.bss';
+
             } else {
                 this.currentSection = '.text';
             }

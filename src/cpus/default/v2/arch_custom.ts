@@ -22,8 +22,16 @@ const instructions: InstructionDef[] = [
     { mnemonic: 'GET_FREQ', opcode: 0x0A, operands: 'NONE', size: 1 },
     { mnemonic: 'SET_FREQ', opcode: 0x0B, operands: 'IMM8', size: 2 },
     { mnemonic: 'BREAKPOINT', opcode: 0x0D, operands: 'NONE', size: 1 },
-    { mnemonic: 'SYSCALL', opcode: 0x0E, operands: 'IMM8', size: 2 },
-    { mnemonic: 'INT', opcode: 0x0E, operands: 'IMM8', size: 2 }, // TODO
+
+    {
+        mnemonic: 'SYSCALL', opcode: 0x0E, operands: 'IMM8', size: 2
+    },
+
+    {
+        mnemonic: 'INT', opcode: 0x0E, operands: 'IMM8', size: 2, variants: [
+            { operands: 'IMM8', opcode: 0x0E, size: 2, condition: (ops) => { if (ops[0].value !== '0x80') return false; ops[0].value = '0xFF'; return true; }, mnemonic: 'SYSCALL' }, // int 0x80 => SYSCALL 0xFF
+        ],
+    },
 
     {
         mnemonic: 'ADD', opcode: 0x20, operands: 'NONE', size: 1, variants: [

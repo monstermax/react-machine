@@ -28,7 +28,7 @@ _start:
     int 0x80
 
     mov eax, 1          ; exit system call
-    xor ebx, ebx        ; exit code 0
+    mov ebx, 0          ; exit code 0
     int 0x80
 `;
 
@@ -77,6 +77,10 @@ export const CompilePageV2: React.FC = () => {
 
     const codeChanged = (value: string, editor: PrismEditor) => {
         setEditorContent(value);
+    };
+
+    const compiledChanged = (value: string, editor: PrismEditor) => {
+        setCompiledCode(value);
     };
 
     const handleCompile = () => {
@@ -152,7 +156,7 @@ export const CompilePageV2: React.FC = () => {
                         className="h-96"
                         language="nasm"
                         value={compiledCode ?? ''}
-                        //onUpdate={(value, editor) => codeChanged(value, editor)}
+                        onUpdate={(value, editor) => compiledChanged(value, editor)}
                     />
                 </div>
             </div>
