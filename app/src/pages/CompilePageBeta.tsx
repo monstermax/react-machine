@@ -125,9 +125,9 @@ export const CompilePageBeta: React.FC = () => {
         setCompiledCode(value);
     };
 
-    const handleCompile = () => {
+    const handleCompile = async () => {
         try {
-            const compiled = compileCode(editorContent);
+            const compiled = await compileCode(editorContent);
 
             const bytecode = formatBytecode(compiled);
             const compiledFormatted = `[\n${bytecode}\n]`;
