@@ -1,41 +1,36 @@
-import { p as c, f as r, U as i } from "./asm_compiler-D5qO57i2.js";
-import { I as M, a as N, b as _, M as A, c as w, g as x, d as P, e as T, i as U, h, j as y, m as z } from "./asm_compiler-D5qO57i2.js";
+import { p as r, f as c, U as n } from "./asm_compiler-D5qO57i2.js";
+import { I as g, a as A, b as M, M as N, c as _, g as P, d as T, e as w, i as x, h as U, j as z, m as D } from "./asm_compiler-D5qO57i2.js";
 import { c as m, g as l } from "./index-DmkRuyCg.js";
-import { i as E } from "./index-DmkRuyCg.js";
-const u = async (t, o = i(0), s = i(0), e = "auto") => {
-  let a = null;
-  if (e === "auto" && (e = t.toLowerCase().includes("section .text") ? "nasm" : "custom"), e === "custom") {
-    const n = await c(t, o, s);
-    a = r(n.code).code;
+import { i as S } from "./index-DmkRuyCg.js";
+const O = async (s, t = n(0), i = n(0), e = "auto") => {
+  let o = null;
+  if (e === "auto" && (e = s.toLowerCase().includes("section .text") ? "nasm" : "custom"), e === "custom") {
+    const a = await r(s, t, i);
+    o = c(a.code).code;
   } else if (e === "nasm") {
-    const n = m(t);
-    a = l(n);
+    const a = m(s);
+    o = l(a);
   }
-  return a;
-}, O = async () => {
-  var o;
-  return (o = await import("./demo-DHu4VJ_R.js")) == null ? void 0 : o.default;
-}, I = async () => {
-  var s;
-  const t = (s = await import("./demo-BOHn_ISk.js")) == null ? void 0 : s.default;
-  return await fetch(t).then((e) => e.text());
-}, C = () => "O-K-3";
+  return o;
+}, u = async (s) => {
+  var t;
+  return (t = await import(`../../resources/asm/${s}?raw`)) == null ? void 0 : t.default;
+}, I = () => "O-K-3";
 export {
-  M as INSTRUCTIONS_WITH_OPERAND,
-  N as INSTRUCTIONS_WITH_TWO_OPERANDS,
-  _ as IRQ_MAP,
-  A as MEMORY_MAP,
-  w as compilerV1,
-  E as compilerV2,
-  x as getInstructionLength,
-  P as getOpcodeDescription,
-  T as getOpcodeName,
-  U as isIO,
-  h as isRAM,
-  y as isROM,
-  z as memoryToIOPort,
-  O as openFile,
-  I as openUrl,
-  C as test,
-  u as universalCompiler
+  g as INSTRUCTIONS_WITH_OPERAND,
+  A as INSTRUCTIONS_WITH_TWO_OPERANDS,
+  M as IRQ_MAP,
+  N as MEMORY_MAP,
+  _ as compilerV1,
+  S as compilerV2,
+  P as getInstructionLength,
+  T as getOpcodeDescription,
+  w as getOpcodeName,
+  x as isIO,
+  U as isRAM,
+  z as isROM,
+  D as memoryToIOPort,
+  u as openAsmFile,
+  I as test,
+  O as universalCompiler
 };

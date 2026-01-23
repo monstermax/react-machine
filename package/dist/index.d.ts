@@ -426,9 +426,7 @@ declare enum Opcode {
     MOV_PTR_CD_B = 171
 }
 
-export declare const openFile: () => Promise<any>;
-
-export declare const openUrl: () => Promise<string>;
+export declare const openAsmFile: (filePath: string) => Promise<any>;
 
 declare type OperandType = 'NONE' | 'REG' | 'IMM8' | 'IMM16' | 'IMM32' | 'MEM' | 'REG_REG' | 'REG_IMM8' | 'REG_IMM16' | 'REG_MEM' | 'MEM_REG';
 
