@@ -6,11 +6,11 @@ import { useRom, type RomHook } from "@/v1/hooks/useRom";
 import { useMemory, type MemoryHook } from "@/v1/hooks/useMemory";
 import { useIo, type IOHook } from "@/v1/hooks/useIo";
 import { useRam, type RamHook } from "@/v1/hooks/useRam";
-import { os_list } from "@/v1/cpus/default/programs/mini_os";
-import { programs } from "@/v1/cpus/default/programs/programs_index";
+import { os_list } from "@/v1/cpus/default/programs_example/mini_os";
+import { programs } from "@/v1/cpus/default/programs_example/programs_index";
 import { mapAddress16, MEMORY_MAP } from "@/v1/lib/memory_map_16x8_bits";
 import { U16 } from "@/v1/lib/integers";
-import { compileCode, compileFile, loadSourceCodeFromFile } from "@/v1/cpus/default/asm_compiler";
+import { compileCode, compileFile, loadSourceCodeFromFile } from "@/v1/cpus/default/compiler_v1/asm_compiler";
 
 import type { OsInfo, ProgramInfo, u16, u8 } from "@/types/cpu.types";
 

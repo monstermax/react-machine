@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 
-import { compileCode, decompileCode, preCompileCode } from "@/v1/cpus/default/asm_compiler";
+import { compileCode, decompileCode, preCompileCode } from "@/v1/cpus/default/compiler_v1/asm_compiler";
 import { toHex, U16 } from "@/v1/lib/integers";
 import { MEMORY_MAP } from "@/v1/lib/memory_map_16x8_bits";
 

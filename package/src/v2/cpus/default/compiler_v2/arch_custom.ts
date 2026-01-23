@@ -202,6 +202,7 @@ const instructions: InstructionDef[] = [
     { mnemonic: 'CPUS_COUNT', opcode: 0xEC, operands: 'NONE', size: 1 },
 ];
 
+
 export const CUSTOM_CPU: CPUArchitecture = {
     name: 'Custom8bit',
     addressSize: 16,

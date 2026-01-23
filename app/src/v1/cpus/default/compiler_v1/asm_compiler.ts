@@ -1,9 +1,9 @@
 
-import { MEMORY_MAP } from '../../lib/memory_map_16x8_bits';
-import { high16, low16, toHex, U16, U8 } from '../../lib/integers';
-import { Opcode, getInstructionLength } from './cpu_instructions';
+import { MEMORY_MAP } from '../../../lib/memory_map_16x8_bits';
+import { high16, low16, toHex, U16, U8 } from '../../../lib/integers';
+import { Opcode, getInstructionLength } from '../cpu_instructions';
 
-import type { CompiledCode, CompiledCodeComments, CompiledCodeLabels, PreCompiledCode, u16, u8 } from '../../../types/cpu.types';
+import type { CompiledCode, CompiledCodeComments, CompiledCodeLabels, PreCompiledCode, u16, u8 } from '../../../../types/cpu.types';
 
 
 export async function loadSourceCodeFromFile(sourceFile: string): Promise<string> {

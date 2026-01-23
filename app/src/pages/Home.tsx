@@ -1,6 +1,6 @@
+
 import { Link } from "wouter";
 import { useCallback, useEffect, useState } from "react";
-import { navigate } from 'wouter/use-browser-location';
 
 
 
@@ -33,7 +33,6 @@ export const Home: React.FC = () => {
                     </div>
 
                     <div className="shrink-0">
-                        
                     </div>
                 </div>
 

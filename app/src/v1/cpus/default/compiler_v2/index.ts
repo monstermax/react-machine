@@ -1,7 +1,7 @@
 
 import { CUSTOM_CPU } from './arch_custom';
 import { Compiler } from './compiler';
-import { loadSourceCodeFromFile } from '../asm_compiler';
+import { loadSourceCodeFromFile } from '../compiler_v1/asm_compiler';
 
 import type { CompiledCode, u16, u8 } from '@/types/cpu.types';
 import type { CPUArchitecture, CompiledProgram, CompilerOptions } from './compiler.types';

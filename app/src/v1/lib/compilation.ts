@@ -1,6 +1,6 @@
 
-import { finalizeCompilation, preCompileCode } from "@/v1/cpus/default/asm_compiler";
-import { compileCode, formatBytecode, getBytecodeArray } from "@/v1/cpus/default/v2";
+import { finalizeCompilation, preCompileCode } from "@/v1/cpus/default/compiler_v1/asm_compiler";
+import { compileCode, formatBytecode, getBytecodeArray } from "@/v1/cpus/default/compiler_v2";
 import { U16 } from "./integers";
 
 import type { CompiledCode, u16 } from "@/types/cpu.types";

@@ -15,10 +15,9 @@ import { U16 } from '@/v2/lib/integers';
 import { finalizeCompilation, preCompileCode } from '@/v2/cpus/default/compiler_v1/asm_compiler';
 import { useComputer } from '../Computer/ComputerContext'
 import { MEMORY_MAP } from '@/v2/lib/memory_map_16x8_bits'
+import { compileCode, formatBytecode, getBytecodeArray, formatCompiledCodeArray } from '@/v2/lib/compilation'
 
 import type { CompiledCode, u16, u8 } from '@/types/cpu.types';
-import { compileCode, formatBytecode, getBytecodeArray, getMemoryMap } from '@/v2/cpus/default/compiler_v2'
-import { formatCompiledCodeArray, universalCompiler } from '@/v2/lib/compilation'
 
 
 export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
@@ -72,7 +71,7 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
             setCompiledContent(codeFormatted)
 
         } else if (compilerType === 'nasm') {
-            const compiled = compileCode(editorContent);
+            const compiled = await compileCode(editorContent);
             const bytecode = formatBytecode(compiled);
             const compiledFormatted = `[\n${bytecode}]`;
             code = getBytecodeArray(compiled)
