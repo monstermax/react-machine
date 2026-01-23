@@ -17,6 +17,9 @@ console.log('test1:', demoUrl, txt1)
 import txt2 from "react-machine-package/resources/asm/demo.asm?raw";
 console.log('test2:', txt2)
 
+const txt3 = (await import("react-machine-package/resources/asm/demo.asm?raw"))?.default;
+console.log('test3:', txt3)
+
 
 
 const demoSourceCode_x86 = `
