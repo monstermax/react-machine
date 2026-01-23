@@ -30,16 +30,20 @@ export const universalCompiler = async (codeSource: string, memoryOffset: u16 = 
 
 
 
-export const openFile = async () => {
-    const content = (await import("../../resources/asm/demo.asm?raw"))?.default;
-    //console.log('content:', content)
-    return content;
-}
+export const openAsmFile = async (filePath: string) => {
+    // RAW Mode
+    if (true) {
+        const content = (await import(`../../resources/asm/${filePath}?raw`))?.default;
+        //console.log('content:', content)
+        return content;
+    }
 
-export const openUrl = async () => {
-    const url = (await import("../../resources/asm/demo.asm?url"))?.default;
-    const content = await fetch(url).then(r => r.text());
-    //console.log('content:', content)
-    return content;
+    // URL Mode
+    if (false) {
+        const url = (await import(`../../resources/asm/${filePath}?url`))?.default;
+        const content = await fetch(url).then(r => r.text());
+        //console.log('content:', content)
+        return content;
+    }
 }
 

@@ -8,6 +8,7 @@ export default {
     content: [
         "./index.html",
         "./**/*.{js,ts,jsx,tsx}",
+        "./node_modules/react-machine-package/dist/**/*.{js,ts,jsx,tsx}",
     ],
     theme: {
         extend: {

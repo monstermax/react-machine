@@ -11,8 +11,8 @@ export { INSTRUCTIONS_WITH_OPERAND, INSTRUCTIONS_WITH_TWO_OPERANDS, getOpcodeNam
 import { MEMORY_MAP, IRQ_MAP, isROM, isRAM, isIO, memoryToIOPort } from '@/lib/memory_map_16x8_bits';
 export { MEMORY_MAP, IRQ_MAP, isROM, isRAM, isIO, memoryToIOPort }
 
-import { universalCompiler, openFile, openUrl } from '@/lib/compilation';
-export { universalCompiler, openFile, openUrl }
+import { universalCompiler, openAsmFile } from '@/lib/compilation';
+export { universalCompiler, openAsmFile }
 
 
 import * as compilerV1 from './cpus/default/asm_compiler';

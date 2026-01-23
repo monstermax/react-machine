@@ -21,10 +21,10 @@ console.log('test2:', txt2)
 const txt3 = (await import("react-machine-package/resources/asm/demo.asm?raw"))?.default;
 console.log('test3:', txt3)
 
-const txt4 = await openFile();
+const txt4 = await openFile("asm/demo.asm");
 console.log('test4:', txt4)
 
-const txt5 = await openUrl();
+const txt5 = await openUrl("asm/demo.asm");
 console.log('test5:', txt5)
 
 
