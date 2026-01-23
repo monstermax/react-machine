@@ -146,12 +146,16 @@ export class Compiler {
         while (!this.isAtEnd()) {
             const token = this.peek();
 
+            // handle Directive
             if (token.type === 'DIRECTIVE') {
+                // example => "section .text"
                 this.handleDirectivePass1();
                 continue;
             }
 
+            // handle Label
             if (token.type === 'LABEL') {
+                // example => "main:"
                 const labelName = token.value;
                 this.labels.set(labelName, { section: this.currentSection, address: this.currentAddress as u16 });
 
@@ -160,12 +164,24 @@ export class Compiler {
                     section: this.currentSection,
                     type: 'label'
                 });
+
                 this.advance();
                 this.skip('COLON');
                 continue;
             }
 
+
+            // handle Instruction
+            if (token.type === 'INSTRUCTION') {
+                // example => "mov eax, 4"
+                this.currentAddress += this.calculateInstructionSize();
+                continue;
+            }
+
+
+            // handle Identifier
             if (token.type === 'IDENTIFIER') {
+                // example => "my_var db 0x12"
                 const next = this.peek(1);
 
                 if (next?.type === 'DIRECTIVE') {
@@ -187,7 +203,7 @@ export class Compiler {
                         this.currentAddress += this.calculateDataSize(directiveToken.value);
                         this.advance();  // Skip DIRECTIVE maintenant
 
-                        // Skip les données
+                        // Skip les données => TODO : save data
                         while (!this.isAtEnd()) {
                             const t = this.peek();
 
@@ -213,10 +229,6 @@ export class Compiler {
                 }
             }
 
-            if (token.type === 'INSTRUCTION') {
-                this.currentAddress += this.calculateInstructionSize();
-                continue;
-            }
 
             this.advance();
         }
@@ -225,6 +237,7 @@ export class Compiler {
     private handleDirectivePass1(): void {
         const directive = this.normalize(this.peek().value);
 
+        // handle directive "section" + ".*"
         if (directive === 'SECTION' || directive.startsWith('.')) {
             this.advance();
 
@@ -250,32 +263,48 @@ export class Compiler {
             const section = this.sections.get(this.currentSection);
             if (section) {
                 this.currentAddress = section.startAddress;
+
+            } else {
+                throw new Error("Unknown case : missing section")
             }
+
             return;
         }
 
+
+        // handle directive ".org"
         if (directive === '.ORG') {
             this.advance();
+
             if (this.peek().type === 'NUMBER') {
                 this.currentAddress = this.parseNumber(this.peek().value);
                 this.advance();
+
+            } else {
+                throw new Error("Unknown case : .org ...")
             }
+
             return;
         }
 
+
+        // handle directive "global" + "extern"
         if (directive === 'GLOBAL' || directive === 'EXTERN') {
             this.advance();
+
             while (!this.isAtEnd() && this.peek().type === 'IDENTIFIER') {
                 const symbolName = this.peek().value;
 
                 if (directive === 'GLOBAL') {
                     const sym = this.symbols.get(symbolName);
+
                     if (sym) {
                         sym.global = true;
                     }
 
                     if (symbolName === '_start' || symbolName === 'start' || symbolName === 'main') {
                         const labelInfo = this.labels.get(symbolName);
+
                         if (labelInfo !== undefined) {
                             this.entryPoint = labelInfo.address;
                         }
@@ -293,6 +322,7 @@ export class Compiler {
                 this.advance();
                 if (this.peek().type === 'COMMA') this.advance();
             }
+
             return;
         }
 
@@ -307,18 +337,23 @@ export class Compiler {
         while (!this.isAtEnd()) {
             const token = this.peek();
 
+            // handle Directive
             if (token.type === 'DIRECTIVE') {
+                // example => "section .text"
                 this.handleDirectivePass2();
                 continue;
             }
 
+            // handle Label
             if (token.type === 'LABEL') {
+                // example => "main:"
                 this.advance();
                 this.skip('COLON');
                 continue;
             }
 
             if (token.type === 'IDENTIFIER') {
+                // example => "LEDS_BASE db 0x00"
                 const next = this.peek(1);
 
                 if (next?.type === 'DIRECTIVE') {
@@ -666,6 +701,9 @@ export class Compiler {
 
                     }
 
+                } else if (op.type === 'MEMORY') {
+                    //value = this.labels.get(op.value)?.address;
+                    
                 } else if (op.address !== undefined) {
                     value = op.address;
 
@@ -685,6 +723,7 @@ export class Compiler {
         }
     }
 
+
     private calculateInstructionSize(): number {
         const instrToken = this.peek();
         const mnemonic = this.normalize(instrToken.value);
@@ -698,6 +737,7 @@ export class Compiler {
         const variant = this.findInstructionVariant(instrDef, operands);
         return variant ? variant.size : 1;
     }
+
 
     private calculateDataSize(directiveName: string): number {
         let size = 0;
@@ -745,7 +785,6 @@ export class Compiler {
     private resolveReferences(): void {
         for (const ref of this.unresolvedRefs) {
             const labelInfo = this.labels.get(ref.label);
-
             if (labelInfo === undefined) {
                 this.errors.push({
                     line: 0,

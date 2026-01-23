@@ -36,31 +36,31 @@ const instructions: InstructionDef[] = [
     {
         mnemonic: 'ADD', opcode: 0x20, operands: 'NONE', size: 1, variants: [
             { operands: 'NONE', opcode: 0x20, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'ADD' },
-            { operands: 'REG', opcode: 0x20, size: 2, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'ADD' },
+            { operands: 'REG', opcode: 0x20, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'ADD' },
         ],
      },
     {
         mnemonic: 'SUB', opcode: 0x21, operands: 'NONE', size: 1, variants: [
             { operands: 'NONE', opcode: 0x21, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'SUB' },
-            { operands: 'REG', opcode: 0x21, size: 2, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'SUB' },
+            { operands: 'REG', opcode: 0x21, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'SUB' },
         ],
     },
     {
         mnemonic: 'AND', opcode: 0x22, operands: 'NONE', size: 1, variants: [
             { operands: 'NONE', opcode: 0x22, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'AND' },
-            { operands: 'REG', opcode: 0x22, size: 2, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'AND' },
+            { operands: 'REG', opcode: 0x22, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'AND' },
         ],
     },
     {
         mnemonic: 'OR', opcode: 0x23, operands: 'NONE', size: 1, variants: [
             { operands: 'NONE', opcode: 0x23, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'OR' },
-            { operands: 'REG', opcode: 0x23, size: 2, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'OR' },
+            { operands: 'REG', opcode: 0x23, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'OR' },
         ],
     },
     {
         mnemonic: 'XOR', opcode: 0x24, operands: 'NONE', size: 1, variants: [
             { operands: 'NONE', opcode: 0x24, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'XOR' },
-            { operands: 'REG', opcode: 0x24, size: 2, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'XOR' },
+            { operands: 'REG', opcode: 0x24, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'XOR' },
         ],
     },
 
@@ -121,6 +121,7 @@ const instructions: InstructionDef[] = [
     {
         mnemonic: 'CALL', opcode: 0x3B, operands: 'IMM16', size: 3, variants: [
             { operands: 'MEM', opcode: 0x3B, size: 3, condition: (ops) => ops[0].type === 'LABEL', mnemonic: 'CALL' },
+            { operands: 'MEM', opcode: 0x3B, size: 3, condition: (ops) => ops[0].type === 'MEMORY', mnemonic: 'CALL' },
         ],
     },
     { mnemonic: 'RET', opcode: 0x3C, operands: 'NONE', size: 1 },

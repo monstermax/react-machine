@@ -1,7 +1,7 @@
 import { p as r, f as m, U as e } from "./asm_compiler-D5qO57i2.js";
 import { I as R, a as g, b as M, M as N, c as _, g as A, d as P, e as T, i as x, h as U, j as z, m as D } from "./asm_compiler-D5qO57i2.js";
-import { c, g as l } from "./index-DmkRuyCg.js";
-import { i as S } from "./index-DmkRuyCg.js";
+import { c, g as l } from "./index-mrMvlnT4.js";
+import { i as S } from "./index-mrMvlnT4.js";
 const f = async (o, i = e(0), n = e(0), s = "auto") => {
   let t = null;
   if (s === "auto" && (s = o.toLowerCase().includes("section .text") ? "nasm" : "custom"), s === "custom") {

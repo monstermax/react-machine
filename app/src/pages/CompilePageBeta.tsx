@@ -8,7 +8,45 @@ import "prism-react-editor/languages/asm"
 import "prism-react-editor/layout.css"
 import "prism-react-editor/themes/github-dark.css"
 import { compile, formatBytecode } from "@/cpus/default/v2";
+import { toHex } from "@/lib/integers";
 
+
+const debugSourceCode_x86 = `
+section .data
+    VAR_DB_01         db 0x08
+    VAR_DB_02         dw 0x12
+    VAR_DW_01         dw 0x0500
+    STR_TEST_01       db "test string", 0
+    VAR_EQU_01       equ 10
+
+
+section .text
+    global INIT
+
+INIT:
+    mov esp, [VAR_DW_01]
+    mov eax, VAR_DB_01
+    call LABEL2
+    JMP LABEL1
+
+    add eax
+
+LABEL1:
+    mov bl, VAR_DB_02
+    mov [VAR_DW], bl
+
+    call PRINT_INFO
+    hlt
+
+LABEL2:
+    inc bl
+    ret
+
+PRINT_INFO:
+    mov eax, ebx
+    ret
+
+`;
 
 const demoSourceCode_x86 = `
 section .data
@@ -69,9 +107,13 @@ end_program:
 
 
 export const CompilePageBeta: React.FC = () => {
-    const [editorContent, setEditorContent] = useState(demoSourceCode_x86);
+    const initialSourceCode = debugSourceCode_x86;
+    const initConsoleMessage = "Code reseted. Click on Compile to continue.";
+
+    const [consoleOpened, setConsoleOpened] = useState(false)
+    const [editorContent, setEditorContent] = useState(initialSourceCode);
     const [compiledCode, setCompiledCode] = useState<string | null>(null);
-    const [compileConsole, setCompileConsole] = useState<string>("Cliquez sur Compile pour voir le résultat.");
+    const [compileConsole, setCompileConsole] = useState<string>(initConsoleMessage);
 
     const codeChanged = (value: string, editor: PrismEditor) => {
         setEditorContent(value);
@@ -107,9 +149,10 @@ export const CompilePageBeta: React.FC = () => {
                 compiled.labels.forEach((labelInfo, name) => {
                     const section = compiled.sections.find(s => s.name === labelInfo.section);
                     const sectionAddress = section?.startAddress ?? 0;
-                    const labelAddress = sectionAddress + labelInfo.address;
+                    const labelAddress = labelInfo.address;
+                    const labelAddressGlobal = sectionAddress + labelInfo.address;
 
-                    output += `  ${name.padEnd(20)} : 0x${labelAddress.toString(16).padStart(4, '0')} (section ${labelInfo.section} - ${labelAddress})\n`;
+                    output += `  ${name.padEnd(20)} : ${toHex(labelAddressGlobal, 4)} (line ${labelAddressGlobal} => section ${labelInfo.section} - line ${labelAddress} = ${toHex(labelAddress, 4)})\n`;
                 });
                 output += "\n";
             }
@@ -143,13 +186,13 @@ export const CompilePageBeta: React.FC = () => {
             </h1>
 
             {/* Editeurs */}
-            <div className="flex gap-8 grow w-full">
+            <div className="flex gap-8 grow w-full h-full overflow-hidden">
                 {/* Code Source */}
                 <div className="mb-4 border border-gray-700 rounded w-full overflow-hidden">
                     <Editor
-                        className="h-[60vh]"
+                        className="h-full"
                         language="nasm"
-                        value={demoSourceCode_x86}
+                        value={initialSourceCode}
                         onUpdate={(value, editor) => codeChanged(value, editor)}
                     />
                 </div>
@@ -157,7 +200,7 @@ export const CompilePageBeta: React.FC = () => {
                 {/* Code Compilé */}
                 <div className="mb-4 border border-gray-700 rounded w-full overflow-hidden">
                     <Editor
-                        className="h-[60vh]"
+                        className="h-full"
                         language="nasm"
                         value={compiledCode ?? ''}
                         onUpdate={(value, editor) => compiledChanged(value, editor)}
@@ -171,23 +214,41 @@ export const CompilePageBeta: React.FC = () => {
                     onClick={() => handleCompile()}
                     className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors cursor-pointer font-semibold"
                 >
-                    🔨 Compiler
+                    🔨 Compile
                 </button>
 
                 <button
                     onClick={() => {
-                        setEditorContent(demoSourceCode_x86);
-                        setCompileConsole("Code réinitialisé. Cliquez sur Compile pour compiler.");
+                        setEditorContent(initialSourceCode);
+                        setCompileConsole("");
                     }}
                     className="ml-2 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors cursor-pointer"
                 >
-                    🔄 Réinitialiser
+                    🔄 Reset
                 </button>
             </div>
 
             {/* Console de sortie */}
-            <div className="bg-gray-800 rounded p-4 font-mono text-sm overflow-auto max-h-[30vh]">
-                <pre className="whitespace-pre-wrap">{compileConsole}</pre>
+            <div className="border rounded flex flex-col bg-background-light-xs">
+                <button className="px-3 py-1 flex items-center gap-8 cursor-pointer" onClick={() => setConsoleOpened(b => !b)}>
+                    <div className="font-bold flex gap-3 items-center">
+                        Console
+
+                        {!consoleOpened && !!compileConsole && (
+                            <sup>🔔</sup>
+                        )}
+                    </div>
+
+                    <div className="my-1 ms-auto px-2 py-1 bg-background-light-2xl rounded">
+                        {consoleOpened ? "▲" : "▼"}
+                    </div>
+                </button>
+
+                {consoleOpened && (
+                    <div className="bg-gray-800 p-4 font-mono text-sm overflow-auto h-full">
+                        <pre className="whitespace-pre-wrap">{compileConsole || initConsoleMessage}</pre>
+                    </div>
+                )}
             </div>
 
         </div>

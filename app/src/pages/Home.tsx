@@ -68,6 +68,10 @@ export const Home: React.FC = () => {
                         <Link to="/compiler" className="px-16 py-8 bg-stone-900 text-amber-50 text-xl font-bold hover:bg-stone-800 transition-colors w-full">
                             Compile Code
                         </Link>
+
+                        <Link to="/compiler-beta" className="px-16 py-8 bg-stone-900 text-amber-50 text-xl font-bold hover:bg-stone-800 transition-colors w-full">
+                            Compile Code (beta)
+                        </Link>
                     </div>
                 </div>
             </div>

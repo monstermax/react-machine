@@ -48,7 +48,7 @@ function Router() {
             <Route path={"/cpu"} component={ComputerPage} />
             <Route path={"/cpu-beta"} component={ComputerPageBeta} />
             <Route path={"/compiler"} component={CompilePage} />
-            <Route path={"/compiler2"} component={CompilePageBeta} />
+            <Route path={"/compiler-beta"} component={CompilePageBeta} />
             <Route path={"/logic"} component={LogicPage} />
             <Route path={"/404"} component={NotFound} />
             {/* Final fallback route */}

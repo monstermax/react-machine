@@ -37,7 +37,7 @@ const m = [
     size: 1,
     variants: [
       { operands: "NONE", opcode: 32, size: 1, condition: (s) => s.length === 0, mnemonic: "ADD" },
-      { operands: "REG", opcode: 32, size: 2, condition: (s) => s[0].register === "A" && s[0].type === "REGISTER", mnemonic: "ADD" }
+      { operands: "REG", opcode: 32, size: 1, condition: (s) => s[0].register === "A" && s[0].type === "REGISTER", mnemonic: "ADD" }
     ]
   },
   {
@@ -47,7 +47,7 @@ const m = [
     size: 1,
     variants: [
       { operands: "NONE", opcode: 33, size: 1, condition: (s) => s.length === 0, mnemonic: "SUB" },
-      { operands: "REG", opcode: 33, size: 2, condition: (s) => s[0].register === "A" && s[0].type === "REGISTER", mnemonic: "SUB" }
+      { operands: "REG", opcode: 33, size: 1, condition: (s) => s[0].register === "A" && s[0].type === "REGISTER", mnemonic: "SUB" }
     ]
   },
   {
@@ -57,7 +57,7 @@ const m = [
     size: 1,
     variants: [
       { operands: "NONE", opcode: 34, size: 1, condition: (s) => s.length === 0, mnemonic: "AND" },
-      { operands: "REG", opcode: 34, size: 2, condition: (s) => s[0].register === "A" && s[0].type === "REGISTER", mnemonic: "AND" }
+      { operands: "REG", opcode: 34, size: 1, condition: (s) => s[0].register === "A" && s[0].type === "REGISTER", mnemonic: "AND" }
     ]
   },
   {
@@ -67,7 +67,7 @@ const m = [
     size: 1,
     variants: [
       { operands: "NONE", opcode: 35, size: 1, condition: (s) => s.length === 0, mnemonic: "OR" },
-      { operands: "REG", opcode: 35, size: 2, condition: (s) => s[0].register === "A" && s[0].type === "REGISTER", mnemonic: "OR" }
+      { operands: "REG", opcode: 35, size: 1, condition: (s) => s[0].register === "A" && s[0].type === "REGISTER", mnemonic: "OR" }
     ]
   },
   {
@@ -77,7 +77,7 @@ const m = [
     size: 1,
     variants: [
       { operands: "NONE", opcode: 36, size: 1, condition: (s) => s.length === 0, mnemonic: "XOR" },
-      { operands: "REG", opcode: 36, size: 2, condition: (s) => s[0].register === "A" && s[0].type === "REGISTER", mnemonic: "XOR" }
+      { operands: "REG", opcode: 36, size: 1, condition: (s) => s[0].register === "A" && s[0].type === "REGISTER", mnemonic: "XOR" }
     ]
   },
   {
@@ -136,7 +136,8 @@ const m = [
     operands: "IMM16",
     size: 3,
     variants: [
-      { operands: "MEM", opcode: 59, size: 3, condition: (s) => s[0].type === "LABEL", mnemonic: "CALL" }
+      { operands: "MEM", opcode: 59, size: 3, condition: (s) => s[0].type === "LABEL", mnemonic: "CALL" },
+      { operands: "MEM", opcode: 59, size: 3, condition: (s) => s[0].type === "MEMORY", mnemonic: "CALL" }
     ]
   },
   { mnemonic: "RET", opcode: 60, operands: "NONE", size: 1 },
@@ -506,6 +507,10 @@ class l {
         }), this.advance(), this.skip("COLON");
         continue;
       }
+      if (e.type === "INSTRUCTION") {
+        this.currentAddress += this.calculateInstructionSize();
+        continue;
+      }
       if (e.type === "IDENTIFIER") {
         const t = this.peek(1);
         if ((t == null ? void 0 : t.type) === "DIRECTIVE") {
@@ -534,10 +539,6 @@ class l {
           }
         }
       }
-      if (e.type === "INSTRUCTION") {
-        this.currentAddress += this.calculateInstructionSize();
-        continue;
-      }
       this.advance();
     }
   }
@@ -552,11 +553,17 @@ class l {
       }
       t === ".DATA" || t === "DATA" ? this.currentSection = ".data" : t === ".BSS" || t === "BSS" ? this.currentSection = ".bss" : this.currentSection = ".text";
       const i = this.sections.get(this.currentSection);
-      i && (this.currentAddress = i.startAddress);
+      if (i)
+        this.currentAddress = i.startAddress;
+      else
+        throw new Error("Unknown case : missing section");
       return;
     }
     if (e === ".ORG") {
-      this.advance(), this.peek().type === "NUMBER" && (this.currentAddress = this.parseNumber(this.peek().value), this.advance());
+      if (this.advance(), this.peek().type === "NUMBER")
+        this.currentAddress = this.parseNumber(this.peek().value), this.advance();
+      else
+        throw new Error("Unknown case : .org ...");
       return;
     }
     if (e === "GLOBAL" || e === "EXTERN") {
