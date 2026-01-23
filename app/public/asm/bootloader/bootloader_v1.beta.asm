@@ -1,5 +1,5 @@
 
-;.include "bootloader/bootloader.lib.asm"
+.include "bootloader/bootloader.lib.asm"
 
 
 section .data
@@ -10,7 +10,7 @@ section .data
     BOOTLOADER_STACK_END equ 0xEE0F
 
     ; Définitions constantes (équivalents @define8)
-    INITIAL_FREQ        equ 10
+    ;INITIAL_FREQ        equ 10
     LEDS_STATE_ALL_OFF  equ 0x00
     LEDS_STATE_HALF_1   equ 0x55
     LEDS_STATE_HALF_2   equ 0xAA

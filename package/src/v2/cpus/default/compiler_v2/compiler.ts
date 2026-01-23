@@ -32,6 +32,7 @@ export class Compiler {
     private caseSensitive: boolean;
     private entryPoint?: number;
 
+
     constructor(options: CompilerOptions) {
         this.arch = options.architecture;
         this.caseSensitive = options.caseSensitive || false;
@@ -61,6 +62,7 @@ export class Compiler {
         });
     }
 
+
     private buildRegisterMap(): void {
         // called by constructor
 
@@ -79,6 +81,7 @@ export class Compiler {
         }
     }
 
+
     private buildInstructionMap(): void {
         // called by constructor
 
@@ -88,7 +91,8 @@ export class Compiler {
         }
     }
 
-    public compile(source: string, filePath?: string): CompiledProgram {
+
+    public async compile(source: string, filePath?: string): Promise<CompiledProgram> {
         // should be called externally
 
         if (filePath) {
@@ -114,8 +118,6 @@ export class Compiler {
         this.pos = 0;
         this.resetSections();
 
-        // TODO: gérer les includes
-
         this.pass2GenerateCode();
 
         this.resolveReferences();
@@ -128,6 +130,7 @@ export class Compiler {
             errors: this.errors
         };
     }
+
 
     private resetSections(): void {
         // called by compile
@@ -142,6 +145,7 @@ export class Compiler {
         this.currentSection = '.text';
         this.currentAddress = this.sections.get('.text')!.startAddress;
     }
+
 
     private pass1CollectSymbols(): void {
         // called by compile

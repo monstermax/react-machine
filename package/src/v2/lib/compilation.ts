@@ -1,28 +1,12 @@
 
 import { CompiledProgram, Compiler, CompilerOptions, CPUArchitecture, CUSTOM_CPU } from "../cpus/default/compiler_v2";
+import { resolveIncludes } from "../cpus/default/compiler_v2/compiler_preprocessor";
 import { toHex, U16 } from "./integers";
 
 import type { PreCompiledCode, u16, u8 } from "@/types/cpu.types";
 
 
 export async function loadSourceCodeFromFile(sourceFile: string): Promise<string> {
-    //const sourceCodeModule = sourceFile.endsWith('.ts')
-    //    ? await import(`../../cpus/default/asm/${sourceFile}`)
-    //    : await import(`../../cpus/default/asm/${sourceFile}?raw`);
-    //const sourceCode = sourceCodeModule.default;
-
-    if (sourceFile.endsWith('.ts')) {
-        //const sourceCodeModule = await import(`../../cpus/default/asm/${sourceFile}`)
-        //const sourceCode = sourceCodeModule.default;
-        //return sourceCode;
-    }
-
-    if (false) {
-        //const sourceCodeModule = await import(`../../cpus/default/asm/${sourceFile}?raw`)
-        //const sourceCode = sourceCodeModule.default;
-        //return sourceCode;
-    }
-
     const response = await fetch(`/asm/${sourceFile}`);
     if (!response.ok) return '';
 
@@ -33,19 +17,28 @@ export async function loadSourceCodeFromFile(sourceFile: string): Promise<string
 
 export async function compileFile(filePath: string, architecture: CPUArchitecture = CUSTOM_CPU, options: Partial<CompilerOptions> = {}): Promise<CompiledProgram> {
     const source = await loadSourceCodeFromFile(filePath);
+
     const result = compileCode(source, architecture, options);
     return result;
 }
 
 
 export async function compileCode(source: string, architecture: CPUArchitecture = CUSTOM_CPU, options: Partial<CompilerOptions> = {}): Promise<CompiledProgram> {
+    const { source: resolvedSource, stats } = await resolveIncludes(source);
+
+    // Log des stats si besoin
+    console.log('Include stats:');
+    stats.forEach((stat, file) => {
+        console.log(`  ${stat.file}: ${stat.references} references from [${stat.includedBy.join(', ')}]`);
+    });
+
     const compiler = new Compiler({
         architecture,
         startAddress: options.startAddress || 0,
         caseSensitive: options.caseSensitive || false
     });
 
-    return await compiler.compile(source);
+    return await compiler.compile(resolvedSource);
 }
 
 
