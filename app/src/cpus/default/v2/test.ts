@@ -36,8 +36,8 @@ if (result1.errors.length > 0) {
     console.log("✅ Compilation successful\n");
 
     console.log("Labels:");
-    result1.labels.forEach((addr, name) => {
-        console.log(`  ${name.padEnd(20)} => 0x${addr.toString(16).padStart(4, '0')}`);
+    result1.labels.forEach((labelInfo, name) => {
+        console.log(`  ${name.padEnd(20)} => 0x${labelInfo.address.toString(16).padStart(4, '0')}`);
     });
 
     console.log("\nSections:");
@@ -77,8 +77,8 @@ if (result2.errors.length > 0) {
     console.log("✅ Compilation successful\n");
 
     console.log("Labels:");
-    result2.labels.forEach((addr, name) => {
-        console.log(`  ${name.padEnd(20)} => 0x${addr.toString(16).padStart(4, '0')}`);
+    result2.labels.forEach((labelInfo, name) => {
+        console.log(`  ${name.padEnd(20)} => 0x${labelInfo.address.toString(16).padStart(4, '0')}`);
     });
 
     console.log("\nFormatted bytecode:");
@@ -116,8 +116,8 @@ if (result3.errors.length > 0) {
     console.log("✅ Compilation successful\n");
 
     console.log("Labels:");
-    result3.labels.forEach((addr, name) => {
-        console.log(`  ${name.padEnd(20)} => 0x${addr.toString(16).padStart(4, '0')}`);
+    result3.labels.forEach((labelInfo, name) => {
+        console.log(`  ${name.padEnd(20)} => 0x${labelInfo.address.toString(16).padStart(4, '0')}`);
     });
 
     console.log("\nFormatted bytecode:");

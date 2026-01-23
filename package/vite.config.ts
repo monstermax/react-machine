@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import dts from 'vite-plugin-dts';
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 import { asmDirectoryPlugin } from './src/lib/vite_asm_index'
 
@@ -19,7 +20,15 @@ export default defineConfig({
       //include: [
       //  'src/'
       //],
-    })
+    }),
+    viteStaticCopy({
+      targets: [
+        {
+          src: "resources/**/*",
+          dest: "resources",
+        },
+      ],
+    }),
   ],
   build: {
     lib: {

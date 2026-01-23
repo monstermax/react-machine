@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { Editor, type PrismEditor } from "prism-react-editor"
-import { test } from 'react-machine-package';
 
 import "prism-react-editor/prism/languages/nasm"
 import "prism-react-editor/languages/asm"
@@ -11,7 +10,13 @@ import "prism-react-editor/themes/github-dark.css"
 import { compile, formatBytecode } from "@/cpus/default/v2";
 
 
-console.log('test()', test())
+import demoUrl from "react-machine-package/resources/asm/demo.asm?url";
+const txt1 = await fetch(demoUrl).then(r => r.text());
+console.log('test1:', demoUrl, txt1)
+
+import txt2 from "react-machine-package/resources/asm/demo.asm?raw";
+console.log('test2:', txt2)
+
 
 
 const demoSourceCode_x86 = `

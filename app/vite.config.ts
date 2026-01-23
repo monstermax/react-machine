@@ -12,14 +12,9 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "./src"),
-            //'react-machine-package/types': '/home/monstermax/Dev/react_machine/package/dist/types.js',
-            //'react-machine-package/core-components': '/home/monstermax/Dev/react_machine/package/dist/core-components.js',
-            //'react-machine-package/api-components': '/home/monstermax/Dev/react_machine/package/dist/api-components.js',
-            //'react-machine-package/devices-components': '/home/monstermax/Dev/react_machine/package/dist/devices-components.js',
-            //'react-machine-package/devices-api': '/home/monstermax/Dev/react_machine/package/dist/devices-api.js',
         },
 
-        preserveSymlinks: true,
+        preserveSymlinks: false,
 
         // Fix dependencies error in dev
         dedupe: ["react", "react-dom", "react/jsx-runtime"],

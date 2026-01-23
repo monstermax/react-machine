@@ -6,7 +6,7 @@ import type { CompiledCode, u16 } from "@/types/cpu.types";
 import { U16 } from "./integers";
 
 
-export const universalCompiler = async (codeSource: string, memoryOffset: u16=U16(0), lineOffset: u16=U16(0), compilerType: 'nasm' | 'custom' | 'auto'='auto') => {
+export const universalCompiler = async (codeSource: string, memoryOffset: u16 = U16(0), lineOffset: u16 = U16(0), compilerType: 'nasm' | 'custom' | 'auto' = 'auto') => {
     let code: CompiledCode | null = null;
 
     if (compilerType === 'auto') {
@@ -27,5 +27,4 @@ export const universalCompiler = async (codeSource: string, memoryOffset: u16=U1
 
     return code;
 }
-
 
