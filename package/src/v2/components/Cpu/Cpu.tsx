@@ -8,7 +8,7 @@ import { useComputer } from '../Computer/ComputerContext';
 import { Interrupt } from './Interrupt';
 
 import type { u16, u8 } from '@/types/cpu.types';
-import { delayer } from '@/lib/delayer';
+import { delayer } from '@/v2/lib/delayer';
 import { CpuRegisters } from './Registers';
 
 

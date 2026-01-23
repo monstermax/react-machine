@@ -2,7 +2,7 @@
 import { EventEmitter } from "eventemitter3";
 
 import type { IoDeviceType, u8 } from "@/types/cpu.types";
-import { U8 } from "@/lib/integers";
+import { U8 } from "@/v2/lib/integers";
 import type { IoDevice } from "@/v2/types/cpu_v2.types";
 
 

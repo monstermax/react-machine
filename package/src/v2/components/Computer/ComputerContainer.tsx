@@ -3,8 +3,8 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 
 import * as cpuApi from '@/v2/api';
 import { DevicesManager } from '../Devices/DevicesManager';
-import { os_list } from '@/cpus/default/programs/mini_os';
-import { programs } from '@/cpus/default/programs/programs_index';
+import { os_list } from '@/v2/cpus/default/programs_example/mini_os';
+import { programs } from '@/v2/cpus/default/programs_example/programs_index';
 import { useComputer, type ViewType } from './ComputerContext';
 import { Motherboard } from './Motherboard';
 import { PowerSupply } from './PowerSupply';

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState, type JSXElementConstructor } f
 
 import * as cpuApi from '@/v2/api';
 
-import { U8 } from "@/lib/integers";
+import { U8 } from "@/v2/lib/integers";
 
 import type { u8 } from "@/types/cpu.types";
 

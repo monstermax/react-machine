@@ -1,9 +1,9 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { getOpcodeName, INSTRUCTIONS_WITH_OPERAND, INSTRUCTIONS_WITH_TWO_OPERANDS, Opcode } from "@/cpus/default/cpu_instructions";
-import { isROM, isRAM, MEMORY_MAP, memoryToIOPort, isIO } from "@/lib/memory_map_16x8_bits";
-import { U16, U8 } from "@/lib/integers";
+import { getOpcodeName, INSTRUCTIONS_WITH_OPERAND, INSTRUCTIONS_WITH_TWO_OPERANDS, Opcode } from "@/v1/cpus/default/cpu_instructions";
+import { isROM, isRAM, MEMORY_MAP, memoryToIOPort, isIO } from "@/v1/lib/memory_map_16x8_bits";
+import { U16, U8 } from "@/v1/lib/integers";
 
 import type { ComputerHook } from "@/v1/hooks/useComputer";
 import type { u16, u8 } from "@/types/cpu.types";

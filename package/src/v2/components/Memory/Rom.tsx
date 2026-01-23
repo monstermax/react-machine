@@ -6,7 +6,7 @@ import { useComputer } from '../Computer/ComputerContext';
 import { MemoryTable } from './MemoryTable';
 
 import type { u16, u8 } from '@/types/cpu.types';
-import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits';
+import { MEMORY_MAP } from '@/v2/lib/memory_map_16x8_bits';
 
 
 export type RomProps = {

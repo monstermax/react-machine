@@ -1,9 +1,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { toHex } from "@/lib/integers";
-import { compileCode, loadSourceCodeFromFile } from "@/cpus/default/asm_compiler";
-import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
+import { toHex } from "@/v1/lib/integers";
+import { compileCode, loadSourceCodeFromFile } from "@/v1/cpus/default/asm_compiler";
+import { MEMORY_MAP } from "@/v1/lib/memory_map_16x8_bits";
 
 import type { u16, u8 } from "@/types/cpu.types";
 

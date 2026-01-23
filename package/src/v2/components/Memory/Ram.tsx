@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '@/v2/api';
-import { compileFile } from '@/cpus/default/asm_compiler';
-import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits';
-import { U16 } from '@/lib/integers';
-import { os_list } from '@/cpus/default/programs/mini_os';
-import { programs } from '@/cpus/default/programs/programs_index';
+import { compileFile } from '@/v2/cpus/default/compiler_v1/asm_compiler';
+import { MEMORY_MAP } from '@/v2/lib/memory_map_16x8_bits';
+import { U16 } from '@/v2/lib/integers';
+import { os_list } from '@/v2/cpus/default/programs_example/mini_os';
+import { programs } from '@/v2/cpus/default/programs_example/programs_index';
 import { MemoryTable } from './MemoryTable';
 import { useComputer } from '../Computer/ComputerContext';
 

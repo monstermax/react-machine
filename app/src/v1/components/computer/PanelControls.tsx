@@ -1,9 +1,9 @@
 
 import { useEffect, useState, useRef, useCallback, memo, useMemo } from "react";
 
-import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
-import { programs } from "@/cpus/default/programs/programs_index";
-import { os_list } from "@/cpus/default/programs/mini_os";
+import { MEMORY_MAP } from "@/v1/lib/memory_map_16x8_bits";
+import { programs } from "@/v1/cpus/default/programs/programs_index";
+import { os_list } from "@/v1/cpus/default/programs/mini_os";
 
 import type { ComputerHook } from "@/v1/hooks/useComputer";
 import type { OsInfo, u16, u8 } from "@/types/cpu.types";

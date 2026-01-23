@@ -1,8 +1,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
+import { U16, U8 } from "@/v1/lib/integers";
+
 import type { u16, u8 } from "@/types/cpu.types"
-import { U16, U8 } from "@/lib/integers";
 
 
 const SECTOR_SIZE = 256;  // 256 bytes par secteur (standard pour disques virtuels)

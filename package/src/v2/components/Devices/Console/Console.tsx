@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState, type JSXElementConstru
 import * as cpuApi from '@/v2/api';
 
 import type { u16, u8 } from '@/types/cpu.types';
-import { U8 } from '@/lib/integers';
+import { U8 } from '@/v2/lib/integers';
 import { useComputer } from '../../Computer/ComputerContext';
 
 

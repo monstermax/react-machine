@@ -5,8 +5,12 @@ import { Link } from 'wouter';
 import { Computer, Cpu, Memory, Motherboard, Rom, Ram, ExternalDevices, InternalDevices, Clock, PowerSupply } from 'react-machine-package/core-components'
 import { Dma, Interrupt, Timer, CpuInstructions, MemoryMap, IDE } from 'react-machine-package/core-components'
 import { StorageDisk, LedsDisplay, Buzzer, PixelDisplay, Rng, Rtc, LcdDisplay, Console, SevenSegmentDisplay, Keyboard } from 'react-machine-package/devices-components'
-import { MEMORY_MAP, universalCompiler, compilerV1, compilerV2 } from 'react-machine-package';
+import { MEMORY_MAP, loadSourceCodeFromFile } from 'react-machine-package';
+
 import type { u16, u8 } from 'react-machine-package/types';
+
+import { universalCompiler } from '@/v1/lib/compilation';
+
 
 
 export const ComputerPageBeta: React.FC = () => {
@@ -17,7 +21,7 @@ export const ComputerPageBeta: React.FC = () => {
     // Load BOOTLOADER
     useEffect(() => {
         const _compile = async () => {
-            const bootloaderSourceCode = await compilerV1.loadSourceCodeFromFile("bootloader/bootloader_v1.asm");
+            const bootloaderSourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v1.asm");
             //const compiled = await compilerV1.compileCode(bootloaderSourceCode, MEMORY_MAP.ROM_START);
             //setBootloader(compiled.code)
 

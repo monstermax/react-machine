@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { MEMORY_MAP, isROM, isIO, memoryToIOPort } from "@/lib/memory_map_16x8_bits";
+import { MEMORY_MAP, isROM, isIO, memoryToIOPort } from "@/v1/lib/memory_map_16x8_bits";
+import { toHex, U16, U8 } from "@/v1/lib/integers";
+
 import type { IOHook } from "./useIo";
 import type { RomHook } from "./useRom";
-
 import type { u16, u8 } from "@/types/cpu.types";
 import type { RamHook } from "./useRam";
-import { toHex, U16, U8 } from "@/lib/integers";
 
 
 export const useMemory = (romHook: RomHook, ramHook: RamHook, ioHook: IOHook): MemoryHook => {

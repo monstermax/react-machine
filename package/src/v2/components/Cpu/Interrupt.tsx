@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstr
 
 import * as cpuApi from '@/v2/api';
 import { useComputer } from '../Computer/ComputerContext';
-import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits';
+import { MEMORY_MAP } from '@/v2/lib/memory_map_16x8_bits';
 import type { u16, u8 } from '@/types/cpu.types';
 
 

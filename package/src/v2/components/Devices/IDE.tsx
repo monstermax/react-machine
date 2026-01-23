@@ -11,15 +11,14 @@ import "prism-react-editor/layout.css"
 import "prism-react-editor/themes/github-dark.css"
 //import "prism-react-editor/search.css"
 
-import { formatCompiledCodeArray } from '../../../pages/CompilePage';
-import { U16 } from '@/lib/integers';
-import { finalizeCompilation, preCompileCode } from '@/cpus/default/asm_compiler';
+import { U16 } from '@/v2/lib/integers';
+import { finalizeCompilation, preCompileCode } from '@/v2/cpus/default/compiler_v1/asm_compiler';
 import { useComputer } from '../Computer/ComputerContext'
-import { MEMORY_MAP } from '@/lib/memory_map_16x8_bits'
+import { MEMORY_MAP } from '@/v2/lib/memory_map_16x8_bits'
 
 import type { CompiledCode, u16, u8 } from '@/types/cpu.types';
-import { compile, formatBytecode, getBytecodeArray, getMemoryMap } from '@/cpus/default/v2'
-import { universalCompiler } from '@/lib/compilation'
+import { compileCode, formatBytecode, getBytecodeArray, getMemoryMap } from '@/v2/cpus/default/compiler_v2'
+import { formatCompiledCodeArray, universalCompiler } from '@/v2/lib/compilation'
 
 
 export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
@@ -73,7 +72,7 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
             setCompiledContent(codeFormatted)
 
         } else if (compilerType === 'nasm') {
-            const compiled = compile(editorContent);
+            const compiled = compileCode(editorContent);
             const bytecode = formatBytecode(compiled);
             const compiledFormatted = `[\n${bytecode}]`;
             code = getBytecodeArray(compiled)
@@ -229,7 +228,7 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
                         <div className="flex flex-col">
                             <h2>Source Code</h2>
                             <Editor
-                                className="ide-editor-source h-full"
+                                className="ide-editor-source h-full max-h-[50vh] overflow-auto"
                                 language="nasm"
                                 value={initialContent}
                                 onUpdate={(value, editor) => codeChanged(value, editor)}
@@ -239,7 +238,7 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
                         <div className="flex flex-col">
                             <h2>Compiled Code</h2>
                             <Editor
-                                className="ide-editor-compiled h-full"
+                                className="ide-editor-compiled h-full max-h-[50vh] overflow-auto"
                                 language="javascript"
                                 value={compiledContent}
                                 onUpdate={(value, editor) => compiledChanged(value, editor)}

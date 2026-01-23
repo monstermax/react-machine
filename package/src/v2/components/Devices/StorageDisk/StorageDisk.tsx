@@ -2,8 +2,8 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '@/v2/api';
-import { buildMemoryInstructionMap, getOpcodeName } from '@/cpus/default/cpu_instructions';
-import { U8 } from '@/lib/integers';
+import { buildMemoryInstructionMap, getOpcodeName } from '@/v2/cpus/default/cpu_instructions';
+import { U8 } from '@/v2/lib/integers';
 
 import type { u16, u8 } from '@/types/cpu.types';
 

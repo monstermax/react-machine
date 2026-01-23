@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from "react";
 
-import { U8 } from "@/lib/integers";
+import { U8 } from "@/v1/lib/integers";
 
 import type { u8 } from "@/types/cpu.types";
 import type { Device } from "@/v1/types/cpu_v1.types";

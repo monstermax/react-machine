@@ -1,32 +1,23 @@
-import { p as r, f as m, U as e } from "./asm_compiler-D5qO57i2.js";
-import { I as R, a as g, b as M, M as N, c as _, g as A, d as P, e as T, i as x, h as U, j as z, m as D } from "./asm_compiler-D5qO57i2.js";
-import { c, g as l } from "./index-mrMvlnT4.js";
-import { i as S } from "./index-mrMvlnT4.js";
-const f = async (o, i = e(0), n = e(0), s = "auto") => {
-  let t = null;
-  if (s === "auto" && (s = o.toLowerCase().includes("section .text") ? "nasm" : "custom"), s === "custom") {
-    const a = await r(o, i, n);
-    t = m(a.code).code;
-  } else if (s === "nasm") {
-    const a = c(o);
-    t = l(a);
-  }
-  return t;
-}, I = () => "O-K-3";
+import { q as o, r as e, I as r, M as i, a as t, U as I, s as O, u as m, g as R, d as T, h as c, k as p, i as M, j as N, n as _, l as g, m as l, t as S } from "./asm_compiler-CK23_zXK.js";
+import { i as n } from "./index-Co0wcgUc.js";
 export {
-  R as INSTRUCTIONS_WITH_OPERAND,
-  g as INSTRUCTIONS_WITH_TWO_OPERANDS,
-  M as IRQ_MAP,
-  N as MEMORY_MAP,
-  _ as compilerV1,
-  S as compilerV2,
-  A as getInstructionLength,
-  P as getOpcodeDescription,
+  o as INSTRUCTIONS_WITH_OPERAND,
+  e as INSTRUCTIONS_WITH_TWO_OPERANDS,
+  r as IRQ_MAP,
+  i as MEMORY_MAP,
+  t as U16,
+  I as U8,
+  O as compilerV1,
+  n as compilerV2,
+  m as getInstructionLength,
+  R as getOpcodeDescription,
   T as getOpcodeName,
-  x as isIO,
-  U as isRAM,
-  z as isROM,
-  D as memoryToIOPort,
-  I as test,
-  f as universalCompiler
+  c as high16,
+  p as isIO,
+  M as isRAM,
+  N as isROM,
+  _ as loadSourceCodeFromFile,
+  g as low16,
+  l as memoryToIOPort,
+  S as toHex
 };

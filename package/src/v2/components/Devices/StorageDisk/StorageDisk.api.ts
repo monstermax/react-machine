@@ -1,7 +1,7 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import { high16, low16, U16, U8 } from "@/lib/integers";
+import { high16, low16, U16, U8 } from "@/v2/lib/integers";
 import { StorageFileSystem } from "./StorageFileSystem.api";
 
 import type { CompiledCode, IoDeviceType, u16, u8 } from "@/types/cpu.types";

@@ -1,7 +1,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 
-import { toHex } from "@/lib/integers";
+import { toHex } from "@/v1/lib/integers";
 
 import type { u16, u8 } from "@/types/cpu.types";
 

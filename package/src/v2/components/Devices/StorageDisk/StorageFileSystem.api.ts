@@ -1,7 +1,7 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import { U16, U8 } from "@/lib/integers";
+import { U16, U8 } from "@/v2/lib/integers";
 
 import type { StorageDisk } from "./StorageDisk.api";
 import type { u16, u8 } from "@/types/cpu.types";

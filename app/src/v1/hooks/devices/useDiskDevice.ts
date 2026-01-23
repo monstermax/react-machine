@@ -1,7 +1,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 
-import { high16, low16, toHex, U16, U8 } from "@/lib/integers";
+import { high16, low16, toHex, U16, U8 } from "@/v1/lib/integers";
 import { useFileSystem, type FsHook } from "../useFileSystem";
 
 import type { u16, u8 } from "@/types/cpu.types";

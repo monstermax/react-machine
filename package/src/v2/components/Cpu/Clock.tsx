@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXEleme
 
 import * as cpuApi from '@/v2/api';
 import { useComputer } from '../Computer/ComputerContext';
-import { delayer } from '@/lib/delayer';
+import { delayer } from '@/v2/lib/delayer';
 
 
 const frequencies = [

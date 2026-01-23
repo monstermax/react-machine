@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 
-import { getOpcodeDescription, Opcode } from "@/cpus/default/cpu_instructions";
+import { getOpcodeDescription, Opcode } from "@/v2/cpus/default/cpu_instructions";
 import type { u8 } from "@/types/cpu.types";
 
 

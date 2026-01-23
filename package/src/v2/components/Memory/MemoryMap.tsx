@@ -1,6 +1,6 @@
 
-import { toHex } from "@/lib/integers";
-import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
+import { toHex } from "@/v2/lib/integers";
+import { MEMORY_MAP } from "@/v2/lib/memory_map_16x8_bits";
 import React, { useState } from "react";
 
 

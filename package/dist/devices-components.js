@@ -1,7 +1,7 @@
 import { jsxs as o, jsx as r, Fragment as $ } from "react/jsx-runtime";
-import _, { useState as u, useMemo as ie, useEffect as T, useCallback as G, useRef as oe } from "react";
-import { E as L, u as ae } from "./ComputerContext-B7pvKa0D.js";
-import { k as l, U as c, l as Q, n as ee, o as le, e as ce } from "./asm_compiler-D5qO57i2.js";
+import P, { useState as u, useMemo as ie, useEffect as T, useCallback as G, useRef as oe } from "react";
+import { E as L, u as ae } from "./ComputerContext-Byayu7Qq.js";
+import { U as l, a as c, h as Q, l as ee, c as le, d as ce } from "./asm_compiler-CK23_zXK.js";
 let de = class extends L {
   constructor(t, e = null) {
     super(), this.lastChar = 0, this.hasChar = !1, this.isEnable = !0, this.irqEnabled = !1, this.id = Math.round(Math.random() * 999999999), this.name = t, this.type = "Input", this.ioPort = e ?? 0, this.start();
@@ -867,7 +867,7 @@ let we = class extends L {
   }
 };
 const Le = (b) => {
-  const { hidden: t, name: e, ioPort: s, persistent: i, open: n = !0, data: a, size: m, children: p, onInstanceCreated: h } = b, [d, k] = u(null), [g, v] = u(/* @__PURE__ */ new Map()), [E, C] = u(n), [N, w] = u(!1), [x, f] = u(!1), [P, B] = u(!1), [D, I] = u(!0), S = ie(() => Array.from(g.entries()).sort(([A], [R]) => A - R), [d, g]), y = ie(
+  const { hidden: t, name: e, ioPort: s, persistent: i, open: n = !0, data: a, size: m, children: p, onInstanceCreated: h } = b, [d, k] = u(null), [g, v] = u(/* @__PURE__ */ new Map()), [E, C] = u(n), [N, w] = u(!1), [x, f] = u(!1), [_, B] = u(!1), [D, I] = u(!0), S = ie(() => Array.from(g.entries()).sort(([A], [R]) => A - R), [d, g]), y = ie(
     () => le(g),
     [d, g]
   );
@@ -883,13 +883,13 @@ const Le = (b) => {
   }, []), T(() => {
     d && h && h(d);
   }, [d, h]), T(() => {
-    if (!d || !x || !i || P) return;
+    if (!d || !x || !i || _) return;
     const R = setTimeout(() => {
       Y();
     }, 100);
     return () => clearTimeout(R);
   }, [x]), T(() => {
-    if (!d || !i || !x || !P) return;
+    if (!d || !i || !x || !_) return;
     const R = setTimeout(() => {
       if (N) {
         w(!1);
@@ -910,8 +910,8 @@ const Le = (b) => {
     if (!d || !i || !x) return;
     const A = `disk_${e}`, R = JSON.stringify(Array.from(g.entries()));
     console.log(`Saving persistent disk ${e} storage`), localStorage.setItem(A, R);
-  }, [e, g, d, i, x]), K = _.Children.map(p, (A) => {
-    if (_.isValidElement(A)) {
+  }, [e, g, d, i, x]), K = P.Children.map(p, (A) => {
+    if (P.isValidElement(A)) {
       const R = A;
       switch (R.type) {
         default:
@@ -1111,8 +1111,8 @@ const Le = (b) => {
   }, [g]), T(() => {
     d && p && p(d);
   }, [d, p]);
-  const P = _.Children.map(m, (D) => {
-    if (_.isValidElement(D)) {
+  const _ = P.Children.map(m, (D) => {
+    if (P.isValidElement(D)) {
       const I = D;
       switch (I.type) {
         default:
@@ -1168,7 +1168,7 @@ const Le = (b) => {
           }
         )
       ] }),
-      P && /* @__PURE__ */ r("div", { className: "flex-col space-y-1 p-1", children: /* @__PURE__ */ r("div", { className: "device-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1", children: P }) })
+      _ && /* @__PURE__ */ r("div", { className: "flex-col space-y-1 p-1", children: /* @__PURE__ */ r("div", { className: "device-children bg-background-light-2xl p-1 ps-2 flex flex-col space-y-1", children: _ }) })
     ] })
   ] }) : /* @__PURE__ */ r($, { children: "Loading Console" });
 }, Oe = (b) => {
@@ -1184,8 +1184,8 @@ const Le = (b) => {
   }, []), T(() => {
     m && a && a(m);
   }, [m, a]);
-  const C = _.Children.map(n, (N) => {
-    if (_.isValidElement(N)) {
+  const C = P.Children.map(n, (N) => {
+    if (P.isValidElement(N)) {
       const w = N;
       switch (w.type) {
         default:
@@ -1250,8 +1250,8 @@ const Le = (b) => {
   }, []), T(() => {
     m && a && a(m);
   }, [m, a]);
-  const v = G(() => Array.from({ length: 8 }, (C, N) => h >> N & 1), [h]), E = _.Children.map(n, (C) => {
-    if (_.isValidElement(C)) {
+  const v = G(() => Array.from({ length: 8 }, (C, N) => h >> N & 1), [h]), E = P.Children.map(n, (C) => {
+    if (P.isValidElement(C)) {
       const N = C;
       switch (N.type) {
         default:
@@ -1278,7 +1278,7 @@ const Le = (b) => {
     ] })
   ] }) : /* @__PURE__ */ r($, { children: "Loading Leds" });
 }, He = (b) => {
-  const { hidden: t, open: e = !0, name: s, ioPort: i, width: n = 32, height: a = 32, children: m, onInstanceCreated: p } = b, [h, d] = u(null), [k, g] = u(!1), [v, E] = u([]), [C, N] = u(0), [w, x] = u(0), [f, P] = u(e);
+  const { hidden: t, open: e = !0, name: s, ioPort: i, width: n = 32, height: a = 32, children: m, onInstanceCreated: p } = b, [h, d] = u(null), [k, g] = u(!1), [v, E] = u([]), [C, N] = u(0), [w, x] = u(0), [f, _] = u(e);
   T(() => {
     const y = setTimeout(() => {
       if (k) return;
@@ -1293,8 +1293,8 @@ const Le = (b) => {
   }, [h, p]);
   const B = G(() => {
     h && h.clear();
-  }, [h]), D = G((S, y) => v.length === 0 ? !1 : y >= 0 && y < a && S >= 0 && S < n ? v[y][S] : !1, [v]), I = _.Children.map(m, (S) => {
-    if (_.isValidElement(S)) {
+  }, [h]), D = G((S, y) => v.length === 0 ? !1 : y >= 0 && y < a && S >= 0 && S < n ? v[y][S] : !1, [v]), I = P.Children.map(m, (S) => {
+    if (P.isValidElement(S)) {
       const y = S;
       switch (y.type) {
         default:
@@ -1310,7 +1310,7 @@ const Le = (b) => {
         "button",
         {
           className: "ms-auto cursor-pointer px-3 bg-background-light-xl rounded",
-          onClick: () => P((S) => !S),
+          onClick: () => _((S) => !S),
           children: f ? "-" : "+"
         }
       )
@@ -1366,7 +1366,7 @@ const Le = (b) => {
     ] })
   ] }) : /* @__PURE__ */ r($, { children: "Loading Pixels" });
 }, Ye = (b) => {
-  const { hidden: t = !1, open: e = !1, name: s, ioPort: i, width: n = 16, height: a = 2, children: m, onInstanceCreated: p } = b, [h, d] = u(null), [k, g] = u(Array(a).fill(null).map(() => Array(n).fill(" "))), [v, E] = u(0), [C, N] = u(0), [w, x] = u(!0), [f, P] = u(e);
+  const { hidden: t = !1, open: e = !1, name: s, ioPort: i, width: n = 16, height: a = 2, children: m, onInstanceCreated: p } = b, [h, d] = u(null), [k, g] = u(Array(a).fill(null).map(() => Array(n).fill(" "))), [v, E] = u(0), [C, N] = u(0), [w, x] = u(!0), [f, _] = u(e);
   T(() => {
     const I = setTimeout(() => {
       const S = new ge(s, i, n, a);
@@ -1378,8 +1378,8 @@ const Le = (b) => {
   }, []), T(() => {
     h && p && p(h);
   }, [h, p]);
-  const B = _.Children.map(m, (D) => {
-    if (_.isValidElement(D)) {
+  const B = P.Children.map(m, (D) => {
+    if (P.isValidElement(D)) {
       const I = D;
       switch (I.type) {
         default:
@@ -1395,7 +1395,7 @@ const Le = (b) => {
         "button",
         {
           className: "ms-auto cursor-pointer px-3 bg-background-light-xl rounded",
-          onClick: () => P((D) => !D),
+          onClick: () => _((D) => !D),
           children: f ? "-" : "+"
         }
       )
@@ -1418,8 +1418,8 @@ const Le = (b) => {
     if (!p.current || h) return;
     const x = setTimeout(() => {
       const f = new xe(s, i, n);
-      d(f), f.on("state", (P) => {
-        P.displays !== void 0 && g(P.displays);
+      d(f), f.on("state", (_) => {
+        _.displays !== void 0 && g(_.displays);
       }), f.emit("state", {
         displays: f.displays
       });
@@ -1428,8 +1428,8 @@ const Le = (b) => {
   }, [p.current]), T(() => {
     h && m && m(h);
   }, [h, m]);
-  const C = _.Children.map(a, (w) => {
-    if (_.isValidElement(w)) {
+  const C = P.Children.map(a, (w) => {
+    if (P.isValidElement(w)) {
       const x = w;
       switch (x.type) {
         default:

@@ -3,11 +3,11 @@ import { EventEmitter } from "eventemitter3";
 
 import * as cpuApi from '@/v2/api';
 import type { CompiledCode, OsInfo, ProgramInfo, u16, u8 } from "@/types/cpu.types";
-import { os_list } from "@/cpus/default/programs/mini_os";
-import { compileFile } from "@/cpus/default/asm_compiler";
-import { MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
-import { programs } from "@/cpus/default/programs/programs_index";
-import { U16, U8 } from "@/lib/integers";
+import { os_list } from "@/v2/cpus/default/programs_example/mini_os";
+import { compileFile } from "@/v2/cpus/default/compiler_v1/asm_compiler";
+import { MEMORY_MAP } from "@/v2/lib/memory_map_16x8_bits";
+import { programs } from "@/v2/cpus/default/programs_example/programs_index";
+import { U16, U8 } from "@/v2/lib/integers";
 
 
 export class Computer extends EventEmitter {

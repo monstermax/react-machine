@@ -7,18 +7,20 @@ import "prism-react-editor/prism/languages/nasm"
 import "prism-react-editor/languages/asm"
 import "prism-react-editor/layout.css"
 import "prism-react-editor/themes/github-dark.css"
-import { compile, formatBytecode } from "@/cpus/default/v2";
-import { toHex } from "@/lib/integers";
+
+import { compilerV1, compilerV2, toHex } from "react-machine-package";
+
+//import { compileCode, formatBytecode } from "@/cpus/default/v2";
+const { compileCode, formatBytecode } = compilerV2;
 
 
 const debugSourceCode_x86 = `
 section .data
-    VAR_DB_01         db 0x08
-    VAR_DB_02         dw 0x12
+    VAR_DB_01         equ 0x08
+    VAR_DB_02         equ 0x12
     VAR_DW_01         dw 0x0500
     STR_TEST_01       db "test string", 0
     VAR_EQU_01       equ 10
-
 
 section .text
     global INIT
@@ -33,7 +35,7 @@ INIT:
 
 LABEL1:
     mov bl, VAR_DB_02
-    mov [VAR_DW], bl
+    mov [VAR_DW_01], bl
 
     call PRINT_INFO
     hlt
@@ -125,7 +127,7 @@ export const CompilePageBeta: React.FC = () => {
 
     const handleCompile = () => {
         try {
-            const compiled = compile(editorContent);
+            const compiled = compileCode(editorContent);
 
             const bytecode = formatBytecode(compiled);
             const compiledFormatted = `[\n${bytecode}\n]`;
@@ -229,7 +231,7 @@ export const CompilePageBeta: React.FC = () => {
             </div>
 
             {/* Console de sortie */}
-            <div className="border rounded flex flex-col bg-background-light-xs">
+            <div className="border rounded flex flex-col bg-background-light-xs max-h-[40%]">
                 <button className="px-3 py-1 flex items-center gap-8 cursor-pointer" onClick={() => setConsoleOpened(b => !b)}>
                     <div className="font-bold flex gap-3 items-center">
                         Console

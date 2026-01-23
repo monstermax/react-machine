@@ -4,9 +4,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXEleme
 import * as cpuApi from '@/v2/api';
 import { StorageDisk } from './StorageDisk/StorageDisk';
 import { LedsDisplay } from './LedsDisplay/LedsDisplay';
-import { compileCode, loadSourceCodeFromFile } from '@/cpus/default/asm_compiler';
+import { compileCode } from '@/v2/cpus/default/compiler_v1/asm_compiler';
 import { Buzzer } from './Buzzer/Buzzer';
 import { useComputer } from '../Computer/ComputerContext';
+import { loadSourceCodeFromFile } from '@/v2/lib/compilation';
 
 import type { u16, u8 } from '@/types/cpu.types';
 import type { IoDevice } from '@/v2/types/cpu_v2.types';

@@ -4,6 +4,16 @@ export declare type CompiledCodeComments = [line: u16, comment: string][];
 
 export declare type CompiledCodeLabels = [line: u16, labels: string[]][];
 
+export declare interface IoDevice {
+    name: string;
+    ioPort: u8;
+    type: IoDeviceType;
+    read(port: u8): u8;
+    write(port: u8, value: u8): void;
+    getSize?(): number;
+    reset?(): void;
+}
+
 export declare type IoDeviceType = 'Input' | 'DiskStorage' | 'Display' | 'Audio' | 'Random' | 'Time' | 'Interrupt';
 
 export declare type OsInfo = {

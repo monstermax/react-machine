@@ -1,8 +1,8 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import { U16, U8 } from "@/lib/integers";
-import { isIO, isROM, memoryToIOPort } from "@/lib/memory_map_16x8_bits";
+import { U16, U8 } from "@/v2/lib/integers";
+import { isIO, isROM, memoryToIOPort } from "@/v2/lib/memory_map_16x8_bits";
 import { Rom } from "./Rom.api";
 import { Ram } from "./Ram.api";
 import { DevicesManager } from "../Devices/DevicesManager.api";

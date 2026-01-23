@@ -13,9 +13,9 @@ declare type CompilationV1 = {
     labels: CompiledCodeLabels;
 };
 
-declare function compile(source: string, architecture?: CPUArchitecture, options?: Partial<CompilerOptions>): CompiledProgram;
-
 declare function compileCode(inputCode: string, memoryOffset?: u16): Promise<CompilationV1>;
+
+declare function compileCode_2(source: string, architecture?: CPUArchitecture, options?: Partial<CompilerOptions>): CompiledProgram;
 
 declare type CompiledCode = Map<u16, u8>;
 
@@ -38,13 +38,17 @@ declare interface CompiledProgram {
 
 declare function compileFile(filePath: string, memoryOffset?: u16): Promise<CompilationV1>;
 
+declare function compileFile_2(filePath: string, architecture?: CPUArchitecture, options?: Partial<CompilerOptions>): Promise<CompiledProgram>;
+
 declare class Compiler {
     private arch;
     private tokens;
     private pos;
     private sections;
+    private includes;
     private currentSection;
     private currentAddress;
+    private currentFilePath;
     private labels;
     private symbols;
     private unresolvedRefs;
@@ -56,7 +60,7 @@ declare class Compiler {
     constructor(options: CompilerOptions);
     private buildRegisterMap;
     private buildInstructionMap;
-    compile(source: string): CompiledProgram;
+    compile(source: string, filePath?: string): CompiledProgram;
     private resetSections;
     private pass1CollectSymbols;
     private handleDirectivePass1;
@@ -99,7 +103,6 @@ declare interface CompilerOptions {
 
 declare namespace compilerV1 {
     export {
-        loadSourceCodeFromFile,
         compileDemo,
         decompileDemo,
         compileFile,
@@ -114,7 +117,8 @@ export { compilerV1 }
 
 declare namespace compilerV2 {
     export {
-        compile,
+        compileFile_2 as compileFile,
+        compileCode_2 as compileCode,
         formatBytecode,
         getBytecodeArray,
         getMemoryMap,
@@ -164,6 +168,8 @@ export declare const getOpcodeDescription: (opcode: u8) => string;
 
 export declare const getOpcodeName: (opcode: u8) => string;
 
+export declare function high16(value: u16): u8;
+
 declare interface InstructionDef {
     mnemonic: string;
     opcode: number;
@@ -198,7 +204,9 @@ export declare const isRAM: (addr: u16) => boolean;
 
 export declare const isROM: (addr: u16) => boolean;
 
-declare function loadSourceCodeFromFile(sourceFile: string): Promise<string>;
+export declare function loadSourceCodeFromFile(sourceFile: string): Promise<string>;
+
+export declare function low16(value: u16): u8;
 
 export declare const MEMORY_MAP: {
     ROM_START: u16;
@@ -347,8 +355,8 @@ export declare const memoryToIOPort: (addr: u16) => u8;
 
 declare enum Opcode {
     NOP = 0,
-    GET_FREQ = 10,
-    SET_FREQ = 11,
+    GET_FREQ = 10,// <=== TODO: a remplacer par un Device IO
+    SET_FREQ = 11,// <=== TODO: a remplacer par un Device IO
     BREAKPOINT_JS = 12,
     BREAKPOINT = 13,
     SYSCALL = 14,
@@ -477,16 +485,18 @@ declare interface SymbolInfo {
     extern?: boolean;
 }
 
-export declare const test: () => string;
+export declare function toHex(intValue: number, padleft?: number): string;
+
+export declare function U16(value: number | u8): u16;
 
 declare type u16 = number & {
     readonly __brand: 'u16';
 };
 
+export declare function U8(value: number | u16): u8;
+
 declare type u8 = number & {
     readonly __brand: 'u8';
 };
-
-export declare const universalCompiler: (codeSource: string, memoryOffset?: u16, lineOffset?: u16, compilerType?: "nasm" | "custom" | "auto") => Promise<CompiledCode | null>;
 
 export { }

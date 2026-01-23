@@ -1,9 +1,9 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import { IRQ_MAP, MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
+import { IRQ_MAP, MEMORY_MAP } from "@/v2/lib/memory_map_16x8_bits";
 
-import { U8 } from "@/lib/integers";
+import { U8 } from "@/v2/lib/integers";
 
 import type { IoDeviceType, u8 } from "@/types/cpu.types";
 import type { DevicesManager } from "../DevicesManager.api";

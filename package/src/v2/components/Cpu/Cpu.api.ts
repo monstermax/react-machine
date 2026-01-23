@@ -1,9 +1,9 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import { toHex, U16, U8 } from "@/lib/integers";
-import { Opcode } from "@/cpus/default/cpu_instructions";
-import { isRAM, MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
+import { toHex, U16, U8 } from "@/v2/lib/integers";
+import { Opcode } from "@/v2/cpus/default/cpu_instructions";
+import { isRAM, MEMORY_MAP } from "@/v2/lib/memory_map_16x8_bits";
 import { BaseCpu } from "./BaseCpu.api";
 
 import type { MemoryBus } from "../Memory/MemoryBus.api";

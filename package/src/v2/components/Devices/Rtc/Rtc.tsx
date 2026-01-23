@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState, type JSXElementConstructor } from 'react'
 
 import * as cpuApi from '@/v2/api';
-import { U8 } from '@/lib/integers';
+import { U8 } from '@/v2/lib/integers';
 
 import type { RtcTime } from './Rtc.api';
 import type { u8 } from '@/types/cpu.types';

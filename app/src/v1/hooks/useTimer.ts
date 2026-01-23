@@ -1,9 +1,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { IRQ_MAP, MEMORY_MAP } from "@/lib/memory_map_16x8_bits";
+import { IRQ_MAP, MEMORY_MAP } from "@/v1/lib/memory_map_16x8_bits";
 import type { InterruptHook } from "./useInterrupt";
-import { U8 } from "@/lib/integers";
+import { U8 } from "@/v1/lib/integers";
 
 import type { u8 } from "@/types/cpu.types";
 

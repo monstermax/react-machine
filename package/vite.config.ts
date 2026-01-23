@@ -4,7 +4,7 @@ import { resolve } from 'path';
 import dts from 'vite-plugin-dts';
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
-import { asmDirectoryPlugin } from './src/lib/vite_asm_index'
+import { asmDirectoryPlugin } from './src/v2/lib/vite_asm_index'
 
 export default defineConfig({
   plugins: [
