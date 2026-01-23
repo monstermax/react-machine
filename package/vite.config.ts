@@ -1,0 +1,57 @@
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
+import dts from 'vite-plugin-dts';
+
+import { asmDirectoryPlugin } from './src/lib/vite_asm_index'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    //asmDirectoryPlugin(), // A revoir
+    dts({
+      //entryRoot: 'src',
+      //outDir: 'dist',
+      tsconfigPath: './tsconfig.json',
+      //insertTypesEntry: true,
+      rollupTypes: true,
+      //bundledPackages: [],
+      //include: [
+      //  'src/'
+      //],
+    })
+  ],
+  build: {
+    lib: {
+      entry: {
+        index: resolve(__dirname, 'src/index.ts'),
+        types: resolve(__dirname, 'src/types/index.ts'),
+        'core-components': resolve(__dirname, 'src/core/components/index.ts'),
+        'core-api': resolve(__dirname, 'src/core/api/index.ts'),
+        'devices-components': resolve(__dirname, 'src/devices/components/index.ts'),
+        'devices-api': resolve(__dirname, 'src/devices/api/index.ts'),
+      },
+      formats: ['es'],
+    },
+    rollupOptions: {
+      external: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+        'react-dom/client',
+      ],
+      output: {
+        entryFileNames: '[name].js',
+      },
+    },
+    emptyOutDir: true,
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+    },
+    preserveSymlinks: false,
+    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
+  },
+});

@@ -3,7 +3,7 @@ import { MEMORY_MAP } from '../../lib/memory_map_16x8_bits';
 import { high16, low16, toHex, U16, U8 } from '../../lib/integers';
 import { Opcode, getInstructionLength } from './cpu_instructions';
 
-import type { CompiledCode, CompiledCodeComments, CompiledCodeLabels, PreCompiledCode, u16, u8 } from '../../types/cpu.types';
+import type { CompilationV1, CompiledCode, CompiledCodeComments, CompiledCodeLabels, PreCompiledCode, u16, u8 } from '../../types/cpu.types';
 
 
 export async function loadSourceCodeFromFile(sourceFile: string): Promise<string> {
@@ -41,14 +41,14 @@ export function decompileDemo() {
 }
 
 
-export async function compileFile(filePath: string, memoryOffset: u16 = 0 as u16): Promise<{ code: CompiledCode, comments: CompiledCodeComments, labels: CompiledCodeLabels }> {
+export async function compileFile(filePath: string, memoryOffset: u16 = 0 as u16): Promise<CompilationV1> {
     const sourceCode = await loadSourceCodeFromFile(filePath);
     const compiled = await compileCode(sourceCode, memoryOffset);
     return compiled
 }
 
 
-export async function compileCode(inputCode: string, memoryOffset: u16 = 0 as u16): Promise<{ code: CompiledCode, comments: CompiledCodeComments, labels: CompiledCodeLabels }> {
+export async function compileCode(inputCode: string, memoryOffset: u16 = 0 as u16): Promise<CompilationV1> {
     // Compile le code (au format PreCompiledCode)
     const preCompiled: { code: PreCompiledCode, includedFiles: string[] } = await preCompileCode(inputCode, memoryOffset)
 
@@ -58,7 +58,7 @@ export async function compileCode(inputCode: string, memoryOffset: u16 = 0 as u1
 }
 
 
-export function finalizeCompilation(preCompiledCode: PreCompiledCode): { code: CompiledCode, comments: CompiledCodeComments, labels: CompiledCodeLabels } {
+export function finalizeCompilation(preCompiledCode: PreCompiledCode): CompilationV1 {
 
     // Converti en format final (CompiledCode + CompiledCodeComments + CompiledCodeLabels)
     const codeArr: [line: u16, code: u8][] = preCompiledCode.map(codeParts => {

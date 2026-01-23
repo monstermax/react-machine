@@ -48,4 +48,9 @@ export type CompiledCode = Map<u16, u8>;
 export type CompiledCodeComments = [line: u16, comment: string][];
 export type CompiledCodeLabels = [line: u16, labels: string[]][];
 
+export type CompilationV1 = {
+    code: CompiledCode,
+    comments: CompiledCodeComments,
+    labels: CompiledCodeLabels,
+};
 

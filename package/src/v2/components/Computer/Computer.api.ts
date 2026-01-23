@@ -91,7 +91,6 @@ export class Computer extends EventEmitter {
 
         const memoryOffset = MEMORY_MAP.OS_START;
         const { code } = await compileFile(os.filepath, memoryOffset)
-
         return code;
     }
 

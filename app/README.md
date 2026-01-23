@@ -441,7 +441,12 @@ const useMemory = () => {
 ---
 
 
-# Ordinateur, language machine, instruction et assembleur
+# Intro
+on va essaeyr de comprendre te reproduire le fonctionnement d'un ordinateur (composé de CPU mémoire et periphérique) directement dans notre navigateur.
+
+il parait que le CPU est le centre du PC. Commencons par analyser son role et remontont toute la chaine d'execution d'un programme.
+
+un cpu est une puce electronique contenant des milliards de transistors (sortes d'interrupteur electronique miniature).
 
 ## CPU
 - le coeur de l'ordinateur est le PC
@@ -450,6 +455,21 @@ const useMemory = () => {
 - il permet aussi d'executer des instructions, permettant de lire ou écrire dans la mémoire (RAM)
 - il permet également d'executer des instructions, permettant d'intéragir avec les périphériques
 - le CPU est principalement constitué d'une unité de controle, de registres et d'une ALU (unité logique et arithmétique)
+
+
+
+# Plan
+1. CPU (registres, instructions) + Mémoire (ROM + RAM) + Internal Devices (IO)
+2. Clock, Power Suppply, Storage, External Devices (IO)
+3. Multi coeurs, multiples CPU
+4. Interruption, Timer, Direct Memory Access et Cache CPU
+5. Bootloader
+6. OS (stack, heap, malloc, drivers, scheduler, syscalls, fork, gestion processus, ...)
+7. Compilateur
+
+
+# Ordinateur, language machine, instruction et assembleur
+
 
 ## Instructions, code machine et assembleur
 - les instructions (en langage machine) à faire éxecuter au CPU sont chargées en RAM pour que le CPU puisse les executer
@@ -465,8 +485,58 @@ const useMemory = () => {
 - La mémoire contient les programmes à executer et les données nécessaires
 
 
-1. CPU
-- registres
-- instructions
-2. Mémoire (ROM + RAM)
-3. IO
+
+---
+
+
+Acte 1 : L'atome informatique (5 min)
+- CPU = calculateur + décideur
+- Registres = mémoire ultra-rapide (montrer R0, R1, PC, SP)
+- ALU = calculatrice interne
+- Instruction simple : ADD R0, R1 (montrer visuellement)
+
+Acte 2 : La mémoire, bibliothèque géante (3 min)
+- RAM vs ROM (livres qu'on peut modifier vs livres fixes)
+- Adresses = étagères numérotées
+- LOAD/STORE = aller chercher/ranger un livre
+
+Acte 3 : Le langage secret (4 min)
+- Binaire → Assembleur → C (niveaux d'abstraction)
+- Démo : "A = B + C" en C → assembleur → binaire → signaux électriques
+
+Acte 4 : La symphonie orchestrée (4 min)
+- Horloge = métronome
+- Pipeline = chaîne de montage
+- Périphériques = monde extérieur
+
+Acte 5 : La magie de l'abstraction (4 min)
+- Du transistor au programme
+- OS = chef d'orchestre
+- Processus = partitions séparées
+
+
+
+# Elements visuels à montrer
+1. Animation d'un registre qui se remplit (8/16/32/64 bits)
+2. Flux de données : Registre → ALU → Registre (avec couleurs)
+3. Bus mémoire comme un tunnel avec des voitures (données)
+4. Pipeline comme une chaîne de montage de voitures
+5. Mode kernel/user comme deux étages (étage sécurisé/étage public)
+
+
+---
+
+
+- Votre ordinateur en 20 minutes : ce que personne ne vous a jamais montré
+- Le langage secret des ordinateurs : de votre clic à l'écran pixel par pixel
+- CPU décodé : ce qui se cache derrière chaque touche que vous tapez
+- Comment votre ordinateur pense vraiment : le voyage d'une instruction
+- L'ordinateur expliqué à un humain : du transistor à TikTok
+- Comment fonctionne un ordinateur, couche par couche (même si vous n'y connaissez rien)
+- Comprendre votre PC : Comment un calcul devient un jeu vidéo
+- Architecture des ordinateurs : tout comprendre en partant de zéro
+- La cuisine du CPU : la recette secrète qui fait tourner vos apps
+- Inside the CPU : le ballet invisible qui fait vivre vos programmes
+
+
+

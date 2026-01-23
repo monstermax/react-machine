@@ -7,13 +7,13 @@ import { Toaster } from "react-hot-toast";
 import { Home } from "@/pages/Home";
 import { ComputerPage } from "./pages/ComputerPage";
 import { CompilePage } from "./pages/CompilePage";
-import { ComputerBeta } from "./pages/ComputerBeta";
+import { ComputerPageBeta } from "./pages/ComputerPageBeta";
 import { LogicPage } from "./pages/LogicPage";
 import NotFound from "@/pages/NotFound";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 import '@/App.css';
-import { CompilePageV2 } from "./pages/CompilePageV2";
+import { CompilePageBeta } from "./pages/CompilePageBeta";
 
 
 function App() {
@@ -46,9 +46,9 @@ function Router() {
         <Switch>
             <Route path={"/"} component={Home} />
             <Route path={"/cpu"} component={ComputerPage} />
-            <Route path={"/cpu-beta"} component={ComputerBeta} />
+            <Route path={"/cpu-beta"} component={ComputerPageBeta} />
             <Route path={"/compiler"} component={CompilePage} />
-            <Route path={"/compiler2"} component={CompilePageV2} />
+            <Route path={"/compiler2"} component={CompilePageBeta} />
             <Route path={"/logic"} component={LogicPage} />
             <Route path={"/404"} component={NotFound} />
             {/* Final fallback route */}
