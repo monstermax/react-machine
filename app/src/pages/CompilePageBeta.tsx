@@ -9,6 +9,7 @@ import "prism-react-editor/layout.css"
 import "prism-react-editor/themes/github-dark.css"
 import { compile, formatBytecode } from "@/cpus/default/v2";
 
+import { openFile, openUrl } from "react-machine-package";
 
 import demoUrl from "react-machine-package/resources/asm/demo.asm?url";
 const txt1 = await fetch(demoUrl).then(r => r.text());
@@ -20,6 +21,11 @@ console.log('test2:', txt2)
 const txt3 = (await import("react-machine-package/resources/asm/demo.asm?raw"))?.default;
 console.log('test3:', txt3)
 
+const txt4 = await openFile();
+console.log('test4:', txt4)
+
+const txt5 = await openUrl();
+console.log('test5:', txt5)
 
 
 const demoSourceCode_x86 = `

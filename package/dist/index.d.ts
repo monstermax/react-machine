@@ -426,6 +426,10 @@ declare enum Opcode {
     MOV_PTR_CD_B = 171
 }
 
+export declare const openFile: () => Promise<any>;
+
+export declare const openUrl: () => Promise<string>;
+
 declare type OperandType = 'NONE' | 'REG' | 'IMM8' | 'IMM16' | 'IMM32' | 'MEM' | 'REG_REG' | 'REG_IMM8' | 'REG_IMM16' | 'REG_MEM' | 'MEM_REG';
 
 declare interface ParsedOperand {

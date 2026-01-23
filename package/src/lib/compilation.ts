@@ -28,3 +28,18 @@ export const universalCompiler = async (codeSource: string, memoryOffset: u16 = 
     return code;
 }
 
+
+
+export const openFile = async () => {
+    const content = (await import("../../resources/asm/demo.asm?raw"))?.default;
+    //console.log('content:', content)
+    return content;
+}
+
+export const openUrl = async () => {
+    const url = (await import("../../resources/asm/demo.asm?url"))?.default;
+    const content = await fetch(url).then(r => r.text());
+    //console.log('content:', content)
+    return content;
+}
+
