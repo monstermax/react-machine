@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Editor, type PrismEditor } from "prism-react-editor"
 
@@ -8,7 +8,7 @@ import "prism-react-editor/languages/asm"
 import "prism-react-editor/layout.css"
 import "prism-react-editor/themes/github-dark.css"
 
-import { compilerV1, compilerV2, toHex } from "react-machine-package";
+import { compilerV1, compilerV2, loadSourceCodeFromFile, toHex } from "react-machine-package";
 
 //import { compileCode, formatBytecode } from "@/cpus/default/v2";
 const { compileCode, formatBytecode } = compilerV2;
@@ -109,13 +109,26 @@ end_program:
 
 
 export const CompilePageBeta: React.FC = () => {
-    const initialSourceCode = debugSourceCode_x86;
+    //const initialSourceCode = debugSourceCode_x86;
+    const [initialSourceCode, setInitialSourceCode] = useState('')
     const initConsoleMessage = "Code reseted. Click on Compile to continue.";
 
     const [consoleOpened, setConsoleOpened] = useState(false)
     const [editorContent, setEditorContent] = useState(initialSourceCode);
     const [compiledCode, setCompiledCode] = useState<string | null>(null);
     const [compileConsole, setCompileConsole] = useState<string>(initConsoleMessage);
+
+
+    useEffect(() => {
+        const loadCode = async () => {
+            const code = await loadSourceCodeFromFile('bootloader/bootloader_v1.beta.asm')
+            setInitialSourceCode(code);
+        }
+
+        const timer = setTimeout(loadCode, 50);
+        return () => clearTimeout(timer);
+    }, [])
+
 
     const codeChanged = (value: string, editor: PrismEditor) => {
         setEditorContent(value);

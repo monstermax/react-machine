@@ -18,7 +18,7 @@ export async function loadSourceCodeFromFile(sourceFile: string): Promise<string
 export async function compileFile(filePath: string, architecture: CPUArchitecture = CUSTOM_CPU, options: Partial<CompilerOptions> = {}): Promise<CompiledProgram> {
     const source = await loadSourceCodeFromFile(filePath);
 
-    const result = compileCode(source, architecture, options);
+    const result = await compileCode(source, architecture, options);
     return result;
 }
 

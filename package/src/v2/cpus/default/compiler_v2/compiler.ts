@@ -240,8 +240,6 @@ export class Compiler {
                         while (!this.isAtEnd()) {
                             const t = this.peek();
 
-                            // TODO : save data
-
                             if (['COMMA'].includes(t.type)) {
                                 this.advance();
 
@@ -517,7 +515,7 @@ export class Compiler {
                 // Vérifier si c'est une nouvelle variable
                 const nextToken = this.peek(1);
 
-                if (nextToken.type === 'DIRECTIVE' && ['EQU', 'DB', 'DW', 'DD', 'DQ'].includes(this.normalize(nextToken.value))) {
+                if (nextToken.type === 'DIRECTIVE' /* && ['EQU', 'DB', 'DW', 'DD', 'DQ'].includes(this.normalize(nextToken.value)) */ ) {
                     // Nouvel identifier, on arrête
                     break;
                 }
@@ -649,10 +647,13 @@ export class Compiler {
                 operands.push(memOperand);
 
             } else if (token.type === 'IDENTIFIER') {
+                const label = this.labels.get(token.value);
+
                 operands.push({
-                    type: 'LABEL',
-                    value: token.value,
-                    address: this.labels.get(token.value)?.address,
+                    type: 'IMMEDIATE',
+                    value: label?.values ? label.values[0] : token.value,
+                    //address: label?.address,
+                    //size: 2,
                 });
                 this.advance();
 
@@ -737,7 +738,9 @@ export class Compiler {
             const op = operands[i];
 
             if (part === 'REG' && op.type !== 'REGISTER') return false;
+
             if (part.startsWith('IMM') && op.type !== 'IMMEDIATE') return false;
+
             if (part === 'MEM' && op.type !== 'MEMORY' && op.type !== 'LABEL') return false;
         }
 
@@ -756,6 +759,7 @@ export class Compiler {
         for (let i = 0; i < operands.length; i++) {
             const part = parts[i];
             const op = operands[i];
+            //if (op.value === 'ASCII_O') debugger
 
             if (part === 'IMM8') {
                 const value = op.address !== undefined ? op.address : this.parseNumber(op.value);

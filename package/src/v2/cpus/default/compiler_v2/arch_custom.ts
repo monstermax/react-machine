@@ -181,6 +181,7 @@ const instructions: InstructionDef[] = [
             { operands: 'REG_MEM', opcode: 0xA2, size: 3, condition: (ops) => ops[0].register === 'C', mnemonic: 'MOV_C_MEM' },
             { operands: 'REG_MEM', opcode: 0xA3, size: 3, condition: (ops) => ops[0].register === 'D', mnemonic: 'MOV_D_MEM' },
             { operands: 'REG_MEM', opcode: 0x3A, size: 3, condition: (ops) => ops[0].register === 'SP', mnemonic: 'SET_SP' },
+            { operands: 'REG_IMM_IMM', opcode: 0x3A, size: 3, condition: (ops) => ops[0].register === 'SP', mnemonic: 'SET_SP' },
 
             { operands: 'MEM_REG', opcode: 0xA4, size: 3, condition: (ops) => ops[1].register === 'A', mnemonic: 'MOV_MEM_A' },
             { operands: 'MEM_REG', opcode: 0xA5, size: 3, condition: (ops) => ops[1].register === 'B', mnemonic: 'MOV_MEM_B' },
