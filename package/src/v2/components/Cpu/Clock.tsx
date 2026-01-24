@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, type JSXEleme
 import * as cpuApi from '@/v2/api';
 import { useComputer } from '../Computer/ComputerContext';
 import { delayer } from '@/v2/lib/delayer';
+import { u8 } from '@/types';
 
 
 const frequencies = [
@@ -25,6 +26,7 @@ const frequencies = [
 
 
 export type ClockProps = {
+    ioPort?: number | u8 | null;
     frequency?: number;
     hidden?: boolean;
     open?: boolean;
@@ -34,7 +36,7 @@ export type ClockProps = {
 
 
 export const Clock: React.FC<ClockProps> = (props) => {
-    const { hidden = false, open = false, frequency: initialFrequency, children, onInstanceCreated } = props;
+    const { hidden=false, open=false, ioPort=null, frequency: initialFrequency, children, onInstanceCreated } = props;
     const { motherboardRef } = useComputer();
 
     // Core
@@ -62,7 +64,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
             if (!motherboardRef.current) return;
 
             // Init Instance
-            const clockInstance = motherboardRef.current.addClock(initialFrequency ?? 1);
+            const clockInstance = motherboardRef.current.addClock(ioPort as u8 | null, initialFrequency ?? 1);
 
             // Save Instance for UI
             setClockInstance(clockInstance);

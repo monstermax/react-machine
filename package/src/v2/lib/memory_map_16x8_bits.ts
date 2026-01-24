@@ -230,6 +230,10 @@ export const MEMORY_MAP = createMemoryMap({
     // Device 17: DMA (0xF110-0xF11F) // Direct Memory Access
     DMA_BASE: 0xF110,
 
+    // Device 18: DMA (0xF120-0xF12F) // Clock
+    CLOCK_BASE: 0xF120,
+    CLOCK_FREQ: 0xF120,
+
 });
 
 

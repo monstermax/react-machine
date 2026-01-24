@@ -130,6 +130,16 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
     }, [devicesManagerInstance])
 
 
+//    const addClock = (clock: cpuApi.Clock) => {
+//        if (!motherboardInstance) return;
+//        if (clockInstance) return;
+//
+//        //console.log(`Clock montée dans Motherboard:`, clock);
+//
+//        setClockInstance(clock);
+//    }
+
+
     const loadDiskDemoProgram = async (diskName: string) => {
         if (!devicesManagerInstance) return;
 

@@ -16,7 +16,7 @@ export class Compiler {
     private currentAddress = 0;
     private currentFilePath: string = '__main';
 
-    private labels: Map<string, { section: string, address: u16, values?: any[] | null, dataSize: number }> = new Map();
+    private labels: Map<string, { section: string, address: u16, values?: any[] | null, dataSize: number | null }> = new Map();
     private symbols: Map<string, SymbolInfo> = new Map();
     private unresolvedRefs: Array<{
         address: number;
@@ -172,7 +172,7 @@ export class Compiler {
                     section: this.currentSection,
                     address: this.currentAddress as u16,
                     values: null,
-                    dataSize: 0,
+                    dataSize: null,
                 });
 
                 this.symbols.set(labelName, {
@@ -515,7 +515,7 @@ export class Compiler {
                 // Vérifier si c'est une nouvelle variable
                 const nextToken = this.peek(1);
 
-                if (nextToken.type === 'DIRECTIVE' /* && ['EQU', 'DB', 'DW', 'DD', 'DQ'].includes(this.normalize(nextToken.value)) */ ) {
+                if (nextToken.type === 'DIRECTIVE' /* && ['EQU', 'DB', 'DW', 'DD', 'DQ'].includes(this.normalize(nextToken.value)) */) {
                     // Nouvel identifier, on arrête
                     break;
                 }
@@ -649,12 +649,23 @@ export class Compiler {
             } else if (token.type === 'IDENTIFIER') {
                 const label = this.labels.get(token.value);
 
-                operands.push({
-                    type: 'IMMEDIATE',
-                    value: label?.values ? label.values[0] : token.value,
-                    //address: label?.address,
-                    //size: 2,
-                });
+                if (label && label.dataSize === 0) {
+                    operands.push({
+                        type: 'IMMEDIATE',
+                        value: label?.values ? label.values[0] : token.value,
+                        //address: label?.address,
+                        //size: 2,
+                    });
+
+                } else {
+                    operands.push({
+                        type: 'LABEL',
+                        value: label?.values ? label.values[0] : token.value,
+                        address: label?.address,
+                        //size: 2,
+                    });
+                }
+
                 this.advance();
 
             } else if (token.type === 'COMMA') {

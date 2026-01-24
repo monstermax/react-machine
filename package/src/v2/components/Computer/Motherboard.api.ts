@@ -6,6 +6,7 @@ import { Clock } from "../Cpu/Clock.api";
 import { MemoryBus } from "../Memory/MemoryBus.api";
 import { PowerSupply } from "./PowerSupply.api";
 import type { Computer } from "./Computer.api";
+import { u8 } from "@/types";
 
 
 
@@ -48,8 +49,8 @@ export class Motherboard extends EventEmitter {
     }
 
 
-    addClock(initialFrequency=1) {
-        const clock = new Clock(this, initialFrequency);
+    addClock(ioPort: u8 | null, initialFrequency=1) {
+        const clock = new Clock(this, ioPort, initialFrequency);
 
         this.clock = clock;
         this.emit('clock-mounted', { clock });

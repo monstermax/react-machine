@@ -87,15 +87,6 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
     }
 
 
-    const addClock = (clock: cpuApi.Clock) => {
-        if (!motherboardInstance) return;
-        if (clockInstance) return;
-
-        //console.log(`Clock montée dans Motherboard:`, clock);
-
-        setClockInstance(clock);
-    }
-
 
     const addPowerSupply = (powerSupply: cpuApi.PowerSupply) => {
         if (powerSupplyInstance) return;
@@ -150,13 +141,13 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
                     return null;
                 }
 
-                case Clock: {
-                    //return React.cloneElement(childElement, { onInstanceCreated: addClock });
-                    const key = `${childElement.type.name}-${childIdx}`;
-                    const element = React.cloneElement(childElement, { onInstanceCreated: addClock, key });
-                    childrenWithPropsClock.push(element);
-                    return null;
-                }
+                //case Clock: {
+                //    //return React.cloneElement(childElement, { onInstanceCreated: addClock });
+                //    const key = `${childElement.type.name}-${childIdx}`;
+                //    const element = React.cloneElement(childElement, { onInstanceCreated: addClock, key });
+                //    childrenWithPropsClock.push(element);
+                //    return null;
+                //}
 
                 case MemoryBus: {
                     //return React.cloneElement(childElement, { onInstanceCreated: addMemoryBus });
@@ -230,6 +221,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
                             </div>
 
                             {/* Clock */}
+                            {/*
                             <div className="motherboard-clock">
                                 {childrenWithPropsClock.length > 0 && (
                                     <>
@@ -247,6 +239,7 @@ export const Motherboard: React.FC<MotherboardProps> = (props) => {
                                     </>
                                 )}
                             </div>
+                            */}
 
                             {/* Cpu */}
                             <div className="motherboard-cpu">
