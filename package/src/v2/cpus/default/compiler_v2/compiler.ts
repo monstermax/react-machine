@@ -514,14 +514,30 @@ export class Compiler {
             } else if (sectionName === '.BSS' || sectionName === 'BSS') {
                 this.currentSection = '.bss';
 
+            } else if (sectionName === '.INCLUDE' || sectionName === 'INCLUDE') {
+                this.advance()
+                return;
+
             } else {
                 this.currentSection = '.text';
             }
 
             const section = this.sections.get(this.currentSection);
+
             if (section) {
-                this.currentAddress = section.startAddress + section.data.length;
+                //this.currentAddress = section.startAddress + section.data.length;
+
+                // Set data/bss section start address to current position
+
+                if (section.type !== 'code') {
+                    //if (section.startAddress !== this.currentAddress) debugger;
+                    section.startAddress = this.currentAddress;
+                }
+
+            } else {
+                throw new Error(`Unknown section "${this.currentSection}"`);
             }
+
             return;
         }
 
@@ -961,15 +977,6 @@ export class Compiler {
         // called by pass1CollectSymbols
 
         let size = 0;
-
-        //const directive = this.normalize(directiveName);
-        //const itemSize = getDirectiveDataSize(directive)
-
-        //let itemSize = 1;
-        //if (directive === 'DW') itemSize = 2;
-        //else if (directive === 'DD') itemSize = 4;
-        //else if (directive === 'DQ') itemSize = 8;
-
         let offset = 1; // Start after DIRECTIVE
 
         while (true) {
