@@ -3,7 +3,7 @@ import { EventEmitter } from "eventemitter3";
 
 import { U16, U8 } from "@/v2/lib/integers";
 
-import type { u8 } from "@/types/cpu.types";
+import type { u16, u8 } from "@/types/cpu.types";
 import type { IoDevice } from "@/v2/types/cpu_v2.types";
 
 
@@ -25,15 +25,15 @@ export class DevicesManager extends EventEmitter {
 
 
     getDeviceByName(deviceName: string): IoDevice | undefined {
-        const devices = Array.from(this.devices.values());
+        const devices: IoDevice[] = Array.from(this.devices.values());
         const device = devices.find(device => device.name === deviceName) as IoDevice | undefined
         return device;
     }
 
 
-    read(ioPort: u8): u8 {
-        const deviceId = U8(Math.floor(ioPort / DEVICE_PORT_SIZE));
-        const devicePort = U8(ioPort % DEVICE_PORT_SIZE);
+    read(ioPort: u16): u8 {
+        const deviceId: u8 = U8(Math.floor(ioPort / DEVICE_PORT_SIZE));
+        const devicePort: u8 = U8(ioPort % DEVICE_PORT_SIZE);
 
         const device = this.devices.get(deviceId);
 
@@ -46,9 +46,9 @@ export class DevicesManager extends EventEmitter {
     }
 
 
-    write(ioPort: u8, value: u8): void {
-        const deviceId = U8(Math.floor(ioPort / DEVICE_PORT_SIZE));
-        const devicePort = U8(ioPort % DEVICE_PORT_SIZE);
+    write(ioPort: u16, value: u8): void {
+        const deviceId: u8 = U8(Math.floor(ioPort / DEVICE_PORT_SIZE));
+        const devicePort: u8 = U8(ioPort % DEVICE_PORT_SIZE);
 
         const device = this.devices.get(deviceId);
 

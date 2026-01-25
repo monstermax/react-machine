@@ -1,4 +1,6 @@
 
+import fs from 'fs';
+
 import { CompiledProgram, Compiler, CompilerOptions, CPUArchitecture, CUSTOM_CPU } from "../cpus/default/compiler_v2";
 import { resolveIncludes } from "../cpus/default/compiler_v2/compiler_preprocessor";
 import { toHex, U16 } from "./integers";
@@ -6,8 +8,15 @@ import { toHex, U16 } from "./integers";
 import type { PreCompiledCode, u16, u8 } from "@/types/cpu.types";
 
 
-export async function loadSourceCodeFromFile(sourceFile: string): Promise<string> {
-    const response = await fetch(`/asm/${sourceFile}`);
+export let compilationAsmBaseUrl = '';
+
+export function setCompilationAsmBaseUrl(newBaseUrl: string) {
+    compilationAsmBaseUrl = newBaseUrl;
+}
+
+
+export async function loadSourceCodeFromFile(filePath: string): Promise<string> {
+    const response = await fetch(`${compilationAsmBaseUrl}/asm/${filePath}`);
     if (!response.ok) return '';
 
     const content = await response.text();
@@ -54,17 +63,17 @@ export function formatBytecode(program: CompiledProgram): string {
             const hexAddr = `0x${entry.address.toString(16).padStart(4, '0').toUpperCase()}`;
             const hexValue = `0x${entry.value.toString(16).padStart(2, '0').toUpperCase()}`;
 
-            let line = `    [${hexAddr}, ${hexValue}]`;
+            let line = `    [${hexAddr}, ${hexValue}],`;
 
             if (entry.comment) {
-                line += `, // ${entry.comment}`;
+                line += ` // ${entry.comment}`;
             }
 
             lines.push(line);
         }
     }
 
-    return lines.join(',\n');
+    return lines.join('\n');
 }
 
 

@@ -1,327 +1,72 @@
 
-@define8 INITIAL_FREQ 10
-@define8 LEDS_STATE_ALL_OFF 0x00
-@define8 LEDS_STATE_HALF_1 0x55
-@define8 LEDS_STATE_HALF_2 0xAA
-
-@define8 ASCII_A 0x41
-@define8 ASCII_B 0x42
-@define8 ASCII_C 0x43
-@define8 ASCII_D 0x44
-@define8 ASCII_E 0x45
-@define8 ASCII_F 0x46
-@define8 ASCII_G 0x47
-@define8 ASCII_H 0x48
-@define8 ASCII_I 0x49
-@define8 ASCII_J 0x4A
-@define8 ASCII_K 0x4B
-@define8 ASCII_L 0x4C
-@define8 ASCII_M 0x4D
-@define8 ASCII_N 0x4E
-@define8 ASCII_O 0x4F
-@define8 ASCII_P 0x50
-@define8 ASCII_Q 0x51
-@define8 ASCII_R 0x52
-@define8 ASCII_S 0x53
-@define8 ASCII_T 0x54
-@define8 ASCII_U 0x55
-@define8 ASCII_V 0x56
-@define8 ASCII_W 0x57
-@define8 ASCII_X 0x58
-@define8 ASCII_Y 0x59
-@define8 ASCII_Z 0x5A
-
-@define8 ASCII_EOL 0x0A
-@define8 ASCII_RET 0x0D
-@define8 ASCII_ESCAPE 0x1B
-@define8 ASCII_SPACE 0x20
-@define8 ASCII_EXCLAM 0x21
-@define8 ASCII_DBLQUOTE 0x22
-@define8 ASCII_SHARP 0x23
-@define8 ASCII_DOLLAR 0x24
-@define8 ASCII_PERCENT 0x25
-@define8 ASCII_AND 0x26
-@define8 ASCII_QUOTE 0x27
-@define8 ASCII_PARENTH_OPEN 0x28
-@define8 ASCII_PARENTH_CLOSE 0x29
-@define8 ASCII_MUL 0x2A
-@define8 ASCII_ADD 0x2B
-@define8 ASCII_COMMA 0x2C
-@define8 ASCII_SUB 0x2D
-@define8 ASCII_DOT 0x2E
-@define8 ASCII_SLASH 0x2F
-@define8 ASCII_AROBASE 0x40
+.include "bootloader/bootloader.lib.asm"
 
 
+section .data
+    ; Variables pour remplacer les références MEMORY_MAP
+    LEDS_BASE               dw 0xF030
+    CLOCK_FREQ              dw 0xF120
+    OS_START                dw 0x0500
+    BOOTLOADER_STACK_END    dw 0xEE0F
+
+    ; Définitions constantes (équivalents @define8)
+    INITIAL_FREQ        equ 10
+    LEDS_STATE_ALL_OFF  equ 0x00
+    LEDS_STATE_HALF_1   equ 0x55
+    LEDS_STATE_HALF_2   equ 0xAA
+
+section .text
+    global INIT
 
 ; TODO: "Booting from hardisk..."
-
 
 INIT:
 
 MAIN:
-    SET_SP @BOOTLOADER_STACK_END ; Initialiser le Stack Pointer
-    SET_FREQ $INITIAL_FREQ
+    mov esp, [BOOTLOADER_STACK_END] ; set stack pointer
 
-    ; Eteint les LED
-    RESET_LEDS:
-        MOV_B_IMM $LEDS_STATE_ALL_OFF
-        MOV_MEM_B @LEDS_BASE
+    mov al, INITIAL_FREQ
+    mov [CLOCK_FREQ], al ; set clock frequency
 
-    CALL $PRINT_INFO()
+RESET_LEDS:
+    nop
+    mov bl, LEDS_STATE_ALL_OFF
+    mov [LEDS_BASE], bl ; eteint les LEDS
 
-    BOOTLOADER_READY:
+    call PRINT_INFO ; call PRINT_INFO
 
-    INC_B
+BOOTLOADER_READY:
+    inc bl ; label BOOTLOADER_READY
 
-    WAIT_FOR_OS:
-        MOV_MEM_B @LEDS_BASE ; Allume les LED
+WAIT_FOR_OS:
+    mov [LEDS_BASE], bl ; allume les leds (selon la valeur de B)
 
-        ; double la valeur de B (decalage de bits)
-        MOV_BA
-        ADD
-        JZ $BOOTLOADER_READY ; Go back to BOOTLOADER_READY
+    ; double la valeur de B (décalage de bits) ; decale la led à afficher
+    mov bl, al
+    add al
 
-        MOV_AB
-        MOV_A_MEM @OS_START ; Vérifie si un OS est chargé en mémoire
+    jz BOOTLOADER_READY ; apres l'affichage de la derniere LED, jump to BOOTLOADER_READY
 
-        JZ $WAIT_FOR_OS ; Si pas d'OS détecté on retourne à WAIT_FOR_OS
+    mov al, bl
 
-    RUN_OS:
-        CALL $PRINT_RUN()
+    mov al, [OS_START] ; detection de chargement de l'OS
+    jz WAIT_FOR_OS ; si pas d'OS chargé on retourne à WAIT_FOR_OS
 
-        MOV_A_IMM 0x00
-        MOV_MEM_A @LEDS_BASE ; Eteint les LED
+    ; un OS a été trouvé. on se prépare à le lancer
 
-        ;SET_FREQ 10
-        CALL @OS_START ; Lance l'OS
+RUN_OS:
+    call PRINT_RUN ; label RUN_OS. call PRINT_RUN
 
-    OS_RETURN:
-        JMP $INIT ; Retour à INIT
+    mov al, 0x00
+    mov [LEDS_BASE], al ; eteint les leds
 
+    ; SET_FREQ 10 (commenté dans votre code original)
+    ; call @OS_START
+    call [OS_START] ; call OS_START
 
-IDLE:
-    MOV_A_IMM 0x4
+OS_RETURN:
+    ; JMP $INIT
+    jmp INIT ; os return. jump to INIT
 
-    IDLE_LOOP:
-        MOV_B_IMM $LEDS_STATE_HALF_1
-        MOV_MEM_B @LEDS_BASE
+hlt
 
-        MOV_B_IMM $LEDS_STATE_HALF_2
-        MOV_MEM_B @LEDS_BASE
-
-        DEC_A
-        JMP $IDLE_LOOP
-
-    HALT
-
-
-
-CONSOLE_DRIVER:
-
-    PRINT_CHAR():  ; Register A = ASCII Char
-        ;MOV_A_IMM $ASCII_O   ; "O" = 0x4F
-        MOV_MEM_A @CONSOLE_CHAR
-        RET
-
-
-
-PRINT_GITHUB():
-    ; TODO
-    MOV_A_IMM $ASCII_G
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_I
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_T
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_H
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_U
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_B
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_DOT
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_C
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_O
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_M
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_SLASH
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_M
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_O
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_N
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_S
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_T
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_E
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_R
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_M
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_A
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_X
-    CALL $PRINT_CHAR()
-
-    RET
-
-PRINT_RUN():
-    MOV_A_IMM $ASCII_O
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_S
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_SPACE
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_F
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_O
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_U
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_N
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_D
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_EXCLAM
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_EOL
-    CALL $PRINT_CHAR()
-
-    RET
-
-
-PRINT_INFO():
-    MOV_A_IMM $ASCII_B
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_O
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_O
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_T
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_L
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_O
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_A
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_D
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_E
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_R
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_SPACE
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_O
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_K
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_EOL
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_W
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_A
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_I
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_T
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_I
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_N
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_G
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_SPACE
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_F
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_O
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_R
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_SPACE
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_O
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_S
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_DOT
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_DOT
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_DOT
-    CALL $PRINT_CHAR()
-
-    MOV_A_IMM $ASCII_EOL
-    CALL $PRINT_CHAR()
-
-    RET

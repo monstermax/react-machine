@@ -272,8 +272,10 @@ export const isIO = (addr: u16) =>
 
 
 // Convertir adresse mémoire absolue en port I/O relatif
-export const memoryToIOPort = (addr: u16): u8 => {
-    return U8((addr - MEMORY_MAP.IO_START));
+export const memoryToIOPort = (addr: u16): u16 => {
+    const val = addr - MEMORY_MAP.IO_START;
+    const valTypped = U16(val);
+    return valTypped;
 };
 
 

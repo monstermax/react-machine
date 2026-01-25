@@ -126,7 +126,8 @@ export class MemoryBus extends EventEmitter {
         if (isIO(address)) {
             if (this.io) {
                 //console.log(`Write Memory (IO) @address ${toHex(address)} = ${toHex(value)}`)
-                this.io.write(memoryToIOPort(address), value);
+                const port = memoryToIOPort(address);
+                this.io.write(port, value);
                 return;
             }
 

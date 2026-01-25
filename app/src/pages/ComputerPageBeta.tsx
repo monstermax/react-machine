@@ -7,10 +7,9 @@ import { Dma, Interrupt, Timer, CpuInstructions, MemoryMap, IDE } from 'react-ma
 import { StorageDisk, LedsDisplay, Buzzer, PixelDisplay, Rng, Rtc, LcdDisplay, Console, SevenSegmentDisplay, Keyboard } from 'react-machine-package/devices-components'
 import { MEMORY_MAP, loadSourceCodeFromFile } from 'react-machine-package';
 
+import { universalCompiler } from './CompilePageBeta';
+
 import type { u16, u8 } from 'react-machine-package/types';
-
-import { universalCompiler } from '@/v1/lib/compilation';
-
 
 
 export const ComputerPageBeta: React.FC = () => {
@@ -22,8 +21,6 @@ export const ComputerPageBeta: React.FC = () => {
     useEffect(() => {
         const _compile = async () => {
             const bootloaderSourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v1.asm");
-            //const compiled = await compilerV1.compileCode(bootloaderSourceCode, MEMORY_MAP.ROM_START);
-            //setBootloader(compiled.code)
 
             const compiled = await universalCompiler(bootloaderSourceCode, MEMORY_MAP.ROM_START);
             if (compiled) {
@@ -52,7 +49,7 @@ export const ComputerPageBeta: React.FC = () => {
                         </Cpu>
 
                         <Memory>
-                            <Rom data={bootloader} />
+                            <Rom data={bootloader} open />
                             <Ram />
                             <Dma ioPort={0x11} hidden />
                         </Memory>

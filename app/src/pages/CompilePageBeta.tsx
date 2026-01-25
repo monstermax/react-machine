@@ -8,13 +8,17 @@ import "prism-react-editor/languages/asm"
 import "prism-react-editor/layout.css"
 import "prism-react-editor/themes/github-dark.css"
 
-import { compilerV1, compilerV2, loadSourceCodeFromFile, toHex } from "react-machine-package";
+import { compilerV2, loadSourceCodeFromFile, toHex, U16 } from "react-machine-package";
+const { compileCode, formatBytecode, getBytecodeArray } = compilerV2;
 
-//import { compileCode, formatBytecode } from "@/cpus/default/v2";
-const { compileCode, formatBytecode } = compilerV2;
+import type { CompiledCode, u16 } from "react-machine-package/types";
+
+import { finalizeCompilation, preCompileCode } from "@/v1/cpus/default/compiler_v1/asm_compiler";
 
 
 const debugSourceCode_x86 = `
+
+
 section .data
     VAR_DB_01         equ 0x08
     VAR_DB_02         equ 0x12
@@ -47,6 +51,7 @@ LABEL2:
 PRINT_INFO:
     mov eax, ebx
     ret
+
 
 `;
 
@@ -108,6 +113,7 @@ end_program:
 `;
 
 
+
 export const CompilePageBeta: React.FC = () => {
     //const initialSourceCode = debugSourceCode_x86;
     const [initialSourceCode, setInitialSourceCode] = useState('')
@@ -120,8 +126,11 @@ export const CompilePageBeta: React.FC = () => {
 
 
     useEffect(() => {
+        //setInitialSourceCode(debugSourceCode_x86);
+        //return;
+
         const loadCode = async () => {
-            const code = await loadSourceCodeFromFile('bootloader/bootloader_v1.beta.asm')
+            const code = await loadSourceCodeFromFile('bootloader/bootloader_v1.asm')
             setInitialSourceCode(code);
         }
 
@@ -269,3 +278,29 @@ export const CompilePageBeta: React.FC = () => {
         </div>
     );
 };
+
+
+
+export const universalCompiler = async (codeSource: string, memoryOffset: u16=U16(0), lineOffset: u16=U16(0), compilerType: 'nasm' | 'custom' | 'auto'='auto') => {
+    let code: CompiledCode | null = null;
+
+    if (compilerType === 'auto') {
+        compilerType = codeSource.toLowerCase().includes('section .text')
+            ? 'nasm'
+            : 'custom';
+    }
+
+    if (compilerType === 'custom') {
+        const preCompiled = await preCompileCode(codeSource, memoryOffset, lineOffset);
+        const finalized = finalizeCompilation(preCompiled.code);
+        code = finalized.code;
+
+    } else if (compilerType === 'nasm') {
+        const compiled = await compileCode(codeSource);
+        code = getBytecodeArray(compiled)
+    }
+
+    return code;
+}
+
+

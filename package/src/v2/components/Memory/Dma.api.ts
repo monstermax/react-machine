@@ -40,6 +40,9 @@ export class Dma extends EventEmitter implements IoDevice {
         // TODO
 
         switch (port) {
+            // 0x00 : readData => this.memoryBus.ram.read()
+            // 0x01 : setAdressLow
+            // 0x02 : setAdressHigh
 
             default:
                 return (0) as u8;
@@ -53,6 +56,9 @@ export class Dma extends EventEmitter implements IoDevice {
         const port = address;
 
         switch (port) {
+            // 0x00 : writeData => this.memoryBus.ram.write()
+            // 0x01 : setAdressLow
+            // 0x02 : setAdressHigh
 
         }
     }

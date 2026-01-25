@@ -3,6 +3,7 @@ import { Lexer, type Token } from './compiler_lexer';
 
 import type { CPUArchitecture, CompilerOptions, CompiledProgram, Section, ByteEntry, SymbolInfo, CompilerError, ParsedOperand, InstructionDef, InstructionVariant } from './compiler.types';
 import type { u16 } from '@/types/cpu.types';
+import { toHex } from '@/v2/lib/integers';
 
 
 export class Compiler {
@@ -11,13 +12,12 @@ export class Compiler {
     private pos = 0;
 
     private sections: Map<string, Section> = new Map();
-    private includes: Map<string, string[]> = new Map();
     private currentSection: string = '.text';
     private currentAddress = 0;
-    private currentFilePath: string = '__main';
 
     private labels: Map<string, { section: string, address: u16, values?: any[] | null, dataSize: number | null }> = new Map();
     private symbols: Map<string, SymbolInfo> = new Map();
+    private comments: Map<number, string> = new Map();
     private unresolvedRefs: Array<{
         address: number;
         section: string;
@@ -92,12 +92,8 @@ export class Compiler {
     }
 
 
-    public async compile(source: string, filePath?: string): Promise<CompiledProgram> {
+    public async compile(source: string): Promise<CompiledProgram> {
         // should be called externally
-
-        if (filePath) {
-            this.currentFilePath = filePath;
-        }
 
         const instructions = Array.from(this.instructionMap.keys());
         const registers = Array.from(this.registerMap.keys());
@@ -110,7 +106,7 @@ export class Compiler {
         ];
 
         const lexer = new Lexer(source, instructions, registers, directives, this.caseSensitive);
-        this.tokens = lexer.tokenize().filter(t => t.type !== 'COMMENT' && t.type !== 'NEWLINE');
+        this.tokens = lexer.tokenize() //.filter(t => t.type !== 'COMMENT' && t.type !== 'NEWLINE');
         //console.log('lexer tokens:', this.tokens)
 
         this.pass1CollectSymbols();
@@ -135,9 +131,9 @@ export class Compiler {
     private resetSections(): void {
         // called by compile
 
-        const textEnd = this.currentAddress;  // Sauvegarde où .text se termine
-        const dataSection = this.sections.get('.data')!;
-        dataSection.startAddress = textEnd;
+        //const textEnd = this.currentAddress;  // Sauvegarde où .text se termine
+        //const dataSection = this.sections.get('.data')!;
+        //dataSection.startAddress = textEnd;
 
         for (const section of this.sections.values()) {
             section.data = [];
@@ -154,7 +150,11 @@ export class Compiler {
         this.currentSection = '.text';
         this.currentAddress = this.sections.get('.text')!.startAddress;
 
+        let lastInstructionOrIdentifierAddress: number | null = null;
+
+
         while (!this.isAtEnd()) {
+            const prev = this.peek(-1);
             const token = this.peek();
 
             // handle Directive
@@ -168,6 +168,7 @@ export class Compiler {
             if (token.type === 'LABEL') {
                 // example => "main:"
                 const labelName = token.value;
+
                 this.labels.set(labelName, {
                     section: this.currentSection,
                     address: this.currentAddress as u16,
@@ -190,6 +191,7 @@ export class Compiler {
             // handle Instruction
             if (token.type === 'INSTRUCTION') {
                 // example => "mov eax, 4"
+                lastInstructionOrIdentifierAddress = this.currentAddress;
                 this.currentAddress += this.calculateInstructionSize();
                 continue;
             }
@@ -207,6 +209,8 @@ export class Compiler {
                     if (['EQU', 'DB', 'DW', 'DD', 'DQ', 'RESB', 'RESW', 'RESD', 'RESQ'].includes(directive)) {
                         const varName = token.value;
                         const itemSize = getDirectiveDataSize(directive);
+
+                        lastInstructionOrIdentifierAddress = this.currentAddress;
 
                         const startAddress = this.currentAddress as u16;
 
@@ -261,6 +265,22 @@ export class Compiler {
                 }
             }
 
+            if (token.type === 'NEWLINE') {
+                this.advance();
+                lastInstructionOrIdentifierAddress = null;
+                continue;
+            }
+
+            if (token.type === 'COMMENT') {
+                if (lastInstructionOrIdentifierAddress !== null) {
+                    this.comments.set(lastInstructionOrIdentifierAddress, token.value);
+                }
+                this.advance();
+                lastInstructionOrIdentifierAddress = null;
+                continue;
+            }
+
+            console.warn(`unknown token type: ${token.type}`)
 
             this.advance();
         }
@@ -286,34 +306,33 @@ export class Compiler {
                 }
             }
 
-            if (sectionName === '.INCLUDE' || sectionName === 'INCLUDE') {
-                const valueToken = this.peek();
-                const filePath = valueToken.value;
-                const include = this.includes.get(filePath)
-
-                if (include) {
-                    include.push(this.currentFilePath)
-
-                } else {
-                    this.includes.set(filePath, [this.currentFilePath])
-                }
-
-            } else if (sectionName === '.DATA' || sectionName === 'DATA') {
+            if (sectionName === '.DATA' || sectionName === 'DATA') {
                 this.currentSection = '.data';
 
             } else if (sectionName === '.BSS' || sectionName === 'BSS') {
                 this.currentSection = '.bss';
 
-            } else {
+            } else if (sectionName === '.TEXT' || sectionName === 'TEXT') {
                 this.currentSection = '.text';
+
+            } else if (sectionName === '.INCLUDE' || sectionName === 'INCLUDE') {
+                this.skip('STRING')
+                return;
+
+            } else {
+                throw new Error(`Unknown case : Unknown section "${sectionName}"`)
             }
 
             const section = this.sections.get(this.currentSection);
             if (section) {
-                this.currentAddress = section.startAddress;
+                //this.currentAddress = section.startAddress;
+
+                if (section.type !== 'code') {
+                    section.startAddress = this.currentAddress;
+                }
 
             } else {
-                throw new Error("Unknown case : missing section")
+                throw new Error(`Unknown case : section "${sectionName}" not found`)
             }
 
             return;
@@ -344,19 +363,19 @@ export class Compiler {
                 const symbolName = this.peek().value;
 
                 if (directive === 'GLOBAL') {
-                    const sym = this.symbols.get(symbolName);
-
-                    if (sym) {
-                        sym.global = true;
-                    }
-
-                    if (symbolName === '_start' || symbolName === 'start' || symbolName === 'main') {
-                        const labelInfo = this.labels.get(symbolName);
-
-                        if (labelInfo !== undefined) {
-                            this.entryPoint = labelInfo.address;
-                        }
-                    }
+//                    const sym = this.symbols.get(symbolName);
+//
+//                    if (sym) {
+//                        sym.global = true;
+//                    }
+//
+//                    if (symbolName === '_start' || symbolName === 'start' || symbolName === 'main') {
+//                        const labelInfo = this.labels.get(symbolName);
+//
+//                        if (labelInfo !== undefined) {
+//                            this.entryPoint = labelInfo.address;
+//                        }
+//                    }
 
                 } else {
                     this.symbols.set(symbolName, {
@@ -373,6 +392,8 @@ export class Compiler {
 
             return;
         }
+
+        console.log(`Unknown directive: ${directive}`)
 
         this.advance();
     }
@@ -411,9 +432,9 @@ export class Compiler {
 
                     if (['EQU', 'DB', 'DW', 'DD', 'DQ'].includes(directive)) {
                         const varName = token.value;
+                        this.advance();
 
-                        this.advance(); // IDENTIFIER
-                        const directiveToken = this.peek();  // Lire la DIRECTIVE sans avancer
+                        const directiveToken = this.peek();
                         this.generateData(varName, this.normalize(directiveToken.value));
                         continue;
                     }
@@ -499,25 +520,24 @@ export class Compiler {
         const directive = this.normalize(directiveName);
 
         let itemSize = getDirectiveDataSize(directive);
-        let hasFoundIdentifier = false;
-
-        //let itemSize = 1;
-        //if (directive === 'DW') itemSize = 2;
-        //else if (directive === 'DD') itemSize = 4;
-        //else if (directive === 'DQ') itemSize = 8;
 
         this.advance();
 
         while (!this.isAtEnd()) {
             const token = this.peek();
+            const comment = this.comments.get(this.currentAddress);
 
-            if (!hasFoundIdentifier && token.type === 'IDENTIFIER') {
+            if (token.type === 'IDENTIFIER') {
                 // Vérifier si c'est une nouvelle variable
                 const nextToken = this.peek(1);
 
-                if (nextToken.type === 'DIRECTIVE' /* && ['EQU', 'DB', 'DW', 'DD', 'DQ'].includes(this.normalize(nextToken.value)) */) {
-                    // Nouvel identifier, on arrête
-                    break;
+                if (nextToken.type === 'DIRECTIVE') {
+                    if (['EQU', 'DB', 'DW', 'DD', 'DQ'].includes(this.normalize(nextToken.value))) {
+
+                    } else {
+                        // Nouvel identifier, on arrête
+                        break;
+                    }
                 }
 
                 if (nextToken.type === 'INSTRUCTION' || nextToken.type === 'LABEL') {
@@ -530,10 +550,15 @@ export class Compiler {
 
                 if (labelInfo !== undefined) {
                     for (let i = 0; i < itemSize; i++) {
-                        this.emitByte((labelInfo.address >> (i * 8)) & 0xFF);
+                        const defaultComment = i === 0
+                            ? `low  byte of label ${token.value} = ${labelInfo.address}`
+                            : `high byte of label ${token.value} = ${labelInfo.address}`
+
+                        this.emitByte((labelInfo.address >> (i * 8)) & 0xFF, comment || defaultComment, false);
                     }
 
                 } else {
+                    // Référence non trouvée
                     this.unresolvedRefs.push({
                         address: this.currentAddress,
                         section: this.currentSection,
@@ -542,30 +567,34 @@ export class Compiler {
                     });
 
                     for (let i = 0; i < itemSize; i++) {
-                        this.emitByte(0);
+                        this.emitByte(0, comment, false);
                     }
                 }
 
                 this.advance();
 
-            } else if (hasFoundIdentifier && token.type === 'STRING') {
+            } else if (token.type === 'STRING') {
                 for (let i = 0; i < token.value.length; i++) {
-                    this.emitByte(token.value.charCodeAt(i), `'${token.value[i]}'`);
+                    this.emitByte(token.value.charCodeAt(i), comment || `'${token.value[i]}'`, false);
                 }
 
                 this.advance();
 
-            } else if (hasFoundIdentifier && token.type === 'NUMBER') {
+            } else if (token.type === 'NUMBER') {
                 const value = this.parseNumber(token.value);
 
                 for (let i = 0; i < itemSize; i++) {
+                    const defaultComment = i === 0
+                        ? `low  byte of number ${varName} = ${toHex(value)} (${value})`
+                        : `high byte of number ${varName} = ${toHex(value)} (${value})`
+
                     const byte = (value >> (i * 8)) & 0xFF;
-                    this.emitByte(byte, i === 0 ? token.value : undefined);
+                    this.emitByte(byte, comment || defaultComment || (i === 0 ? token.value : undefined), false);
                 }
 
                 this.advance();
 
-            } else if (hasFoundIdentifier && token.type === 'COMMA') {
+            } else if (token.type === 'COMMA') {
                 this.advance();
 
             } else {
@@ -577,15 +606,20 @@ export class Compiler {
     private reserveSpace(): void {
         // called by pass2GenerateCode
 
+        const comment = this.comments.get(this.currentAddress);
+
         if (this.peek().type === 'NUMBER') {
             const count = this.parseNumber(this.peek().value);
 
             for (let i = 0; i < count; i++) {
-                this.emitByte(0);
+                this.emitByte(0, comment || 'reserved space', false);
             }
 
             this.advance();
+            return;
         }
+
+        throw new Error("unknown case in reserveSpace");
     }
 
     private generateInstruction(): void {
@@ -611,7 +645,8 @@ export class Compiler {
             return;
         }
 
-        this.emitByte(variant.opcode, variant.mnemonic, true);
+        const comment = this.comments.get(this.currentAddress);
+        this.emitByte(variant.opcode, comment || variant.mnemonic, true);
 
         this.emitOperands(operands, variant);
     }
@@ -770,11 +805,10 @@ export class Compiler {
         for (let i = 0; i < operands.length; i++) {
             const part = parts[i];
             const op = operands[i];
-            //if (op.value === 'ASCII_O') debugger
 
             if (part === 'IMM8') {
                 const value = op.address !== undefined ? op.address : this.parseNumber(op.value);
-                this.emitByte(value & 0xFF, op.value);
+                this.emitByte(value & 0xFF, op.value, false);
 
             } else if (part === 'IMM16' || part === 'MEM') {
                 let value = 0;
@@ -783,11 +817,9 @@ export class Compiler {
                     const labelInfo = this.labels.get(op.value);
                     const labelSection = this.sections.get(labelInfo?.section || '.none')
 
-                    if (op.address === 0x01) debugger;
-
                     if (labelInfo !== undefined && labelSection !== undefined) {
                         if (labelInfo.dataSize === 0 && labelInfo.values) {
-                            value = labelInfo.values ? labelInfo.values[0] : 0x00;
+                            value = labelInfo.values ? this.parseNumber(labelInfo.values[0]) : 0x00;
 
                         } else {
                             value = labelSection.startAddress + labelInfo.address;
@@ -810,7 +842,7 @@ export class Compiler {
                         throw new Error(`Missing label "${op.value}"`);
                     }
 
-                    value = label.values ? label.values[0] : 0x00;
+                    value = label.values ? this.parseNumber(label.values[0]) : 0x00;
 
                 } else if (op.address !== undefined) {
                     value = op.address;
@@ -819,13 +851,15 @@ export class Compiler {
                     value = this.parseNumber(op.value);
                 }
 
+                const commentPrefix = `${isNaN(Number(op.value)) ? `${op.value} = ` : ''}${toHex(value)} (${value})`;
+
                 if (this.arch.endianness === 'little') {
-                    this.emitByte(value & 0xFF, `${op.value} (low)`);
-                    this.emitByte((value >> 8) & 0xFF, `${op.value} (high)`);
+                    this.emitByte(value & 0xFF, `${commentPrefix} (low byte)`, false);
+                    this.emitByte((value >> 8) & 0xFF, `${commentPrefix} (high byte)`, false);
 
                 } else {
-                    this.emitByte((value >> 8) & 0xFF, `${op.value} (high)`);
-                    this.emitByte(value & 0xFF, `${op.value} (low)`);
+                    this.emitByte((value >> 8) & 0xFF, `${commentPrefix} (high byte)`, false);
+                    this.emitByte(value & 0xFF, `${commentPrefix} (low byte)`, false);
                 }
             }
         }
@@ -932,7 +966,7 @@ export class Compiler {
         }
     }
 
-    private emitByte(value: number, comment?: string, isOpcode = false): void {
+    private emitByte(value: number, comment?: string, isOpcode?: boolean): void {
         // used at several places
 
         const section = this.sections.get(this.currentSection);
@@ -943,7 +977,7 @@ export class Compiler {
             value: value & 0xFF,
             section: this.currentSection,
             comment,
-            isOpcode
+            isOpcode,
         });
     }
 

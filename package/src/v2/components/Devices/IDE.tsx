@@ -73,7 +73,7 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
         } else if (compilerType === 'nasm') {
             const compiled = await compileCode(editorContent);
             const bytecode = formatBytecode(compiled);
-            const compiledFormatted = `[\n${bytecode}]`;
+            const compiledFormatted = `[\n${bytecode}\n]`;
             code = getBytecodeArray(compiled)
             //debugger
             setCompiledContent(compiledFormatted)

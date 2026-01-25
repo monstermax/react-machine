@@ -120,6 +120,7 @@ const instructions: InstructionDef[] = [
     { mnemonic: 'SET_SP', opcode: 0x3A, operands: 'IMM16', size: 3 },
     {
         mnemonic: 'CALL', opcode: 0x3B, operands: 'IMM16', size: 3, variants: [
+            { operands: 'IMM16', opcode: 0x3B, size: 3, condition: (ops) => true, mnemonic: 'CALL' },
             { operands: 'MEM', opcode: 0x3B, size: 3, condition: (ops) => ops[0].type === 'LABEL', mnemonic: 'CALL' },
             { operands: 'MEM', opcode: 0x3B, size: 3, condition: (ops) => ops[0].type === 'MEMORY', mnemonic: 'CALL' },
         ],
@@ -132,6 +133,7 @@ const instructions: InstructionDef[] = [
 
     {
         mnemonic: 'JMP', opcode: 0x40, operands: 'IMM16', size: 3, variants: [
+            { operands: 'IMM16', opcode: 0x40, size: 3, condition: (ops) => true, mnemonic: 'JMP' },
             { operands: 'MEM', opcode: 0x40, size: 3, condition: (ops) => true, mnemonic: 'JMP' },
         ],
     },

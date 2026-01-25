@@ -1,9 +1,8 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import { U16, U8 } from "@/v2/lib/integers";
-import { isIO, isROM, MEMORY_MAP, memoryToIOPort } from "@/v2/lib/memory_map_16x8_bits";
-import type { DevicesManager } from "../Devices/DevicesManager.api";
+import { U8 } from "@/v2/lib/integers";
+import { MEMORY_MAP } from "@/v2/lib/memory_map_16x8_bits";
 
 import type { IoDeviceType, u16, u8 } from "@/types/cpu.types";
 import type { IoDevice } from "@/v2/types/cpu_v2.types";

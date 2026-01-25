@@ -1,9 +1,6 @@
 
 section .data
-    INITIAL_FREQ    db 0xAA
-    ONE             db 0x01
-    TWO             db 0x02
-    THOUSAND        db 0x1000
+    CONSOLE_CHAR            dw 0xF070
 
     ; Codes ASCII
     ASCII_A             equ 0x41
@@ -52,4 +49,218 @@ section .data
     ASCII_DOT           equ 0x2E
     ASCII_SLASH         equ 0x2F
     ASCII_AROBASE       equ 0x40
+
+
+
+section .text
+
+
+    ; CONSOLE_DRIVER:
+
+    PRINT_CHAR:
+        mov [CONSOLE_CHAR], al ; print char
+        ret
+
+
+    PRINT_RUN:
+        mov al, ASCII_O ; letter O. start of PRINT_RUN
+        call PRINT_CHAR
+
+        mov al, ASCII_S
+        call PRINT_CHAR
+
+        mov al, ASCII_SPACE
+        call PRINT_CHAR
+
+        mov al, ASCII_F
+        call PRINT_CHAR
+
+        mov al, ASCII_O
+        call PRINT_CHAR
+
+        mov al, ASCII_U
+        call PRINT_CHAR
+
+        mov al, ASCII_N
+        call PRINT_CHAR
+
+        mov al, ASCII_D
+        call PRINT_CHAR
+
+        mov al, ASCII_EXCLAM
+        call PRINT_CHAR
+
+        mov al, ASCII_EOL
+        call PRINT_CHAR
+
+        ret ; end of PRINT_RUN
+
+    PRINT_INFO:
+        mov al, ASCII_B ; letter B. start of PRINT_INFO
+        call PRINT_CHAR
+
+        mov al, ASCII_O
+        call PRINT_CHAR
+
+        mov al, ASCII_O
+        call PRINT_CHAR
+
+        mov al, ASCII_T
+        call PRINT_CHAR
+
+        mov al, ASCII_L
+        call PRINT_CHAR
+
+        mov al, ASCII_O
+        call PRINT_CHAR
+
+        mov al, ASCII_A
+        call PRINT_CHAR
+
+        mov al, ASCII_D
+        call PRINT_CHAR
+
+        mov al, ASCII_E
+        call PRINT_CHAR
+
+        mov al, ASCII_R
+        call PRINT_CHAR
+
+        mov al, ASCII_SPACE
+        call PRINT_CHAR
+
+        mov al, ASCII_O
+        call PRINT_CHAR
+
+        mov al, ASCII_K
+        call PRINT_CHAR
+
+        mov al, ASCII_EOL
+        call PRINT_CHAR
+
+        mov al, ASCII_W
+        call PRINT_CHAR
+
+        mov al, ASCII_A
+        call PRINT_CHAR
+
+        mov al, ASCII_I
+        call PRINT_CHAR
+
+        mov al, ASCII_T
+        call PRINT_CHAR
+
+        mov al, ASCII_I
+        call PRINT_CHAR
+
+        mov al, ASCII_N
+        call PRINT_CHAR
+
+        mov al, ASCII_G
+        call PRINT_CHAR
+
+        mov al, ASCII_SPACE
+        call PRINT_CHAR
+
+        mov al, ASCII_F
+        call PRINT_CHAR
+
+        mov al, ASCII_O
+        call PRINT_CHAR
+
+        mov al, ASCII_R
+        call PRINT_CHAR
+
+        mov al, ASCII_SPACE
+        call PRINT_CHAR
+
+        mov al, ASCII_O
+        call PRINT_CHAR
+
+        mov al, ASCII_S
+        call PRINT_CHAR
+
+        mov al, ASCII_DOT
+        call PRINT_CHAR
+
+        mov al, ASCII_DOT
+        call PRINT_CHAR
+
+        mov al, ASCII_DOT
+        call PRINT_CHAR
+
+        mov al, ASCII_EOL
+        call PRINT_CHAR
+
+        ret ; end of PRINT_INFO
+
+
+
+    PRINT_GITHUB:
+        ; TODO
+        mov al, ASCII_G ; letter G. start of PRINT_GITHUB
+        call PRINT_CHAR
+
+        mov al, ASCII_I
+        call PRINT_CHAR
+
+        mov al, ASCII_T
+        call PRINT_CHAR
+
+        mov al, ASCII_H
+        call PRINT_CHAR
+
+        mov al, ASCII_U
+        call PRINT_CHAR
+
+        mov al, ASCII_B
+        call PRINT_CHAR
+
+        mov al, ASCII_DOT
+        call PRINT_CHAR
+
+        mov al, ASCII_C
+        call PRINT_CHAR
+
+        mov al, ASCII_O
+        call PRINT_CHAR
+
+        mov al, ASCII_M
+        call PRINT_CHAR
+
+        mov al, ASCII_SLASH
+        call PRINT_CHAR
+
+        mov al, ASCII_M
+        call PRINT_CHAR
+
+        mov al, ASCII_O
+        call PRINT_CHAR
+
+        mov al, ASCII_N
+        call PRINT_CHAR
+
+        mov al, ASCII_S
+        call PRINT_CHAR
+
+        mov al, ASCII_T
+        call PRINT_CHAR
+
+        mov al, ASCII_E
+        call PRINT_CHAR
+
+        mov al, ASCII_R
+        call PRINT_CHAR
+
+        mov al, ASCII_M
+        call PRINT_CHAR
+
+        mov al, ASCII_A
+        call PRINT_CHAR
+
+        mov al, ASCII_X
+        call PRINT_CHAR
+
+        ret ; end of PRINT_GITHUB
+
 
