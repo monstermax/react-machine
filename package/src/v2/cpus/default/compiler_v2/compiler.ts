@@ -7,17 +7,19 @@ import { toHex } from '@/v2/lib/integers';
 
 
 export class Compiler {
-    private arch: CPUArchitecture;
-    private tokens: Token[] = [];
-    private pos = 0;
+    private arch: CPUArchitecture; // CPU architecture definition (registers, instructions, endianness)
+    private tokens: Token[] = [];  // All tokens from lexer
+    private pos = 0; // Current position in token stream
 
-    private sections: Map<string, Section> = new Map();
-    private currentSection: string = '.text';
-    private currentAddress = 0;
+    private sections: Map<string, Section> = new Map(); // Memory sections (.text for code, .data for initialized data, .bss for uninitialized)
+    private currentSection: string = '.text'; // Currently active section
+    private currentAddress = 0; // Current memory address being written
 
-    private labels: Map<string, { section: string, address: u16, values?: any[] | null, dataSize: number | null }> = new Map();
-    private symbols: Map<string, SymbolInfo> = new Map();
-    private comments: Map<number, string> = new Map();
+    private labels: Map<string, { section: string, address: u16, values?: any[] | null, dataSize: number | null }> = new Map(); // Label definitions with their addresses and optional data values
+    private symbols: Map<string, SymbolInfo> = new Map(); // Symbol table for labels and variables
+    private comments: Map<number, string> = new Map(); // Comments associated with specific addresses
+
+    // Forward references to resolve after pass1
     private unresolvedRefs: Array<{
         address: number;
         section: string;
@@ -25,21 +27,23 @@ export class Compiler {
         size: number;
     }> = [];
 
-    private errors: CompilerError[] = [];
-    private registerMap: Map<string, string> = new Map();
-    private instructionMap: Map<string, InstructionDef> = new Map();
+    private errors: CompilerError[] = []; // Compilation errors
+    private registerMap: Map<string, string> = new Map(); // Register name/alias to ID mapping
+    private instructionMap: Map<string, InstructionDef> = new Map(); // Instruction mnemonic to definition mapping
 
-    private caseSensitive: boolean;
-    private entryPoint?: number;
+    private caseSensitive: boolean; // Whether to match case-sensitive names
+    private entryPoint?: number; // Entry point address (e.g., _start, main)
 
 
     constructor(options: CompilerOptions) {
         this.arch = options.architecture;
         this.caseSensitive = options.caseSensitive || false;
 
+        // Build lookup maps for registers and instructions
         this.buildRegisterMap();
         this.buildInstructionMap();
 
+        // Initialize standard sections
         this.sections.set('.text', {
             name: '.text',
             type: 'code',
@@ -63,15 +67,18 @@ export class Compiler {
     }
 
 
+    // Build register name/alias to ID mapping
     private buildRegisterMap(): void {
         // called by constructor
 
         for (const reg of this.arch.registers) {
+            // Add register name
             this.registerMap.set(
                 this.caseSensitive ? reg.name : reg.name.toUpperCase(),
                 reg.id
             );
 
+            // Add all aliases
             for (const alias of reg.aliases) {
                 this.registerMap.set(
                     this.caseSensitive ? alias : alias.toUpperCase(),
@@ -82,6 +89,7 @@ export class Compiler {
     }
 
 
+    // Build instruction mnemonic to definition mapping
     private buildInstructionMap(): void {
         // called by constructor
 
@@ -92,9 +100,11 @@ export class Compiler {
     }
 
 
+    // Main compilation entry point - performs two-pass compilation
     public async compile(source: string): Promise<CompiledProgram> {
         // should be called externally
 
+        // Define all recognized token types for lexer
         const instructions = Array.from(this.instructionMap.keys());
         const registers = Array.from(this.registerMap.keys());
         const directives = [
@@ -105,17 +115,23 @@ export class Compiler {
             'EQU', 'TIMES',
         ];
 
+        // Tokenize source code
         const lexer = new Lexer(source, instructions, registers, directives, this.caseSensitive);
         this.tokens = lexer.tokenize() //.filter(t => t.type !== 'COMMENT' && t.type !== 'NEWLINE');
         //console.log('lexer tokens:', this.tokens)
 
+
+        // Pass 1: collect all symbols and calculate addresses
         this.pass1CollectSymbols();
 
+        // Reset for pass 2
         this.pos = 0;
         this.resetSections();
 
+        // Pass 2: generate actual machine code
         this.pass2GenerateCode();
 
+        // Resolve forward references
         this.resolveReferences();
 
         return {
@@ -128,6 +144,7 @@ export class Compiler {
     }
 
 
+    // Clear section data between passes while preserving structure
     private resetSections(): void {
         // called by compile
 
@@ -143,6 +160,7 @@ export class Compiler {
     }
 
 
+    // Pass 1: scan source to collect labels, calculate addresses, and gather comments
     private pass1CollectSymbols(): void {
         // called by compile
 
@@ -150,6 +168,7 @@ export class Compiler {
         this.currentSection = '.text';
         this.currentAddress = this.sections.get('.text')!.startAddress;
 
+        // Track last instruction/identifier address for comment association
         let lastInstructionOrIdentifierAddress: number | null = null;
 
 
@@ -157,14 +176,14 @@ export class Compiler {
             const prev = this.peek(-1);
             const token = this.peek();
 
-            // handle Directive
+            // DIRECTIVE: Handle section directives, .org, global, extern
             if (token.type === 'DIRECTIVE') {
                 // example => "section .text"
                 this.handleDirectivePass1();
                 continue;
             }
 
-            // handle Label
+            // LABEL: Register label with current address
             if (token.type === 'LABEL') {
                 // example => "main:"
                 const labelName = token.value;
@@ -188,7 +207,7 @@ export class Compiler {
             }
 
 
-            // handle Instruction
+            // INSTRUCTION: Calculate instruction size and advance address
             if (token.type === 'INSTRUCTION') {
                 // example => "mov eax, 4"
                 lastInstructionOrIdentifierAddress = this.currentAddress;
@@ -197,7 +216,7 @@ export class Compiler {
             }
 
 
-            // handle Identifier
+            // IDENTIFIER: Handle variable declarations (e.g., "my_var db 0x12")
             if (token.type === 'IDENTIFIER') {
                 // example => "my_var db 0x12"
                 const next = this.peek(1);
@@ -271,6 +290,7 @@ export class Compiler {
                 continue;
             }
 
+            // Associate comments with their instruction/data address
             if (token.type === 'COMMENT') {
                 if (lastInstructionOrIdentifierAddress !== null) {
                     this.comments.set(lastInstructionOrIdentifierAddress, token.value);
@@ -286,12 +306,14 @@ export class Compiler {
         }
     }
 
+
+    // Handle directives during pass 1 (section changes, .org, global/extern)
     private handleDirectivePass1(): void {
         // called by pass1CollectSymbols
 
         const directive = this.normalize(this.peek().value);
 
-        // handle directive "section" + ".*"
+        // Switch to different section (.text, .data, .bss)
         if (directive === 'SECTION' || directive.startsWith('.')) {
             this.advance();
 
@@ -325,7 +347,7 @@ export class Compiler {
 
             const section = this.sections.get(this.currentSection);
             if (section) {
-                //this.currentAddress = section.startAddress;
+                // Set data/bss section start address to current position
 
                 if (section.type !== 'code') {
                     section.startAddress = this.currentAddress;
@@ -339,7 +361,7 @@ export class Compiler {
         }
 
 
-        // handle directive ".org"
+        // .ORG: Set origin address (.org directive)
         if (directive === '.ORG') {
             this.advance();
 
@@ -355,7 +377,7 @@ export class Compiler {
         }
 
 
-        // handle directive "global" + "extern"
+        // Mark symbols as global or extern
         if (directive === 'GLOBAL' || directive === 'EXTERN') {
             this.advance();
 
@@ -363,6 +385,8 @@ export class Compiler {
                 const symbolName = this.peek().value;
 
                 if (directive === 'GLOBAL') {
+                    // Global symbol handling (commented out)
+
 //                    const sym = this.symbols.get(symbolName);
 //
 //                    if (sym) {
@@ -378,6 +402,8 @@ export class Compiler {
 //                    }
 
                 } else {
+                    // Register external symbol
+
                     this.symbols.set(symbolName, {
                         address: 0,
                         section: '',
@@ -398,6 +424,8 @@ export class Compiler {
         this.advance();
     }
 
+
+    // Pass 2: generate actual machine code bytes
     private pass2GenerateCode(): void {
         // called by compile
 
@@ -408,14 +436,14 @@ export class Compiler {
         while (!this.isAtEnd()) {
             const token = this.peek();
 
-            // handle Directive
+            // DIRECTIVE: Process section switches and directives
             if (token.type === 'DIRECTIVE') {
                 // example => "section .text"
                 this.handleDirectivePass2();
                 continue;
             }
 
-            // handle Label
+            // LABEL: Skip labels (already processed in pass1)
             if (token.type === 'LABEL') {
                 // example => "main:"
                 this.advance();
@@ -423,6 +451,7 @@ export class Compiler {
                 continue;
             }
 
+            // IDENTIFIER: Generate data bytes for variables
             if (token.type === 'IDENTIFIER') {
                 // example => "LEDS_BASE db 0x00"
                 const next = this.peek(1);
@@ -449,6 +478,7 @@ export class Compiler {
 
             }
 
+            // INSTRUCTION: Encode instruction to bytes
             if (token.type === 'INSTRUCTION') {
                 this.generateInstruction();
                 continue;
@@ -458,6 +488,8 @@ export class Compiler {
         }
     }
 
+
+    // Handle directives during pass 2 (simpler than pass1, just section switching)
     private handleDirectivePass2(): void {
         // called by pass2GenerateCode
 
@@ -514,6 +546,8 @@ export class Compiler {
         this.advance();
     }
 
+
+    // Emit data bytes for variable declarations (db, dw, dd, dq)
     private generateData(varName: string | undefined, directiveName: string): void {
         // called by pass2GenerateCode (gère les valeurs situées après un couple [IDENTIFIER, DIRECTIVE]. example "my_var db 0x05, 0x06, 0x07")
 
@@ -531,6 +565,7 @@ export class Compiler {
                 // Vérifier si c'est une nouvelle variable
                 const nextToken = this.peek(1);
 
+                // Stop if we encounter a new variable declaration
                 if (nextToken.type === 'DIRECTIVE') {
                     if (['EQU', 'DB', 'DW', 'DD', 'DQ'].includes(this.normalize(nextToken.value))) {
 
@@ -546,6 +581,8 @@ export class Compiler {
                 }
 
                 // Sinon, c'est une référence à un label
+
+                // Emit label address as data
                 const labelInfo = this.labels.get(token.value);
 
                 if (labelInfo !== undefined) {
@@ -559,6 +596,8 @@ export class Compiler {
 
                 } else {
                     // Référence non trouvée
+
+                    // Add to unresolved references
                     this.unresolvedRefs.push({
                         address: this.currentAddress,
                         section: this.currentSection,
@@ -574,6 +613,7 @@ export class Compiler {
                 this.advance();
 
             } else if (token.type === 'STRING') {
+                // Emit string as ASCII bytes
                 for (let i = 0; i < token.value.length; i++) {
                     this.emitByte(token.value.charCodeAt(i), comment || `'${token.value[i]}'`, false);
                 }
@@ -581,6 +621,7 @@ export class Compiler {
                 this.advance();
 
             } else if (token.type === 'NUMBER') {
+                // Emit number split into bytes
                 const value = this.parseNumber(token.value);
 
                 for (let i = 0; i < itemSize; i++) {
@@ -603,6 +644,8 @@ export class Compiler {
         }
     }
 
+
+    // Reserve uninitialized space (resb, resw, resd, resq)
     private reserveSpace(): void {
         // called by pass2GenerateCode
 
@@ -622,6 +665,8 @@ export class Compiler {
         throw new Error("unknown case in reserveSpace");
     }
 
+
+    // Encode instruction opcode and operands to bytes
     private generateInstruction(): void {
         // called by pass2GenerateCode
 
@@ -639,18 +684,23 @@ export class Compiler {
 
         const operands = this.parseOperands();
 
+        // Find matching instruction variant based on operand types
         const variant = this.findInstructionVariant(instrDef, operands);
         if (!variant) {
             this.error(instrToken, `Invalid operands for ${mnemonic}`);
             return;
         }
 
+        // Emit opcode byte
         const comment = this.comments.get(this.currentAddress);
         this.emitByte(variant.opcode, comment || variant.mnemonic, true);
 
+        // Emit operand bytes
         this.emitOperands(operands, variant);
     }
 
+
+    // Parse instruction operands into structured format
     private parseOperands(): ParsedOperand[] {
         // called by generateInstruction & calculateInstructionSize
 
@@ -676,6 +726,7 @@ export class Compiler {
                 this.advance();
 
             } else if (token.type === 'LBRACKET') {
+                // Memory operand [...]
                 this.advance();
                 const memOperand = this.parseMemoryOperand();
                 this.skip('RBRACKET');
@@ -684,6 +735,7 @@ export class Compiler {
             } else if (token.type === 'IDENTIFIER') {
                 const label = this.labels.get(token.value);
 
+                // EQU constants become immediate values
                 if (label && label.dataSize === 0) {
                     operands.push({
                         type: 'IMMEDIATE',
@@ -693,6 +745,7 @@ export class Compiler {
                     });
 
                 } else {
+                    // Label reference
                     operands.push({
                         type: 'LABEL',
                         value: label?.values ? label.values[0] : token.value,
@@ -714,6 +767,8 @@ export class Compiler {
         return operands;
     }
 
+
+    // Parse memory addressing operand inside brackets
     private parseMemoryOperand(): ParsedOperand {
         // called by parseOperands
 
@@ -725,16 +780,19 @@ export class Compiler {
         const token = this.peek();
 
         if (token.type === 'NUMBER') {
+            // Direct address [0x1234]
             operand.address = this.parseNumber(token.value);
             operand.value = token.value;
             this.advance();
 
         } else if (token.type === 'IDENTIFIER') {
+            // Label address [my_var]
             operand.value = token.value;
             operand.address = this.labels.get(token.value)?.address;
             this.advance();
 
         } else if (token.type === 'REGISTER') {
+            // Register indirect [eax]
             operand.base = this.mapRegister(token.value);
             operand.value = token.value;
             this.advance();
@@ -743,9 +801,12 @@ export class Compiler {
         return operand;
     }
 
+
+    // Find instruction variant matching operand pattern
     private findInstructionVariant(instrDef: InstructionDef, operands: ParsedOperand[]): InstructionVariant | null {
         // called by generateInstruction & calculateInstructionSize
 
+        // No variants means single encoding
         if (!instrDef.variants || instrDef.variants.length === 0) {
             if (this.matchesOperandPattern(instrDef.operands, operands)) {
                 return {
@@ -758,6 +819,7 @@ export class Compiler {
             return null;
         }
 
+        // Try each variant until pattern matches
         for (const variant of instrDef.variants) {
             if (this.matchesOperandPattern(variant.operands, operands)) {
                 if (!variant.condition || variant.condition(operands)) {
@@ -769,6 +831,8 @@ export class Compiler {
         return null;
     }
 
+
+    // Check if operand types match expected pattern (e.g., "REG_IMM8")
     private matchesOperandPattern(pattern: string, operands: ParsedOperand[]): boolean {
         // called by findInstructionVariant
 
@@ -793,6 +857,8 @@ export class Compiler {
         return true;
     }
 
+
+    // Emit operand bytes based on instruction variant pattern
     private emitOperands(operands: ParsedOperand[], variant: InstructionVariant): void {
         // called by generateInstruction
 
@@ -807,10 +873,12 @@ export class Compiler {
             const op = operands[i];
 
             if (part === 'IMM8') {
+                // 8-bit immediate value
                 const value = op.address !== undefined ? op.address : this.parseNumber(op.value);
                 this.emitByte(value & 0xFF, op.value, false);
 
             } else if (part === 'IMM16' || part === 'MEM') {
+                // 16-bit immediate or memory address
                 let value = 0;
 
                 if (op.type === 'LABEL') {
@@ -819,13 +887,16 @@ export class Compiler {
 
                     if (labelInfo !== undefined && labelSection !== undefined) {
                         if (labelInfo.dataSize === 0 && labelInfo.values) {
+                            // EQU constant value
                             value = labelInfo.values ? this.parseNumber(labelInfo.values[0]) : 0x00;
 
                         } else {
+                            // Absolute address = section start + label offset
                             value = labelSection.startAddress + labelInfo.address;
                         }
 
                     } else {
+                        // Add to unresolved references
                         this.unresolvedRefs.push({
                             address: this.currentAddress,
                             section: this.currentSection,
@@ -853,6 +924,7 @@ export class Compiler {
 
                 const commentPrefix = `${isNaN(Number(op.value)) ? `${op.value} = ` : ''}${toHex(value)} (${value})`;
 
+                // Emit 16-bit value with correct endianness
                 if (this.arch.endianness === 'little') {
                     this.emitByte(value & 0xFF, `${commentPrefix} (low byte)`, false);
                     this.emitByte((value >> 8) & 0xFF, `${commentPrefix} (high byte)`, false);
@@ -866,6 +938,7 @@ export class Compiler {
     }
 
 
+    // Calculate instruction size in bytes (used in pass1)
     private calculateInstructionSize(): number {
         // called by pass1CollectSymbols
 
@@ -883,6 +956,7 @@ export class Compiler {
     }
 
 
+    // Calculate data declaration size in bytes (db, dw, dd, dq with values)
     private calculateDataSize(itemSize: number): number {
         // called by pass1CollectSymbols
 
@@ -896,7 +970,7 @@ export class Compiler {
         //else if (directive === 'DD') itemSize = 4;
         //else if (directive === 'DQ') itemSize = 8;
 
-        let offset = 1; // Start après la DIRECTIVE
+        let offset = 1; // Start after DIRECTIVE
 
         while (true) {
             const token = this.peek(offset);
@@ -905,6 +979,7 @@ export class Compiler {
             if (token.type === 'INSTRUCTION' || token.type === 'LABEL') break;
 
             if (token.type === 'STRING') {
+                // Each character is one byte
                 size += token.value.length;
                 offset++;
 
@@ -930,6 +1005,8 @@ export class Compiler {
         return size;
     }
 
+
+    // Resolve forward references after both passes complete
     private resolveReferences(): void {
         // called by compile
 
@@ -950,6 +1027,7 @@ export class Compiler {
 
             const offset = ref.address - section.startAddress;
 
+            // Patch bytes with correct endianness
             if (ref.size === 2) {
                 if (this.arch.endianness === 'little') {
                     section.data[offset].value = labelInfo.address & 0xFF;
@@ -966,6 +1044,8 @@ export class Compiler {
         }
     }
 
+
+    // Emit a single byte to current section
     private emitByte(value: number, comment?: string, isOpcode?: boolean): void {
         // used at several places
 
@@ -981,18 +1061,24 @@ export class Compiler {
         });
     }
 
+
+    // Map register name/alias to ID
     private mapRegister(name: string): string {
         // used by parseMemoryOperand & parseOperands
         const normalized = this.caseSensitive ? name : name.toUpperCase();
         return this.registerMap.get(normalized) || name;
     }
 
+
+    // Normalize string based on case sensitivity setting
     private normalize(str: string): string {
         // used at several places
 
         return this.caseSensitive ? str : str.toUpperCase();
     }
 
+
+    // Parse number from various formats (0x, $, 0b, h suffix, b suffix, decimal)
     private parseNumber(str: string): number {
         // used at several places
 
@@ -1007,18 +1093,24 @@ export class Compiler {
         return parseInt(str, 10);
     }
 
+
+    // Look ahead at token without consuming
     private peek(offset = 0): Token {
         // used at several places
 
         return this.tokens[this.pos + offset] || { type: 'EOF', value: '', line: 0, column: 0 };
     }
 
+
+    // Consume current token and advance
     private advance(): Token {
         // used at several places
 
         return this.tokens[this.pos++];
     }
 
+
+    // Skip token if it matches expected type
     private skip(type: string): void {
         // used at several places
 
@@ -1027,12 +1119,16 @@ export class Compiler {
         }
     }
 
+
+    // Check if reached end of token stream
     private isAtEnd(): boolean {
         // used at several places
 
         return this.peek().type === 'EOF';
     }
 
+
+    // Record compilation error
     private error(token: Token, message: string): void {
         // used in generateInstruction
 
@@ -1046,11 +1142,12 @@ export class Compiler {
 }
 
 
+// Get byte size for data directives
 function getDirectiveDataSize(directive: string) {
     // called by pass1CollectSymbols
 
     switch (directive) {
-        case 'EQU': return 0;
+        case 'EQU': return 0;  // Constant (no storage)
         case 'DB': return 1;   //  8 bits
         case 'DW': return 2;   // 16 bits
         case 'DD': return 4;   // 32 bits
