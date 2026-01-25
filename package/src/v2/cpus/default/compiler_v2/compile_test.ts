@@ -1,6 +1,5 @@
 
-import { compilerV2, loadSourceCodeFromFile, setCompilationAsmBaseUrl } from "react-machine-package";
-const { compileCode, formatBytecode } = compilerV2;
+import { compileCode, formatBytecode, loadSourceCodeFromFile, setCompilationAsmBaseUrl } from '../../../../v2/lib/compilation';
 
 
 async function main() {

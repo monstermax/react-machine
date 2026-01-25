@@ -211,7 +211,10 @@ export class Compiler {
             if (token.type === 'INSTRUCTION') {
                 // example => "mov eax, 4"
                 lastInstructionOrIdentifierAddress = this.currentAddress;
-                this.currentAddress += this.calculateInstructionSize();
+//if (this.currentAddress === 3) debugger;
+                const size = this.calculateInstructionSize();
+                //console.log(`[pass1] ${token.value} at ${this.currentAddress}, size=${size}`);
+                this.currentAddress += size;
                 continue;
             }
 
@@ -350,6 +353,7 @@ export class Compiler {
                 // Set data/bss section start address to current position
 
                 if (section.type !== 'code') {
+                    //console.log(`[pass1] start of ${this.currentSection} : ${this.currentAddress}`)
                     section.startAddress = this.currentAddress;
                 }
 
@@ -480,7 +484,11 @@ export class Compiler {
 
             // INSTRUCTION: Encode instruction to bytes
             if (token.type === 'INSTRUCTION') {
+//if (this.currentAddress === 3) debugger;
+                const before = this.currentAddress;
                 this.generateInstruction();
+                const size = this.currentAddress - before;
+                //console.log(`[pass2] ${token.value} at ${before}, emitted=${size}`);
                 continue;
             }
 
@@ -531,6 +539,7 @@ export class Compiler {
 
                 if (section.type !== 'code') {
                     //if (section.startAddress !== this.currentAddress) debugger;
+                    //console.log(`[pass2] start of ${this.currentSection} : ${this.currentAddress}`)
                     section.startAddress = this.currentAddress;
                 }
 
@@ -863,11 +872,15 @@ export class Compiler {
             const part = parts[i];
             const op = operands[i];
 
-            if (part === 'REG' && op.type !== 'REGISTER') return false;
+            const isReg = (part === 'REG');
+            const isImm = (part.startsWith('IMM'));
+            const isMem = (part === 'MEM');
 
-            if (part.startsWith('IMM') && op.type !== 'IMMEDIATE') return false;
+            if (isReg && op.type !== 'REGISTER') return false;
 
-            if (part === 'MEM' && op.type !== 'MEMORY' && op.type !== 'LABEL') return false;
+            if (isImm && op.type !== 'IMMEDIATE' && op.type !== 'LABEL') return false;
+
+            if (isMem && op.type !== 'MEMORY' && op.type !== 'LABEL') return false;
         }
 
         return true;

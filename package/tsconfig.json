@@ -17,8 +17,8 @@
 
     /* Strict */
     "strict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+    //"noUnusedLocals": false,
+    //"noUnusedParameters": false,
 
     /* Paths */
     "baseUrl": ".",
