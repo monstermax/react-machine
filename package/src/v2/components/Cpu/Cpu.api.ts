@@ -829,6 +829,9 @@ class CpuCore extends EventEmitter {
                     }
                 }
 
+                // Clear CPUs caches
+                this.cpu.motherboard.clearCpuCaches();
+
                 // Retour à l'OS
                 this.setRegister("PC", MEMORY_MAP.OS_START);
                 //this.setRegister("PC", (pc + 2) as u16);

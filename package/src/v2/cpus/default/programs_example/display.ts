@@ -326,91 +326,91 @@ export const programs: Record<string, ProgramInfo> = {
         name: "LCD Hello",
         description: "Affiche 'Hello' sur ligne 1 et 'World!' sur ligne 2",
         code: new Map([
-            [0x00, Opcode.SET_SP],
-            [0x01, low16(MEMORY_MAP.STACK_END)],  // STACK_END - low
-            [0x02, high16(MEMORY_MAP.STACK_END)], // STACK_END - high
+            [0x00, Opcode.MOV_AB],
+            [0x01, Opcode.MOV_AB],
+            [0x02, Opcode.MOV_AB],
 
             // Clear LCD
             [0x03, Opcode.MOV_A_IMM],
             [0x04, 0x01], // CMD Clear
             [0x05, Opcode.MOV_MEM_A],
-            [0x06, 0xA1], // LCD_COMMAND
-            [0x07, 0xFF], // LCD_COMMAND
+            [0x06, low16(MEMORY_MAP.LCD_COMMAND)], // LCD_COMMAND
+            [0x07, high16(MEMORY_MAP.LCD_COMMAND)], // LCD_COMMAND
 
             // "Hello" ligne 1
             [0x08, Opcode.MOV_A_IMM],
             [0x09, 0x48], // 'H'
             [0x0A, Opcode.MOV_MEM_A],
-            [0x0B, 0xA0],
-            [0x0C, 0xFF],
+            [0x0B, low16(MEMORY_MAP.LCD_BASE)],
+            [0x0C, high16(MEMORY_MAP.LCD_BASE)],
 
             [0x0D, Opcode.MOV_A_IMM],
             [0x0E, 0x65], // 'e'
             [0x0F, Opcode.MOV_MEM_A],
-            [0x10, 0xA0],
-            [0x11, 0xFF],
+            [0x10, low16(MEMORY_MAP.LCD_BASE)],
+            [0x11, high16(MEMORY_MAP.LCD_BASE)],
 
             [0x12, Opcode.MOV_A_IMM],
             [0x13, 0x6C], // 'l'
             [0x14, Opcode.MOV_MEM_A],
-            [0x15, 0xA0],
-            [0x16, 0xFF],
+            [0x15, low16(MEMORY_MAP.LCD_BASE)],
+            [0x16, high16(MEMORY_MAP.LCD_BASE)],
 
             [0x17, Opcode.MOV_A_IMM],
             [0x18, 0x6C], // 'l'
             [0x19, Opcode.MOV_MEM_A],
-            [0x1A, 0xA0],
-            [0x1B, 0xFF],
+            [0x1A, low16(MEMORY_MAP.LCD_BASE)],
+            [0x1B, high16(MEMORY_MAP.LCD_BASE)],
 
             [0x1C, Opcode.MOV_A_IMM],
             [0x1D, 0x6F], // 'o'
             [0x1E, Opcode.MOV_MEM_A],
-            [0x1F, 0xA0],
-            [0x20, 0xFF],
+            [0x1F, low16(MEMORY_MAP.LCD_BASE)],
+            [0x20, high16(MEMORY_MAP.LCD_BASE)],
 
             // Position curseur ligne 2 (row 1, col 0 = 16)
             [0x21, Opcode.MOV_A_IMM],
             [0x22, 16], // Position 16
             [0x23, Opcode.MOV_MEM_A],
-            [0x24, 0xA2], // LCD_CURSOR
-            [0x25, 0xFF], // LCD_CURSOR
+            [0x24, low16(MEMORY_MAP.LCD_CURSOR)], // LCD_CURSOR
+            [0x25, high16(MEMORY_MAP.LCD_CURSOR)], // LCD_CURSOR
 
             // "World!" ligne 2
             [0x26, Opcode.MOV_A_IMM],
             [0x27, 0x57], // 'W'
             [0x28, Opcode.MOV_MEM_A],
-            [0x29, 0xA0],
-            [0x2A, 0xFF],
+            [0x29, low16(MEMORY_MAP.LCD_BASE)],
+            [0x2A, high16(MEMORY_MAP.LCD_BASE)],
 
             [0x2B, Opcode.MOV_A_IMM],
             [0x2C, 0x6F], // 'o'
             [0x2D, Opcode.MOV_MEM_A],
-            [0x2E, 0xA0],
-            [0x2F, 0xFF],
+            [0x2E, low16(MEMORY_MAP.LCD_BASE)],
+            [0x2F, high16(MEMORY_MAP.LCD_BASE)],
 
             [0x30, Opcode.MOV_A_IMM],
             [0x31, 0x72], // 'r'
             [0x32, Opcode.MOV_MEM_A],
-            [0x33, 0xA0],
-            [0x34, 0xFF],
+            [0x33, low16(MEMORY_MAP.LCD_BASE)],
+            [0x34, high16(MEMORY_MAP.LCD_BASE)],
 
             [0x35, Opcode.MOV_A_IMM],
             [0x36, 0x6C], // 'l'
             [0x37, Opcode.MOV_MEM_A],
-            [0x38, 0xA0],
-            [0x39, 0xFF],
+            [0x38, low16(MEMORY_MAP.LCD_BASE)],
+            [0x39, high16(MEMORY_MAP.LCD_BASE)],
 
             [0x3A, Opcode.MOV_A_IMM],
             [0x3B, 0x64], // 'd'
             [0x3C, Opcode.MOV_MEM_A],
-            [0x3D, 0xA0],
-            [0x3E, 0xFF],
+            [0x3D, low16(MEMORY_MAP.LCD_BASE)],
+            [0x3E, high16(MEMORY_MAP.LCD_BASE)],
 
             [0x3F, Opcode.MOV_A_IMM],
             [0x40, 0x21], // '!'
             [0x41, Opcode.MOV_MEM_A],
-            [0x42, 0xA0],
-            [0x43, 0xFF],
+            [0x42, low16(MEMORY_MAP.LCD_BASE)],
+            [0x43, high16(MEMORY_MAP.LCD_BASE)],
 
             [0x44, Opcode.SYSCALL],
             [0x45, 0],
