@@ -54,6 +54,7 @@ export enum Opcode {
     AND = 0x22,        // A = A & B
     OR = 0x23,         // A = A | B
     XOR = 0x24,        // A = A ^ B
+
     INC_A = 0x25,
     DEC_A = 0x26,
     INC_B = 0x27,
@@ -62,6 +63,107 @@ export enum Opcode {
     DEC_C = 0x2A,
     INC_D = 0x2B,
     DEC_D = 0x2C,
+
+
+    ADD_AA = 0x50,        // A = A + A
+    SUB_AA = 0x60,        // A = A - A
+    AND_AA = 0x70,        // A = A & A
+    OR_AA = 0x80,         // A = A | A
+    XOR_AA = 0x90,        // A = A ^ A
+
+    ADD_AB = 0x51,        // A = A + B
+    SUB_AB = 0x61,        // A = A - B
+    AND_AB = 0x71,        // A = A & B
+    OR_AB = 0x81,         // A = A | B
+    XOR_AB = 0x91,        // A = A ^ B
+
+    ADD_AC = 0x52,        // A = A + C
+    SUB_AC = 0x62,        // A = A - C
+    AND_AC = 0x72,        // A = A & C
+    OR_AC = 0x82,         // A = A | C
+    XOR_AC = 0x92,        // A = A ^ C
+
+    ADD_AD = 0x53,        // A = A + D
+    SUB_AD = 0x63,        // A = A - D
+    AND_AD = 0x73,        // A = A & D
+    OR_AD = 0x83,         // A = A | D
+    XOR_AD = 0x93,        // A = A ^ D
+
+
+    ADD_BA = 0x54,        // B = B + A
+    SUB_BA = 0x64,        // B = B - A
+    AND_BA = 0x74,        // B = B & A
+    OR_BA = 0x84,         // B = B | A
+    XOR_BA = 0x94,        // B = B ^ A
+
+    SUB_BB = 0x65,        // B = B - B
+    ADD_BB = 0x55,        // B = B + B
+    AND_BB = 0x75,        // B = B & B
+    OR_BB = 0x85,         // B = B | B
+    XOR_BB = 0x95,        // B = B ^ B
+
+    ADD_BC = 0x56,        // B = B + C
+    SUB_BC = 0x66,        // B = B - C
+    AND_BC = 0x76,        // B = B & C
+    OR_BC = 0x86,         // B = B | C
+    XOR_BC = 0x96,        // B = B ^ C
+
+    ADD_BD = 0x57,        // B = B + D
+    SUB_BD = 0x67,        // B = B - D
+    AND_BD = 0x77,        // B = B & D
+    OR_BD = 0x87,         // B = B | D
+    XOR_BD = 0x97,        // B = B ^ D
+
+
+    ADD_CA = 0x58,        // C = C + A
+    SUB_CA = 0x68,        // C = C - A
+    AND_CA = 0x78,        // C = C & A
+    OR_CA = 0x88,         // C = C | A
+    XOR_CA = 0x98,        // C = C ^ A
+
+    SUB_CB = 0x69,        // C = C - B
+    ADD_CB = 0x59,        // C = C + B
+    AND_CB = 0x79,        // C = C & B
+    OR_CB = 0x89,         // C = C | B
+    XOR_CB = 0x99,        // C = C ^ B
+
+    ADD_CC = 0x5A,        // C = C + C
+    SUB_CC = 0x6A,        // C = C - C
+    AND_CC = 0x7A,        // C = C & C
+    OR_CC = 0x8A,         // C = C | C
+    XOR_CC = 0x9A,        // C = C ^ C
+
+    ADD_CD = 0x5B,        // C = C + D
+    SUB_CD = 0x6B,        // C = C - D
+    AND_CD = 0x7B,        // C = C & D
+    OR_CD = 0x8B,         // C = C | D
+    XOR_CD = 0x9B,        // C = C ^ D
+
+
+    ADD_DA = 0x5C,        // D = D + A
+    SUB_DA = 0x6C,        // D = D - A
+    AND_DA = 0x7C,        // D = D & A
+    OR_DA = 0x8C,         // D = D | A
+    XOR_DA = 0x9C,        // D = D ^ A
+
+    SUB_DB = 0x6D,        // D = D - B
+    ADD_DB = 0x5D,        // D = D + B
+    AND_DB = 0x7D,        // D = D & B
+    OR_DB = 0x8D,         // D = D | B
+    XOR_DB = 0x9D,        // D = D ^ B
+
+    ADD_DC = 0x5E,        // D = D + C
+    SUB_DC = 0x6E,        // D = D - C
+    AND_DC = 0x7E,        // D = D & C
+    OR_DC = 0x8E,         // D = D | C
+    XOR_DC = 0x9E,        // D = D ^ C
+
+    ADD_DD = 0x5F,        // D = D + D
+    SUB_DD = 0x6F,        // D = D - D
+    AND_DD = 0x7F,        // D = D & D
+    OR_DD = 0x8F,         // D = D | D
+    XOR_DD = 0x9F,        // D = D ^ D
+
 
     // Stack (0x30-0x37)
     PUSH_A = 0x30,     // PUSH A
@@ -91,47 +193,45 @@ export enum Opcode {
     JC = 0x43,         // JC addr16 (16-bit address)
     JNC = 0x44,        // JNC addr16 (16-bit address)
 
-    //XCHG_A_B = 0x50,  // Échange A et B
-
     // MOV Instructions (Register to Register)
-    MOV_AB = 0x90,  // Move A to B
-    MOV_AC = 0x91,  // Move A to C  
-    MOV_AD = 0x92,  // Move A to D
-    MOV_BA = 0x93,  // Move B to A
-    MOV_BC = 0x94,  // Move B to C
-    MOV_BD = 0x95,  // Move B to D
-    MOV_CA = 0x96,  // Move C to A
-    MOV_CB = 0x97,  // Move C to B
-    MOV_CD = 0x98,  // Move C to D
-    MOV_DA = 0x99,  // Move D to A
-    MOV_DB = 0x9A,  // Move D to B
-    MOV_DC = 0x9B,  // Move D to C
+    MOV_AB = 0xA0,  // Move A to B
+    MOV_AC = 0xA1,  // Move A to C  
+    MOV_AD = 0xA2,  // Move A to D
+    MOV_BA = 0xA3,  // Move B to A
+    MOV_BC = 0xA4,  // Move B to C
+    MOV_BD = 0xA5,  // Move B to D
+    MOV_CA = 0xA6,  // Move C to A
+    MOV_CB = 0xA7,  // Move C to B
+    MOV_CD = 0xA8,  // Move C to D
+    MOV_DA = 0xA9,  // Move D to A
+    MOV_DB = 0xAA,  // Move D to B
+    MOV_DC = 0xAB,  // Move D to C
 
     // MOV with Immediate (8-bit)
-    MOV_A_IMM = 0x9C,  // MOV A, imm8
-    MOV_B_IMM = 0x9D,  // MOV B, imm8
-    MOV_C_IMM = 0x9E,  // MOV C, imm8
-    MOV_D_IMM = 0x9F,  // MOV D, imm8
+    MOV_A_IMM = 0xAC,  // MOV A, imm8
+    MOV_B_IMM = 0xAD,  // MOV B, imm8
+    MOV_C_IMM = 0xAE,  // MOV C, imm8
+    MOV_D_IMM = 0xAF,  // MOV D, imm8
 
     // MOV Memory to Register
-    MOV_A_MEM = 0xA0,  // MOV A, [addr16]
-    MOV_B_MEM = 0xA1,  // MOV B, [addr16]
-    MOV_C_MEM = 0xA2,  // MOV C, [addr16]
-    MOV_D_MEM = 0xA3,  // MOV D, [addr16]
+    MOV_A_MEM = 0xB0,  // MOV A, [addr16]
+    MOV_B_MEM = 0xB1,  // MOV B, [addr16]
+    MOV_C_MEM = 0xB2,  // MOV C, [addr16]
+    MOV_D_MEM = 0xB3,  // MOV D, [addr16]
 
     // MOV Register to Memory
-    MOV_MEM_A = 0xA4,  // MOV [addr16], A
-    MOV_MEM_B = 0xA5,  // MOV [addr16], B
-    MOV_MEM_C = 0xA6,  // MOV [addr16], C
-    MOV_MEM_D = 0xA7,  // MOV [addr16], D
+    MOV_MEM_A = 0xB4,  // MOV [addr16], A
+    MOV_MEM_B = 0xB5,  // MOV [addr16], B
+    MOV_MEM_C = 0xB6,  // MOV [addr16], C
+    MOV_MEM_D = 0xB7,  // MOV [addr16], D
 
     // MOV Memory to Register (indirect via C:D)
-    MOV_A_PTR_CD = 0xA8,  // A = [[C:D]]
-    MOV_B_PTR_CD = 0xA9,  // B = [[C:D]]
+    MOV_A_PTR_CD = 0xB8,  // A = [[C:D]]
+    MOV_B_PTR_CD = 0xB9,  // B = [[C:D]]
 
     // MOV Register to Memory (indirect via C:D)
-    MOV_PTR_CD_A = 0xAA,  // [C:D] = A
-    MOV_PTR_CD_B = 0xAB,  // [C:D] = B
+    MOV_PTR_CD_A = 0xBA,  // [C:D] = A
+    MOV_PTR_CD_B = 0xBB,  // [C:D] = B
 }
 
 

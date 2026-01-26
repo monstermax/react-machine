@@ -1,13 +1,10 @@
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { toHex } from "@/v1/lib/integers";
 import { compileCode, loadSourceCodeFromFile } from "@/v1/cpus/default/compiler_v1/asm_compiler";
 import { MEMORY_MAP } from "@/v1/lib/memory_map_16x8_bits";
 
 import type { u16, u8 } from "@/types/cpu.types";
-
-//import bootloaderSourceCode from '@/cpus/default/asm/bootloader/bootloader_v1.asm?raw'
 
 
 export const useRom = (): RomHook => {
@@ -20,7 +17,7 @@ export const useRom = (): RomHook => {
     // Load BOOTLOADER
     useEffect(() => {
         const _compile = async () => {
-            const bootloaderSourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v1.asm");
+            const bootloaderSourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v2.asm");
             const compiled = await compileCode(bootloaderSourceCode, MEMORY_MAP.ROM_START);
             const BOOTLOADER: Map<u16, u8> = compiled.code;
             setStorage(BOOTLOADER)

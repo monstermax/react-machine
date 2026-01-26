@@ -8,7 +8,7 @@ async function main() {
 
     setCompilationAsmBaseUrl('http://localhost:3938');
 
-    //const sourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v1.asm")
+    //const sourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v2.asm")
 
     const sourceCode = `
 

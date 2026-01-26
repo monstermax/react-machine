@@ -20,7 +20,7 @@ export const ComputerPageBeta: React.FC = () => {
     // Load BOOTLOADER
     useEffect(() => {
         const _compile = async () => {
-            const bootloaderSourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v1.asm");
+            const bootloaderSourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v2.asm");
 
             const compiled = await universalCompiler(bootloaderSourceCode, MEMORY_MAP.ROM_START);
             if (compiled) {

@@ -718,7 +718,7 @@ export class Compiler {
 
         // Emit opcode byte
         const comment = this.comments.get(this.currentAddress);
-        this.emitByte(variant.opcode, comment || variant.mnemonic, true);
+        this.emitByte(variant.opcode, variant.mnemonic + (comment ? ` ${comment}` : ''), true);
 
         // Emit operand bytes
         this.emitOperands(operands, variant);

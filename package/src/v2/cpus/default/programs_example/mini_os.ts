@@ -21,8 +21,16 @@ export const MINI_OS_V2: OsInfo = {
 };
 
 
+export const MINI_OS_V3: OsInfo = {
+    name: "Mini OS (v3)",
+    description: "dev in progress",
+    filepath: 'os/os_v3.asm',
+};
+
+
 
 export const os_list: Record<string, OsInfo> = {
     MINI_OS_V1,
     MINI_OS_V2,
+    MINI_OS_V3,
 };

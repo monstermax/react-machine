@@ -1,34 +1,26 @@
-
-import { compilerV2, loadSourceCodeFromFile, setCompilationAsmBaseUrl } from "react-machine-package";
-const { compileCode, formatBytecode } = compilerV2;
-
-
-async function main() {
-    //console.log('START')
-    await new Promise(r => setTimeout(r, 2000))
-
-    setCompilationAsmBaseUrl('http://localhost:3938');
-
-    //const sourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v2.asm")
-
-    const sourceCode = `
+; Author: yomax
+; Date: 2026-01
+; Name: bootloader_v2
+; Description: OS for React Machine (v2)
 
 
-.include "bootloader/bootloader.lib.asm"
+.include "bootloader/bootloader_v2.lib.asm"
 
 
 section .data
-    ; Variables pour remplacer les références MEMORY_MAP
+    ; constantes
+    BOOTLOADER_VERSION  equ 2
+    INITIAL_FREQ        equ 10
+    LEDS_STATE_ALL_OFF  equ 0x00
+    LEDS_STATE_HALF_1   equ 0x55
+    LEDS_STATE_HALF_2   equ 0xAA
+
+    ; Variables (références à MEMORY_MAP par exemple)
     LEDS_BASE               dw 0xF030
     CLOCK_FREQ              dw 0xF120
     OS_START                dw 0x0500
     BOOTLOADER_STACK_END    dw 0xEE0F
 
-    ; Définitions constantes (équivalents @define8)
-    INITIAL_FREQ        equ 10
-    LEDS_STATE_ALL_OFF  equ 0x00
-    LEDS_STATE_HALF_1   equ 0x55
-    LEDS_STATE_HALF_2   equ 0xAA
 
 section .text
     global INIT
@@ -38,6 +30,7 @@ section .text
 INIT:
 
 MAIN:
+    mov dl, BOOTLOADER_VERSION
     mov esp, [BOOTLOADER_STACK_END] ; set stack pointer
 
     mov al, INITIAL_FREQ
@@ -84,23 +77,4 @@ OS_RETURN:
     jmp INIT ; os return. jump to INIT
 
 hlt
-
-
-
-
-    `;
-
-    const compiled = await compileCode(sourceCode);
-
-    //console.log('compiled:', compiled)
-
-    const [text, data, bss] = compiled.sections
-
-    //console.log('text:', text)
-    //console.log('data:', data)
-}
-
-main();
-
-
 

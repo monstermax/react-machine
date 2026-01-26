@@ -130,7 +130,7 @@ export const CompilePageBeta: React.FC = () => {
         //return;
 
         const loadCode = async () => {
-            const code = await loadSourceCodeFromFile('bootloader/bootloader_v1.asm')
+            const code = await loadSourceCodeFromFile('bootloader/bootloader_v2.asm')
             setInitialSourceCode(code);
         }
 

@@ -1,3 +1,8 @@
+; Author: yomax
+; Date: 2026-01
+; Name: bootloader_v2.lib
+; Description: Lib for bootloader_v2
+
 
 section .data
     CONSOLE_CHAR            dw 0xF070
