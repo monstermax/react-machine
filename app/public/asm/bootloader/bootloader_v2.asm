@@ -53,11 +53,13 @@ WAIT_FOR_OS:
     mov bl, al
     add al
 
+    test al
     jz BOOTLOADER_READY ; apres l'affichage de la derniere LED, jump to BOOTLOADER_READY
 
     mov al, bl
 
     mov al, [OS_START] ; detection de chargement de l'OS
+    test al
     jz WAIT_FOR_OS ; si pas d'OS chargé on retourne à WAIT_FOR_OS
 
     ; un OS a été trouvé. on se prépare à le lancer

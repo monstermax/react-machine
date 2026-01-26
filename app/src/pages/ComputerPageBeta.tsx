@@ -44,7 +44,7 @@ export const ComputerPageBeta: React.FC = () => {
                     <Motherboard>
                         <PowerSupply hidden />
 
-                        <Cpu registers>
+                        <Cpu registers open>
                             <Interrupt ioPort={4} open={false} />
                         </Cpu>
 
@@ -55,7 +55,7 @@ export const ComputerPageBeta: React.FC = () => {
                         </Memory>
 
                         <InternalDevices>
-                            <Clock ioPort={18} frequency={1} />
+                            <Clock ioPort={18} frequency={1} open />
 
                             {/* Audio */}
                             <Buzzer ioPort={0x08} name="buzzer" hidden />

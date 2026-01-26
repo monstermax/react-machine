@@ -10,4 +10,4 @@ section .data
 
 section .text
     mov dl, OS_VERSION
-
+    hlt

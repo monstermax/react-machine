@@ -16,161 +16,39 @@ const registers: RegisterDef[] = [
 
 
 const instructions: InstructionDef[] = [
-    { mnemonic: 'NOP', opcode: 0x00, operands: 'NONE', size: 1 },
-    { mnemonic: 'HALT', opcode: 0x0F, operands: 'NONE', size: 1 },
-    { mnemonic: 'HLT', opcode: 0x0F, operands: 'NONE', size: 1 },
+    // CONTROL
+    { mnemonic: 'NOP', opcode: Opcode.NOP, operands: 'NONE', size: 1 },
+    { mnemonic: 'HALT', opcode: Opcode.HALT, operands: 'NONE', size: 1 },
+    { mnemonic: 'HLT', opcode: Opcode.HALT, operands: 'NONE', size: 1 },
 
-    { mnemonic: 'GET_FREQ', opcode: 0x0A, operands: 'NONE', size: 1 },
-    { mnemonic: 'SET_FREQ', opcode: 0x0B, operands: 'IMM8', size: 2 },
-    { mnemonic: 'BREAKPOINT', opcode: 0x0D, operands: 'NONE', size: 1 },
+    { mnemonic: 'GET_FREQ', opcode: Opcode.GET_FREQ, operands: 'NONE', size: 1 },
+    { mnemonic: 'SET_FREQ', opcode: Opcode.SET_FREQ, operands: 'IMM8', size: 2 },
+    { mnemonic: 'BREAKPOINT', opcode: Opcode.BREAKPOINT, operands: 'NONE', size: 1 },
 
     {
-        mnemonic: 'SYSCALL', opcode: 0x0E, operands: 'IMM8', size: 2
+        mnemonic: 'SYSCALL', opcode: Opcode.SYSCALL, operands: 'IMM8', size: 2, // TODO: 0 arguments. read syscallCode from register A
     },
 
     {
-        mnemonic: 'INT', opcode: 0x0E, operands: 'IMM8', size: 2, variants: [
+        mnemonic: 'INT', opcode: 0x00, operands: 'IMM8', size: 2, variants: [
             { operands: 'IMM8', opcode: Opcode.SYSCALL, size: 2, condition: (ops) => { if (ops[0].value !== '0x80') return false; ops[0].value = '0xFF'; return true; }, mnemonic: 'SYSCALL' }, // int 0x80 => SYSCALL 0xFF
         ],
     },
 
-    {
-        mnemonic: 'ADD', opcode: Opcode.ADD, operands: 'NONE', size: 1, variants: [
-            { operands: 'NONE', opcode: Opcode.ADD, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'ADD' },
-            { operands: 'REG', opcode: Opcode.ADD, size: 1, condition: (ops) => ops.length === 1 && ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'ADD' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_AA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'ADD_AA' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_AB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'ADD_AB' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_AC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'ADD_AC' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_AD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'ADD_AD' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_BA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'ADD_BA' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_BB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'ADD_BB' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_BC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'ADD_BC' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_BD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'ADD_BD' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_CA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'ADD_CA' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_CB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'ADD_CB' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_CC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'ADD_CC' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_CD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'ADD_CD' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_DA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'ADD_DA' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_DB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'ADD_DB' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_DC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'ADD_DC' },
-            { operands: 'REG_REG', opcode: Opcode.ADD_DD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'ADD_DD' },
-        ],
-     },
-    {
-        mnemonic: 'SUB', opcode: Opcode.SUB, operands: 'NONE', size: 1, variants: [
-            { operands: 'NONE', opcode: Opcode.SUB, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'SUB' },
-            //{ operands: 'REG', opcode: Opcode.SUB, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'SUB' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_AA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'SUB_AA' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_AB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'SUB_AB' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_AC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'SUB_AC' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_AD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'SUB_AD' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_BA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'SUB_BA' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_BB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'SUB_BB' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_BC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'SUB_BC' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_BD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'SUB_BD' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_CA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'SUB_CA' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_CB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'SUB_CB' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_CC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'SUB_CC' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_CD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'SUB_CD' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_DA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'SUB_DA' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_DB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'SUB_DB' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_DC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'SUB_DC' },
-            { operands: 'REG_REG', opcode: Opcode.SUB_DD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'SUB_DD' },
-        ],
-    },
-    {
-        mnemonic: 'AND', opcode: Opcode.AND, operands: 'NONE', size: 1, variants: [
-            { operands: 'NONE', opcode: Opcode.AND, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'AND' },
-            //{ operands: 'REG', opcode: Opcode.AND, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'AND' },
-            { operands: 'REG_REG', opcode: Opcode.AND_AA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'AND_AA' },
-            { operands: 'REG_REG', opcode: Opcode.AND_AB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'AND_AB' },
-            { operands: 'REG_REG', opcode: Opcode.AND_AC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'AND_AC' },
-            { operands: 'REG_REG', opcode: Opcode.AND_AD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'AND_AD' },
-            { operands: 'REG_REG', opcode: Opcode.AND_BA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'AND_BA' },
-            { operands: 'REG_REG', opcode: Opcode.AND_BB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'AND_BB' },
-            { operands: 'REG_REG', opcode: Opcode.AND_BC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'AND_BC' },
-            { operands: 'REG_REG', opcode: Opcode.AND_BD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'AND_BD' },
-            { operands: 'REG_REG', opcode: Opcode.AND_CA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'AND_CA' },
-            { operands: 'REG_REG', opcode: Opcode.AND_CB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'AND_CB' },
-            { operands: 'REG_REG', opcode: Opcode.AND_CC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'AND_CC' },
-            { operands: 'REG_REG', opcode: Opcode.AND_CD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'AND_CD' },
-            { operands: 'REG_REG', opcode: Opcode.AND_DA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'AND_DA' },
-            { operands: 'REG_REG', opcode: Opcode.AND_DB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'AND_DB' },
-            { operands: 'REG_REG', opcode: Opcode.AND_DC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'AND_DC' },
-            { operands: 'REG_REG', opcode: Opcode.AND_DD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'AND_DD' },
-        ],
-    },
-    {
-        mnemonic: 'OR', opcode: Opcode.OR, operands: 'NONE', size: 1, variants: [
-            { operands: 'NONE', opcode: Opcode.OR, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'OR' },
-            //{ operands: 'REG', opcode: Opcode.OR, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'OR' },
-            { operands: 'REG_REG', opcode: Opcode.OR_AA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'OR_AA' },
-            { operands: 'REG_REG', opcode: Opcode.OR_AB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'OR_AB' },
-            { operands: 'REG_REG', opcode: Opcode.OR_AC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'OR_AC' },
-            { operands: 'REG_REG', opcode: Opcode.OR_AD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'OR_AD' },
-            { operands: 'REG_REG', opcode: Opcode.OR_BA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'OR_BA' },
-            { operands: 'REG_REG', opcode: Opcode.OR_BB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'OR_BB' },
-            { operands: 'REG_REG', opcode: Opcode.OR_BC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'OR_BC' },
-            { operands: 'REG_REG', opcode: Opcode.OR_BD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'OR_BD' },
-            { operands: 'REG_REG', opcode: Opcode.OR_CA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'OR_CA' },
-            { operands: 'REG_REG', opcode: Opcode.OR_CB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'OR_CB' },
-            { operands: 'REG_REG', opcode: Opcode.OR_CC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'OR_CC' },
-            { operands: 'REG_REG', opcode: Opcode.OR_CD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'OR_CD' },
-            { operands: 'REG_REG', opcode: Opcode.OR_DA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'OR_DA' },
-            { operands: 'REG_REG', opcode: Opcode.OR_DB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'OR_DB' },
-            { operands: 'REG_REG', opcode: Opcode.OR_DC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'OR_DC' },
-            { operands: 'REG_REG', opcode: Opcode.OR_DD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'OR_DD' },
-        ],
-    },
-    {
-        mnemonic: 'XOR', opcode: Opcode.XOR, operands: 'NONE', size: 1, variants: [
-            { operands: 'NONE', opcode: Opcode.XOR, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'XOR' },
-            //{ operands: 'REG', opcode: Opcode.XOR, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'XOR' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_AA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'XOR_AA' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_AB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'XOR_AB' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_AC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'XOR_AC' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_AD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'XOR_AD' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_BA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'XOR_BA' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_BB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'XOR_BB' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_BC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'XOR_BC' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_BD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'XOR_BD' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_CA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'XOR_CA' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_CB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'XOR_CB' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_CC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'XOR_CC' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_CD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'XOR_CD' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_DA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'XOR_DA' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_DB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'XOR_DB' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_DC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'XOR_DC' },
-            { operands: 'REG_REG', opcode: Opcode.XOR_DD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'XOR_DD' },
-        ],
-    },
+    // CPU CONTROL
+    { mnemonic: 'CORE_HALT', opcode: Opcode.CORE_HALT, operands: 'NONE', size: 1 },
+    { mnemonic: 'CORE_START', opcode: Opcode.CORE_START, operands: 'NONE', size: 1 },
+    { mnemonic: 'CORE_INIT', opcode: Opcode.CORE_INIT, operands: 'NONE', size: 1 },
+    { mnemonic: 'CORE_STATUS', opcode: Opcode.CORE_STATUS, operands: 'NONE', size: 1 },
+    { mnemonic: 'CORES_COUNT', opcode: Opcode.CORES_COUNT, operands: 'NONE', size: 1 },
 
-    {
-        mnemonic: 'INC',
-        opcode: 0x00,
-        operands: 'REG',
-        size: 1,
-        variants: [
-            { operands: 'REG', opcode: Opcode.INC_A, size: 1, condition: (ops) => ops[0].register === 'A', mnemonic: 'INC_A' },
-            { operands: 'REG', opcode: Opcode.INC_B, size: 1, condition: (ops) => ops[0].register === 'B', mnemonic: 'INC_B' },
-            { operands: 'REG', opcode: Opcode.INC_C, size: 1, condition: (ops) => ops[0].register === 'C', mnemonic: 'INC_C' },
-            { operands: 'REG', opcode: Opcode.INC_D, size: 1, condition: (ops) => ops[0].register === 'D', mnemonic: 'INC_D' },
-        ]
-    },
+    { mnemonic: 'CPU_HALT', opcode: Opcode.CPU_HALT, operands: 'NONE', size: 1 },
+    { mnemonic: 'CPU_START', opcode: Opcode.CPU_START, operands: 'NONE', size: 1 },
+    { mnemonic: 'CPU_INIT', opcode: Opcode.CPU_INIT, operands: 'NONE', size: 1 },
+    { mnemonic: 'CPU_STATUS', opcode: Opcode.CPU_STATUS, operands: 'NONE', size: 1 },
+    { mnemonic: 'CPUS_COUNT', opcode: Opcode.CPUS_COUNT, operands: 'NONE', size: 1 },
 
-    {
-        mnemonic: 'DEC',
-        opcode: 0x00,
-        operands: 'REG',
-        size: 1,
-        variants: [
-            { operands: 'REG', opcode: Opcode.DEC_A, size: 1, condition: (ops) => ops[0].register === 'A', mnemonic: 'DEC_A' },
-            { operands: 'REG', opcode: Opcode.DEC_B, size: 1, condition: (ops) => ops[0].register === 'B', mnemonic: 'DEC_B' },
-            { operands: 'REG', opcode: Opcode.DEC_C, size: 1, condition: (ops) => ops[0].register === 'C', mnemonic: 'DEC_C' },
-            { operands: 'REG', opcode: Opcode.DEC_D, size: 1, condition: (ops) => ops[0].register === 'D', mnemonic: 'DEC_D' },
-        ]
-    },
-
+    // STACK
     {
         mnemonic: 'PUSH',
         opcode: 0x00,
@@ -208,10 +86,12 @@ const instructions: InstructionDef[] = [
     },
     { mnemonic: 'RET', opcode: Opcode.RET, operands: 'NONE', size: 1 },
 
+    // INTERRUPTS
     { mnemonic: 'EI', opcode: Opcode.EI, operands: 'NONE', size: 1 },
     { mnemonic: 'DI', opcode: Opcode.DI, operands: 'NONE', size: 1 },
     { mnemonic: 'IRET', opcode: Opcode.IRET, operands: 'NONE', size: 1 },
 
+    // SAUTS
     {
         mnemonic: 'JMP', opcode: 0x00, operands: 'IMM16', size: 3, variants: [
             { operands: 'IMM16', opcode: Opcode.JMP, size: 3, condition: (ops) => true, mnemonic: 'JMP' },
@@ -243,6 +123,7 @@ const instructions: InstructionDef[] = [
         ],
     },
 
+    // MOV
     {
         mnemonic: 'MOV', opcode: 0x00, operands: 'REG_REG', size: 1, variants: [
             { operands: 'REG_REG', opcode: Opcode.MOV_AB, size: 1, condition: (ops) => ops[0].register === 'A' && ops[1].register === 'B', mnemonic: 'MOV_AB' },
@@ -277,17 +158,202 @@ const instructions: InstructionDef[] = [
         ]
     },
 
-    { mnemonic: 'CORE_HALT', opcode: Opcode.CORE_HALT, operands: 'NONE', size: 1 },
-    { mnemonic: 'CORE_START', opcode: Opcode.CORE_START, operands: 'NONE', size: 1 },
-    { mnemonic: 'CORE_INIT', opcode: Opcode.CORE_INIT, operands: 'NONE', size: 1 },
-    { mnemonic: 'CORE_STATUS', opcode: Opcode.CORE_STATUS, operands: 'NONE', size: 1 },
-    { mnemonic: 'CORES_COUNT', opcode: Opcode.CORES_COUNT, operands: 'NONE', size: 1 },
 
-    { mnemonic: 'CPU_HALT', opcode: Opcode.CPU_HALT, operands: 'NONE', size: 1 },
-    { mnemonic: 'CPU_START', opcode: Opcode.CPU_START, operands: 'NONE', size: 1 },
-    { mnemonic: 'CPU_INIT', opcode: Opcode.CPU_INIT, operands: 'NONE', size: 1 },
-    { mnemonic: 'CPU_STATUS', opcode: Opcode.CPU_STATUS, operands: 'NONE', size: 1 },
-    { mnemonic: 'CPUS_COUNT', opcode: Opcode.CPUS_COUNT, operands: 'NONE', size: 1 },
+    // ALU
+    {
+        mnemonic: 'INC',
+        opcode: 0x00,
+        operands: 'REG',
+        size: 1,
+        variants: [
+            { operands: 'REG', opcode: Opcode.INC_A, size: 1, condition: (ops) => ops[0].register === 'A', mnemonic: 'INC_A' },
+            { operands: 'REG', opcode: Opcode.INC_B, size: 1, condition: (ops) => ops[0].register === 'B', mnemonic: 'INC_B' },
+            { operands: 'REG', opcode: Opcode.INC_C, size: 1, condition: (ops) => ops[0].register === 'C', mnemonic: 'INC_C' },
+            { operands: 'REG', opcode: Opcode.INC_D, size: 1, condition: (ops) => ops[0].register === 'D', mnemonic: 'INC_D' },
+        ]
+    },
+
+    {
+        mnemonic: 'DEC',
+        opcode: 0x00,
+        operands: 'REG',
+        size: 1,
+        variants: [
+            { operands: 'REG', opcode: Opcode.DEC_A, size: 1, condition: (ops) => ops[0].register === 'A', mnemonic: 'DEC_A' },
+            { operands: 'REG', opcode: Opcode.DEC_B, size: 1, condition: (ops) => ops[0].register === 'B', mnemonic: 'DEC_B' },
+            { operands: 'REG', opcode: Opcode.DEC_C, size: 1, condition: (ops) => ops[0].register === 'C', mnemonic: 'DEC_C' },
+            { operands: 'REG', opcode: Opcode.DEC_D, size: 1, condition: (ops) => ops[0].register === 'D', mnemonic: 'DEC_D' },
+        ]
+    },
+
+    {
+        mnemonic: 'ADD', opcode: 0x00, operands: 'NONE', size: 1, variants: [
+            { operands: 'NONE', opcode: Opcode.ADD, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'ADD' },
+            { operands: 'REG', opcode: Opcode.ADD, size: 1, condition: (ops) => ops.length === 1 && ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'ADD' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_AA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'ADD_AA' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_AB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'ADD_AB' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_AC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'ADD_AC' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_AD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'ADD_AD' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_BA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'ADD_BA' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_BB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'ADD_BB' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_BC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'ADD_BC' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_BD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'ADD_BD' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_CA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'ADD_CA' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_CB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'ADD_CB' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_CC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'ADD_CC' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_CD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'ADD_CD' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_DA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'ADD_DA' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_DB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'ADD_DB' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_DC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'ADD_DC' },
+            { operands: 'REG_REG', opcode: Opcode.ADD_DD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'ADD_DD' },
+        ],
+    },
+
+    {
+        mnemonic: 'SUB', opcode: 0x00, operands: 'NONE', size: 1, variants: [
+            { operands: 'NONE', opcode: Opcode.SUB, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'SUB' },
+            { operands: 'REG', opcode: Opcode.SUB, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'SUB' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_AA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'SUB_AA' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_AB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'SUB_AB' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_AC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'SUB_AC' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_AD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'SUB_AD' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_BA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'SUB_BA' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_BB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'SUB_BB' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_BC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'SUB_BC' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_BD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'SUB_BD' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_CA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'SUB_CA' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_CB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'SUB_CB' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_CC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'SUB_CC' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_CD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'SUB_CD' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_DA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'SUB_DA' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_DB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'SUB_DB' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_DC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'SUB_DC' },
+            { operands: 'REG_REG', opcode: Opcode.SUB_DD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'SUB_DD' },
+        ],
+    },
+
+    {
+        mnemonic: 'AND', opcode: 0x00, operands: 'NONE', size: 1, variants: [
+            { operands: 'NONE', opcode: Opcode.AND, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'AND' },
+            { operands: 'REG', opcode: Opcode.AND, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'AND' },
+            { operands: 'REG_REG', opcode: Opcode.AND_AA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'AND_AA' },
+            { operands: 'REG_REG', opcode: Opcode.AND_AB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'AND_AB' },
+            { operands: 'REG_REG', opcode: Opcode.AND_AC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'AND_AC' },
+            { operands: 'REG_REG', opcode: Opcode.AND_AD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'AND_AD' },
+            { operands: 'REG_REG', opcode: Opcode.AND_BA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'AND_BA' },
+            { operands: 'REG_REG', opcode: Opcode.AND_BB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'AND_BB' },
+            { operands: 'REG_REG', opcode: Opcode.AND_BC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'AND_BC' },
+            { operands: 'REG_REG', opcode: Opcode.AND_BD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'AND_BD' },
+            { operands: 'REG_REG', opcode: Opcode.AND_CA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'AND_CA' },
+            { operands: 'REG_REG', opcode: Opcode.AND_CB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'AND_CB' },
+            { operands: 'REG_REG', opcode: Opcode.AND_CC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'AND_CC' },
+            { operands: 'REG_REG', opcode: Opcode.AND_CD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'AND_CD' },
+            { operands: 'REG_REG', opcode: Opcode.AND_DA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'AND_DA' },
+            { operands: 'REG_REG', opcode: Opcode.AND_DB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'AND_DB' },
+            { operands: 'REG_REG', opcode: Opcode.AND_DC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'AND_DC' },
+            { operands: 'REG_REG', opcode: Opcode.AND_DD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'AND_DD' },
+        ],
+    },
+
+    {
+        mnemonic: 'OR', opcode: 0x00, operands: 'NONE', size: 1, variants: [
+            { operands: 'NONE', opcode: Opcode.OR, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'OR' },
+            { operands: 'REG', opcode: Opcode.OR, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'OR' },
+            { operands: 'REG_REG', opcode: Opcode.OR_AA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'OR_AA' },
+            { operands: 'REG_REG', opcode: Opcode.OR_AB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'OR_AB' },
+            { operands: 'REG_REG', opcode: Opcode.OR_AC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'OR_AC' },
+            { operands: 'REG_REG', opcode: Opcode.OR_AD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'OR_AD' },
+            { operands: 'REG_REG', opcode: Opcode.OR_BA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'OR_BA' },
+            { operands: 'REG_REG', opcode: Opcode.OR_BB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'OR_BB' },
+            { operands: 'REG_REG', opcode: Opcode.OR_BC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'OR_BC' },
+            { operands: 'REG_REG', opcode: Opcode.OR_BD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'OR_BD' },
+            { operands: 'REG_REG', opcode: Opcode.OR_CA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'OR_CA' },
+            { operands: 'REG_REG', opcode: Opcode.OR_CB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'OR_CB' },
+            { operands: 'REG_REG', opcode: Opcode.OR_CC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'OR_CC' },
+            { operands: 'REG_REG', opcode: Opcode.OR_CD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'OR_CD' },
+            { operands: 'REG_REG', opcode: Opcode.OR_DA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'OR_DA' },
+            { operands: 'REG_REG', opcode: Opcode.OR_DB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'OR_DB' },
+            { operands: 'REG_REG', opcode: Opcode.OR_DC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'OR_DC' },
+            { operands: 'REG_REG', opcode: Opcode.OR_DD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'OR_DD' },
+        ],
+    },
+
+    {
+        mnemonic: 'XOR', opcode: 0x00, operands: 'NONE', size: 1, variants: [
+            { operands: 'NONE', opcode: Opcode.XOR, size: 1, condition: (ops) => ops.length === 0, mnemonic: 'XOR' },
+            { operands: 'REG', opcode: Opcode.XOR, size: 1, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'XOR' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_AA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'XOR_AA' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_AB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'XOR_AB' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_AC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'XOR_AC' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_AD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'XOR_AD' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_BA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'XOR_BA' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_BB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'XOR_BB' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_BC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'XOR_BC' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_BD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'XOR_BD' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_CA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'XOR_CA' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_CB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'XOR_CB' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_CC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'XOR_CC' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_CD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'XOR_CD' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_DA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'XOR_DA' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_DB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'XOR_DB' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_DC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'XOR_DC' },
+            { operands: 'REG_REG', opcode: Opcode.XOR_DD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'XOR_DD' },
+        ],
+    },
+
+    {
+        mnemonic: 'TEST', opcode: 0x00, operands: 'REG_REG', size: 1, variants: [
+            // Test registre-registre
+            { operands: 'REG_REG', opcode: Opcode.TEST_AA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'TEST_AA' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_AB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'TEST_AB' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_AC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'TEST_AC' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_AD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'TEST_AD' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_BA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'TEST_BA' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_BB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'TEST_BB' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_BC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'TEST_BC' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_BD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'TEST_BD' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_CA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'TEST_CA' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_CB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'TEST_CB' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_CC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'TEST_CC' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_CD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'TEST_CD' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_DA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'TEST_DA' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_DB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'TEST_DB' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_DC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'TEST_DC' },
+            { operands: 'REG_REG', opcode: Opcode.TEST_DD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'TEST_DD' },
+            // Test registre seul (test avec lui-même)
+            { operands: 'REG', opcode: Opcode.TEST_A, size: 1, condition: (ops) => ops.length === 1 && ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'TEST_A' },
+            { operands: 'REG', opcode: Opcode.TEST_B, size: 1, condition: (ops) => ops.length === 1 && ops[0].register === 'B' && ops[0].type === 'REGISTER', mnemonic: 'TEST_B' },
+            { operands: 'REG', opcode: Opcode.TEST_C, size: 1, condition: (ops) => ops.length === 1 && ops[0].register === 'C' && ops[0].type === 'REGISTER', mnemonic: 'TEST_C' },
+            { operands: 'REG', opcode: Opcode.TEST_D, size: 1, condition: (ops) => ops.length === 1 && ops[0].register === 'D' && ops[0].type === 'REGISTER', mnemonic: 'TEST_D' },
+        ]
+    },
+
+    {
+        mnemonic: 'CMP', opcode: 0x00, operands: 'REG_REG', size: 1, variants: [
+            // CMP registre-registre
+            { operands: 'REG_REG', opcode: Opcode.CMP_AA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'CMP_AA' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_AB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'CMP_AB' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_AC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'CMP_AC' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_AD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'CMP_AD' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_BA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'CMP_BA' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_BB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'CMP_BB' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_BC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'CMP_BC' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_BD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'CMP_BD' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_CA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'CMP_CA' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_CB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'CMP_CB' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_CC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'CMP_CC' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_CD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'CMP_CD' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_DA, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'A' && ops[1].type === 'REGISTER', mnemonic: 'CMP_DA' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_DB, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'B' && ops[1].type === 'REGISTER', mnemonic: 'CMP_DB' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_DC, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'CMP_DC' },
+            { operands: 'REG_REG', opcode: Opcode.CMP_DD, size: 1, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'CMP_DD' },
+            // CMP registre-immédiat
+            { operands: 'REG_IMM8', opcode: Opcode.CMP_A_IMM, size: 2, condition: (ops) => ops.length === 2 && ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].type === 'IMMEDIATE', mnemonic: 'CMP_A_IMM' },
+            { operands: 'REG_IMM8', opcode: Opcode.CMP_B_IMM, size: 2, condition: (ops) => ops.length === 2 && ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].type === 'IMMEDIATE', mnemonic: 'CMP_B_IMM' },
+            { operands: 'REG_IMM8', opcode: Opcode.CMP_C_IMM, size: 2, condition: (ops) => ops.length === 2 && ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].type === 'IMMEDIATE', mnemonic: 'CMP_C_IMM' },
+            { operands: 'REG_IMM8', opcode: Opcode.CMP_D_IMM, size: 2, condition: (ops) => ops.length === 2 && ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].type === 'IMMEDIATE', mnemonic: 'CMP_D_IMM' },
+        ]
+    },
 ];
 
 

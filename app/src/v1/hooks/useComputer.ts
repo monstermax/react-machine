@@ -14,9 +14,6 @@ import { compileCode, compileFile, loadSourceCodeFromFile } from "@/v1/cpus/defa
 
 import type { OsInfo, ProgramInfo, u16, u8 } from "@/types/cpu.types";
 
-//import ledTestCodeSource from '@/cpus/default/asm/os/devices/led/led.lib.test.asm?raw'
-
-
 
 export const useComputer = (): ComputerHook => {
     //console.log('RENDER ComputerPage.useComputer')

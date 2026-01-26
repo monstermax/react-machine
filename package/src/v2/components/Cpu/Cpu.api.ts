@@ -18,16 +18,16 @@ import type { Motherboard } from "../Computer/Motherboard.api";
 
 
 export const initialRegisters = [
-        ["A", 0 as u8],      // Register A
-        ["B", 0 as u8],      // Register B
-        ["C", 0 as u8],      // Register C
-        ["D", 0 as u8],      // Register D
-        ["PC", 0 as u16],    // Program Counter
-        ["IR", 0 as u8],     // Instruction Register
-        ["SP", 0 as u16],    // Stack Pointer
-        ["FLAGS", 0 as u8],  // Bit 0: Carry, Bit 1: Zero
-    ] as [string, u8 | u16][]
-;
+    ["A", 0 as u8],      // Register A
+    ["B", 0 as u8],      // Register B
+    ["C", 0 as u8],      // Register C
+    ["D", 0 as u8],      // Register D
+    ["PC", 0 as u16],    // Program Counter
+    ["IR", 0 as u8],     // Instruction Register
+    ["SP", 0 as u16],    // Stack Pointer
+    ["FLAGS", 0 as u8],  // Bit 0: Carry, Bit 1: Zero
+] as [string, u8 | u16][]
+    ;
 
 
 
@@ -228,11 +228,11 @@ class CpuCore extends EventEmitter {
 
                 if (this.cpu.cores[coreIdx]) {
                     this.setRegister("A", U8(this.cpu.cores[coreIdx].coreHalted ? 0 : 1));
-                    this.setFlags(this.cpu.cores[coreIdx].coreHalted, false);
+                    //this.setFlags(this.cpu.cores[coreIdx].coreHalted, false);
 
                 } else {
                     this.setRegister("A", U8(0));
-                    this.setFlags(true, false);
+                    //this.setFlags(true, false);
                 }
 
                 this.setRegister("PC", (pc + 1) as u16);
@@ -291,11 +291,11 @@ class CpuCore extends EventEmitter {
 
                 if (cpu) {
                     this.setRegister("A", U8(cpu.cpuHalted ? 0 : 1));
-                    this.setFlags(cpu.cpuHalted, false);
+                    //this.setFlags(cpu.cpuHalted, false);
 
                 } else {
                     this.setRegister("A", U8(0));
-                    this.setFlags(true, false);
+                    //this.setFlags(true, false);
                 }
 
                 this.setRegister("PC", (pc + 1) as u16);
@@ -390,6 +390,7 @@ class CpuCore extends EventEmitter {
                 this.stop();
                 break;
 
+
             // ===== ALU INSTRUCTIONS =====
             case Opcode.ADD: { // A = A + B
                 const { result, flags } = ALU.add(this.getRegister("A"), this.getRegister("B"));
@@ -430,6 +431,972 @@ class CpuCore extends EventEmitter {
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
             }
+
+            case Opcode.ADD_AA: { // A = A + A
+                const { result, flags } = ALU.add(this.getRegister("A"), this.getRegister("A"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_AB: { // A = A + B
+                const { result, flags } = ALU.add(this.getRegister("A"), this.getRegister("B"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_AC: { // A = A + C
+                const { result, flags } = ALU.add(this.getRegister("A"), this.getRegister("C"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_AD: { // A = A + D
+                const { result, flags } = ALU.add(this.getRegister("A"), this.getRegister("D"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_BA: { // B = B + A
+                const { result, flags } = ALU.add(this.getRegister("B"), this.getRegister("A"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_BB: { // B = B + B
+                const { result, flags } = ALU.add(this.getRegister("B"), this.getRegister("B"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_BC: { // B = B + C
+                const { result, flags } = ALU.add(this.getRegister("B"), this.getRegister("C"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_BD: { // B = B + D
+                const { result, flags } = ALU.add(this.getRegister("B"), this.getRegister("D"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_CA: { // C = C + A
+                const { result, flags } = ALU.add(this.getRegister("C"), this.getRegister("A"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_CB: { // C = C + B
+                const { result, flags } = ALU.add(this.getRegister("C"), this.getRegister("B"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_CC: { // C = C + C
+                const { result, flags } = ALU.add(this.getRegister("C"), this.getRegister("C"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_CD: { // C = C + D
+                const { result, flags } = ALU.add(this.getRegister("C"), this.getRegister("D"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_DA: { // D = D + A
+                const { result, flags } = ALU.add(this.getRegister("D"), this.getRegister("A"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_DB: { // D = D + B
+                const { result, flags } = ALU.add(this.getRegister("D"), this.getRegister("B"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_DC: { // D = D + C
+                const { result, flags } = ALU.add(this.getRegister("D"), this.getRegister("C"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.ADD_DD: { // D = D + D
+                const { result, flags } = ALU.add(this.getRegister("D"), this.getRegister("D"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_AA: { // A = A - A
+                const { result, flags } = ALU.sub(this.getRegister("A"), this.getRegister("A"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_AB: { // A = A - B
+                const { result, flags } = ALU.sub(this.getRegister("A"), this.getRegister("B"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_AC: { // A = A - C
+                const { result, flags } = ALU.sub(this.getRegister("A"), this.getRegister("C"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_AD: { // A = A - D
+                const { result, flags } = ALU.sub(this.getRegister("A"), this.getRegister("D"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_BA: { // B = B - A
+                const { result, flags } = ALU.sub(this.getRegister("B"), this.getRegister("A"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_BB: { // B = B - B
+                const { result, flags } = ALU.sub(this.getRegister("B"), this.getRegister("B"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_BC: { // B = B - C
+                const { result, flags } = ALU.sub(this.getRegister("B"), this.getRegister("C"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_BD: { // B = B - D
+                const { result, flags } = ALU.sub(this.getRegister("B"), this.getRegister("D"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_CA: { // C = C - A
+                const { result, flags } = ALU.sub(this.getRegister("C"), this.getRegister("A"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_CB: { // C = C - B
+                const { result, flags } = ALU.sub(this.getRegister("C"), this.getRegister("B"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_CC: { // C = C - C
+                const { result, flags } = ALU.sub(this.getRegister("C"), this.getRegister("C"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_CD: { // C = C - D
+                const { result, flags } = ALU.sub(this.getRegister("C"), this.getRegister("D"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_DA: { // D = D - A
+                const { result, flags } = ALU.sub(this.getRegister("D"), this.getRegister("A"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_DB: { // D = D - B
+                const { result, flags } = ALU.sub(this.getRegister("D"), this.getRegister("B"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_DC: { // D = D - C
+                const { result, flags } = ALU.sub(this.getRegister("D"), this.getRegister("C"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.SUB_DD: { // D = D - D
+                const { result, flags } = ALU.sub(this.getRegister("D"), this.getRegister("D"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_AA: { // A = A & A
+                const { result, flags } = ALU.and(this.getRegister("A"), this.getRegister("A"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_AB: { // A = A & B
+                const { result, flags } = ALU.and(this.getRegister("A"), this.getRegister("B"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_AC: { // A = A & C
+                const { result, flags } = ALU.and(this.getRegister("A"), this.getRegister("C"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_AD: { // A = A & D
+                const { result, flags } = ALU.and(this.getRegister("A"), this.getRegister("D"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_BA: { // B = B & A
+                const { result, flags } = ALU.and(this.getRegister("B"), this.getRegister("A"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_BB: { // B = B & B
+                const { result, flags } = ALU.and(this.getRegister("B"), this.getRegister("B"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_BC: { // B = B & C
+                const { result, flags } = ALU.and(this.getRegister("B"), this.getRegister("C"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_BD: { // B = B & D
+                const { result, flags } = ALU.and(this.getRegister("B"), this.getRegister("D"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_CA: { // C = C & A
+                const { result, flags } = ALU.and(this.getRegister("C"), this.getRegister("A"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_CB: { // C = C & B
+                const { result, flags } = ALU.and(this.getRegister("C"), this.getRegister("B"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_CC: { // C = C & C
+                const { result, flags } = ALU.and(this.getRegister("C"), this.getRegister("C"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_CD: { // C = C & D
+                const { result, flags } = ALU.and(this.getRegister("C"), this.getRegister("D"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_DA: { // D = D & A
+                const { result, flags } = ALU.and(this.getRegister("D"), this.getRegister("A"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_DB: { // D = D & B
+                const { result, flags } = ALU.and(this.getRegister("D"), this.getRegister("B"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_DC: { // D = D & C
+                const { result, flags } = ALU.and(this.getRegister("D"), this.getRegister("C"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.AND_DD: { // D = D & D
+                const { result, flags } = ALU.and(this.getRegister("D"), this.getRegister("D"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_AA: { // A = A | A
+                const { result, flags } = ALU.or(this.getRegister("A"), this.getRegister("A"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_AB: { // A = A | B
+                const { result, flags } = ALU.or(this.getRegister("A"), this.getRegister("B"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_AC: { // A = A | C
+                const { result, flags } = ALU.or(this.getRegister("A"), this.getRegister("C"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_AD: { // A = A | D
+                const { result, flags } = ALU.or(this.getRegister("A"), this.getRegister("D"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_BA: { // B = B | A
+                const { result, flags } = ALU.or(this.getRegister("B"), this.getRegister("A"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_BB: { // B = B | B
+                const { result, flags } = ALU.or(this.getRegister("B"), this.getRegister("B"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_BC: { // B = B | C
+                const { result, flags } = ALU.or(this.getRegister("B"), this.getRegister("C"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_BD: { // B = B | D
+                const { result, flags } = ALU.or(this.getRegister("B"), this.getRegister("D"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_CA: { // C = C | A
+                const { result, flags } = ALU.or(this.getRegister("C"), this.getRegister("A"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_CB: { // C = C | B
+                const { result, flags } = ALU.or(this.getRegister("C"), this.getRegister("B"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_CC: { // C = C | C
+                const { result, flags } = ALU.or(this.getRegister("C"), this.getRegister("C"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_CD: { // C = C | D
+                const { result, flags } = ALU.or(this.getRegister("C"), this.getRegister("D"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_DA: { // D = D | A
+                const { result, flags } = ALU.or(this.getRegister("D"), this.getRegister("A"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_DB: { // D = D | B
+                const { result, flags } = ALU.or(this.getRegister("D"), this.getRegister("B"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_DC: { // D = D | C
+                const { result, flags } = ALU.or(this.getRegister("D"), this.getRegister("C"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.OR_DD: { // D = D | D
+                const { result, flags } = ALU.or(this.getRegister("D"), this.getRegister("D"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_AA: { // A = A ^ A
+                const { result, flags } = ALU.xor(this.getRegister("A"), this.getRegister("A"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_AB: { // A = A ^ B
+                const { result, flags } = ALU.xor(this.getRegister("A"), this.getRegister("B"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_AC: { // A = A ^ C
+                const { result, flags } = ALU.xor(this.getRegister("A"), this.getRegister("C"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_AD: { // A = A ^ D
+                const { result, flags } = ALU.xor(this.getRegister("A"), this.getRegister("D"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_BA: { // B = B ^ A
+                const { result, flags } = ALU.xor(this.getRegister("B"), this.getRegister("A"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_BB: { // B = B ^ B
+                const { result, flags } = ALU.xor(this.getRegister("B"), this.getRegister("B"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_BC: { // B = B ^ C
+                const { result, flags } = ALU.xor(this.getRegister("B"), this.getRegister("C"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_BD: { // B = B ^ D
+                const { result, flags } = ALU.xor(this.getRegister("B"), this.getRegister("D"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_CA: { // C = C ^ A
+                const { result, flags } = ALU.xor(this.getRegister("C"), this.getRegister("A"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_CB: { // C = C ^ B
+                const { result, flags } = ALU.xor(this.getRegister("C"), this.getRegister("B"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_CC: { // C = C ^ C
+                const { result, flags } = ALU.xor(this.getRegister("C"), this.getRegister("C"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_CD: { // C = C ^ D
+                const { result, flags } = ALU.xor(this.getRegister("C"), this.getRegister("D"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_DA: { // D = D ^ A
+                const { result, flags } = ALU.xor(this.getRegister("D"), this.getRegister("A"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_DB: { // D = D ^ B
+                const { result, flags } = ALU.xor(this.getRegister("D"), this.getRegister("B"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_DC: { // D = D ^ C
+                const { result, flags } = ALU.xor(this.getRegister("D"), this.getRegister("C"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+            case Opcode.XOR_DD: { // D = D ^ D
+                const { result, flags } = ALU.xor(this.getRegister("D"), this.getRegister("D"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+
+            case Opcode.TEST_A:
+            case Opcode.TEST_AA: { // TEST A, A
+                const { flags } = ALU.test(this.getRegister("A"), this.getRegister("A"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.TEST_AB:
+            case Opcode.TEST_BA: { // TEST A, B
+                const { flags } = ALU.test(this.getRegister("A"), this.getRegister("B"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.TEST_AC:
+            case Opcode.TEST_CA: { // TEST A, C
+                const { flags } = ALU.test(this.getRegister("A"), this.getRegister("C"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.TEST_AD:
+            case Opcode.TEST_DA: { // TEST A, D
+                const { flags } = ALU.test(this.getRegister("A"), this.getRegister("D"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+
+            case Opcode.TEST_B:    // TEST B, B
+            case Opcode.TEST_BB: { // TEST B, B
+                const { flags } = ALU.test(this.getRegister("B"), this.getRegister("B"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.TEST_BC:
+            case Opcode.TEST_CB: { // TEST B, C
+                const { flags } = ALU.test(this.getRegister("B"), this.getRegister("C"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.TEST_BD:
+            case Opcode.TEST_DB: { // TEST B, D
+                const { flags } = ALU.test(this.getRegister("B"), this.getRegister("D"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.TEST_C:
+            case Opcode.TEST_CC: { // TEST C, C
+                const { flags } = ALU.test(this.getRegister("C"), this.getRegister("C"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.TEST_CD:
+            case Opcode.TEST_DC: { // TEST C, D
+                const { flags } = ALU.test(this.getRegister("C"), this.getRegister("D"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.TEST_D:  // TEST D, D
+            case Opcode.TEST_DD: { // TEST D, D
+                const { flags } = ALU.test(this.getRegister("D"), this.getRegister("D"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_AA: { // CMP A, A
+                const { flags } = ALU.cmp(this.getRegister("A"), this.getRegister("A"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_AB: { // CMP A, B
+                const { flags } = ALU.cmp(this.getRegister("A"), this.getRegister("B"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_AC: { // CMP A, C
+                const { flags } = ALU.cmp(this.getRegister("A"), this.getRegister("C"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_AD: { // CMP A, D
+                const { flags } = ALU.cmp(this.getRegister("A"), this.getRegister("D"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_BA: { // CMP B, A
+                const { flags } = ALU.cmp(this.getRegister("B"), this.getRegister("A"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_BB: { // CMP B, B
+                const { flags } = ALU.cmp(this.getRegister("B"), this.getRegister("B"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_BC: { // CMP B, C
+                const { flags } = ALU.cmp(this.getRegister("B"), this.getRegister("C"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_BD: { // CMP B, D
+                const { flags } = ALU.cmp(this.getRegister("B"), this.getRegister("D"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_CA: { // CMP C, A
+                const { flags } = ALU.cmp(this.getRegister("C"), this.getRegister("A"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_CB: { // CMP C, B
+                const { flags } = ALU.cmp(this.getRegister("C"), this.getRegister("B"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_CC: { // CMP C, C
+                const { flags } = ALU.cmp(this.getRegister("C"), this.getRegister("C"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_CD: { // CMP C, D
+                const { flags } = ALU.cmp(this.getRegister("C"), this.getRegister("D"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_DA: { // CMP D, A
+                const { flags } = ALU.cmp(this.getRegister("D"), this.getRegister("A"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_DB: { // CMP D, B
+                const { flags } = ALU.cmp(this.getRegister("D"), this.getRegister("B"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_DC: { // CMP D, C
+                const { flags } = ALU.cmp(this.getRegister("D"), this.getRegister("C"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.CMP_DD: { // CMP D, D
+                const { flags } = ALU.cmp(this.getRegister("D"), this.getRegister("D"));
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            // ===== CMP avec immédiat =====
+            case Opcode.CMP_A_IMM: { // CMP A, imm8
+                const imm = this.cpu.readMem8(pc);
+                const { flags } = ALU.cmp(this.getRegister("A"), imm);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.CMP_B_IMM: { // CMP B, imm8
+                const imm = this.cpu.readMem8(pc);
+                const { flags } = ALU.cmp(this.getRegister("B"), imm);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.CMP_C_IMM: { // CMP C, imm8
+                const imm = this.cpu.readMem8(pc);
+                const { flags } = ALU.cmp(this.getRegister("C"), imm);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.CMP_D_IMM: { // CMP D, imm8
+                const imm = this.cpu.readMem8(pc);
+                const { flags } = ALU.cmp(this.getRegister("D"), imm);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+
+            // ===== SHIFT INSTRUCTIONS =====
+            case Opcode.SHL_A: { // Shift Left A (1 bit)
+                const { result, flags } = ALU.shl(this.getRegister("A"), U8(1));
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.SHR_A: { // Shift Right A (1 bit)
+                const { result, flags } = ALU.shr(this.getRegister("A"), U8(1));
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.SHL_B: { // Shift Left B (1 bit)
+                const { result, flags } = ALU.shl(this.getRegister("B"), U8(1));
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.SHR_B: { // Shift Right B (1 bit)
+                const { result, flags } = ALU.shr(this.getRegister("B"), U8(1));
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.SHL_C: { // Shift Left C (1 bit)
+                const { result, flags } = ALU.shl(this.getRegister("C"), U8(1));
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.SHR_C: { // Shift Right C (1 bit)
+                const { result, flags } = ALU.shr(this.getRegister("C"), U8(1));
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.SHL_D: { // Shift Left D (1 bit)
+                const { result, flags } = ALU.shl(this.getRegister("D"), U8(1));
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.SHR_D: { // Shift Right D (1 bit)
+                const { result, flags } = ALU.shr(this.getRegister("D"), U8(1));
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            // Décalage avec nombre de bits spécifié
+            case Opcode.SHL_A_N: { // Shift Left A, N bits
+                const count = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.shl(this.getRegister("A"), count);
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.SHR_A_N: { // Shift Right A, N bits
+                const count = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.shr(this.getRegister("A"), count);
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.SHL_B_N: { // Shift Left B, N bits
+                const count = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.shl(this.getRegister("B"), count);
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.SHR_B_N: { // Shift Right B, N bits
+                const count = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.shr(this.getRegister("B"), count);
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.SHL_C_N: { // Shift Left C, N bits
+                const count = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.shl(this.getRegister("C"), count);
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.SHR_C_N: { // Shift Right C, N bits
+                const count = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.shr(this.getRegister("C"), count);
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.SHL_D_N: { // Shift Left D, N bits
+                const count = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.shl(this.getRegister("D"), count);
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.SHR_D_N: { // Shift Right D, N bits
+                const count = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.shr(this.getRegister("D"), count);
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            // Rotations
+            case Opcode.ROL_A: { // Rotate Left A through carry
+                const carryFlag = this.getFlag('carry');
+                const { result, flags } = ALU.rol(this.getRegister("A"), U8(1), carryFlag);
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.ROR_A: { // Rotate Right A through carry
+                const carryFlag = this.getFlag('carry');
+                const { result, flags } = ALU.ror(this.getRegister("A"), U8(1), carryFlag);
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.ROL_B: { // Rotate Left B through carry
+                const carryFlag = this.getFlag('carry');
+                const { result, flags } = ALU.rol(this.getRegister("B"), U8(1), carryFlag);
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.ROR_B: { // Rotate Right B through carry
+                const carryFlag = this.getFlag('carry');
+                const { result, flags } = ALU.ror(this.getRegister("B"), U8(1), carryFlag);
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+
 
             case Opcode.INC_A: { // A = A + 1
                 const { result, flags } = ALU.inc(this.getRegister("A"))
@@ -675,28 +1642,28 @@ class CpuCore extends EventEmitter {
             case Opcode.MOV_A_IMM:  // MOV A, imm8
                 const immA = this.cpu.readMem8(pc);
                 this.setRegister("A", immA);
-                this.setFlags(immA === 0, false);  // Set zero flag
+                //this.setFlags(immA === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.MOV_B_IMM:  // MOV B, imm8
                 const immB = this.cpu.readMem8(pc);
                 this.setRegister("B", immB);
-                this.setFlags(immB === 0, false);  // Set zero flag
+                //this.setFlags(immB === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.MOV_C_IMM:  // MOV C, imm8
                 const immC = this.cpu.readMem8(pc);
                 this.setRegister("C", immC);
-                this.setFlags(immC === 0, false);  // Set zero flag
+                //this.setFlags(immC === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
 
             case Opcode.MOV_D_IMM:  // MOV D, imm8
                 const immD = this.cpu.readMem8(pc);
                 this.setRegister("D", immD);
-                this.setFlags(immD === 0, false);  // Set zero flag
+                //this.setFlags(immD === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 2) as u16);
                 break;
 
@@ -705,7 +1672,7 @@ class CpuCore extends EventEmitter {
                 const addrA = this.cpu.readMem16(pc);
                 const memValueA = this.cpu.readMemory(addrA);
                 this.setRegister("A", memValueA);
-                this.setFlags(memValueA === 0, false);  // Set zero flag
+                //this.setFlags(memValueA === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
@@ -713,7 +1680,7 @@ class CpuCore extends EventEmitter {
                 const addrB = this.cpu.readMem16(pc);
                 const memValueB = this.cpu.readMemory(addrB);
                 this.setRegister("B", memValueB);
-                this.setFlags(memValueB === 0, false);  // Set zero flag
+                //this.setFlags(memValueB === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
@@ -721,7 +1688,7 @@ class CpuCore extends EventEmitter {
                 const addrC = this.cpu.readMem16(pc);
                 const memValueC = this.cpu.readMemory(addrC);
                 this.setRegister("C", memValueC);
-                this.setFlags(memValueC === 0, false);  // Set zero flag
+                //this.setFlags(memValueC === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
@@ -729,7 +1696,7 @@ class CpuCore extends EventEmitter {
                 const addrD = this.cpu.readMem16(pc);
                 const memValueD = this.cpu.readMemory(addrD);
                 this.setRegister("D", memValueD);
-                this.setFlags(memValueD === 0, false);  // Set zero flag
+                //this.setFlags(memValueD === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 3) as u16);
                 break;
 
@@ -762,7 +1729,7 @@ class CpuCore extends EventEmitter {
                 const ptrCD_LoadA = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
                 const valuePtr_A = this.cpu.readMemory(ptrCD_LoadA);
                 this.setRegister("A", valuePtr_A);
-                this.setFlags(valuePtr_A === 0, false);  // Set zero flag
+                //this.setFlags(valuePtr_A === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
@@ -770,7 +1737,7 @@ class CpuCore extends EventEmitter {
                 const ptrCD_LoadB = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
                 const valuePtr_B = this.cpu.readMemory(ptrCD_LoadB);
                 this.setRegister("B", valuePtr_B);
-                this.setFlags(valuePtr_B === 0, false);  // Set zero flag
+                //this.setFlags(valuePtr_B === 0, false);  // Set zero flag
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
@@ -1027,7 +1994,7 @@ export class Cpu extends BaseCpu {
     public inInterruptHandler: boolean = false;
 
 
-    constructor(motherboard: Motherboard, idx=0, coresCount=1) {
+    constructor(motherboard: Motherboard, idx = 0, coresCount = 1) {
         //console.log(`Initializing Cpu`);
         super(motherboard);
 
@@ -1035,7 +2002,7 @@ export class Cpu extends BaseCpu {
         this.idx = idx;
 
 
-        for (let i=0; i<coresCount; i++) {
+        for (let i = 0; i < coresCount; i++) {
             const core = new CpuCore(this, i);
             this.cores.push(core)
 
@@ -1166,7 +2133,7 @@ export class Cpu extends BaseCpu {
         if (isRAM(address)) {
             this.writeMemoryCache(address, value)
         }
- 
+
         return value;
     }
 
@@ -1280,6 +2247,80 @@ const ALU = {
         const result = ((value - 1) & 0xFF) as u8;
         const flags = ({ zero: result === 0, carry: false });
         return { result, flags };
+    },
+
+    // Shift bits
+    shl: (value: u8, count: u8=U8(1)): { result: u8, flags: { zero: boolean, carry: boolean } } => {
+        let result = value;
+        let carry = false;
+
+        for (let i = 0; i < count; i++) {
+            carry = !!(result & 0x80);  // MSB -> carry
+            result = ((result << 1) & 0xFF) as u8;
+        }
+
+        const zero = result === 0;
+        return { result, flags: { zero, carry } };
+    },
+
+    shr: (value: u8, count: u8=U8(1)): { result: u8, flags: { zero: boolean, carry: boolean } } => {
+        let result = value;
+        let carry = false;
+
+        for (let i = 0; i < count; i++) {
+            carry = !!(result & 0x01);  // LSB -> carry
+            result = ((result >> 1) & 0xFF) as u8;
+        }
+
+        const zero = result === 0;
+        return { result, flags: { zero, carry } };
+    },
+
+    // Rotation avec carry
+    rol: (value: u8, count: u8=U8(1), carryIn: boolean = false): { result: u8, flags: { zero: boolean, carry: boolean } } => {
+        let result = value;
+        let carry = carryIn;
+
+        for (let i = 0; i < count; i++) {
+            const newCarry = !!(result & 0x80);
+            result = ((result << 1) & 0xFF) as u8;
+            if (carry) result = U8(result | 0x01);
+            carry = newCarry;
+        }
+
+        const zero = result === 0;
+        return { result, flags: { zero, carry } };
+    },
+
+    ror: (value: u8, count: u8=U8(1), carryIn: boolean = false): { result: u8, flags: { zero: boolean, carry: boolean } } => {
+        let result = value;
+        let carry = carryIn;
+
+        for (let i = 0; i < count; i++) {
+            const newCarry = !!(result & 0x01);
+            result = ((result >> 1) & 0xFF) as u8;
+            if (carry) result = U8(result | 0x80);
+            carry = newCarry;
+        }
+
+        const zero = result === 0;
+        return { result, flags: { zero, carry } };
+    },
+
+    // Test & Compare
+    test: (a: u8, b: u8): { flags: { zero: boolean, carry: boolean } } => { // comme AND mais ne stocke pas le résultat
+        const result = ((a & b) & 0xFF) as u8;
+        const flags = ({ zero: result === 0, carry: false });
+        return { flags };
+    },
+
+    cmp: (a: u8, b: u8): { flags: { zero: boolean, carry: boolean } } => {
+        // Compare a et b: a - b (sans stocker le résultat)
+        const result = ((a - b) & 0xFF) as u8;
+        const zero = result === 0;
+        const carry = a < b; // Borrow
+        const flags = ({ zero, carry });
+        return { flags };
     },
 }
 

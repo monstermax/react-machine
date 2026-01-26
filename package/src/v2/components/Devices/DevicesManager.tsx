@@ -12,8 +12,6 @@ import { loadSourceCodeFromFile } from '@/v2/lib/compilation';
 import type { u16, u8 } from '@/types/cpu.types';
 import type { IoDevice } from '@/v2/types/cpu_v2.types';
 
-//import ledTestCodeSource from '@/cpus/default/asm/os/devices/led/led.lib.test.asm?raw'
-
 
 const validDeviceTypes = ['Input', 'DiskStorage', 'Display', 'Audio', 'Time', 'Random', 'Interrupt'];
 
