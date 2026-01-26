@@ -11,10 +11,6 @@ import "prism-react-editor/themes/github-dark.css"
 import { compilerV2, loadSourceCodeFromFile, toHex, U16 } from "react-machine-package";
 const { compileCode, formatBytecode, getBytecodeArray } = compilerV2;
 
-import type { CompiledCode, u16 } from "react-machine-package/types";
-
-import { finalizeCompilation, preCompileCode } from "@/v1/cpus/default/compiler_v1/asm_compiler";
-
 
 const debugSourceCode_x86 = `
 
@@ -171,12 +167,12 @@ export const CompilePageBeta: React.FC = () => {
             if (compiled.labels.size > 0) {
                 output += "=== LABELS ===\n";
                 compiled.labels.forEach((labelInfo, name) => {
-                    const section = compiled.sections.find(s => s.name === labelInfo.section);
-                    const sectionAddress = section?.startAddress ?? 0;
+                    //const section = compiled.sections.find(s => s.name === labelInfo.section);
+                    //const sectionAddress = section?.startAddress ?? 0;
                     const labelAddress = labelInfo.address;
-                    const labelAddressGlobal = sectionAddress + labelInfo.address;
+                    const labelAddressGlobal = /* sectionAddress + */ labelInfo.address;
 
-                    output += `  ${name.padEnd(20)} : ${toHex(labelAddressGlobal, 4)} (line ${labelAddressGlobal} => section ${labelInfo.section} - line ${labelAddress} = ${toHex(labelAddress, 4)})\n`;
+                    output += `  ${name.padEnd(20)} : ${toHex(labelAddressGlobal, 4)} (line ${labelAddressGlobal} - section ${labelInfo.section})\n`;
                 });
                 output += "\n";
             }
@@ -280,27 +276,5 @@ export const CompilePageBeta: React.FC = () => {
 };
 
 
-
-export const universalCompiler = async (codeSource: string, memoryOffset: u16=U16(0), lineOffset: u16=U16(0), compilerType: 'nasm' | 'custom' | 'auto'='auto') => {
-    let code: CompiledCode | null = null;
-
-    if (compilerType === 'auto') {
-        compilerType = codeSource.toLowerCase().includes('section .text')
-            ? 'nasm'
-            : 'custom';
-    }
-
-    if (compilerType === 'custom') {
-        const preCompiled = await preCompileCode(codeSource, memoryOffset, lineOffset);
-        const finalized = finalizeCompilation(preCompiled.code);
-        code = finalized.code;
-
-    } else if (compilerType === 'nasm') {
-        const compiled = await compileCode(codeSource);
-        code = getBytecodeArray(compiled)
-    }
-
-    return code;
-}
 
 

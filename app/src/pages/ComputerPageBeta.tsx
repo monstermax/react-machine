@@ -5,9 +5,9 @@ import { Link } from 'wouter';
 import { Computer, Cpu, Memory, Motherboard, Rom, Ram, ExternalDevices, InternalDevices, Clock, PowerSupply } from 'react-machine-package/core-components'
 import { Dma, Interrupt, Timer, CpuInstructions, MemoryMap, IDE } from 'react-machine-package/core-components'
 import { StorageDisk, LedsDisplay, Buzzer, PixelDisplay, Rng, Rtc, LcdDisplay, Console, SevenSegmentDisplay, Keyboard } from 'react-machine-package/devices-components'
-import { MEMORY_MAP, loadSourceCodeFromFile } from 'react-machine-package';
+import { MEMORY_MAP, loadSourceCodeFromFile, compilerV2 } from 'react-machine-package';
 
-import { universalCompiler } from './CompilePageBeta';
+const { universalCompiler } = compilerV2;
 
 import type { u16, u8 } from 'react-machine-package/types';
 

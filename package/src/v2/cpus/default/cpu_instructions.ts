@@ -304,6 +304,107 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.INC_D: return "INC D";
         case Opcode.DEC_D: return "DEC D";
 
+
+        case Opcode.ADD_AA: return "ADD A A";
+        case Opcode.SUB_AA: return "SUB A A";
+        case Opcode.AND_AA: return "AND A A";
+        case Opcode.OR_AA: return "OR A A";
+        case Opcode.XOR_AA: return "XOR A A";
+
+        case Opcode.ADD_AB: return "ADD A B";
+        case Opcode.SUB_AB: return "SUB A B";
+        case Opcode.AND_AB: return "AND A B";
+        case Opcode.OR_AB: return "OR A B";
+        case Opcode.XOR_AB: return "XOR A B";
+
+        case Opcode.ADD_AC: return "ADD A C";
+        case Opcode.SUB_AC: return "SUB A C";
+        case Opcode.AND_AC: return "AND A C";
+        case Opcode.OR_AC: return "OR A C";
+        case Opcode.XOR_AC: return "XOR A C";
+
+        case Opcode.ADD_AD: return "ADD A D";
+        case Opcode.SUB_AD: return "SUB A D";
+        case Opcode.AND_AD: return "AND A D";
+        case Opcode.OR_AD: return "OR A D";
+        case Opcode.XOR_AD: return "XOR A D";
+
+
+        case Opcode.ADD_BA: return "ADD B A";
+        case Opcode.SUB_BA: return "SUB B A";
+        case Opcode.AND_BA: return "AND B A";
+        case Opcode.OR_BA: return "OR B A";
+        case Opcode.XOR_BA: return "XOR B A";
+
+        case Opcode.SUB_BB: return "SUB B B";
+        case Opcode.ADD_BB: return "ADD B B";
+        case Opcode.AND_BB: return "AND B B";
+        case Opcode.OR_BB: return "OR B B";
+        case Opcode.XOR_BB: return "XOR B B";
+
+        case Opcode.ADD_BC: return "ADD B C";
+        case Opcode.SUB_BC: return "SUB B C";
+        case Opcode.AND_BC: return "AND B C";
+        case Opcode.OR_BC: return "OR B C";
+        case Opcode.XOR_BC: return "XOR B C";
+
+        case Opcode.ADD_BD: return "ADD B D";
+        case Opcode.SUB_BD: return "SUB B D";
+        case Opcode.AND_BD: return "AND B D";
+        case Opcode.OR_BD: return "OR B D";
+        case Opcode.XOR_BD: return "XOR B D";
+
+
+        case Opcode.ADD_CA: return "ADD C A";
+        case Opcode.SUB_CA: return "SUB C A";
+        case Opcode.AND_CA: return "AND C A";
+        case Opcode.OR_CA: return "OR C A";
+        case Opcode.XOR_CA: return "XOR C A";
+
+        case Opcode.SUB_CB: return "SUB C B";
+        case Opcode.ADD_CB: return "ADD C B";
+        case Opcode.AND_CB: return "AND C B";
+        case Opcode.OR_CB: return "OR C B";
+        case Opcode.XOR_CB: return "XOR C B";
+
+        case Opcode.ADD_CC: return "ADD C C";
+        case Opcode.SUB_CC: return "SUB C C";
+        case Opcode.AND_CC: return "AND C C";
+        case Opcode.OR_CC: return "OR C C";
+        case Opcode.XOR_CC: return "XOR C C";
+
+        case Opcode.ADD_CD: return "ADD C D";
+        case Opcode.SUB_CD: return "SUB C D";
+        case Opcode.AND_CD: return "AND C D";
+        case Opcode.OR_CD: return "OR C D";
+        case Opcode.XOR_CD: return "XOR C D";
+
+
+        case Opcode.ADD_DA: return "ADD D A";
+        case Opcode.SUB_DA: return "SUB D A";
+        case Opcode.AND_DA: return "AND D A";
+        case Opcode.OR_DA: return "OR D A";
+        case Opcode.XOR_DA: return "XOR D A";
+
+        case Opcode.SUB_DB: return "SUB D B";
+        case Opcode.ADD_DB: return "ADD D B";
+        case Opcode.AND_DB: return "AND D B";
+        case Opcode.OR_DB: return "OR D B";
+        case Opcode.XOR_DB: return "XOR D B";
+
+        case Opcode.ADD_DC: return "ADD D C";
+        case Opcode.SUB_DC: return "SUB D C";
+        case Opcode.AND_DC: return "AND D C";
+        case Opcode.OR_DC: return "OR D C";
+        case Opcode.XOR_DC: return "XOR D C";
+
+        case Opcode.ADD_DD: return "ADD D D";
+        case Opcode.SUB_DD: return "SUB D D";
+        case Opcode.AND_DD: return "AND D D";
+        case Opcode.OR_DD: return "OR D D";
+        case Opcode.XOR_DD: return "XOR D D";
+
+
         // Sauts
         case Opcode.JMP: return "JMP";
         case Opcode.JZ: return "JZ";

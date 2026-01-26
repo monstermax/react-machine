@@ -4,10 +4,10 @@ import { EventEmitter } from "eventemitter3";
 import * as cpuApi from '@/v2/api';
 import type { CompiledCode, OsInfo, ProgramInfo, u16, u8 } from "@/types/cpu.types";
 import { os_list } from "@/v2/cpus/default/programs_example/mini_os";
-import { compileFile } from "@/v2/cpus/default/compiler_v1/asm_compiler";
 import { MEMORY_MAP } from "@/v2/lib/memory_map_16x8_bits";
 import { programs } from "@/v2/cpus/default/programs_example/programs_index";
 import { U16, U8 } from "@/v2/lib/integers";
+import { loadSourceCodeFromFile, universalCompiler } from "@/v2/lib/compilation";
 
 
 export class Computer extends EventEmitter {
@@ -85,13 +85,16 @@ export class Computer extends EventEmitter {
     }
 
 
-    async loadOsCode(osName: string) {
+    async loadOsCode(osName: string): Promise<CompiledCode | null> {
         const os: OsInfo | null = osName ? os_list[osName] : null;
         if (!os?.filepath) return null;
 
         const memoryOffset = MEMORY_MAP.OS_START;
-        const { code } = await compileFile(os.filepath, memoryOffset)
-        return code;
+
+        const codeSource = await loadSourceCodeFromFile(os.filepath);
+        const compiledCode = await universalCompiler(codeSource, memoryOffset)
+
+        return compiledCode;
     }
 
 
@@ -227,17 +230,23 @@ export class Computer extends EventEmitter {
     }
 
 
-    async loadProgramCode(programName: string) {
+    async loadProgramCode(programName: string): Promise<CompiledCode | null> {
         const program: ProgramInfo | null = programName ? programs[programName] : null;
         if (!program) return null;
 
         const memoryOffset = MEMORY_MAP.PROGRAM_START;
 
-        const { code } = program.filepath
-            ? await compileFile(program.filepath, memoryOffset)
-            : { code: program.code }
+        let compiledCode: CompiledCode | null = null;
 
-        return code;
+        if (program.filepath) {
+            const codeSource = await loadSourceCodeFromFile(os.filepath);
+            compiledCode = await universalCompiler(codeSource, memoryOffset)
+
+        } else {
+            compiledCode = program.code;
+        }
+
+        return compiledCode;
     }
 
 

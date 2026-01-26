@@ -4,8 +4,9 @@ import fs from 'fs';
 import { CompiledProgram, Compiler, CompilerOptions, CPUArchitecture, CUSTOM_CPU } from "../cpus/default/compiler_v2";
 import { resolveIncludes } from "../cpus/default/compiler_v2/compiler_preprocessor";
 import { toHex, U16 } from "./integers";
+import { finalizeCompilation, preCompileCode } from '../cpus/default/compiler_v1/asm_compiler';
 
-import type { PreCompiledCode, u16, u8 } from "@/types/cpu.types";
+import type { CompiledCode, PreCompiledCode, u16, u8 } from "@/types/cpu.types";
 
 
 export let compilationAsmBaseUrl = '';
@@ -140,4 +141,27 @@ export const parseCompiledCode = (text: string): PreCompiledCode => {
     return outputCode;
 };
 
+
+
+export const universalCompiler = async (codeSource: string, memoryOffset: u16=U16(0), lineOffset: u16=U16(0), compilerType: 'nasm' | 'custom' | 'auto'='auto') => {
+    let code: CompiledCode | null = null;
+
+    if (compilerType === 'auto') {
+        compilerType = codeSource.toLowerCase().includes('section .text')
+            ? 'nasm'
+            : 'custom';
+    }
+
+    if (compilerType === 'custom') {
+        const preCompiled = await preCompileCode(codeSource, memoryOffset, lineOffset);
+        const finalized = finalizeCompilation(preCompiled.code);
+        code = finalized.code;
+
+    } else if (compilerType === 'nasm') {
+        const compiled = await compileCode(codeSource);
+        code = getBytecodeArray(compiled)
+    }
+
+    return code;
+}
 

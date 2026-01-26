@@ -211,7 +211,7 @@ export class Compiler {
             if (token.type === 'INSTRUCTION') {
                 // example => "mov eax, 4"
                 lastInstructionOrIdentifierAddress = this.currentAddress;
-//if (this.currentAddress === 3) debugger;
+
                 const size = this.calculateInstructionSize();
                 //console.log(`[pass1] ${token.value} at ${this.currentAddress}, size=${size}`);
                 this.currentAddress += size;
@@ -484,7 +484,6 @@ export class Compiler {
 
             // INSTRUCTION: Encode instruction to bytes
             if (token.type === 'INSTRUCTION') {
-//if (this.currentAddress === 3) debugger;
                 const before = this.currentAddress;
                 this.generateInstruction();
                 const size = this.currentAddress - before;
@@ -540,7 +539,12 @@ export class Compiler {
                 if (section.type !== 'code') {
                     //if (section.startAddress !== this.currentAddress) debugger;
                     //console.log(`[pass2] start of ${this.currentSection} : ${this.currentAddress}`)
-                    section.startAddress = this.currentAddress;
+                    //section.startAddress = this.currentAddress;
+                    //this.currentAddress = section.startAddress;
+
+                    if (this.currentAddress !== section.startAddress) {
+                        throw new Error(`address mistmatch : ${this.currentAddress} !== ${section.startAddress}`);
+                    }
                 }
 
             } else {

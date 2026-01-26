@@ -46,8 +46,7 @@ export const StorageDisk: React.FC<StorageDiskProps> = (props) => {
     const diskInstructionMap = useMemo(() => {
         //console.log('buildMemoryInstructionMap:', name, storage)
         return buildMemoryInstructionMap(storage);
-    },
-        [storageDiskInstance, storage]);
+    }, [storageDiskInstance, storage]);
 
 
     // Instanciate StorageDisk
