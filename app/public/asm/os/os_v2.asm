@@ -12,7 +12,7 @@
 OS_START:
 
 MAIN:
-    SET_SP @OS_STACK_END ; Initialiser le Stack Pointer
+    SET_SP @STACK_END ; Initialiser le Stack Pointer
 
     SET_FREQ 50
     ;CALL $START_CORE_TEST() ; Test 2nd Core

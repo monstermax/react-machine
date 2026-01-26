@@ -65,7 +65,7 @@
 INIT:
 
 MAIN:
-    SET_SP @BOOTLOADER_STACK_END ; Initialiser le Stack Pointer
+    SET_SP @STACK_END ; Initialiser le Stack Pointer
     SET_FREQ $INITIAL_FREQ
 
     ; Eteint les LED

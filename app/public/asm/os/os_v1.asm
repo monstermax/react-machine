@@ -10,7 +10,7 @@
 OS_START:
 
 MAIN:
-    SET_SP @OS_STACK_END ; Initialiser le Stack Pointer
+    SET_SP @STACK_END ; Initialiser le Stack Pointer
 
     CALL $CLEAR_CONSOLE() ; Efface la console
 
