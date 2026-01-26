@@ -16,6 +16,7 @@ export enum Opcode {
     BREAKPOINT_JS = 0x03,
     SYSCALL = 0x04,
 
+
     // Contrôle CPU
     GET_FREQ = 0x10,        // <=== TODO: a remplacer par un Device IO
     SET_FREQ = 0x11,        // <=== TODO: a remplacer par un Device IO
@@ -33,6 +34,7 @@ export enum Opcode {
     CPU_INIT = 0x19,
     CPU_STATUS = 0x1A,
     CPUS_COUNT = 0x1B,
+
 
     // Stack (0x20-0x2B)
     PUSH_A = 0x20,     // PUSH A
@@ -55,12 +57,22 @@ export enum Opcode {
     DI = 0x2D,         // Disable Interrupts
     IRET = 0x2E,       // Return from Interrupt
 
+
     // Sauts (0x30-0x34)
     JMP = 0x30,        // JMP addr16 (16-bit address)
     JZ = 0x31,         // JZ addr16 (16-bit address)
     JNZ = 0x32,        // JNZ addr16 (16-bit address)
     JC = 0x33,         // JC addr16 (16-bit address)
     JNC = 0x34,        // JNC addr16 (16-bit address)
+
+    // LEA (0x37-0x3D)
+    LEA_CD_A = 0x38,      // LEA A, [C:D] - Load address C:D into A
+    LEA_CD_B = 0x39,      // LEA B, [C:D] - Load address C:D into B
+    LEA_IMM_CD = 0x3A,    // LEA CD, imm16 - Load immediate address into C:D (2 bytes)
+    LEA_A_MEM = 0x3B,     // LEA A, [addr] - Load address into A (low byte)
+    LEA_B_MEM = 0x3C,     // LEA B, [addr] - Load address into B (low byte)
+    LEA_CD_MEM = 0x3D,    // LEA CD, [addr] - Load address into C:D
+    LEA_CD_OFFSET = 0x3E, // LEA CD, [CD + offset] - Address with offset
 
 
     // MOV (0x40-0x5B)
@@ -306,6 +318,7 @@ export const INSTRUCTIONS_WITH_OPERAND = [
     Opcode.SHR_C_N,
     Opcode.SHL_D_N,
     Opcode.SHR_D_N,
+    Opcode.LEA_CD_OFFSET,  // LEA CD, [CD + imm8] (offset signé 8-bit)
 ];
 
 
@@ -326,6 +339,10 @@ export const INSTRUCTIONS_WITH_TWO_OPERANDS = [
     Opcode.MOV_MEM_B,
     Opcode.MOV_MEM_C,
     Opcode.MOV_MEM_D,
+    Opcode.LEA_A_MEM,      // LEA A, [imm16]
+    Opcode.LEA_B_MEM,      // LEA B, [imm16]
+    Opcode.LEA_CD_MEM,     // LEA CD, [imm16]
+    Opcode.LEA_IMM_CD,     // LEA CD, imm16
 ];
 
 
@@ -380,6 +397,15 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.EI: return "EI";
         case Opcode.DI: return "DI";
         case Opcode.IRET: return "IRET";
+
+        // LEA
+        case Opcode.LEA_CD_A: return "LEA A, [C:D]";
+        case Opcode.LEA_CD_B: return "LEA B, [C:D]";
+        case Opcode.LEA_IMM_CD: return "LEA CD, imm16";
+        case Opcode.LEA_A_MEM: return "LEA A, [addr]";
+        case Opcode.LEA_B_MEM: return "LEA B, [addr]";
+        case Opcode.LEA_CD_MEM: return "LEA CD, [addr]";
+        case Opcode.LEA_CD_OFFSET: return "LEA CD, [CD+offset]";
 
         // MOV Register to Register
         case Opcode.MOV_AB: return "MOV A B";
@@ -668,6 +694,15 @@ export const getOpcodeDescription = (opcode: u8): string => {
         case Opcode.EI: return "Enable interrupts : allow hardware interrupts";
         case Opcode.DI: return "Disable interrupts : block hardware interrupts";
         case Opcode.IRET: return "Return from interrupt : restore flags and return";
+
+        // LEA
+        case Opcode.LEA_CD_A: return "Load Effective Address into A : A = low byte of address (C:D)";
+        case Opcode.LEA_CD_B: return "Load Effective Address into B : B = low byte of address (C:D)";
+        case Opcode.LEA_IMM_CD: return "Load Effective Address immediate : C:D = 16-bit address (C=low, D=high)";
+        case Opcode.LEA_A_MEM: return "Load Effective Address into A : A = low byte of 16-bit address";
+        case Opcode.LEA_B_MEM: return "Load Effective Address into B : B = low byte of 16-bit address";
+        case Opcode.LEA_CD_MEM: return "Load Effective Address into CD : C:D = 16-bit address (C=low, D=high)";
+        case Opcode.LEA_CD_OFFSET: return "Load Effective Address with offset : C:D = C:D + offset (8-bit signed)";
 
         // MOV Register to Register
         case Opcode.MOV_AB: return "Move A to B : B = A";

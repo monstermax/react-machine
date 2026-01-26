@@ -12,6 +12,7 @@ export type OperandType =
     | 'REG_IMM8'
     | 'REG_IMM16'
     | 'REG_MEM'
+    | 'REG_MEM_IMM16'
     | 'MEM_REG'
     | 'REG_IMM_IMM'
     ;

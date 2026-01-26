@@ -1577,6 +1577,98 @@ class CpuCore extends EventEmitter {
                 this.handleIRet();
                 break;
 
+            // ===== LEA INSTRUCTIONS =====
+            case Opcode.LEA_CD_A: { // LEA A, [C:D] - Load effective address into A
+                // Combine C et D pour former une adresse 16-bit
+                const address = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
+
+                // Stocker l'adresse dans A (8-bit seulement, donc on prend le LSB)
+                // Note: comme A est 8-bit, on ne peut stocker que le low byte de l'adresse
+                this.setRegister("A", (address & 0xFF) as u8);
+
+                // Mettre à jour flags (Z=1 si adresse low byte = 0)
+                const zero = (address & 0xFF) === 0;
+                this.setFlags(zero, false);
+
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.LEA_CD_B: { // LEA B, [C:D] - Load effective address into B
+                const address = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
+                this.setRegister("B", (address & 0xFF) as u8);
+                const zero = (address & 0xFF) === 0;
+                this.setFlags(zero, false);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.LEA_IMM_CD: { // LEA CD, imm16 - Load immediate address into C:D
+                // Lire l'adresse immédiate 16-bit
+                const address = this.cpu.readMem16(pc);
+
+                // Stocker dans C:D (C = low byte, D = high byte)
+                this.setRegister("C", (address & 0xFF) as u8);
+                this.setRegister("D", ((address >> 8) & 0xFF) as u8);
+
+                // Pas de mise à jour des flags (LEA ne modifie pas les flags en x86)
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
+            }
+
+            case Opcode.LEA_A_MEM: { // LEA A, [imm16] - Load address low byte into A
+                const address = this.cpu.readMem16(pc);
+                this.setRegister("A", (address & 0xFF) as u8);
+
+                // Mettre à jour zero flag si low byte = 0
+                const zero = (address & 0xFF) === 0;
+                this.setFlags(zero, false);
+
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
+            }
+
+            case Opcode.LEA_B_MEM: { // LEA B, [imm16] - Load address low byte into B
+                const address = this.cpu.readMem16(pc);
+                this.setRegister("B", (address & 0xFF) as u8);
+
+                const zero = (address & 0xFF) === 0;
+                this.setFlags(zero, false);
+
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
+            }
+
+            case Opcode.LEA_CD_MEM: { // LEA CD, [imm16] - Load address into C:D
+                const address = this.cpu.readMem16(pc);
+
+                // Stocker dans C:D (C = low byte, D = high byte)
+                this.setRegister("C", (address & 0xFF) as u8);
+                this.setRegister("D", ((address >> 8) & 0xFF) as u8);
+
+                this.setRegister("PC", (pc + 3) as u16);
+                break;
+            }
+
+            case Opcode.LEA_CD_OFFSET: { // LEA CD, [CD + imm8] - Address with offset
+                const offset = this.cpu.readMem8(pc);
+                const baseAddr = ((this.getRegister("D") << 8) | this.getRegister("C")) as u16;
+
+                // Calculer la nouvelle adresse
+                // Version non signée:
+                const address = (baseAddr + offset) as u16;
+
+                // Version signée (pour offset négatif):
+                // const signedOffset = offset > 127 ? offset - 256 : offset;
+                // const address = (baseAddr + signedOffset) as u16;
+
+                this.setRegister("C", (address & 0xFF) as u8);
+                this.setRegister("D", ((address >> 8) & 0xFF) as u8);
+
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
             // ===== MOV register-register =====
             case Opcode.MOV_AB:  // A → B
                 this.setRegister("B", this.getRegister("A"));
@@ -2250,7 +2342,7 @@ const ALU = {
     },
 
     // Shift bits
-    shl: (value: u8, count: u8=U8(1)): { result: u8, flags: { zero: boolean, carry: boolean } } => {
+    shl: (value: u8, count: u8 = U8(1)): { result: u8, flags: { zero: boolean, carry: boolean } } => {
         let result = value;
         let carry = false;
 
@@ -2263,7 +2355,7 @@ const ALU = {
         return { result, flags: { zero, carry } };
     },
 
-    shr: (value: u8, count: u8=U8(1)): { result: u8, flags: { zero: boolean, carry: boolean } } => {
+    shr: (value: u8, count: u8 = U8(1)): { result: u8, flags: { zero: boolean, carry: boolean } } => {
         let result = value;
         let carry = false;
 
@@ -2277,7 +2369,7 @@ const ALU = {
     },
 
     // Rotation avec carry
-    rol: (value: u8, count: u8=U8(1), carryIn: boolean = false): { result: u8, flags: { zero: boolean, carry: boolean } } => {
+    rol: (value: u8, count: u8 = U8(1), carryIn: boolean = false): { result: u8, flags: { zero: boolean, carry: boolean } } => {
         let result = value;
         let carry = carryIn;
 
@@ -2292,7 +2384,7 @@ const ALU = {
         return { result, flags: { zero, carry } };
     },
 
-    ror: (value: u8, count: u8=U8(1), carryIn: boolean = false): { result: u8, flags: { zero: boolean, carry: boolean } } => {
+    ror: (value: u8, count: u8 = U8(1), carryIn: boolean = false): { result: u8, flags: { zero: boolean, carry: boolean } } => {
         let result = value;
         let carry = carryIn;
 

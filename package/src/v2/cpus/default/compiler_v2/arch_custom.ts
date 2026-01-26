@@ -158,6 +158,24 @@ const instructions: InstructionDef[] = [
         ]
     },
 
+    {
+        mnemonic: 'LEA', opcode: 0x00, operands: 'REG_MEM', size: 1, variants: [
+            { operands: 'REG_MEM', opcode: Opcode.LEA_CD_A, size: 1, condition: (ops) => ops[0].register === 'A' && ops[1].type === 'MEMORY' && ops[1].register === 'CD', mnemonic: 'LEA_CD_A' },
+            { operands: 'REG_MEM', opcode: Opcode.LEA_CD_B, size: 1, condition: (ops) => ops[0].register === 'B' && ops[1].type === 'MEMORY' && ops[1].register === 'CD', mnemonic: 'LEA_CD_B' },
+            { operands: 'REG_IMM16', opcode: Opcode.LEA_IMM_CD, size: 3, condition: (ops) => ops[0].register === 'CD' && ops[1].type === 'IMMEDIATE', mnemonic: 'LEA_IMM_CD' },
+
+            // LEA avec registre 8-bit et adresse immédiate
+            { operands: 'REG_IMM16', opcode: Opcode.LEA_A_MEM, size: 3, condition: (ops) => ops[0].register === 'A' && ops[1].type === 'IMMEDIATE', mnemonic: 'LEA_A_MEM' },
+            { operands: 'REG_IMM16', opcode: Opcode.LEA_B_MEM, size: 3, condition: (ops) => ops[0].register === 'B' && ops[1].type === 'IMMEDIATE', mnemonic: 'LEA_B_MEM' },
+
+            // LEA avec registre 16-bit (CD) et adresse immédiate
+            { operands: 'REG_IMM16', opcode: Opcode.LEA_CD_MEM, size: 3, condition: (ops) => ops[0].register === 'CD' && ops[1].type === 'IMMEDIATE', mnemonic: 'LEA_CD_MEM' },
+
+            // LEA CD avec pointeur CD et offset
+            { operands: 'REG_MEM_IMM16', opcode: Opcode.LEA_CD_OFFSET, size: 2, condition: (ops) => ops[0].register === 'CD' && ops[1].type === 'MEMORY' && ops[1].register === 'CD' && ops[2].type === 'IMMEDIATE', mnemonic: 'LEA_CD_OFFSET' },
+
+        ]
+    },
 
     // ALU
     {
