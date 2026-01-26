@@ -239,7 +239,7 @@ export class Computer extends EventEmitter {
         let compiledCode: CompiledCode | null = null;
 
         if (program.filepath) {
-            const codeSource = await loadSourceCodeFromFile(os.filepath);
+            const codeSource = await loadSourceCodeFromFile(program.filepath);
             compiledCode = await universalCompiler(codeSource, memoryOffset)
 
         } else {
