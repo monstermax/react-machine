@@ -13,7 +13,7 @@ export type OperandType =
     | 'REG_IMM16'
     | 'REG_MEM'
     | 'MEM_REG'
-    | 'REG_IMM_IMM' // pour SET_SP => mov esp, BOOTLOADER_STACK_END_LOW, BOOTLOADER_STACK_END_HIGH
+    | 'REG_IMM_IMM'
     ;
 
 export interface InstructionDef {

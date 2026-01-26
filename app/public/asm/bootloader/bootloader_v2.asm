@@ -25,7 +25,9 @@ section .data
 section .text
     global INIT
 
-; TODO: "Booting from hardisk..."
+
+; TODO: "Booting from hardisk..." + Load OS in RAM (implement DMA IO read-write)
+
 
 INIT:
 

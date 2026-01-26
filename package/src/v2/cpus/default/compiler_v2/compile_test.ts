@@ -21,7 +21,7 @@ section .data
     LEDS_BASE               dw 0xF030
     CLOCK_FREQ              dw 0xF120
     OS_START                dw 0x0500
-    BOOTLOADER_STACK_END    dw 0xEE0F
+    STACK_END    dw 0xEE0F
 
     ; Définitions constantes (équivalents @define8)
     INITIAL_FREQ        equ 10
@@ -37,7 +37,7 @@ section .text
 INIT:
 
 MAIN:
-    mov esp, [BOOTLOADER_STACK_END] ; set stack pointer
+    mov esp, [STACK_END] ; set stack pointer
 
     mov al, INITIAL_FREQ
     mov [CLOCK_FREQ], al ; set clock frequency
