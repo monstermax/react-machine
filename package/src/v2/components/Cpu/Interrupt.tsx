@@ -23,6 +23,7 @@ export type InterruptProps = {
 
 export const Interrupt: React.FC<InterruptProps> = (props) => {
     const { hidden, open=false, ioPort=null, children, onInstanceCreated } = props;
+    const { computerRef } = useComputer();
 
     // Core
     const [interruptInstance, setInterruptInstance] = useState<cpuApi.Interrupt | null>(null);
@@ -49,6 +50,9 @@ export const Interrupt: React.FC<InterruptProps> = (props) => {
 
             // Handle state updates
             interrupt.on('state', (state) => {
+                if (!computerRef.current) return;
+                if (computerRef.current.disableUiSync) return;
+
                 if (!interrupt) return
                 //console.log('Interrupt state update', state)
 

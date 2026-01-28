@@ -58,7 +58,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
 
             // Handle state updates for UI
             memoryBusInstance.on('state', (state) => {
-                console.log('MemoryBus state update', state)
+                //console.log('MemoryBus state update', state)
 
             })
 

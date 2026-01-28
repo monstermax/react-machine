@@ -28,7 +28,7 @@ export type CpuProps = {
 export const Cpu: React.FC<CpuProps> = (props) => {
     const { hidden, cores: coresCount, type: cpuType, active: cpuActiveAtInit, controls: showControls = false, registers: showRegisters = false, open=false, children } = props;
     const { onInstanceCreated } = props;
-    const { motherboardRef, devicesManagerRef } = useComputer();
+    const { computerRef, motherboardRef, devicesManagerRef } = useComputer();
 
     // Core
     const [cpuInstance, setCpuInstance] = useState<cpuApi.Cpu | null>(null);
@@ -74,7 +74,9 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
             // Handle CPU state updates for UI
             cpu.on('state', (state) => {
-                ;
+                if (!computerRef.current) return;
+                if (computerRef.current.disableUiSync) return;
+
                 //console.log('CPU state update', state)
 
                 if (state.cpuHalted !== undefined) {
@@ -99,6 +101,9 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                 //const coreIdx = core.idx;
 
                 core.on('state', (state) => {
+                    if (!computerRef.current) return;
+                    if (computerRef.current.disableUiSync) return;
+
                     const coreIdx = state.idx;
                     //console.log('CPU CORE state update', coreIdx, state)
 

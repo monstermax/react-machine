@@ -26,6 +26,7 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
     const [loadedProgram, setLoadedProgram] = useState<string | null>(null);
     const [view, setView] = useState<ViewType>(initialView);
     const [clockActive, setClockActive] = useState(false);
+    const [disableUiSync, setDisableUiSync] = useState(false);
 
 
     // Instanciate Computer
@@ -105,6 +106,12 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
         } else {
             motherboardInstance.clock.start()
         }
+    }
+
+    const toggleUiSync = () => {
+        if (!computerInstance) return;
+        computerInstance.disableUiSync = !computerInstance.disableUiSync
+        setDisableUiSync(computerInstance.disableUiSync);
     }
 
     const resetComputer = () => {
@@ -226,6 +233,12 @@ export const ComputerContainer: React.FC<{ view?: ViewType, children?: React.Rea
                             className="bg-red-900 hover:bg-red-700 disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
                         >
                             ⟳ Reset
+                        </button>
+                        <button
+                            onClick={() => toggleUiSync()}
+                            className={`disabled:bg-slate-600 cursor-pointer disabled:cursor-not-allowed px-2 py-1 rounded transition-colors ${disableUiSync ? "bg-gray-600 hover:bg-gray-700" : "bg-orange-900 hover:bg-orange-700"}`}
+                        >
+                            UI Sync
                         </button>
                     </div>
                 </div>

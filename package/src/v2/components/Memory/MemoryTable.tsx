@@ -62,6 +62,9 @@ export const MemoryTable: React.FC<{ name: string, storage: Map<u16, u8> }> = ({
                 for (const core of cpuInstance.cores) {
 
                     core.on('state', (state) => {
+                        if (!computerRef.current) return;
+                        if (computerRef.current.disableUiSync) return;
+
                         const coreIdx = state.idx;
                         //console.log('update core pc', coreIdx, Object.keys(state))
 

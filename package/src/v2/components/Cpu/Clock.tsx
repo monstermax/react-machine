@@ -37,7 +37,7 @@ export type ClockProps = {
 
 export const Clock: React.FC<ClockProps> = (props) => {
     const { hidden=false, open=false, ioPort=null, frequency: initialFrequency, children, onInstanceCreated } = props;
-    const { motherboardRef } = useComputer();
+    const { computerRef, motherboardRef } = useComputer();
 
     // Core
     const [clockInstance, setClockInstance] = useState<cpuApi.Clock | null>(null);
@@ -84,6 +84,9 @@ export const Clock: React.FC<ClockProps> = (props) => {
             })
 
             clockInstance.on('tick', ({ cycle }) => {
+                //if (!computerRef.current) return;
+                //if (computerRef.current.disableUiSync) return;
+
                 //console.log('Clock tick', cycle)
                 delayer('clock-cycle', (cycle: number) => {
                     setClockCycle(cycle)

@@ -17,6 +17,7 @@ export class Computer extends EventEmitter {
     public breakpoints: Set<number> = new Set;
     public loadedOs: string | null = null;
     public loadedProgram: string | null = null;
+    public disableUiSync = false;
 
 
     constructor() {

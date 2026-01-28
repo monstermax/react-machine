@@ -23,7 +23,7 @@ export type RamProps = {
 
 export const Ram: React.FC<RamProps> = (props) => {
     const { data, open = false, hidden = false, size: maxSize = 1 + MEMORY_MAP.RAM_END - MEMORY_MAP.RAM_START, children, onInstanceCreated } = props;
-    const { memoryBusRef } = useComputer();
+    const { computerRef, memoryBusRef } = useComputer();
 
     // Core
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
@@ -54,6 +54,9 @@ export const Ram: React.FC<RamProps> = (props) => {
 
             // Handle state updates for UI
             ram.on('state', (state) => {
+                if (!computerRef.current) return;
+                if (computerRef.current.disableUiSync) return;
+
                 //console.log('RAM state update', state)
 
                 if (state.storage) {

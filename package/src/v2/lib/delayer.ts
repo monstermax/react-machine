@@ -1,47 +1,52 @@
 
+const delayers = new Map<string, {
+    timer: NodeJS.Timeout | null;
+    lastArgs: any[];
+    pendingSince: number | null;
+}>();
 
-const delayers: Map<string, { timer: NodeJS.Timeout | null, waiting: boolean, requestDate: number | null }> = new Map;
 
+export const delayer = (
+    name: string,
+    callback: Function,
+    delay: number,       // Délai d'attente après le dernier appel
+    maxFrequency: number, // Délai MAX avant forçage (optionnel)
+    args: any[]
+) => {
+    const key = name;
+    let state = delayers.get(key);
 
-export const delayer = (name: string, callback: (...args: any[]) => void, delay: number, maxDelay: number, args: any[]) => {
-    let delayerKey = `${name}-${JSON.stringify(args)}`;
-    let delayer = delayers.get(delayerKey);
-    const uiFPS = 1000 / maxDelay;
-
-    if (!delayer) {
-        delayer = { timer: null, requestDate: null, waiting: false };
-        //console.log('waiting: SET FALSE')
-        delayers.set(delayerKey, delayer)
-    }
-
-    if (delayer.timer !== null) {
-        clearTimeout(delayer.timer);
-        delayer.timer = null;
-    }
-
-    if (delayer.waiting && delayer.requestDate && Date.now() - delayer.requestDate > 1000 / uiFPS) {
-        //console.log('delayer:', 'forced', delayer.requestDate, delayer.waiting)
-        callback(...args);
-        delayer.waiting = false;
-        //console.log('waiting: set FALSE')
-
+    if (!state) {
+        state = { timer: null, lastArgs: args, pendingSince: Date.now() };
+        delayers.set(key, state);
     } else {
-        if (!delayer.waiting) {
-            delayer.requestDate = Date.now()
-            delayer.waiting = true;
-            //console.log('waiting: set TRUE')
-        }
-
-        delayer.timer = setTimeout(() => {
-            //console.log('delayer:', 'not-forced', delayer?.requestDate, delayer.waiting)
-            callback(...args);
-
-            if (delayer) {
-                delayer.waiting = false;
-                //console.log('waiting: set FALSE')
-            }
-        }, delay);
+        state.lastArgs = args;
+        state.pendingSince = state.pendingSince || Date.now();
     }
-}
 
+    // Annuler le timer précédent
+    if (state.timer) {
+        clearTimeout(state.timer);
+    }
 
+    const now = Date.now();
+    const pendingTime = state.pendingSince ? now - state.pendingSince : 0;
+
+    // FORÇAGE si trop de temps a passé depuis le premier appel en attente
+    if (maxFrequency && pendingTime >= maxFrequency) {
+        console.log('FORCED after', pendingTime, 'ms');
+        callback(...state.lastArgs);
+        delayers.delete(key);
+        return;
+    }
+
+    // DEBOUNCE normal : attendre le délai
+    state.timer = setTimeout(() => {
+        const currentState = delayers.get(key);
+        if (!currentState) return;
+
+        console.log('DEBOUNCE executed after delay');
+        callback(...currentState.lastArgs);
+        delayers.delete(key);
+    }, delay);
+};
