@@ -72,7 +72,7 @@ export const RANDOM_PIXELS: ProgramInfo = {
         [0x13, high16(MEMORY_MAP.RNG_OUTPUT)], // RNG_OUTPUT - high
         [0x14, Opcode.MOV_B_IMM],
         [0x15, 0x0F],
-        [0x16, Opcode.AND], // A = A & 0x0F
+        [0x16, Opcode.AND_A_IMM], // A = A & 0x0F
         [0x17, Opcode.MOV_MEM_A],
         [0x18, low16(MEMORY_MAP.PIXEL_COLOR)],  // PIXEL_COLOR - low
         [0x19, high16(MEMORY_MAP.PIXEL_COLOR)], // PIXEL_COLOR - high
@@ -113,7 +113,7 @@ export const RTC_STOPWATCH: ProgramInfo = {
         [0x0B, Opcode.MOV_B_IMM], [0x0C, 0x00],
         [0x0D, Opcode.MOV_BC], // B = C (ancienne seconde)
         [0x0E, Opcode.POP_A],
-        [0x0F, Opcode.SUB], // A = A - B
+        [0x0F, Opcode.SUB_A_IMM], // A = A - B
 
         [0x10, Opcode.JZ], // Si égal, loop
         [0x11, 0x07], [0x12, 0x02],

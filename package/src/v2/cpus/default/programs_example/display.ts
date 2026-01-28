@@ -308,7 +308,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             // DIV_LOOP: (adresse 0x16)
             [0x16, Opcode.INC_C], // C++
-            [0x17, Opcode.SUB], // A = A - B
+            [0x17, Opcode.SUB_A_IMM], // A = A - B
             [0x18, Opcode.JC], // Si carry (A < B), fin division
             [0x19, low16(MEMORY_MAP.PROGRAM_START + 0x1E as u16)],
             [0x1A, high16(MEMORY_MAP.PROGRAM_START + 0x1E as u16)],
@@ -320,14 +320,14 @@ export const programs: Record<string, ProgramInfo> = {
 
             // FIN_DIV: (adresse 0x1E)
             // Ajuster: on a soustrait une fois de trop, ajouter 10
-            [0x1E, Opcode.ADD], // A = A + B (reste)
+            [0x1E, Opcode.ADD_A_IMM], // A = A + B (reste)
             [0x1F, Opcode.DEC_C], // C-- (quotient trop grand de 1)
 
             // Afficher dizaine (C contient dizaines)
             [0x20, Opcode.MOV_AC], // C → A
             [0x21, Opcode.MOV_B_IMM], // '0' dans B
             [0x22, 0x30],
-            [0x23, Opcode.ADD], // A = A + B
+            [0x23, Opcode.ADD_A_IMM], // A = A + B
 
             // Écrire sur LCD (data)
             [0x24, Opcode.MOV_MEM_A],
@@ -347,7 +347,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x2A, 10],
 
             // MOD_LOOP: (adresse relative: 0x2B)
-            [0x2B, Opcode.SUB], // A = A - B
+            [0x2B, Opcode.SUB_A_IMM], // A = A - B
             [0x2C, Opcode.JC], // Si carry (A < B), fin
             [0x2D, low16(MEMORY_MAP.PROGRAM_START + 0x32 as u16)],
             [0x2E, high16(MEMORY_MAP.PROGRAM_START + 0x32 as u16)],
@@ -359,12 +359,12 @@ export const programs: Record<string, ProgramInfo> = {
 
             // FIN_MOD: (adresse 0x32)
             // Ajuster reste: A + B (car on a soustrait une fois de trop)
-            [0x32, Opcode.ADD], // A = reste (0-9)
+            [0x32, Opcode.ADD_A_IMM], // A = reste (0-9)
 
             // Convertir en ASCII
             [0x33, Opcode.MOV_B_IMM],
             [0x34, 0x30], // '0'
-            [0x35, Opcode.ADD], // A = reste + '0'
+            [0x35, Opcode.ADD_A_IMM], // A = reste + '0'
 
             // Écrire unité sur LCD
             [0x36, Opcode.MOV_MEM_A],
@@ -406,7 +406,7 @@ export const programs: Record<string, ProgramInfo> = {
             // Vérifier si A < 100
             [0x4B, Opcode.MOV_B_IMM],
             [0x4C, 100],
-            [0x4D, Opcode.SUB], // A - 100
+            [0x4D, Opcode.SUB_A_IMM], // A - 100
             [0x4E, Opcode.JC], // Si carry (A < 100), continuer
             [0x4F, low16(MEMORY_MAP.PROGRAM_START + 0x52 as u16)],
             [0x50, high16(MEMORY_MAP.PROGRAM_START + 0x52 as u16)],
@@ -416,7 +416,7 @@ export const programs: Record<string, ProgramInfo> = {
 
             // Continuer boucle (restaurer A avant de boucler)
             // On a A = A - 100, besoin de A original pour boucle
-            [0x52, Opcode.ADD], // A = (A - 100) + 100 = A original
+            [0x52, Opcode.ADD_A_IMM], // A = (A - 100) + 100 = A original
             [0x53, Opcode.JMP],
             [0x54, low16(MEMORY_MAP.PROGRAM_START + 0x0A as u16)],
             [0x55, high16(MEMORY_MAP.PROGRAM_START + 0x0A as u16)],
@@ -505,7 +505,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x13, Opcode.PUSH_A],                 // Sauver A
             [0x14, Opcode.MOV_B_IMM],
             [0x15, 15],  // Comparer avec 15
-            [0x16, Opcode.SUB],                    // A = A - 15
+            [0x16, Opcode.SUB_A_IMM],                    // A = A - 15
             [0x17, Opcode.POP_A],                  // Restaurer A
             [0x18, Opcode.JNZ],
             [0x19, low16(MEMORY_MAP.PROGRAM_START + 0x05 as u16)],  // LOOP_HAUT => Si A != 15, loop
@@ -534,7 +534,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x2B, Opcode.PUSH_A],
             [0x2C, Opcode.MOV_B_IMM],
             [0x2D, 15],
-            [0x2E, Opcode.SUB],
+            [0x2E, Opcode.SUB_A_IMM],
             [0x2F, Opcode.POP_A],
             [0x30, Opcode.JNZ],
             [0x31, low16(MEMORY_MAP.PROGRAM_START + 0x1D as u16)],  // LOOP_BAS
@@ -563,7 +563,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x43, Opcode.PUSH_A],
             [0x44, Opcode.MOV_B_IMM],
             [0x45, 14],
-            [0x46, Opcode.SUB],
+            [0x46, Opcode.SUB_A_IMM],
             [0x47, Opcode.POP_A],
             [0x48, Opcode.JNZ],
             [0x49, low16(MEMORY_MAP.PROGRAM_START + 0x35 as u16)],  // LOOP_GAUCHE
@@ -592,7 +592,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x5B, Opcode.PUSH_A],
             [0x5C, Opcode.MOV_B_IMM],
             [0x5D, 14],
-            [0x5E, Opcode.SUB],
+            [0x5E, Opcode.SUB_A_IMM],
             [0x5F, Opcode.POP_A],
             [0x60, Opcode.JNZ],
             [0x61, low16(MEMORY_MAP.PROGRAM_START + 0x4D as u16)],  // LOOP_DROIT

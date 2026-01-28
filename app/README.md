@@ -540,3 +540,7 @@ Acte 5 : La magie de l'abstraction (4 min)
 
 
 
+
+# Ressources:
+- https://lions-wing.net/lessons/hardware/hard.html
+

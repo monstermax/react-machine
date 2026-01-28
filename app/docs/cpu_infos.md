@@ -1,5 +1,9 @@
 
 
+https://lions-wing.net/lessons/hardware/hard.html
+
+
+
 # Z80 vs 8086 : Comparaison
 
 

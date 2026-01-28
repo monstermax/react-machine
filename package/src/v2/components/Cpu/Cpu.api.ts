@@ -392,45 +392,190 @@ class CpuCore extends EventEmitter {
 
 
             // ===== ALU INSTRUCTIONS =====
-            case Opcode.ADD: { // A = A + B
-                const { result, flags } = ALU.add(this.getRegister("A"), this.getRegister("B"));
+
+            case Opcode.ADD_A_IMM: { // A = A + IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.add(this.getRegister("A"), imm);
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
-                this.setRegister("PC", (pc + 1) as u16);
+                this.setRegister("PC", (pc + 2) as u16);
                 break;
             }
 
-            case Opcode.SUB: { // A = A - B
-                const { result, flags } = ALU.sub(this.getRegister("A"), this.getRegister("B"))
+            case Opcode.SUB_A_IMM: { // A = A - IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.sub(this.getRegister("A"), imm)
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
-                this.setRegister("PC", (pc + 1) as u16);
+                this.setRegister("PC", (pc + 2) as u16);
                 break;
             }
 
-            case Opcode.AND: { // A = A & B
-                const { result, flags } = ALU.and(this.getRegister("A"), this.getRegister("B"))
+            case Opcode.AND_A_IMM: { // A = A & IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.and(this.getRegister("A"), imm)
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
-                this.setRegister("PC", (pc + 1) as u16);
+                this.setRegister("PC", (pc + 2) as u16);
                 break;
             }
 
-            case Opcode.OR: { // A = A | B
-                const { result, flags } = ALU.or(this.getRegister("A"), this.getRegister("B"))
+            case Opcode.OR_A_IMM: { // A = A | IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.or(this.getRegister("A"), imm)
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
-                this.setRegister("PC", (pc + 1) as u16);
+                this.setRegister("PC", (pc + 2) as u16);
                 break;
             }
 
-            case Opcode.XOR: { // A = A ^ B
-                const { result, flags } = ALU.xor(this.getRegister("A"), this.getRegister("B"))
+            case Opcode.XOR_A_IMM: { // A = A ^ IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.xor(this.getRegister("A"), imm)
                 this.setRegister("A", result);
                 this.setFlags(flags.zero, flags.carry);
-                this.setRegister("PC", (pc + 1) as u16);
+                this.setRegister("PC", (pc + 2) as u16);
                 break;
             }
+
+
+            case Opcode.ADD_B_IMM: { // B = B + IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.add(this.getRegister("B"), imm);
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.SUB_B_IMM: { // B = B - IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.sub(this.getRegister("B"), imm)
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.AND_B_IMM: { // B = B & IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.and(this.getRegister("B"), imm)
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.OR_B_IMM: { // B = B | IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.or(this.getRegister("B"), imm)
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.XOR_B_IMM: { // B = B ^ IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.xor(this.getRegister("B"), imm)
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+
+            case Opcode.ADD_C_IMM: { // C = C + IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.add(this.getRegister("C"), imm);
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.SUB_C_IMM: { // C = C - IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.sub(this.getRegister("C"), imm)
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.AND_C_IMM: { // C = C & IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.and(this.getRegister("C"), imm)
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.OR_C_IMM: { // C = C | IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.or(this.getRegister("C"), imm)
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.XOR_C_IMM: { // C = C ^ IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.xor(this.getRegister("C"), imm)
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+
+            case Opcode.ADD_D_IMM: { // D = D + IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.add(this.getRegister("D"), imm);
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.SUB_D_IMM: { // D = D - IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.sub(this.getRegister("D"), imm)
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.AND_D_IMM: { // D = D & IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.and(this.getRegister("D"), imm)
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.OR_D_IMM: { // D = D | IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.or(this.getRegister("D"), imm)
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.XOR_D_IMM: { // D = D ^ IMM
+                const imm = this.cpu.readMem8(pc);
+                const { result, flags } = ALU.xor(this.getRegister("D"), imm)
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
 
             case Opcode.ADD_AA: { // A = A + A
                 const { result, flags } = ALU.add(this.getRegister("A"), this.getRegister("A"))
@@ -1075,6 +1220,40 @@ class CpuCore extends EventEmitter {
                 break;
             }
 
+
+            case Opcode.TEST_A_IMM: { // TEST A, IMM
+                const imm = this.cpu.readMem8(pc);
+                const { flags } = ALU.test(this.getRegister("A"), imm);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.TEST_B_IMM: { // TEST B, IMM
+                const imm = this.cpu.readMem8(pc);
+                const { flags } = ALU.test(this.getRegister("B"), imm);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.TEST_C_IMM: { // TEST C, IMM
+                const imm = this.cpu.readMem8(pc);
+                const { flags } = ALU.test(this.getRegister("C"), imm);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+            case Opcode.TEST_D_IMM: { // TEST D, IMM
+                const imm = this.cpu.readMem8(pc);
+                const { flags } = ALU.test(this.getRegister("D"), imm);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 2) as u16);
+                break;
+            }
+
+
             case Opcode.CMP_AA: { // CMP A, A
                 const { flags } = ALU.cmp(this.getRegister("A"), this.getRegister("A"));
                 this.setFlags(flags.zero, flags.carry);
@@ -1397,6 +1576,38 @@ class CpuCore extends EventEmitter {
             }
 
 
+            case Opcode.NOT_A: { // A = !A
+                const { result, flags } = ALU.not(this.getRegister("A"))
+                this.setRegister("A", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.NOT_B: { // B = !B
+                const { result, flags } = ALU.not(this.getRegister("B"))
+                this.setRegister("B", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.NOT_C: { // C = !C
+                const { result, flags } = ALU.not(this.getRegister("C"))
+                this.setRegister("C", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
+            case Opcode.NOT_D: { // D = !D
+                const { result, flags } = ALU.not(this.getRegister("D"))
+                this.setRegister("D", result);
+                this.setFlags(flags.zero, flags.carry);
+                this.setRegister("PC", (pc + 1) as u16);
+                break;
+            }
+
 
             case Opcode.INC_A: { // A = A + 1
                 const { result, flags } = ALU.inc(this.getRegister("A"))
@@ -1493,6 +1704,38 @@ class CpuCore extends EventEmitter {
 
             case Opcode.JNC: // Jump if Not Carry Flag
                 if (!this.getFlag('carry')) {
+                    this.setRegister("PC", this.cpu.readMem16(pc));
+                } else {
+                    this.setRegister("PC", (pc + 3) as u16);
+                }
+                break;
+
+            case Opcode.JL: // Jump if Lower
+                if (!this.getFlag('zero') && this.getFlag('carry')) {
+                    this.setRegister("PC", this.cpu.readMem16(pc));
+                } else {
+                    this.setRegister("PC", (pc + 3) as u16);
+                }
+                break;
+
+            case Opcode.JLE: // Jump if Lower or Equal
+                if (this.getFlag('zero') || this.getFlag('carry')) {
+                    this.setRegister("PC", this.cpu.readMem16(pc));
+                } else {
+                    this.setRegister("PC", (pc + 3) as u16);
+                }
+                break;
+
+            case Opcode.JG: // Jump if Greater
+                if (!this.getFlag('zero') && !this.getFlag('carry')) {
+                    this.setRegister("PC", this.cpu.readMem16(pc));
+                } else {
+                    this.setRegister("PC", (pc + 3) as u16);
+                }
+                break;
+
+            case Opcode.JGE: // Jump if Greater or Equal
+                if (this.getFlag('zero') || !this.getFlag('carry')) {
                     this.setRegister("PC", this.cpu.readMem16(pc));
                 } else {
                     this.setRegister("PC", (pc + 3) as u16);
@@ -2295,6 +2538,13 @@ export class Cpu extends BaseCpu {
 
 // Arithmetic Logic Unit
 const ALU = {
+    not:(a: u8): { result: u8, flags: { zero: boolean, carry: boolean } } => {
+        const result = ((~a) & 0xFF) as u8;
+        const carry = (~a) > 0xFF;
+        const zero = result === 0;
+        const flags = ({ zero, carry });
+        return { result, flags };
+    },
     add: (a: u8, b: u8): { result: u8, flags: { zero: boolean, carry: boolean } } => {
         const result = ((a + b) & 0xFF) as u8;
         const carry = (a + b) > 0xFF;

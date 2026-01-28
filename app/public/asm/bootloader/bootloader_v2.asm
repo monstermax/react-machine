@@ -53,7 +53,7 @@ WAIT_FOR_OS:
 
     ; double la valeur de B (décalage de bits) ; decale la led à afficher
     mov bl, al
-    add al
+    add al, bl
 
     test al
     jz BOOTLOADER_READY ; apres l'affichage de la derniere LED, jump to BOOTLOADER_READY

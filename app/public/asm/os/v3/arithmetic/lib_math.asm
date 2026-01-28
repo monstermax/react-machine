@@ -6,6 +6,7 @@
 
 section .text
 
+
 ; --------------------------------------------------------
 ; mul8 - Multiplication non signée 8 bits
 ; Entrée: al = multiplicande, bl = multiplicateur
@@ -31,6 +32,7 @@ mul8:
     
     pop cx           ; Restaure cx
     ret
+
 
 ; --------------------------------------------------------
 ; mul8_signed - Multiplication signée 8 bits
@@ -71,8 +73,9 @@ mul8_signed:
     pop cx
     ret
 
+
 ; --------------------------------------------------------
-; div8 - Division non signée 8 bits
+; div8 - Division non signée 8 bits (sans RCL)
 ; Entrée: al = dividende, bl = diviseur
 ; Sortie: al = quotient, bl = reste
 ; --------------------------------------------------------
@@ -80,33 +83,46 @@ div8:
     push cx
     push dx
     
-    cmp bl, 0        ; Évite division par zéro
-    jz .div_end
+    cmp bl, 0
+    jz .error
     
-    mov cl, 8        ; 8 bits à traiter
-    xor dl, dl       ; dl = reste partiel
+    mov cl, 8        ; 8 bits
+    xor ch, ch       ; ch = quotient
+    mov dl, al       ; dl = dividende (reste partiel)
     
-.div_loop:
-    shl al, 1        ; Décale dividende vers la gauche
-    rcl dl, 1        ; Décale reste avec retenue
+.bit_loop:
+    ; Décale quotient et reste
+    shl ch, 1        ; quotient << 1
+    shl dl, 1        ; reste << 1
     
-    ; Compare reste avec diviseur
+    ; Compare avec diviseur
     cmp dl, bl
-    jb .no_sub
+    jb .zero_bit
     
-    sub dl, bl       ; Soustrait diviseur
-    or al, 1         ; Met le bit de quotient à 1
+    ; Bit = 1
+    sub dl, bl       ; soustrait diviseur
+    or ch, 1         ; met bit à 1
     
-.no_sub:
+.zero_bit:
+    ; Bit = 0 (déjà fait par shl ch,1)
+    
     dec cl
-    jnz .div_loop
+    jnz .bit_loop
     
-    mov bl, dl       ; bl = reste
+    ; Résultats
+    mov al, ch       ; quotient
+    mov bl, dl       ; reste
+    jmp .end
     
-.div_end:
+.error:
+    mov al, 0xFF
+    mov bl, 0xFF
+    
+.end:
     pop dx
     pop cx
     ret
+
 
 ; --------------------------------------------------------
 ; mod8 - Modulo non signé 8 bits
@@ -117,6 +133,7 @@ mod8:
     call div8
     mov al, bl       ; al = reste
     ret
+
 
 ; --------------------------------------------------------
 ; square8 - Carré d'un nombre 8 bits
@@ -129,6 +146,7 @@ square8:
     call mul8        ; al = al * bl
     pop bx
     ret
+
 
 ; --------------------------------------------------------
 ; power8 - Puissance 8 bits
@@ -146,19 +164,25 @@ power8:
     
 .not_zero:
     mov cl, bl       ; cl = compteur d'exposant
-    mov dl, al       ; dl = résultat accumulé
+    mov dl, al       ; dl = résultat accumulé (commence avec base)
     
-    mov al, 1        ; al = résultat initial
+    mov al, 1        ; al = résultat initial = 1
     
 .power_loop:
+    ; Multiplier résultat par base
     push ax
     mov al, dl       ; al = base
-    mov bl, al       ; bl = résultat accumulé
-    call mul8        ; al = al * bl
-    mov dl, al       ; stocke nouveau résultat
+    mov bl, al       ; bl = résultat courant
+    call mul8        ; al = base * résultat_courant
+    mov dl, al       ; stocke nouveau résultat dans dl
     pop ax
     
-    mul dl           ; utilise mul8 interne
+    ; Utilise le bon mul8 (pas "mul")
+    push bx
+    mov bl, dl       ; bl = nouveau résultat
+    call mul8        ; al = al * bl (accumule)
+    pop bx
+    
     dec cl
     jnz .power_loop
     
@@ -166,6 +190,7 @@ power8:
     pop dx
     pop cx
     ret
+
 
 ; --------------------------------------------------------
 ; abs8 - Valeur absolue 8 bits
@@ -180,6 +205,7 @@ abs8:
 .positive:
     ret
 
+
 ; --------------------------------------------------------
 ; is_even - Test parité
 ; Entrée: al = nombre
@@ -189,6 +215,7 @@ is_even:
     and al, 1        ; Garde uniquement le bit de poids faible
     xor al, 1        ; Inverse: 1→0, 0→1
     ret
+
 
 ; --------------------------------------------------------
 ; avg8 - Moyenne de deux nombres

@@ -49,7 +49,7 @@ export const LCD_CLOCK: ProgramInfo = {
         // Convertir en ASCII (simplification: affiche hex)
         [0x2E, Opcode.PUSH_A],
         [0x2F, Opcode.MOV_B_IMM], [0x30, 0x30], // '0'
-        [0x31, Opcode.ADD], // A = heures + '0' (approximation)
+        [0x31, Opcode.ADD_A_IMM], // A = heures + '0' (approximation)
         [0x32, Opcode.MOV_MEM_A],
         [0x33, 0xA0], [0x34, 0xFF], // LCD_DATA
 
@@ -64,7 +64,7 @@ export const LCD_CLOCK: ProgramInfo = {
         [0x3B, Opcode.MOV_A_MEM],
         [0x3C, 0xC5], [0x3D, 0xFF], // RTC_MINUTES
         [0x3E, Opcode.MOV_B_IMM], [0x3F, 0x30],
-        [0x40, Opcode.ADD],
+        [0x40, Opcode.ADD_A_IMM],
         [0x41, Opcode.MOV_MEM_A],
         [0x42, 0xA0], [0x43, 0xFF],
 
@@ -77,7 +77,7 @@ export const LCD_CLOCK: ProgramInfo = {
         [0x49, Opcode.MOV_A_MEM],
         [0x4A, 0xC6], [0x4B, 0xFF], // RTC_SECONDS
         [0x4C, Opcode.MOV_B_IMM], [0x4D, 0x30],
-        [0x4E, Opcode.ADD],
+        [0x4E, Opcode.ADD_A_IMM],
         [0x4F, Opcode.MOV_MEM_A],
         [0x50, 0xA0], [0x51, 0xFF],
 
@@ -122,7 +122,7 @@ export const CONSOLE_DATE: ProgramInfo = {
         [0x21, Opcode.MOV_A_MEM],
         [0x22, 0xC3], [0x23, 0xFF], // RTC_DAYS
         [0x24, Opcode.MOV_B_IMM], [0x25, 0x30], // '0'
-        [0x26, Opcode.ADD],
+        [0x26, Opcode.ADD_A_IMM],
         [0x27, Opcode.MOV_MEM_A],
         [0x28, 0x70], [0x29, 0xFF], // CONSOLE_CHAR
 
@@ -135,7 +135,7 @@ export const CONSOLE_DATE: ProgramInfo = {
         [0x2F, Opcode.MOV_A_MEM],
         [0x30, 0xC2], [0x31, 0xFF], // RTC_MONTHS
         [0x32, Opcode.MOV_B_IMM], [0x33, 0x30],
-        [0x34, Opcode.ADD],
+        [0x34, Opcode.ADD_A_IMM],
         [0x35, Opcode.MOV_MEM_A],
         [0x36, 0x70], [0x37, 0xFF],
 
@@ -148,7 +148,7 @@ export const CONSOLE_DATE: ProgramInfo = {
         [0x3D, Opcode.MOV_A_MEM],
         [0x3E, 0xC1], [0x3F, 0xFF], // RTC_YEARS
         [0x40, Opcode.MOV_B_IMM], [0x41, 0x30],
-        [0x42, Opcode.ADD],
+        [0x42, Opcode.ADD_A_IMM],
         [0x43, Opcode.MOV_MEM_A],
         [0x44, 0x70], [0x45, 0xFF],
 
@@ -178,7 +178,7 @@ export const CONSOLE_DATETIME: ProgramInfo = {
         // Jour
         [0x03, Opcode.MOV_A_MEM], [0x04, 0xC3], [0x05, 0xFF],
         [0x06, Opcode.MOV_B_IMM], [0x07, 0x30],
-        [0x08, Opcode.ADD],
+        [0x08, Opcode.ADD_A_IMM],
         [0x09, Opcode.MOV_MEM_A], [0x0A, 0x70], [0x0B, 0xFF],
 
         [0x0C, Opcode.MOV_A_IMM], [0x0D, 0x2F], // '/'
@@ -187,7 +187,7 @@ export const CONSOLE_DATETIME: ProgramInfo = {
         // Mois
         [0x11, Opcode.MOV_A_MEM], [0x12, 0xC2], [0x13, 0xFF],
         [0x14, Opcode.MOV_B_IMM], [0x15, 0x30],
-        [0x16, Opcode.ADD],
+        [0x16, Opcode.ADD_A_IMM],
         [0x17, Opcode.MOV_MEM_A], [0x18, 0x70], [0x19, 0xFF],
 
         [0x1A, Opcode.MOV_A_IMM], [0x1B, 0x2F], // '/'
@@ -196,7 +196,7 @@ export const CONSOLE_DATETIME: ProgramInfo = {
         // Année
         [0x1F, Opcode.MOV_A_MEM], [0x20, 0xC1], [0x21, 0xFF],
         [0x22, Opcode.MOV_B_IMM], [0x23, 0x30],
-        [0x24, Opcode.ADD],
+        [0x24, Opcode.ADD_A_IMM],
         [0x25, Opcode.MOV_MEM_A], [0x26, 0x70], [0x27, 0xFF],
 
         [0x28, Opcode.MOV_A_IMM], [0x29, 0x20], // ' '
@@ -205,7 +205,7 @@ export const CONSOLE_DATETIME: ProgramInfo = {
         // Heure
         [0x2D, Opcode.MOV_A_MEM], [0x2E, 0xC4], [0x2F, 0xFF],
         [0x30, Opcode.MOV_B_IMM], [0x31, 0x30],
-        [0x32, Opcode.ADD],
+        [0x32, Opcode.ADD_A_IMM],
         [0x33, Opcode.MOV_MEM_A], [0x34, 0x70], [0x35, 0xFF],
 
         [0x36, Opcode.MOV_A_IMM], [0x37, 0x3A], // ':'
@@ -214,7 +214,7 @@ export const CONSOLE_DATETIME: ProgramInfo = {
         // Minutes
         [0x3B, Opcode.MOV_A_MEM], [0x3C, 0xC5], [0x3D, 0xFF],
         [0x3E, Opcode.MOV_B_IMM], [0x3F, 0x30],
-        [0x40, Opcode.ADD],
+        [0x40, Opcode.ADD_A_IMM],
         [0x41, Opcode.MOV_MEM_A], [0x42, 0x70], [0x43, 0xFF],
 
         [0x44, Opcode.MOV_A_IMM], [0x45, 0x3A], // ':'
@@ -223,7 +223,7 @@ export const CONSOLE_DATETIME: ProgramInfo = {
         // Secondes
         [0x49, Opcode.MOV_A_MEM], [0x4A, 0xC6], [0x4B, 0xFF],
         [0x4C, Opcode.MOV_B_IMM], [0x4D, 0x30],
-        [0x4E, Opcode.ADD],
+        [0x4E, Opcode.ADD_A_IMM],
         [0x4F, Opcode.MOV_MEM_A], [0x50, 0x70], [0x51, 0xFF],
 
         [0x52, Opcode.MOV_A_IMM], [0x53, 0x0A], // '\n'
@@ -257,7 +257,7 @@ export const LCD_LIVE_CLOCK: ProgramInfo = {
         // HH:MM:SS
         [0x0D, Opcode.MOV_A_MEM], [0x0E, 0xC4], [0x0F, 0xFF],
         [0x10, Opcode.MOV_B_IMM], [0x11, 0x30],
-        [0x12, Opcode.ADD],
+        [0x12, Opcode.ADD_A_IMM],
         [0x13, Opcode.MOV_MEM_A], [0x14, 0xA0], [0x15, 0xFF],
 
         [0x16, Opcode.MOV_A_IMM], [0x17, 0x3A],
@@ -265,7 +265,7 @@ export const LCD_LIVE_CLOCK: ProgramInfo = {
 
         [0x1B, Opcode.MOV_A_MEM], [0x1C, 0xC5], [0x1D, 0xFF],
         [0x1E, Opcode.MOV_B_IMM], [0x1F, 0x30],
-        [0x20, Opcode.ADD],
+        [0x20, Opcode.ADD_A_IMM],
         [0x21, Opcode.MOV_MEM_A], [0x22, 0xA0], [0x23, 0xFF],
 
         [0x24, Opcode.MOV_A_IMM], [0x25, 0x3A],
@@ -273,7 +273,7 @@ export const LCD_LIVE_CLOCK: ProgramInfo = {
 
         [0x29, Opcode.MOV_A_MEM], [0x2A, 0xC6], [0x2B, 0xFF],
         [0x2C, Opcode.MOV_B_IMM], [0x2D, 0x30],
-        [0x2E, Opcode.ADD],
+        [0x2E, Opcode.ADD_A_IMM],
         [0x2F, Opcode.MOV_MEM_A], [0x30, 0xA0], [0x31, 0xFF],
 
         // Délai

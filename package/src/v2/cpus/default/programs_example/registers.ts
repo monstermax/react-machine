@@ -25,19 +25,19 @@ export const programs: Record<string, ProgramInfo> = {
             // ===== PHASE 2: Calcul A = A + B + C + D =====
             // Version SIMPLE avec MOV
             // Étape 1: A = A + B
-            [0x08, Opcode.ADD],     // A = 1 + 2 = 3
+            [0x08, Opcode.ADD_A_IMM],     // A = 1 + 2 = 3
 
             // Étape 2: Copier C dans B pour pouvoir l'ajouter à A
             [0x09, Opcode.MOV_CB],  // B = C = 3
 
             // Étape 3: A = A + B (A + C)
-            [0x0A, Opcode.ADD],     // A = 3 + 3 = 6
+            [0x0A, Opcode.ADD_A_IMM],     // A = 3 + 3 = 6
 
             // Étape 4: Copier D dans B pour pouvoir l'ajouter à A
             [0x0B, Opcode.MOV_DB],  // B = D = 4
 
             // Étape 5: A = A + B (A + D)
-            [0x0C, Opcode.ADD],     // A = 6 + 4 = 10 ✅
+            [0x0C, Opcode.ADD_A_IMM],     // A = 6 + 4 = 10 ✅
 
             // ===== PHASE 3: Sauvegarder résultat =====
             // Sauvegarder A en mémoire

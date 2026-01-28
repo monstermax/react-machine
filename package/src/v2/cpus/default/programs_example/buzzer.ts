@@ -151,7 +151,7 @@ export const MUSICAL_SCALE: ProgramInfo = {
         [0x3E, Opcode.INC_C],
         [0x3F, Opcode.MOV_CA],
         [0x40, Opcode.MOV_B_IMM], [0x41, 8],
-        [0x42, Opcode.SUB],
+        [0x42, Opcode.SUB_A_IMM],
         [0x43, Opcode.JNZ],
         [0x44, 0x2D], [0x45, 0x02], // → LOOP
 
@@ -184,7 +184,7 @@ export const RTC_ALARM_BEEP: ProgramInfo = {
         [0x0A, Opcode.PUSH_A],
         [0x0B, Opcode.MOV_BC],
         [0x0C, Opcode.POP_A],
-        [0x0D, Opcode.SUB],
+        [0x0D, Opcode.SUB_A_IMM],
         [0x0E, Opcode.JZ], // Si égal, attendre
         [0x0F, 0x07], [0x10, 0x02],
 

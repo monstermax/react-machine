@@ -18,6 +18,7 @@ export class Compiler {
     private labels: Map<string, { section: string, address: u16, values?: any[] | null, dataSize: number | null }> = new Map(); // Label definitions with their addresses and optional data values
     private symbols: Map<string, SymbolInfo> = new Map(); // Symbol table for labels and variables
     private comments: Map<number, string> = new Map(); // Comments associated with specific addresses
+    private debugAddresses: Map<number, number> = new Map();
 
     // Forward references to resolve after pass1
     private unresolvedRefs: Array<{
@@ -214,6 +215,7 @@ export class Compiler {
 
                 const size = this.calculateInstructionSize();
                 //console.log(`[pass1] ${token.value} at ${this.currentAddress}, size=${size}`);
+                this.debugAddresses.set(this.currentAddress, size)
                 this.currentAddress += size;
                 continue;
             }
@@ -303,7 +305,7 @@ export class Compiler {
                 continue;
             }
 
-            console.warn(`unknown token type: ${token.type}`)
+            console.warn(`unknown token type: ${token.type} (value = "${token.value}", line = ${token.line})`)
 
             this.advance();
         }
@@ -488,6 +490,11 @@ export class Compiler {
                 this.generateInstruction();
                 const size = this.currentAddress - before;
                 //console.log(`[pass2] ${token.value} at ${before}, emitted=${size}`);
+
+                const expectedSize = this.debugAddresses.get(before)
+                if (expectedSize !== size) {
+                    throw new Error(`Emitted size mismatch (${expectedSize} vs ${size}) at address ${before} (instruction "${token.value}")`);
+                }
                 continue;
             }
 

@@ -16,6 +16,19 @@ export enum Opcode {
     BREAKPOINT_JS = 0x03,
     SYSCALL = 0x04,
 
+    // ALU
+    ADD_A_IMM = 0x05,     // A = A + IMM
+    SUB_A_IMM = 0x06,     // A = A - IMM
+    AND_A_IMM = 0x07,     // A = A & IMM
+    OR_A_IMM = 0x08,      // A = A | IMM
+    XOR_A_IMM = 0x09,     // A = A ^ IMM
+
+    ADD_B_IMM = 0x0A,     // B = B + IMM
+    SUB_B_IMM = 0x0B,     // B = B - IMM
+    AND_B_IMM = 0x0C,     // B = B & IMM
+    OR_B_IMM = 0x0D,      // B = B | IMM
+    XOR_B_IMM = 0x0E,     // B = B ^ IMM
+
 
     // Contrôle CPU
     GET_FREQ = 0x10,        // <=== TODO: a remplacer par un Device IO
@@ -58,21 +71,31 @@ export enum Opcode {
     IRET = 0x2E,       // Return from Interrupt
 
 
-    // Sauts (0x30-0x34)
+    // Sauts (0x30-0x36)
     JMP = 0x30,        // JMP addr16 (16-bit address)
     JZ = 0x31,         // JZ addr16 (16-bit address)
+    JE = JZ,           // Jump if Equal
     JNZ = 0x32,        // JNZ addr16 (16-bit address)
+    JNE = JNZ,         // Jump if Not Equal
     JC = 0x33,         // JC addr16 (16-bit address)
     JNC = 0x34,        // JNC addr16 (16-bit address)
+    JL = 0x35,         // Jump if Lower
+    JB = JL,           // Jump if Lower
+    JLE = 0x35,        // Jump if Lower or Equal
+    JBE = JLE,         // Jump if Lower or Equal
+    JG = 0x37,         // Jump if Greater
+    JA = JG,           // Jump if Greater
+    JGE = 0x38,        // Jump if Greater or Equal
+    JAE = JGE,         // Jump if Greater or Equal
 
-    // LEA (0x37-0x3D)
-    LEA_CD_A = 0x38,      // LEA A, [C:D] - Load address C:D into A
-    LEA_CD_B = 0x39,      // LEA B, [C:D] - Load address C:D into B
-    LEA_IMM_CD = 0x3A,    // LEA CD, imm16 - Load immediate address into C:D (2 bytes)
-    LEA_A_MEM = 0x3B,     // LEA A, [addr] - Load address into A (low byte)
-    LEA_B_MEM = 0x3C,     // LEA B, [addr] - Load address into B (low byte)
-    LEA_CD_MEM = 0x3D,    // LEA CD, [addr] - Load address into C:D
-    LEA_CD_OFFSET = 0x3E, // LEA CD, [CD + offset] - Address with offset
+    // LEA (0x39-0x3F)
+    LEA_CD_A = 0x39,      // LEA A, [C:D] - Load address C:D into A
+    LEA_CD_B = 0x3A,      // LEA B, [C:D] - Load address C:D into B
+    LEA_IMM_CD = 0x3B,    // LEA CD, imm16 - Load immediate address into C:D (2 bytes)
+    LEA_A_MEM = 0x3C,     // LEA A, [addr] - Load address into A (low byte)
+    LEA_B_MEM = 0x3D,     // LEA B, [addr] - Load address into B (low byte)
+    LEA_CD_MEM = 0x3E,    // LEA CD, [addr] - Load address into C:D
+    LEA_CD_OFFSET = 0x3F, // LEA CD, [CD + offset] - Address with offset
 
 
     // MOV (0x40-0x5B)
@@ -117,7 +140,13 @@ export enum Opcode {
     MOV_PTR_CD_B = 0x5B,  // [C:D] = B
 
 
-    // ALU (0x60-0xDF)
+    // ALU (0x5C-0xFF)
+
+    NOT_A = 0x5C,       // A = !A
+    NOT_B = 0x5D,       // B = !B
+    NOT_C = 0x5E,       // C = !C
+    NOT_D = 0x5F,       // D = !D
+
     INC_A = 0x60,
     INC_B = 0x61,
     INC_C = 0x62,
@@ -128,11 +157,18 @@ export enum Opcode {
     DEC_C = 0x66,
     DEC_D = 0x67,
 
-    ADD = 0x68,           // A = A + B
-    SUB = 0x69,           // A = A - B
-    AND = 0x6A,           // A = A & B
-    OR = 0x6B,            // A = A | B
-    XOR = 0x6C,           // A = A ^ B
+    ADD_C_IMM = 0x68,     // C = C + IMM
+    SUB_C_IMM = 0x69,     // C = C - IMM
+    AND_C_IMM = 0x6A,     // C = C & IMM
+    OR_C_IMM = 0x6B,      // C = C | IMM
+    XOR_C_IMM = 0x6C,     // C = C ^ IMM
+
+
+    // Rotation de bit (0xE4-0xE7)
+    ROL_A = 0x6C,      // Rotate Left A (avec carry)
+    ROR_A = 0x6D,      // Rotate Right A (avec carry)
+    ROL_B = 0x6E,      // Rotate Left B (avec carry)
+    ROR_B = 0x6F,      // Rotate Right B (avec carry)
 
     ADD_AA = 0x70,        // A = A + A
     ADD_AB = 0x71,        // A = A + B
@@ -219,7 +255,7 @@ export enum Opcode {
     XOR_DC = 0xBE,        // D = D ^ C
     XOR_DD = 0xBF,        // D = D ^ D
 
-    // TEST instructions (0xC0-0xC9)
+    // TEST instructions (0xC0-0xCD)
     TEST_A = 0xC0,        // flags = A & A
     TEST_B = 0xC1,        // flags = B & B
     TEST_C = 0xC2,        // flags = C & C
@@ -246,10 +282,10 @@ export enum Opcode {
     TEST_DD = TEST_D,
 
     // CMP avec immédiat (0xCA-0xCD)
-    CMP_A_IMM = 0xCA,
-    CMP_B_IMM = 0xCB,
-    CMP_C_IMM = 0xCC,
-    CMP_D_IMM = 0xCD,
+    TEST_A_IMM = 0xCA,
+    TEST_B_IMM = 0xCB,
+    TEST_C_IMM = 0xCC,
+    TEST_D_IMM = 0xCD,
 
     // CMP instructions (0xD0-0xDF)
     CMP_AA = 0xD0,
@@ -269,31 +305,39 @@ export enum Opcode {
     CMP_DC = 0xDE,
     CMP_DD = 0xDF,
 
-    // décalage de bit
-    SHL_A = 0xE0,      // Shift Left A (A << 1)
-    SHR_A = 0xE1,      // Shift Right A (A >> 1)
-    SHL_B = 0xE2,      // Shift Left B
-    SHR_B = 0xE3,      // Shift Right B
-    SHL_C = 0xE4,      // Shift Left C
-    SHR_C = 0xE5,      // Shift Right C
-    SHL_D = 0xE6,      // Shift Left D
-    SHR_D = 0xE7,      // Shift Right D
+    // CMP avec immédiat (0xE0-0xE3)
+    CMP_A_IMM = 0xE0,
+    CMP_B_IMM = 0xE1,
+    CMP_C_IMM = 0xE2,
+    CMP_D_IMM = 0xE3,
+
+    // ALU
+    ADD_D_IMM = 0xE8,     // D = D + IMM
+    SUB_D_IMM = 0xE9,     // D = D - IMM
+    AND_D_IMM = 0xEA,     // D = D & IMM
+    OR_D_IMM = 0xEB,      // D = D | IMM
+    XOR_D_IMM = 0xEC,     // D = D ^ IMM
+
+
+    // décalage de bit (0xF0-0xFF)
+    SHL_A = 0xF0,      // Shift Left A (A << 1)
+    SHR_A = 0xF1,      // Shift Right A (A >> 1)
+    SHL_B = 0xF2,      // Shift Left B
+    SHR_B = 0xF3,      // Shift Right B
+    SHL_C = 0xF4,      // Shift Left C
+    SHR_C = 0xF5,      // Shift Right C
+    SHL_D = 0xF6,      // Shift Left D
+    SHR_D = 0xF7,      // Shift Right D
 
     // décalage avec spécification du nombre de bits
-    SHL_A_N = 0xE8,    // Shift Left A, N bits (opcode + 1 byte pour N)
-    SHR_A_N = 0xE9,    // Shift Right A, N bits
-    SHL_B_N = 0xEA,    // Shift Left A, N bits (opcode + 1 byte pour N)
-    SHR_B_N = 0xEB,    // Shift Right A, N bits
-    SHL_C_N = 0xEC,    // Shift Left A, N bits (opcode + 1 byte pour N)
-    SHR_C_N = 0xED,    // Shift Right A, N bits
-    SHL_D_N = 0xEE,    // Shift Left A, N bits (opcode + 1 byte pour N)
-    SHR_D_N = 0xEF,    // Shift Right A, N bits
-
-    // Rotation de bit
-    ROL_A = 0xF0,      // Rotate Left A (avec carry)
-    ROR_A = 0xF1,      // Rotate Right A (avec carry)
-    ROL_B = 0xF2,      // Rotate Left B (avec carry)
-    ROR_B = 0xF3,      // Rotate Right B (avec carry)
+    SHL_A_N = 0xF8,    // Shift Left A, N bits (opcode + 1 byte pour N)
+    SHR_A_N = 0xF9,    // Shift Right A, N bits
+    SHL_B_N = 0xFA,    // Shift Left A, N bits (opcode + 1 byte pour N)
+    SHR_B_N = 0xFB,    // Shift Right A, N bits
+    SHL_C_N = 0xFC,    // Shift Left A, N bits (opcode + 1 byte pour N)
+    SHR_C_N = 0xFD,    // Shift Right A, N bits
+    SHL_D_N = 0xFE,    // Shift Left A, N bits (opcode + 1 byte pour N)
+    SHR_D_N = 0xFF,    // Shift Right A, N bits
 
 }
 
@@ -302,6 +346,7 @@ export enum Opcode {
 export const INSTRUCTIONS_WITH_OPERAND = [
     Opcode.SYSCALL,
     Opcode.SET_FREQ,
+    Opcode.LEA_CD_OFFSET,
     Opcode.MOV_A_IMM,
     Opcode.MOV_B_IMM,
     Opcode.MOV_C_IMM,
@@ -310,6 +355,30 @@ export const INSTRUCTIONS_WITH_OPERAND = [
     Opcode.CMP_B_IMM,
     Opcode.CMP_C_IMM,
     Opcode.CMP_D_IMM,
+    Opcode.TEST_A_IMM,
+    Opcode.TEST_B_IMM,
+    Opcode.TEST_C_IMM,
+    Opcode.TEST_D_IMM,
+    Opcode.ADD_A_IMM,
+    Opcode.SUB_A_IMM,
+    Opcode.AND_A_IMM,
+    Opcode.OR_A_IMM,
+    Opcode.XOR_A_IMM,
+    Opcode.ADD_B_IMM,
+    Opcode.SUB_B_IMM,
+    Opcode.AND_B_IMM,
+    Opcode.OR_B_IMM,
+    Opcode.XOR_B_IMM,
+    Opcode.ADD_C_IMM,
+    Opcode.SUB_C_IMM,
+    Opcode.AND_C_IMM,
+    Opcode.OR_C_IMM,
+    Opcode.XOR_C_IMM,
+    Opcode.ADD_D_IMM,
+    Opcode.SUB_D_IMM,
+    Opcode.AND_D_IMM,
+    Opcode.OR_D_IMM,
+    Opcode.XOR_D_IMM,
     Opcode.SHL_A_N,
     Opcode.SHR_A_N,
     Opcode.SHL_B_N,
@@ -318,7 +387,6 @@ export const INSTRUCTIONS_WITH_OPERAND = [
     Opcode.SHR_C_N,
     Opcode.SHL_D_N,
     Opcode.SHR_D_N,
-    Opcode.LEA_CD_OFFSET,  // LEA CD, [CD + imm8] (offset signé 8-bit)
 ];
 
 
@@ -449,11 +517,35 @@ export const getOpcodeName = (opcode: u8): string => {
 
 
         // ALU
-        case Opcode.ADD: return "ADD";
-        case Opcode.SUB: return "SUB";
-        case Opcode.AND: return "AND";
-        case Opcode.OR: return "OR";
-        case Opcode.XOR: return "XOR";
+        case Opcode.ADD_A_IMM: return "ADD A IMM";
+        case Opcode.SUB_A_IMM: return "SUB A IMM";
+        case Opcode.AND_A_IMM: return "AND A IMM";
+        case Opcode.OR_A_IMM: return "OR A IMM";
+        case Opcode.XOR_A_IMM: return "XOR A IMM";
+
+        case Opcode.ADD_B_IMM: return "ADD B IMM";
+        case Opcode.SUB_B_IMM: return "SUB B IMM";
+        case Opcode.AND_B_IMM: return "AND B IMM";
+        case Opcode.OR_B_IMM: return "OR B IMM";
+        case Opcode.XOR_B_IMM: return "XOR B IMM";
+
+        case Opcode.ADD_C_IMM: return "ADD C IMM";
+        case Opcode.SUB_C_IMM: return "SUB C IMM";
+        case Opcode.AND_C_IMM: return "AND C IMM";
+        case Opcode.OR_C_IMM: return "OR C IMM";
+        case Opcode.XOR_C_IMM: return "XOR C IMM";
+
+        case Opcode.ADD_D_IMM: return "ADD D IMM";
+        case Opcode.SUB_D_IMM: return "SUB D IMM";
+        case Opcode.AND_D_IMM: return "AND D IMM";
+        case Opcode.OR_D_IMM: return "OR D IMM";
+        case Opcode.XOR_D_IMM: return "XOR D IMM";
+
+        case Opcode.NOT_A: return "NOT A";
+        case Opcode.NOT_B: return "NOT B";
+        case Opcode.NOT_C: return "NOT C";
+        case Opcode.NOT_D: return "NOT D";
+
         case Opcode.INC_A: return "INC A";
         case Opcode.DEC_A: return "DEC A";
         case Opcode.INC_B: return "INC B";
@@ -586,6 +678,11 @@ export const getOpcodeName = (opcode: u8): string => {
         //case Opcode.TEST_DB: return "TEST D B";
         //case Opcode.TEST_DC: return "TEST D C";
         case Opcode.TEST_DD: return "TEST D D";
+
+        case Opcode.TEST_A_IMM: return "TEST A IMM";
+        case Opcode.TEST_B_IMM: return "TEST B IMM";
+        case Opcode.TEST_C_IMM: return "TEST C IMM";
+        case Opcode.TEST_D_IMM: return "TEST D IMM";
 
         // CMP avec immédiat
         case Opcode.CMP_A_IMM: return "CMP A IMM";
@@ -746,11 +843,35 @@ export const getOpcodeDescription = (opcode: u8): string => {
 
 
         // ALU
-        case Opcode.ADD: return "Add : A = A + B (with carry flag update)";
-        case Opcode.SUB: return "Subtract : A = A - B (with borrow flag update)";
-        case Opcode.AND: return "Bitwise AND : A = A & B";
-        case Opcode.OR: return "Bitwise OR : A = A | B";
-        case Opcode.XOR: return "Bitwise XOR : A = A ^ B";
+        case Opcode.ADD_A_IMM: return "Add : A = A + IMM (with carry flag update)";
+        case Opcode.SUB_A_IMM: return "Subtract : A = A - IMM (with borrow flag update)";
+        case Opcode.AND_A_IMM: return "Bitwise AND : A = A & IMM";
+        case Opcode.OR_A_IMM: return "Bitwise OR : A = A | IMM";
+        case Opcode.XOR_A_IMM: return "Bitwise XOR : A = A ^ IMM";
+
+        case Opcode.ADD_B_IMM: return "Add : B = B + IMM (with carry flag update)";
+        case Opcode.SUB_B_IMM: return "Subtract : B = B - IMM (with borrow flag update)";
+        case Opcode.AND_B_IMM: return "Bitwise AND : B = B & IMM";
+        case Opcode.OR_B_IMM: return "Bitwise OR : B = B | IMM";
+        case Opcode.XOR_B_IMM: return "Bitwise XOR : B = B ^ IMM";
+
+        case Opcode.ADD_C_IMM: return "Add : C = C + IMM (with carry flag update)";
+        case Opcode.SUB_C_IMM: return "Subtract : C = C - IMM (with borrow flag update)";
+        case Opcode.AND_C_IMM: return "Bitwise AND : C = C & IMM";
+        case Opcode.OR_C_IMM: return "Bitwise OR : C = C | IMM";
+        case Opcode.XOR_C_IMM: return "Bitwise XOR : C = C ^ IMM";
+
+        case Opcode.ADD_D_IMM: return "Add : D = D + IMM (with carry flag update)";
+        case Opcode.SUB_D_IMM: return "Subtract : D = D - IMM (with borrow flag update)";
+        case Opcode.AND_D_IMM: return "Bitwise AND : D = D & IMM";
+        case Opcode.OR_D_IMM: return "Bitwise OR : D = D | IMM";
+        case Opcode.XOR_D_IMM: return "Bitwise XOR : D = D ^ IMM";
+
+        case Opcode.NOT_A: return "Not A : A = !A";
+        case Opcode.NOT_B: return "Not B : B = !B";
+        case Opcode.NOT_C: return "Not C : C = !C";
+        case Opcode.NOT_D: return "Not D : D = !D";
+
         case Opcode.INC_A: return "Increment A : A = A + 1";
         case Opcode.DEC_A: return "Decrement A : A = A - 1";
         case Opcode.INC_B: return "Increment B : B = B + 1";

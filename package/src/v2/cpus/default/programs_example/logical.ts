@@ -14,7 +14,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x01, 5],
             [0x02, Opcode.MOV_B_IMM],
             [0x03, 3],
-            [0x04, Opcode.ADD],
+            [0x04, Opcode.ADD_A_IMM],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
         ] as [u16, u8][]),
@@ -27,7 +27,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x01, 10],
             [0x02, Opcode.MOV_B_IMM],
             [0x03, 25],
-            [0x04, Opcode.ADD],
+            [0x04, Opcode.ADD_A_IMM],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
         ] as [u16, u8][]),
@@ -40,10 +40,10 @@ export const programs: Record<string, ProgramInfo> = {
             [0x01, 5],
             [0x02, Opcode.MOV_B_IMM],
             [0x03, 3],
-            [0x04, Opcode.ADD],      // A = 8
+            [0x04, Opcode.ADD_A_IMM],      // A = 8
             [0x05, Opcode.MOV_B_IMM],
             [0x06, 10],
-            [0x07, Opcode.ADD],      // A = 18
+            [0x07, Opcode.ADD_A_IMM],      // A = 18
             [0x08, Opcode.SYSCALL],
             [0x09, 0],               // ← Syscall 0 = exit
         ] as [u16, u8][]),
@@ -56,7 +56,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x01, 10],
             [0x02, Opcode.MOV_B_IMM],
             [0x03, 3],
-            [0x04, Opcode.SUB],
+            [0x04, Opcode.SUB_A_IMM],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
         ] as [u16, u8][]),
@@ -69,7 +69,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x01, 0b1100],  // 12
             [0x02, Opcode.MOV_B_IMM],
             [0x03, 0b1010],  // 10
-            [0x04, Opcode.AND],
+            [0x04, Opcode.AND_A_IMM],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
         ] as [u16, u8][]),
@@ -88,7 +88,7 @@ export const programs: Record<string, ProgramInfo> = {
             // Comparer avec 5
             [0x03, Opcode.MOV_B_IMM],
             [0x04, 5],
-            [0x05, Opcode.SUB],        // A = A - 5
+            [0x05, Opcode.SUB_A_IMM],        // A = A - 5
 
             // Si A != 0 (pas encore 5), continuer
             [0x06, Opcode.JNZ],
@@ -110,7 +110,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x01, 200],
             [0x02, Opcode.MOV_B_IMM],
             [0x03, 100],
-            [0x04, Opcode.ADD],
+            [0x04, Opcode.ADD_A_IMM],
             [0x05, Opcode.SYSCALL],
             [0x06, 0],               // ← Syscall 0 = exit
         ] as [u16, u8][]),
