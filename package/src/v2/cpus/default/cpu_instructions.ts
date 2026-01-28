@@ -170,6 +170,15 @@ export enum Opcode {
     ROL_B = 0x6E,      // Rotate Left B (avec carry)
     ROR_B = 0x6F,      // Rotate Right B (avec carry)
 
+    //RCL_A = 0xED,      // Rotate Left through Carry A
+    //RCR_A = 0xEE,      // Rotate Right through Carry A
+    //RCL_B = 0xEF,      // Rotate Left through Carry B
+    //RCR_B = 0xF0,      // Rotate Right through Carry B
+    //RCL_C = 0xF1,      // Rotate Left through Carry C
+    //RCR_C = 0xF2,      // Rotate Right through Carry C
+    //RCL_D = 0xF3,      // Rotate Left through Carry D
+    //RCR_D = 0xF4,      // Rotate Right through Carry D
+
     ADD_AA = 0x70,        // A = A + A
     ADD_AB = 0x71,        // A = A + B
     ADD_AC = 0x72,        // A = A + C
