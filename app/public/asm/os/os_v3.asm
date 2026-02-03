@@ -10,4 +10,10 @@ section .data
 
 section .text
     mov dl, OS_VERSION
+
+    ; init scheduler (gestion des processus et threads)
+    ; init interrupts (initialisation des interruptions)
+    ; init syscalls (declaration des callbacks de syscalls)
+
+
     hlt
