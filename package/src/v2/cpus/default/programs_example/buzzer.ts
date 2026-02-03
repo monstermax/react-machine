@@ -149,7 +149,7 @@ export const MUSICAL_SCALE: ProgramInfo = {
         [0x3B, Opcode.JNZ], [0x3C, 0x3A], [0x3D, 0x02],
 
         [0x3E, Opcode.INC_C],
-        [0x3F, Opcode.MOV_CA],
+        [0x3F, Opcode.MOV_A_C],
         [0x40, Opcode.MOV_B_IMM], [0x41, 8],
         [0x42, Opcode.SUB_A_IMM],
         [0x43, Opcode.JNZ],
@@ -174,7 +174,7 @@ export const RTC_ALARM_BEEP: ProgramInfo = {
         // Sauver seconde actuelle
         [0x03, Opcode.MOV_A_MEM],
         [0x04, 0xC6], [0x05, 0xFF], // RTC_SECONDS
-        [0x06, Opcode.MOV_CA],
+        [0x06, Opcode.MOV_A_C],
 
         // LOOP:
         [0x07, Opcode.MOV_A_MEM],
@@ -182,7 +182,7 @@ export const RTC_ALARM_BEEP: ProgramInfo = {
 
         // Comparer avec C
         [0x0A, Opcode.PUSH_A],
-        [0x0B, Opcode.MOV_BC],
+        [0x0B, Opcode.MOV_C_B],
         [0x0C, Opcode.POP_A],
         [0x0D, Opcode.SUB_A_IMM],
         [0x0E, Opcode.JZ], // Si égal, attendre
@@ -191,7 +191,7 @@ export const RTC_ALARM_BEEP: ProgramInfo = {
         // Nouvelle seconde ! Bip
         [0x11, Opcode.MOV_A_MEM],
         [0x12, 0xC6], [0x13, 0xFF],
-        [0x14, Opcode.MOV_CA], // Sauver
+        [0x14, Opcode.MOV_A_C], // Sauver
 
         // Fréquence 1000 Hz → ~120
         [0x15, Opcode.MOV_A_IMM], [0x16, 120],

@@ -34,7 +34,7 @@ export const delayer = (
 
     // FORÇAGE si trop de temps a passé depuis le premier appel en attente
     if (maxFrequency && pendingTime >= maxFrequency) {
-        console.log('FORCED after', pendingTime, 'ms');
+        //console.log('FORCED after', pendingTime, 'ms');
         callback(...state.lastArgs);
         delayers.delete(key);
         return;
@@ -45,7 +45,7 @@ export const delayer = (
         const currentState = delayers.get(key);
         if (!currentState) return;
 
-        console.log('DEBOUNCE executed after delay');
+        //console.log('DEBOUNCE executed after delay');
         callback(...currentState.lastArgs);
         delayers.delete(key);
     }, delay);

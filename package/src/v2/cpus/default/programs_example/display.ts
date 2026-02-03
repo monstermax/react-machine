@@ -167,9 +167,9 @@ export const programs: Record<string, ProgramInfo> = {
         name: "LCD Hello",
         description: "Affiche 'Hello' sur ligne 1 et 'World!' sur ligne 2",
         code: new Map([
-            [0x00, Opcode.MOV_AB],
-            [0x01, Opcode.MOV_AB],
-            [0x02, Opcode.MOV_AB],
+            [0x00, Opcode.MOV_B_A],
+            [0x01, Opcode.MOV_B_A],
+            [0x02, Opcode.MOV_B_A],
 
             // Clear LCD
             [0x03, Opcode.MOV_A_IMM],
@@ -324,7 +324,7 @@ export const programs: Record<string, ProgramInfo> = {
             [0x1F, Opcode.DEC_C], // C-- (quotient trop grand de 1)
 
             // Afficher dizaine (C contient dizaines)
-            [0x20, Opcode.MOV_AC], // C → A
+            [0x20, Opcode.MOV_C_A], // C → A
             [0x21, Opcode.MOV_B_IMM], // '0' dans B
             [0x22, 0x30],
             [0x23, Opcode.ADD_A_IMM], // A = A + B
@@ -427,9 +427,9 @@ export const programs: Record<string, ProgramInfo> = {
         name: "Pixel Line",
         description: "Dessine une ligne diagonale",
         code: new Map([
-            [0x00, Opcode.MOV_AB],
-            [0x01, Opcode.MOV_AB],
-            [0x02, Opcode.MOV_AB],
+            [0x00, Opcode.MOV_B_A],
+            [0x01, Opcode.MOV_B_A],
+            [0x02, Opcode.MOV_B_A],
 
             // Compteur 0-31
             [0x03, Opcode.MOV_A_IMM],

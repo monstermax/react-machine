@@ -113,7 +113,7 @@ export const IDE: React.FC<{ hidden?: boolean, open?: boolean }> = (props) => {
         }
 
         if (compileMemoryOffsetUint >= MEMORY_MAP.RAM_START && compileMemoryOffsetUint <= MEMORY_MAP.RAM_END) {
-            memoryBusRef.current.dma.loadCodeInRam(compiledCode)
+            memoryBusRef.current.dma.loadCodeInRam(compiledCode, compileMemoryOffsetUint)
 
             //if (!memoryBusRef.current.dma) {
             //    if (!computerRef.current?.motherboard?.memoryBus?.ram) return;

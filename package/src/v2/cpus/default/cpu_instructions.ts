@@ -100,18 +100,18 @@ export enum Opcode {
 
     // MOV (0x40-0x5B)
     // MOV Instructions (Register to Register)
-    MOV_AB = 0x40,  // Move A to B
-    MOV_AC = 0x41,  // Move A to C  
-    MOV_AD = 0x42,  // Move A to D
-    MOV_BA = 0x43,  // Move B to A
-    MOV_BC = 0x44,  // Move B to C
-    MOV_BD = 0x45,  // Move B to D
-    MOV_CA = 0x46,  // Move C to A
-    MOV_CB = 0x47,  // Move C to B
-    MOV_CD = 0x48,  // Move C to D
-    MOV_DA = 0x49,  // Move D to A
-    MOV_DB = 0x4A,  // Move D to B
-    MOV_DC = 0x4B,  // Move D to C
+    MOV_B_A = 0x40,  // Move A to B
+    MOV_C_A = 0x41,  // Move A to C  
+    MOV_D_A = 0x42,  // Move A to D
+    MOV_A_B = 0x43,  // Move B to A
+    MOV_C_B = 0x44,  // Move B to C
+    MOV_D_B = 0x45,  // Move B to D
+    MOV_A_C = 0x46,  // Move C to A
+    MOV_B_C = 0x47,  // Move C to B
+    MOV_D_C = 0x48,  // Move C to D
+    MOV_A_D = 0x49,  // Move D to A
+    MOV_B_D = 0x4A,  // Move D to B
+    MOV_C_D = 0x4B,  // Move D to C
 
     // MOV with Immediate (8-bit)
     MOV_A_IMM = 0x4C,  // MOV A, imm8
@@ -406,6 +406,10 @@ export const INSTRUCTIONS_WITH_TWO_OPERANDS = [
     Opcode.JNZ,
     Opcode.JC,
     Opcode.JNC,
+    Opcode.JL,
+    Opcode.JLE,
+    Opcode.JG,
+    Opcode.JGE,
     Opcode.SET_SP,
     Opcode.CALL,
     Opcode.MOV_A_MEM,
@@ -453,6 +457,10 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.JNZ: return "JNZ";
         case Opcode.JC: return "JC";
         case Opcode.JNC: return "JNC";
+        case Opcode.JL: return "JL";
+        case Opcode.JLE: return "JLE";
+        case Opcode.JG: return "JG";
+        case Opcode.JGE: return "JGE";
 
         // Stack
         case Opcode.PUSH_A: return "PUSH A";
@@ -485,18 +493,18 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.LEA_CD_OFFSET: return "LEA CD, [CD+offset]";
 
         // MOV Register to Register
-        case Opcode.MOV_AB: return "MOV A B";
-        case Opcode.MOV_AC: return "MOV A C";
-        case Opcode.MOV_AD: return "MOV A D";
-        case Opcode.MOV_BA: return "MOV B A";
-        case Opcode.MOV_BC: return "MOV B C";
-        case Opcode.MOV_BD: return "MOV B D";
-        case Opcode.MOV_CA: return "MOV C A";
-        case Opcode.MOV_CB: return "MOV C B";
-        case Opcode.MOV_CD: return "MOV C D";
-        case Opcode.MOV_DA: return "MOV D A";
-        case Opcode.MOV_DB: return "MOV D B";
-        case Opcode.MOV_DC: return "MOV D C";
+        case Opcode.MOV_B_A: return "MOV B A";
+        case Opcode.MOV_C_A: return "MOV C A";
+        case Opcode.MOV_D_A: return "MOV D A";
+        case Opcode.MOV_A_B: return "MOV A B";
+        case Opcode.MOV_C_B: return "MOV C B";
+        case Opcode.MOV_D_B: return "MOV D B";
+        case Opcode.MOV_A_C: return "MOV A C";
+        case Opcode.MOV_B_C: return "MOV B C";
+        case Opcode.MOV_D_C: return "MOV D C";
+        case Opcode.MOV_A_D: return "MOV A D";
+        case Opcode.MOV_B_D: return "MOV B D";
+        case Opcode.MOV_C_D: return "MOV C D";
 
         // MOV avec Immediate
         case Opcode.MOV_A_IMM: return "MOV A IMM";
@@ -811,18 +819,18 @@ export const getOpcodeDescription = (opcode: u8): string => {
         case Opcode.LEA_CD_OFFSET: return "Load Effective Address with offset : C:D = C:D + offset (8-bit signed)";
 
         // MOV Register to Register
-        case Opcode.MOV_AB: return "Move A to B : B = A";
-        case Opcode.MOV_AC: return "Move A to C : C = A";
-        case Opcode.MOV_AD: return "Move A to D : D = A";
-        case Opcode.MOV_BA: return "Move B to A : A = B";
-        case Opcode.MOV_BC: return "Move B to C : C = B";
-        case Opcode.MOV_BD: return "Move B to D : D = B";
-        case Opcode.MOV_CA: return "Move C to A : A = C";
-        case Opcode.MOV_CB: return "Move C to B : B = C";
-        case Opcode.MOV_CD: return "Move C to D : D = C";
-        case Opcode.MOV_DA: return "Move D to A : A = D";
-        case Opcode.MOV_DB: return "Move D to B : B = D";
-        case Opcode.MOV_DC: return "Move D to C : C = D";
+        case Opcode.MOV_B_A: return "Move A to B : B = A";
+        case Opcode.MOV_C_A: return "Move A to C : C = A";
+        case Opcode.MOV_D_A: return "Move A to D : D = A";
+        case Opcode.MOV_A_B: return "Move B to A : A = B";
+        case Opcode.MOV_C_B: return "Move B to C : C = B";
+        case Opcode.MOV_D_B: return "Move B to D : D = B";
+        case Opcode.MOV_A_C: return "Move C to A : A = C";
+        case Opcode.MOV_B_C: return "Move C to B : B = C";
+        case Opcode.MOV_D_C: return "Move C to D : D = C";
+        case Opcode.MOV_A_D: return "Move D to A : A = D";
+        case Opcode.MOV_B_D: return "Move D to B : B = D";
+        case Opcode.MOV_C_D: return "Move D to C : C = D";
 
         // MOV avec Immediate
         case Opcode.MOV_A_IMM: return "Move immediate to A : A = 8-bit immediate value";

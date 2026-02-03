@@ -1,0 +1,94 @@
+; Author: yomax
+; Date: 2026-01
+; Name: lib_ascii
+; Description: ASCII Constants
+
+
+section .data
+    ASCII_NUL equ 0x00
+    ASCII_EOL equ 0x0A
+    ASCII_RET equ 0x0D
+    ASCII_ESCAPE equ 0x1B
+    ASCII_SPACE equ 0x20
+    ASCII_EXCLAM equ 0x21
+    ASCII_DBLQUOTE equ 0x22
+    ASCII_SHARP equ 0x23
+    ASCII_DOLLAR equ 0x24
+    ASCII_PERCENT equ 0x25
+    ASCII_AND equ 0x26
+    ASCII_QUOTE equ 0x27
+    ASCII_PARENTH_OPEN equ 0x28
+    ASCII_PARENTH_CLOSE equ 0x29
+    ASCII_MUL equ 0x2A
+    ASCII_ADD equ 0x2B
+    ASCII_COMMA equ 0x2C
+    ASCII_SUB equ 0x2D
+    ASCII_DOT equ 0x2E
+    ASCII_SLASH equ 0x2F
+    ASCII_AROBASE equ 0x40
+
+    ASCII_0 equ 0x30
+    ASCII_1 equ 0x31
+    ASCII_2 equ 0x32
+    ASCII_3 equ 0x33
+    ASCII_4 equ 0x34
+    ASCII_5 equ 0x35
+    ASCII_6 equ 0x36
+    ASCII_7 equ 0x37
+    ASCII_8 equ 0x38
+    ASCII_9 equ 0x39
+
+    ASCII_A equ 0x41
+    ASCII_B equ 0x42
+    ASCII_C equ 0x43
+    ASCII_D equ 0x44
+    ASCII_E equ 0x45
+    ASCII_F equ 0x46
+    ASCII_G equ 0x47
+    ASCII_H equ 0x48
+    ASCII_I equ 0x49
+    ASCII_J equ 0x4A
+    ASCII_K equ 0x4B
+    ASCII_L equ 0x4C
+    ASCII_M equ 0x4D
+    ASCII_N equ 0x4E
+    ASCII_O equ 0x4F
+    ASCII_P equ 0x50
+    ASCII_Q equ 0x51
+    ASCII_R equ 0x52
+    ASCII_S equ 0x53
+    ASCII_T equ 0x54
+    ASCII_U equ 0x55
+    ASCII_V equ 0x56
+    ASCII_W equ 0x57
+    ASCII_X equ 0x58
+    ASCII_Y equ 0x59
+    ASCII_Z equ 0x5A
+
+    ASCII_a equ 0x61
+    ASCII_b equ 0x62
+    ASCII_c equ 0x63
+    ASCII_d equ 0x64
+    ASCII_e equ 0x65
+    ASCII_f equ 0x66
+    ASCII_g equ 0x67
+    ASCII_h equ 0x68
+    ASCII_i equ 0x69
+    ASCII_j equ 0x6A
+    ASCII_k equ 0x6B
+    ASCII_l equ 0x6C
+    ASCII_m equ 0x6D
+    ASCII_n equ 0x6E
+    ASCII_o equ 0x6F
+    ASCII_p equ 0x70
+    ASCII_q equ 0x71
+    ASCII_r equ 0x72
+    ASCII_s equ 0x73
+    ASCII_t equ 0x74
+    ASCII_u equ 0x75
+    ASCII_v equ 0x76
+    ASCII_w equ 0x77
+    ASCII_x equ 0x78
+    ASCII_y equ 0x79
+    ASCII_z equ 0x7A
+

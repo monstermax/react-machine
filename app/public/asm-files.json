@@ -1,6 +1,6 @@
 {
-  "generated": "2026-01-28T03:59:30.068Z",
-  "count": 18,
+  "generated": "2026-01-28T22:05:41.243Z",
+  "count": 19,
   "files": [
     "bootloader/bootloader_v1.asm",
     "bootloader/bootloader_v2.lib.asm",
@@ -16,6 +16,7 @@
     "os/devices/led/led.lib.test.asm",
     "os/memory/malloc.lib.asm",
     "os/v3/arithmetic/lib_math.asm",
+    "os/v3/arithmetic/lib_math.test.asm",
     "os/arithmetic/math.lib.asm",
     "os/arithmetic/math2.lib.asm",
     "misc/fs/disk_size.asm",

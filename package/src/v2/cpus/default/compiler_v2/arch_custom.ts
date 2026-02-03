@@ -186,18 +186,18 @@ const instructions: InstructionDef[] = [
     // MOV
     {
         mnemonic: 'MOV', opcode: 0x00, operands: 'REG_REG', size: 1, variants: [
-            { operands: 'REG_REG', opcode: Opcode.MOV_AB, size: 1, condition: (ops) => ops[0].register === 'A' && ops[1].register === 'B', mnemonic: 'MOV_AB' },
-            { operands: 'REG_REG', opcode: Opcode.MOV_AC, size: 1, condition: (ops) => ops[0].register === 'A' && ops[1].register === 'C', mnemonic: 'MOV_AC' },
-            { operands: 'REG_REG', opcode: Opcode.MOV_AD, size: 1, condition: (ops) => ops[0].register === 'A' && ops[1].register === 'D', mnemonic: 'MOV_AD' },
-            { operands: 'REG_REG', opcode: Opcode.MOV_BA, size: 1, condition: (ops) => ops[0].register === 'B' && ops[1].register === 'A', mnemonic: 'MOV_BA' },
-            { operands: 'REG_REG', opcode: Opcode.MOV_BC, size: 1, condition: (ops) => ops[0].register === 'B' && ops[1].register === 'C', mnemonic: 'MOV_BC' },
-            { operands: 'REG_REG', opcode: Opcode.MOV_BD, size: 1, condition: (ops) => ops[0].register === 'B' && ops[1].register === 'D', mnemonic: 'MOV_BD' },
-            { operands: 'REG_REG', opcode: Opcode.MOV_CA, size: 1, condition: (ops) => ops[0].register === 'C' && ops[1].register === 'A', mnemonic: 'MOV_CA' },
-            { operands: 'REG_REG', opcode: Opcode.MOV_CB, size: 1, condition: (ops) => ops[0].register === 'C' && ops[1].register === 'B', mnemonic: 'MOV_CB' },
-            { operands: 'REG_REG', opcode: Opcode.MOV_CD, size: 1, condition: (ops) => ops[0].register === 'C' && ops[1].register === 'D', mnemonic: 'MOV_CD' },
-            { operands: 'REG_REG', opcode: Opcode.MOV_DA, size: 1, condition: (ops) => ops[0].register === 'D' && ops[1].register === 'A', mnemonic: 'MOV_DA' },
-            { operands: 'REG_REG', opcode: Opcode.MOV_DB, size: 1, condition: (ops) => ops[0].register === 'D' && ops[1].register === 'B', mnemonic: 'MOV_DB' },
-            { operands: 'REG_REG', opcode: Opcode.MOV_DC, size: 1, condition: (ops) => ops[0].register === 'D' && ops[1].register === 'C', mnemonic: 'MOV_DC' },
+            { operands: 'REG_REG', opcode: Opcode.MOV_B_A, size: 1, condition: (ops) => ops[0].register === 'B' && ops[1].register === 'A', mnemonic: 'MOV_B_A' },
+            { operands: 'REG_REG', opcode: Opcode.MOV_C_A, size: 1, condition: (ops) => ops[0].register === 'C' && ops[1].register === 'A', mnemonic: 'MOV_C_A' },
+            { operands: 'REG_REG', opcode: Opcode.MOV_D_A, size: 1, condition: (ops) => ops[0].register === 'D' && ops[1].register === 'A', mnemonic: 'MOV_D_A' },
+            { operands: 'REG_REG', opcode: Opcode.MOV_A_B, size: 1, condition: (ops) => ops[0].register === 'A' && ops[1].register === 'B', mnemonic: 'MOV_A_B' },
+            { operands: 'REG_REG', opcode: Opcode.MOV_C_B, size: 1, condition: (ops) => ops[0].register === 'C' && ops[1].register === 'B', mnemonic: 'MOV_C_B' },
+            { operands: 'REG_REG', opcode: Opcode.MOV_D_B, size: 1, condition: (ops) => ops[0].register === 'D' && ops[1].register === 'B', mnemonic: 'MOV_D_B' },
+            { operands: 'REG_REG', opcode: Opcode.MOV_A_C, size: 1, condition: (ops) => ops[0].register === 'A' && ops[1].register === 'C', mnemonic: 'MOV_A_C' },
+            { operands: 'REG_REG', opcode: Opcode.MOV_B_C, size: 1, condition: (ops) => ops[0].register === 'B' && ops[1].register === 'C', mnemonic: 'MOV_B_C' },
+            { operands: 'REG_REG', opcode: Opcode.MOV_D_C, size: 1, condition: (ops) => ops[0].register === 'D' && ops[1].register === 'C', mnemonic: 'MOV_D_C' },
+            { operands: 'REG_REG', opcode: Opcode.MOV_A_D, size: 1, condition: (ops) => ops[0].register === 'A' && ops[1].register === 'D', mnemonic: 'MOV_A_D' },
+            { operands: 'REG_REG', opcode: Opcode.MOV_B_D, size: 1, condition: (ops) => ops[0].register === 'B' && ops[1].register === 'D', mnemonic: 'MOV_B_D' },
+            { operands: 'REG_REG', opcode: Opcode.MOV_C_D, size: 1, condition: (ops) => ops[0].register === 'C' && ops[1].register === 'D', mnemonic: 'MOV_C_D' },
 
             { operands: 'REG_IMM8', opcode: Opcode.MOV_A_IMM, size: 2, condition: (ops) => ops[0].register === 'A', mnemonic: 'MOV_A_IMM' },
             { operands: 'REG_IMM8', opcode: Opcode.MOV_B_IMM, size: 2, condition: (ops) => ops[0].register === 'B', mnemonic: 'MOV_B_IMM' },
@@ -434,9 +434,9 @@ const instructions: InstructionDef[] = [
             { operands: 'REG', opcode: Opcode.TEST_D, size: 1, condition: (ops) => ops[0].register === 'D' && ops[0].type === 'REGISTER', mnemonic: 'TEST_D' },
 
             { operands: 'REG_IMM8', opcode: Opcode.TEST_A_IMM, size: 2, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER', mnemonic: 'TEST_A_IMM' },
-            { operands: 'REG_IMM8', opcode: Opcode.TEST_A_IMM, size: 2, condition: (ops) => ops[0].register === 'B' && ops[0].type === 'REGISTER', mnemonic: 'TEST_B_IMM' },
-            { operands: 'REG_IMM8', opcode: Opcode.TEST_A_IMM, size: 2, condition: (ops) => ops[0].register === 'C' && ops[0].type === 'REGISTER', mnemonic: 'TEST_C_IMM' },
-            { operands: 'REG_IMM8', opcode: Opcode.TEST_A_IMM, size: 2, condition: (ops) => ops[0].register === 'D' && ops[0].type === 'REGISTER', mnemonic: 'TEST_D_IMM' },
+            { operands: 'REG_IMM8', opcode: Opcode.TEST_B_IMM, size: 2, condition: (ops) => ops[0].register === 'B' && ops[0].type === 'REGISTER', mnemonic: 'TEST_B_IMM' },
+            { operands: 'REG_IMM8', opcode: Opcode.TEST_C_IMM, size: 2, condition: (ops) => ops[0].register === 'C' && ops[0].type === 'REGISTER', mnemonic: 'TEST_C_IMM' },
+            { operands: 'REG_IMM8', opcode: Opcode.TEST_D_IMM, size: 2, condition: (ops) => ops[0].register === 'D' && ops[0].type === 'REGISTER', mnemonic: 'TEST_D_IMM' },
         ]
     },
 

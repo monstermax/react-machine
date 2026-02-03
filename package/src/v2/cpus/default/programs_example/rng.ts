@@ -102,7 +102,7 @@ export const RTC_STOPWATCH: ProgramInfo = {
         // Sauver seconde précédente dans C
         [0x03, Opcode.MOV_A_MEM],
         [0x04, 0xC0], [0x05, 0xFF], // RTC_SECONDS
-        [0x06, Opcode.MOV_CA],
+        [0x06, Opcode.MOV_A_C],
 
         // LOOP:
         [0x07, Opcode.MOV_A_MEM],
@@ -111,7 +111,7 @@ export const RTC_STOPWATCH: ProgramInfo = {
         // Comparer avec C
         [0x0A, Opcode.PUSH_A],
         [0x0B, Opcode.MOV_B_IMM], [0x0C, 0x00],
-        [0x0D, Opcode.MOV_BC], // B = C (ancienne seconde)
+        [0x0D, Opcode.MOV_C_B], // B = C (ancienne seconde)
         [0x0E, Opcode.POP_A],
         [0x0F, Opcode.SUB_A_IMM], // A = A - B
 
@@ -121,7 +121,7 @@ export const RTC_STOPWATCH: ProgramInfo = {
         // Nouvelle seconde ! Afficher
         [0x13, Opcode.MOV_A_MEM],
         [0x14, 0xC0], [0x15, 0xFF],
-        [0x16, Opcode.MOV_CA], // Sauver nouvelle seconde
+        [0x16, Opcode.MOV_A_C], // Sauver nouvelle seconde
 
         [0x17, Opcode.MOV_MEM_A],
         [0x18, 0x30], [0x19, 0xFF], // LEDS_OUTPUT

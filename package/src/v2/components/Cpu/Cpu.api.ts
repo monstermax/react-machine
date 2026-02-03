@@ -1913,62 +1913,62 @@ class CpuCore extends EventEmitter {
             }
 
             // ===== MOV register-register =====
-            case Opcode.MOV_AB:  // A → B
+            case Opcode.MOV_B_A:  // A → B
                 this.setRegister("B", this.getRegister("A"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.MOV_AC:  // A → C
+            case Opcode.MOV_C_A:  // A → C
                 this.setRegister("C", this.getRegister("A"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.MOV_AD:  // A → D
+            case Opcode.MOV_D_A:  // A → D
                 this.setRegister("D", this.getRegister("A"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.MOV_BA:  // B → A
+            case Opcode.MOV_A_B:  // B → A
                 this.setRegister("A", this.getRegister("B"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.MOV_BC:  // B → C
+            case Opcode.MOV_C_B:  // B → C
                 this.setRegister("C", this.getRegister("B"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.MOV_BD:  // B → D
+            case Opcode.MOV_D_B:  // B → D
                 this.setRegister("D", this.getRegister("B"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.MOV_CA:  // C → A
+            case Opcode.MOV_A_C:  // C → A
                 this.setRegister("A", this.getRegister("C"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.MOV_CB:  // C → B
+            case Opcode.MOV_B_C:  // C → B
                 this.setRegister("B", this.getRegister("C"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.MOV_CD:  // C → D
+            case Opcode.MOV_D_C:  // C → D
                 this.setRegister("D", this.getRegister("C"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.MOV_DA:  // D → A
+            case Opcode.MOV_A_D:  // D → A
                 this.setRegister("A", this.getRegister("D"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.MOV_DB:  // D → B
+            case Opcode.MOV_B_D:  // D → B
                 this.setRegister("B", this.getRegister("D"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
 
-            case Opcode.MOV_DC:  // D → C
+            case Opcode.MOV_C_D:  // D → C
                 this.setRegister("C", this.getRegister("D"));
                 this.setRegister("PC", (pc + 1) as u16);
                 break;
