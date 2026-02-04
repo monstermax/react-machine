@@ -108,7 +108,11 @@ run_shell:
     run_shell_run_command:
     lea cl, dl, [STR_RUN_COMMAND]
     call console_print_string
+
     ; TODO: parse command + find executable + load + run
+    ; 1. splitter par espaces
+    ; 2. si primitive => jump & direct exec
+    ;    sinon parser fullpath de la command et/ou chercher dans le PATH
 
     hlt
 
