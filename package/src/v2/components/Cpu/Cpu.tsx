@@ -85,9 +85,9 @@ export const Cpu: React.FC<CpuProps> = (props) => {
 
                 if (state.cpuCycle !== undefined) {
                     const cycle = state.cpuCycle;
-                    //delayer('cpu-cycle', (cycle: number) => {
+                    delayer('cpu-cycle', (cpuIdx: number, cycle: number) => {
                         setCpuCycle(cycle)
-                    //}, 100, 500, [state.cpuCycle]);
+                    }, 200, 500, [cpu.idx, state.cpuCycle]);
                 }
 
                 if (state.cpuPaused !== undefined) {
@@ -113,23 +113,23 @@ export const Cpu: React.FC<CpuProps> = (props) => {
                     }
 
                     if (state.coreCycle) {
-                        //delayer('cpu-core-cycle', (coreIdx: number) => {
+                        delayer('cpu-core-cycle', (cpuIdx: number, coreIdx: number) => {
                             setCoresCoreCycle(r => {
                                 const n = new Map(r);
                                 n.set(coreIdx, state.coreCycle);
                                 return n;
                             })
-                        //}, 10, 100, [coreIdx]);
+                        }, 200, 500, [cpu.idx, coreIdx]);
                     }
 
                     if (state.registers) {
-                        //delayer('cpu-core-register', (coreIdx: number) => {
+                        delayer('cpu-core-register', (cpuIdx: number, coreIdx: number) => {
                             setCoresRegisters(r => {
                                 const n = new Map(r);
                                 n.set(coreIdx, state.registers);
                                 return n;
                             })
-                        //}, 10, 100, [coreIdx]);
+                        }, 200, 500, [cpu.idx, coreIdx]);
                     }
 
                     if (state.coreHalted !== undefined) {

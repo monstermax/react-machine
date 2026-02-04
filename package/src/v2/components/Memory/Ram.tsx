@@ -10,6 +10,7 @@ import { MemoryTable } from './MemoryTable';
 import { useComputer } from '../Computer/ComputerContext';
 
 import type { CompiledCode, OsInfo, ProgramInfo, u16, u8 } from '@/types/cpu.types';
+import { delayer } from '@/v2/lib/delayer';
 
 
 export type RamProps = {
@@ -60,7 +61,9 @@ export const Ram: React.FC<RamProps> = (props) => {
                 //console.log('RAM state update', state)
 
                 if (state.storage) {
-                    setStorage(new Map(state.storage))
+                    delayer('ram-storage', () => {
+                        setStorage(new Map(state.storage))
+                    }, 200, 500, []);
                 }
             })
 

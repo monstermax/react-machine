@@ -36,15 +36,19 @@ export class Keyboard extends EventEmitter implements IoDevice {
             if (!this.isEnable) return;
 
             // Ignorer les touches spéciales (Ctrl, Alt, etc.)
-            if (event.ctrlKey || event.altKey || event.metaKey) return;
+            //if (event.ctrlKey || event.altKey || event.metaKey) return;
 
             // Ignorer si la touche ne produit pas de caractère
-            if (event.key?.length !== 1) return;
+            //if (event.key?.length !== 1) return;
 
-            const charCode = event.key.charCodeAt(0);
+            const charCode = event.key.length === 1
+                ? event.key.charCodeAt(0)
+                : event.keyCode;
 
             // Limiter aux caractères ASCII valides (0-127)
-            if (charCode > 127) return;
+            //if (charCode > 127) return;
+            if (event.key === 'F5') return; // F5
+            if (charCode < 32 && charCode !== 13) return;
 
             this.lastChar = charCode as u8;
             this.hasChar = true;
@@ -57,6 +61,8 @@ export class Keyboard extends EventEmitter implements IoDevice {
             //if (this.irqEnabled && interruptHook?.requestInterrupt) {
             //    interruptHook.requestInterrupt(U8(MEMORY_MAP.IRQ_KEYBOARD));
             //}
+
+            event.preventDefault()
         };
 
         window.addEventListener('keydown', handleKeyDown);

@@ -21,7 +21,7 @@ export type ConsoleProps = {
 
 
 export const Console: React.FC<ConsoleProps> = (props) => {
-    const { hidden=false, open=true, name, ioPort, width = 35, height = 15, children, onInstanceCreated } = props;
+    const { hidden=false, open=true, name, ioPort, width = 80, height = 25, children, onInstanceCreated } = props;
     const { devicesManagerRef } = useComputer();
 
     // Core
