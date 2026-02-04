@@ -24,7 +24,7 @@ export type Register16 =
 export type Register = Register8 | Register16;
 
 
-export type IoDeviceType = 'Input' | 'DiskStorage' | 'Display' | 'Audio' | 'Random' | 'Time' | 'Interrupt';
+export type IoDeviceType = 'Input' | 'DiskStorage' | 'Display' | 'Audio' | 'Random' | 'Time' | 'Interrupt' | 'Memory';
 
 
 export type OsInfo = {

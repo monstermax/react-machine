@@ -17,7 +17,7 @@ export type StorageDiskProps = {
     size?: number;
     open?: boolean;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.StorageDisk) => void,
+    onInstanceCreated?: (device: cpuApi.StorageDisk) => void,
 }
 
 

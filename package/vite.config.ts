@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import dts from 'vite-plugin-dts';
 import { viteStaticCopy } from "vite-plugin-static-copy";
+import tailwindcss from '@tailwindcss/vite'
 
 //import { asmDirectoryPlugin } from './src/v2/lib/vite_asm_index'
 
@@ -10,6 +11,7 @@ import { viteStaticCopy } from "vite-plugin-static-copy";
 export default defineConfig({
   plugins: [
     react(),
+    tailwindcss(),
     //asmDirectoryPlugin(), // A revoir
     dts({
       tsconfigPath: './tsconfig.json',

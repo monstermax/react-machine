@@ -1,10 +1,11 @@
 
 import { EventEmitter } from "eventemitter3";
 
-import { U16, U8 } from "@/v2/lib/integers";
+import { toHex, U16, U8 } from "@/v2/lib/integers";
 
 import type { u16, u8 } from "@/types/cpu.types";
 import type { IoDevice } from "@/v2/types/cpu_v2.types";
+import { MEMORY_MAP } from "@/v2/lib/memory_map_16x8_bits";
 
 
 // Device Map: commence à 0xFE00, chaque device a 16 ports (0xFE00-0xFE0F, 0xFE10-0xFE1F, etc.)
@@ -41,7 +42,7 @@ export class DevicesManager extends EventEmitter {
             return device.read(devicePort);
         }
 
-        console.warn(`Read from unknown I/O port 0xFF${ioPort.toString(16).padStart(2, '0')}`);
+        console.warn(`Read from unknown I/O port 0xFF${toHex(ioPort)}`);
         return 0 as u8;
     }
 
@@ -57,7 +58,7 @@ export class DevicesManager extends EventEmitter {
             return;
         }
 
-        console.warn(`Write to unknown I/O port 0xFF${ioPort.toString(16).padStart(2, '0')} (port ${devicePort})`);
+        console.warn(`Write to unknown I/O port ${toHex(MEMORY_MAP.IO_START + ioPort)} (device ${deviceId} port ${devicePort})`);
     }
 
 

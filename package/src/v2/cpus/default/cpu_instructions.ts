@@ -89,13 +89,13 @@ export enum Opcode {
     JAE = JGE,         // Jump if Greater or Equal
 
     // LEA (0x39-0x3F)
-    LEA_CD_A = 0x39,      // LEA A, [C:D] - Load address C:D into A
-    LEA_CD_B = 0x3A,      // LEA B, [C:D] - Load address C:D into B
-    LEA_IMM_CD = 0x3B,    // LEA CD, imm16 - Load immediate address into C:D (2 bytes)
-    LEA_A_MEM = 0x3C,     // LEA A, [addr] - Load address into A (low byte)
-    LEA_B_MEM = 0x3D,     // LEA B, [addr] - Load address into B (low byte)
-    LEA_CD_MEM = 0x3E,    // LEA CD, [addr] - Load address into C:D
-    LEA_CD_OFFSET = 0x3F, // LEA CD, [CD + offset] - Address with offset
+    LEA_A_CD = 0x39,      // LEA A, [C:D] - Load address C:D into A
+    LEA_B_CD = 0x3A,      // LEA B, [C:D] - Load address C:D into B
+    LEA_CD_IMM = 0x3B,    // LEA CD, imm16 - Load immediate address into C:D (2 bytes)
+    LEA_CD_MEM = 0x3C,    // LEA CD, [addr] - Load address into C:D
+    LEA_CD_OFFSET = 0x3D, // LEA CD, [CD + offset] - Address with offset
+
+    MOV_MEM_IMM = 0x3E,
 
 
     // MOV (0x40-0x5B)
@@ -132,8 +132,8 @@ export enum Opcode {
     MOV_MEM_D = 0x57,  // MOV [addr16], D
 
     // MOV Memory to Register (indirect via C:D)
-    MOV_A_PTR_CD = 0x58,  // A = [[C:D]]
-    MOV_B_PTR_CD = 0x59,  // B = [[C:D]]
+    MOV_A_PTR_CD = LEA_A_CD,  // A = [[C:D]]
+    MOV_B_PTR_CD = LEA_B_CD,  // B = [[C:D]]
 
     // MOV Register to Memory (indirect via C:D)
     MOV_PTR_CD_A = 0x5A,  // [C:D] = A
@@ -420,10 +420,13 @@ export const INSTRUCTIONS_WITH_TWO_OPERANDS = [
     Opcode.MOV_MEM_B,
     Opcode.MOV_MEM_C,
     Opcode.MOV_MEM_D,
-    Opcode.LEA_A_MEM,      // LEA A, [imm16]
-    Opcode.LEA_B_MEM,      // LEA B, [imm16]
     Opcode.LEA_CD_MEM,     // LEA CD, [imm16]
-    Opcode.LEA_IMM_CD,     // LEA CD, imm16
+    Opcode.LEA_CD_IMM,     // LEA CD, imm16
+];
+
+
+export const INSTRUCTIONS_WITH_THREE_OPERANDS = [
+    Opcode.MOV_MEM_IMM,
 ];
 
 
@@ -484,11 +487,11 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.IRET: return "IRET";
 
         // LEA
-        case Opcode.LEA_CD_A: return "LEA A, [C:D]";
-        case Opcode.LEA_CD_B: return "LEA B, [C:D]";
-        case Opcode.LEA_IMM_CD: return "LEA CD, imm16";
-        case Opcode.LEA_A_MEM: return "LEA A, [addr]";
-        case Opcode.LEA_B_MEM: return "LEA B, [addr]";
+        case Opcode.LEA_A_CD: return "LEA A, [C:D]";
+        case Opcode.LEA_B_CD: return "LEA B, [C:D]";
+        case Opcode.LEA_CD_IMM: return "LEA CD, imm16";
+        //case Opcode.LEA_A_MEM: return "LEA A, [addr]";
+        //case Opcode.LEA_B_MEM: return "LEA B, [addr]";
         case Opcode.LEA_CD_MEM: return "LEA CD, [addr]";
         case Opcode.LEA_CD_OFFSET: return "LEA CD, [CD+offset]";
 
@@ -523,6 +526,8 @@ export const getOpcodeName = (opcode: u8): string => {
         case Opcode.MOV_MEM_B: return "MOV MEM B";
         case Opcode.MOV_MEM_C: return "MOV MEM C";
         case Opcode.MOV_MEM_D: return "MOV MEM D";
+
+        case Opcode.MOV_MEM_IMM: return "MOV MEM IMM8";
 
         // MOV Memory to Register (indirect via C:D)
         case Opcode.MOV_A_PTR_CD: return "MOV A PTR_CD";
@@ -810,11 +815,11 @@ export const getOpcodeDescription = (opcode: u8): string => {
         case Opcode.IRET: return "Return from interrupt : restore flags and return";
 
         // LEA
-        case Opcode.LEA_CD_A: return "Load Effective Address into A : A = low byte of address (C:D)";
-        case Opcode.LEA_CD_B: return "Load Effective Address into B : B = low byte of address (C:D)";
-        case Opcode.LEA_IMM_CD: return "Load Effective Address immediate : C:D = 16-bit address (C=low, D=high)";
-        case Opcode.LEA_A_MEM: return "Load Effective Address into A : A = low byte of 16-bit address";
-        case Opcode.LEA_B_MEM: return "Load Effective Address into B : B = low byte of 16-bit address";
+        case Opcode.LEA_A_CD: return "Load Effective Address into A : A = low byte of address (C:D)";
+        case Opcode.LEA_B_CD: return "Load Effective Address into B : B = low byte of address (C:D)";
+        case Opcode.LEA_CD_IMM: return "Load Effective Address immediate : C:D = 16-bit address (C=low, D=high)";
+        //case Opcode.LEA_A_MEM: return "Load Effective Address into A : A = low byte of 16-bit address";
+        //case Opcode.LEA_B_MEM: return "Load Effective Address into B : B = low byte of 16-bit address";
         case Opcode.LEA_CD_MEM: return "Load Effective Address into CD : C:D = 16-bit address (C=low, D=high)";
         case Opcode.LEA_CD_OFFSET: return "Load Effective Address with offset : C:D = C:D + offset (8-bit signed)";
 
@@ -983,6 +988,9 @@ export const getInstructionLength = (opcode: u8): number => {
     if (INSTRUCTIONS_WITH_TWO_OPERANDS.includes(opcode)) {
         return 3; // opcode + 2 bytes
     }
+    if (INSTRUCTIONS_WITH_THREE_OPERANDS.includes(opcode)) {
+        return 4; // opcode + 4 bytes
+    }
     return 1; // opcode seul
 };
 
@@ -1013,6 +1021,11 @@ export const buildMemoryInstructionMap = (data: Map<u16, u8> | [u16, u8][]) => {
             if (INSTRUCTIONS_WITH_TWO_OPERANDS.includes(value)) {
                 operandAddresses.add(address + 1);
                 operandAddresses.add(address + 2);
+            }
+            if (INSTRUCTIONS_WITH_THREE_OPERANDS.includes(value)) {
+                operandAddresses.add(address + 1);
+                operandAddresses.add(address + 2);
+                operandAddresses.add(address + 3);
             }
 
         } else {

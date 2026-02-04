@@ -12,7 +12,7 @@ export type BuzzerProps = {
     ioPort: number | u8 | null;
     hidden?: boolean;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.Buzzer) => void,
+    onInstanceCreated?: (device: cpuApi.Buzzer) => void,
 }
 
 

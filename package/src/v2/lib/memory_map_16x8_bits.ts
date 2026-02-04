@@ -217,6 +217,14 @@ export const MEMORY_MAP = createMemoryMap({
 
     // Device 17: DMA (0xF110-0xF11F) // Direct Memory Access
     DMA_BASE: 0xF110,
+    DMA_IO: 0xF110,
+    DMA_ADDR_START_LOW: 0xF111,
+    DMA_ADDR_START_HIGH: 0xF112,
+    DMA_ADDR_END_LOW: 0xF113,
+    DMA_ADDR_END_HIGH: 0xF114,
+    DMA_TARGET_ADDR_LOW: 0xF115,
+    DMA_TARGET_ADDR_HIGH: 0xF116,
+    DMA_DATA: 0xF117,
 
     // Device 18: DMA (0xF120-0xF12F) // Clock
     CLOCK_BASE: 0xF120,

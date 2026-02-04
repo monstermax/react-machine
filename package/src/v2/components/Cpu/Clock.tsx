@@ -31,7 +31,7 @@ export type ClockProps = {
     hidden?: boolean;
     open?: boolean;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.Clock) => void,
+    onInstanceCreated?: (clock: cpuApi.Clock) => void,
 }
 
 
@@ -99,6 +99,7 @@ export const Clock: React.FC<ClockProps> = (props) => {
                 clockFrequency: clockInstance.clockFrequency,
             })
 
+            //console.log('Clock initialized', clockInstance)
             //setInstanciated(true)
         }
 

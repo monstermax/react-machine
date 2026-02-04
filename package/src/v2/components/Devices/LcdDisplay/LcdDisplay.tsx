@@ -15,7 +15,7 @@ export type LcdDisplayProps = {
     width?: number;
     height?: number;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.LcdDisplay) => void,
+    onInstanceCreated?: (device: cpuApi.LcdDisplay) => void,
 }
 
 

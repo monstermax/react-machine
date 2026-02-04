@@ -33,6 +33,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "dev": "vite",
     "build": "vite build",
     "build:vite": "vite build",
     "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist"
@@ -40,6 +41,7 @@
   "devDependencies": {
     "@types/node": "^25.0.10",
     "@types/react": "^19.2.9",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.0.0",
     "typescript": "^5.0.0",
     "vite": "^5.0.0",
@@ -51,8 +53,10 @@
     "react-dom": ">=18 <20"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
     "eventemitter3": "^5.0.4",
     "prism-react-editor": "^3.0.1",
+    "tailwindcss": "^4.1.18",
     "wouter": "^3.9.0"
   },
   "files": [

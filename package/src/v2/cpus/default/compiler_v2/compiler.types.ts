@@ -14,7 +14,12 @@ export type OperandType =
     | 'REG_MEM'
     | 'REG_MEM_IMM16'
     | 'MEM_REG'
-    | 'REG_IMM_IMM'
+    | 'MEM_IMM8'
+    | 'REG_IMM8_IMM8'
+    | 'REG_REG_MEM'
+    | 'REG_REG_REG'
+    | 'REG_REG_IMM16'
+    | 'REG_REG_MEM_IMM16'
     ;
 
 export interface InstructionDef {
@@ -63,6 +68,7 @@ export interface ParsedOperand {
 export interface CompilerOptions {
     architecture: CPUArchitecture;
     startAddress?: number;
+    startLine?: number;
     caseSensitive?: boolean;
 }
 

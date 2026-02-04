@@ -14,7 +14,7 @@ export type DmaProps = {
     open?: boolean;
     hidden?: boolean;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.Dma) => void,
+    onInstanceCreated?: (dma: cpuApi.Dma) => void,
 }
 
 export const Dma: React.FC<DmaProps> = (props) => {
@@ -56,6 +56,7 @@ export const Dma: React.FC<DmaProps> = (props) => {
             // Emit initial state
             //dma.emit('state', {  })
 
+            //console.log('DMA initialized', dma)
             //setInstanciated(true)
         }
 

@@ -12,6 +12,10 @@ export type TokenType =
     | 'PLUS'
     | 'MINUS'
     | 'MUL'
+    | 'SUP'
+    | 'INF'
+    | 'AND'
+    | 'OR'
     | 'LBRACKET'
     | 'RBRACKET'
     | 'LPAREN'
@@ -116,6 +120,21 @@ export class Lexer {
 
             case '*':
                 return this.makeToken('MUL', '*', () => { this.pos++; this.col++; });
+
+
+
+            case '>':
+                return this.makeToken('SUP', '>', () => { this.pos++; this.col++; });
+
+            case '<':
+                return this.makeToken('INF', '<', () => { this.pos++; this.col++; });
+
+            case '&':
+                return this.makeToken('AND', '&', () => { this.pos++; this.col++; });
+
+            case '|':
+                return this.makeToken('OR', '|', () => { this.pos++; this.col++; });
+
 
             case '[':
                 return this.makeToken('LBRACKET', '[', () => { this.pos++; this.col++; });

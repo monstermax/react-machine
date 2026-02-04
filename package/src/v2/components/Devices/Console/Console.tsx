@@ -16,7 +16,7 @@ export type ConsoleProps = {
     width?: number;
     height?: number;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.Console) => void,
+    onInstanceCreated?: (device: cpuApi.Console) => void,
 }
 
 

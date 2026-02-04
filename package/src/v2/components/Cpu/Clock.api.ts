@@ -26,8 +26,8 @@ export class Clock extends EventEmitter implements IoDevice {
         super();
 
         this.id = Math.round(Math.random() * 999_999_999);
-        this.name = 'interrupt';
-        this.type = 'Interrupt';
+        this.name = 'clock';
+        this.type = 'Time';
         this.ioPort = ioPort ?? 0 as u8; // TODO: find free io port
 
         this.motherboard = motherboard;

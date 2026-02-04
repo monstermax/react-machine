@@ -34,11 +34,15 @@ export class Compiler {
 
     private caseSensitive: boolean; // Whether to match case-sensitive names
     private entryPoint?: number; // Entry point address (e.g., _start, main)
+    private startLine: number;
+    private startAddress: number;
 
 
     constructor(options: CompilerOptions) {
         this.arch = options.architecture;
         this.caseSensitive = options.caseSensitive || false;
+        this.startAddress = options.startAddress || 0;
+        this.startLine = options.startLine || 0;
 
         // Build lookup maps for registers and instructions
         this.buildRegisterMap();
@@ -135,6 +139,19 @@ export class Compiler {
         // Resolve forward references
         this.resolveReferences();
 
+        // Sync line numbers with expected offset
+        if (this.startLine !== this.startAddress) {
+            const offset = this.startAddress - this.startLine
+
+            this.sections.forEach(s => {
+                s.startAddress -= offset;
+
+                s.data.forEach(d => {
+                    d.address -= offset;
+                })
+            })
+        }
+
         return {
             sections: Array.from(this.sections.values()),
             labels: this.labels,
@@ -214,6 +231,7 @@ export class Compiler {
                 lastInstructionOrIdentifierAddress = this.currentAddress;
 
                 const size = this.calculateInstructionSize();
+
                 //console.log(`[pass1] ${token.value} at ${this.currentAddress}, size=${size}`);
                 this.debugAddresses.set(this.currentAddress, size)
                 this.currentAddress += size;
@@ -236,17 +254,17 @@ export class Compiler {
 
                         lastInstructionOrIdentifierAddress = this.currentAddress;
 
-                        const startAddress = this.currentAddress as u16;
+                        const valueStartAddress = this.currentAddress as u16;
 
                         this.labels.set(varName, {
                             section: this.currentSection,
-                            address: startAddress,
+                            address: valueStartAddress,
                             values: null,
                             dataSize: itemSize,
                         });
 
                         this.symbols.set(varName, {
-                            address: startAddress,
+                            address: valueStartAddress,
                             section: this.currentSection,
                             type: 'variable'
                         });
@@ -486,20 +504,52 @@ export class Compiler {
 
             // INSTRUCTION: Encode instruction to bytes
             if (token.type === 'INSTRUCTION') {
-                const before = this.currentAddress;
+                const posBefore = this.pos;
+                const addressBefore = this.currentAddress;
                 this.generateInstruction();
-                const size = this.currentAddress - before;
-                //console.log(`[pass2] ${token.value} at ${before}, emitted=${size}`);
 
-                const expectedSize = this.debugAddresses.get(before)
+                const size = this.currentAddress - addressBefore;
+
+                //console.log(`[pass2] ${token.value} at ${before}, emitted=${size}`);
+                const expectedSize = this.debugAddresses.get(addressBefore)
                 if (expectedSize !== size) {
-                    throw new Error(`Emitted size mismatch (${expectedSize} vs ${size}) at address ${before} (instruction "${token.value}")`);
+                    const currentLineTokens = this.extractCurrentLine()
+                    console.log('currentLineTokens:', currentLineTokens)
+                    throw new Error(`Emitted size mismatch (${expectedSize} vs ${size}) at address ${addressBefore} (instruction "${token.value}")`);
                 }
                 continue;
             }
 
             this.advance();
         }
+    }
+
+
+    private extractCurrentLine(offset=0) {
+        const current = this.peek(offset);
+        const tokens: Token[] = current.type === 'NEWLINE' ? [] : [ current ];
+
+        let currentPosMinus = offset - 1
+        while (true) {
+            const prev = this.peek(currentPosMinus);
+            if (prev.type === 'EOF') break;
+            if (prev.type === 'NEWLINE') break;
+            tokens.unshift(prev);
+            currentPosMinus--;
+        }
+
+        if (current.type !== 'NEWLINE') {
+            let currentPosPlus = offset + 1
+            while (true) {
+                const next = this.peek(currentPosPlus);
+                if (next.type === 'EOF') break;
+                if (next.type === 'NEWLINE') break;
+                tokens.push(next);
+                currentPosPlus++;
+            }
+        }
+
+        return tokens;
     }
 
 
@@ -544,10 +594,7 @@ export class Compiler {
                 // Set data/bss section start address to current position
 
                 if (section.type !== 'code') {
-                    //if (section.startAddress !== this.currentAddress) debugger;
                     //console.log(`[pass2] start of ${this.currentSection} : ${this.currentAddress}`)
-                    //section.startAddress = this.currentAddress;
-                    //this.currentAddress = section.startAddress;
 
                     if (this.currentAddress !== section.startAddress) {
                         throw new Error(`address mistmatch : ${this.currentAddress} !== ${section.startAddress}`);
@@ -932,7 +979,7 @@ export class Compiler {
 
                         } else {
                             // Absolute address = section start + label offset
-                            value = labelSection.startAddress + labelInfo.address;
+                            value = /* labelSection.startAddress + */ labelInfo.address;
                         }
 
                     } else {
@@ -953,7 +1000,13 @@ export class Compiler {
                         throw new Error(`Missing label "${op.value}"`);
                     }
 
-                    value = label.values ? this.parseNumber(label.values[0]) : 0x00;
+                    if (label.dataSize === 0 && label.values) {
+                        value = this.parseNumber(label.values[0]);
+
+                    } else {
+                        if (label.address === undefined) throw new Error("missing label address");
+                        value = label.address;
+                    }
 
                 } else if (op.address !== undefined) {
                     value = op.address;

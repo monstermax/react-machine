@@ -13,7 +13,7 @@ export type LedsDisplayProps = {
     hidden?: boolean;
     open?: boolean;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.LedsDisplay) => void,
+    onInstanceCreated?: (device: cpuApi.LedsDisplay) => void,
 }
 
 

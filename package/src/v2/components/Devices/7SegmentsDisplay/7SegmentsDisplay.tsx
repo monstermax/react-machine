@@ -15,7 +15,7 @@ export type SevenSegmentDisplayProps = {
     open?: boolean;
     displays?: number;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.SevenSegmentDisplay) => void,
+    onInstanceCreated?: (device: cpuApi.SevenSegmentDisplay) => void,
 }
 
 

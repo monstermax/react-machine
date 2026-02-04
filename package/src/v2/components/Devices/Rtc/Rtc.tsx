@@ -13,7 +13,7 @@ export type RtcProps = {
     ioPort: number | u8 | null;
     hidden?: boolean;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.Rtc) => void,
+    onInstanceCreated?: (device: cpuApi.Rtc) => void,
 }
 
 export const Rtc: React.FC<RtcProps> = (props) => {

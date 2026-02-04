@@ -13,7 +13,7 @@ export type RngProps = {
     ioPort: number | u8 | null;
     hidden?: boolean;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.Rng) => void,
+    onInstanceCreated?: (device: cpuApi.Rng) => void,
 }
 
 export const Rng: React.FC<RngProps> = (props) => {

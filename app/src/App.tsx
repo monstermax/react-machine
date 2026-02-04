@@ -10,10 +10,10 @@ import { CompilePage } from "./pages/CompilePage";
 import { ComputerPageBeta } from "./pages/ComputerPageBeta";
 import { LogicPage } from "./pages/LogicPage";
 import NotFound from "@/pages/NotFound";
+import { CompilePageBeta } from "./pages/CompilePageBeta";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 import '@/App.css';
-import { CompilePageBeta } from "./pages/CompilePageBeta";
 
 
 function App() {

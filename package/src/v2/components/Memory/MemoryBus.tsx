@@ -6,7 +6,7 @@ import { useComputer } from '../Computer/ComputerContext';
 import { Rom } from './Rom';
 import { Ram } from './Ram';
 import { DevicesManager } from '../Devices/DevicesManager';
-import { Dma } from './Dma';
+//import { Dma } from './Dma';
 
 
 type MemoryBusProps = {
@@ -27,7 +27,7 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     // Core Children
     const [romInstance, setRomInstance] = useState<cpuApi.Rom | null>(null);
     const [ramInstance, setRamInstance] = useState<cpuApi.Ram | null>(null);
-    const [dmaInstance, setDmaInstance] = useState<cpuApi.Dma | null>(null);
+    //const [dmaInstance, setDmaInstance] = useState<cpuApi.Dma | null>(null);
 
     // UI
     const [contentVisible, setContentVisible] = useState(open);
@@ -95,10 +95,10 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
     }
 
 
-    const addDma = (dmaInstance: cpuApi.Dma) => {
-        if (!memoryBusInstance) return;
-        setDmaInstance(dmaInstance)
-    }
+//    const addDma = (dmaInstance: cpuApi.Dma) => {
+//        if (!memoryBusInstance) return;
+//        setDmaInstance(dmaInstance)
+//    }
 
 
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -112,8 +112,8 @@ export const MemoryBus: React.FC<MemoryBusProps> = (props) => {
                 case Ram:
                     return React.cloneElement(childElement, { onInstanceCreated: addRam });
 
-                case Dma:
-                    return React.cloneElement(childElement, { onInstanceCreated: addDma });
+//                case Dma:
+//                    return React.cloneElement(childElement, { onInstanceCreated: addDma });
 
                 default:
                     console.log(`Invalid component mounted into MemoryBus :`, (childElement.type as JSXElementConstructor<any>).name);

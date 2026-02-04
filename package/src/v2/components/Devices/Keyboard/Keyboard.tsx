@@ -13,7 +13,7 @@ export type KeyboardProps = {
     hidden?: boolean;
     open?: boolean;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.Keyboard) => void,
+    onInstanceCreated?: (device: cpuApi.Keyboard) => void,
 }
 
 

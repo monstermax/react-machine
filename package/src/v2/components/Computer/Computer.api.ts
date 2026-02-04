@@ -93,7 +93,7 @@ export class Computer extends EventEmitter {
         const memoryOffset = MEMORY_MAP.OS_START;
 
         const codeSource = await loadSourceCodeFromFile(os.filepath);
-        const compiledCode = await universalCompiler(codeSource, memoryOffset)
+        const compiledCode = await universalCompiler(codeSource, memoryOffset, U16(0))
 
         return compiledCode;
     }
@@ -107,29 +107,33 @@ export class Computer extends EventEmitter {
 
         const osCode: CompiledCode | null = await this.loadOsCode(osName);
 
-         // Load on disk (for debug)
-        await this.loadCodeOnDisk('os_disk', osCode ?? new Map);
+        if (true) {
+            // Load on disk (for debug)
+            await this.loadCodeOnDisk('os_disk', osCode ?? new Map);
+        }
 
-         // Load in RAM
-        const memoryOffset = MEMORY_MAP.OS_START;
-        await dmaInstance.loadCodeInRam(osCode, memoryOffset);
+        if (0) {
+            // Load in RAM
+            const memoryOffset = MEMORY_MAP.OS_START;
+            await dmaInstance.loadCodeInRam(osCode, memoryOffset);
 
-        // Check Program Counter
-        if (this.motherboard) {
-            for (const cpu of this.motherboard.getCpus()) {
-                if (!cpu) continue;
+            // Check Program Counter
+            if (this.motherboard) {
+                for (const cpu of this.motherboard.getCpus()) {
+                    if (!cpu) continue;
 
-                for (const core of cpu.cores) {
-                    const pc = core.getRegister('PC');
+                    for (const core of cpu.cores) {
+                        const pc = core.getRegister('PC');
 
-                    if (pc >= MEMORY_MAP.OS_START && pc <= MEMORY_MAP.PROGRAM_END) {
-                        core.setRegister('PC', MEMORY_MAP.ROM_START);
+                        if (pc >= MEMORY_MAP.OS_START && pc <= MEMORY_MAP.PROGRAM_END) {
+                            core.setRegister('PC', MEMORY_MAP.ROM_START);
+                        }
+
+                        break; // Only on core #0
                     }
 
-                    break; // Only on core #0
+                    break; // Only on cpu #0
                 }
-
-                break; // Only on cpu #0
             }
         }
 
@@ -203,26 +207,30 @@ export class Computer extends EventEmitter {
 
         const programCode: CompiledCode | null = await this.loadProgramCode(programName);
 
-        await this.loadCodeOnDisk('program_disk', programCode ?? new Map); // load on disk too (for debug)
+        if (true) {
+            await this.loadCodeOnDisk('program_disk', programCode ?? new Map); // load on disk too (for debug)
+        }
 
-        const memoryOffset = MEMORY_MAP.PROGRAM_START;
-        await dmaInstance.loadCodeInRam(programCode, memoryOffset);
+        if (true) {
+            const memoryOffset = MEMORY_MAP.PROGRAM_START;
+            await dmaInstance.loadCodeInRam(programCode, memoryOffset);
 
-        if (this.motherboard) {
-            for (const cpu of this.motherboard.getCpus()) {
-                if (!cpu) continue;
+            if (this.motherboard) {
+                for (const cpu of this.motherboard.getCpus()) {
+                    if (!cpu) continue;
 
-                for (const core of cpu.cores) {
-                    const pc = core.getRegister('PC');
+                    for (const core of cpu.cores) {
+                        const pc = core.getRegister('PC');
 
-                    if (pc >= MEMORY_MAP.PROGRAM_START && pc <= MEMORY_MAP.PROGRAM_END) {
-                        core.setRegister('PC', MEMORY_MAP.OS_START);
+                        if (pc >= MEMORY_MAP.PROGRAM_START && pc <= MEMORY_MAP.PROGRAM_END) {
+                            core.setRegister('PC', MEMORY_MAP.OS_START);
+                        }
+
+                        break; // Only on core #0
                     }
 
-                    break; // Only on core #0
+                    break; // Only on cpu #0
                 }
-
-                break; // Only on cpu #0
             }
         }
 

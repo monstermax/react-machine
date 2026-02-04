@@ -13,7 +13,7 @@ import type { u16, u8 } from '@/types/cpu.types';
 import type { IoDevice } from '@/v2/types/cpu_v2.types';
 
 
-const validDeviceTypes = ['Input', 'DiskStorage', 'Display', 'Audio', 'Time', 'Random', 'Interrupt'];
+const validDeviceTypes = ['Input', 'DiskStorage', 'Display', 'Audio', 'Time', 'Random', 'Interrupt', 'Memory'];
 
 
 export type DevicesManagerProps = {
@@ -120,11 +120,12 @@ export const DevicesManager: React.FC<DevicesManagerProps> = (props) => {
         //nextDeviceIdRef.current = nextDeviceIdRef.current + 1 as u8
 
         //setDevicesInstances(devicesManagerInstance.devices);
+        //console.log(`Device "${instance.name}" mounted into DevicesManager`);
 
         // DEBUG: preload disk data_2
-        if (instance.name === 'data_2') {
-            loadDiskDemoProgram('data_2')
-        }
+        //if (instance.name === 'data_2') {
+        //    loadDiskDemoProgram('data_2')
+        //}
     }, [devicesManagerInstance])
 
 

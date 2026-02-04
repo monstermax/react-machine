@@ -18,7 +18,7 @@ export type InterruptProps = {
     hidden?: boolean;
     open?: boolean;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.Interrupt) => void,
+    onInstanceCreated?: (interrupt: cpuApi.Interrupt) => void,
 }
 
 export const Interrupt: React.FC<InterruptProps> = (props) => {

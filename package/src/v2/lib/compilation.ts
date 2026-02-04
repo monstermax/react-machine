@@ -45,6 +45,7 @@ export async function compileCode(source: string, architecture: CPUArchitecture 
     const compiler = new Compiler({
         architecture,
         startAddress: options.startAddress || 0,
+        startLine: options.startLine || 0,
         caseSensitive: options.caseSensitive || false
     });
 
@@ -158,7 +159,7 @@ export const universalCompiler = async (codeSource: string, memoryOffset: u16=U1
         code = finalized.code;
 
     } else if (compilerType === 'nasm') {
-        const compiled = await compileCode(codeSource);
+        const compiled = await compileCode(codeSource, undefined, { startAddress: memoryOffset, startLine: lineOffset });
         code = getBytecodeArray(compiled)
     }
 

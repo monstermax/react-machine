@@ -13,7 +13,7 @@ export type TimerProps = {
     ioPort: number | u8 | null;
     hidden?: boolean;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.Timer) => void,
+    onInstanceCreated?: (device: cpuApi.Timer) => void,
 }
 
 export const Timer: React.FC<TimerProps> = (props) => {

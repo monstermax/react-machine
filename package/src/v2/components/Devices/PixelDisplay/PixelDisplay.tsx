@@ -16,7 +16,7 @@ export type PixelDisplayProps = {
     width?: number;
     height?: number;
     children?: React.ReactNode,
-    onInstanceCreated?: (cpu: cpuApi.PixelDisplay) => void,
+    onInstanceCreated?: (device: cpuApi.PixelDisplay) => void,
 };
 
 

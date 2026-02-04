@@ -204,36 +204,37 @@ const instructions: InstructionDef[] = [
             { operands: 'REG_IMM8', opcode: Opcode.MOV_C_IMM, size: 2, condition: (ops) => ops[0].register === 'C', mnemonic: 'MOV_C_IMM' },
             { operands: 'REG_IMM8', opcode: Opcode.MOV_D_IMM, size: 2, condition: (ops) => ops[0].register === 'D', mnemonic: 'MOV_D_IMM' },
 
+
             { operands: 'REG_MEM', opcode: Opcode.MOV_A_MEM, size: 3, condition: (ops) => ops[0].register === 'A', mnemonic: 'MOV_A_MEM' },
             { operands: 'REG_MEM', opcode: Opcode.MOV_B_MEM, size: 3, condition: (ops) => ops[0].register === 'B', mnemonic: 'MOV_B_MEM' },
             { operands: 'REG_MEM', opcode: Opcode.MOV_C_MEM, size: 3, condition: (ops) => ops[0].register === 'C', mnemonic: 'MOV_C_MEM' },
             { operands: 'REG_MEM', opcode: Opcode.MOV_D_MEM, size: 3, condition: (ops) => ops[0].register === 'D', mnemonic: 'MOV_D_MEM' },
 
             { operands: 'REG_MEM', opcode: Opcode.SET_SP, size: 3, condition: (ops) => ops[0].register === 'SP', mnemonic: 'SET_SP' },
-            { operands: 'REG_IMM_IMM', opcode: Opcode.SET_SP, size: 3, condition: (ops) => ops[0].register === 'SP', mnemonic: 'SET_SP' },
+            { operands: 'REG_IMM8_IMM8', opcode: Opcode.SET_SP, size: 3, condition: (ops) => ops[0].register === 'SP', mnemonic: 'SET_SP' },
+            { operands: 'REG_IMM16', opcode: Opcode.SET_SP, size: 3, condition: (ops) => ops[0].register === 'SP', mnemonic: 'SET_SP' },
 
             { operands: 'MEM_REG', opcode: Opcode.MOV_MEM_A, size: 3, condition: (ops) => ops[1].register === 'A', mnemonic: 'MOV_MEM_A' },
             { operands: 'MEM_REG', opcode: Opcode.MOV_MEM_B, size: 3, condition: (ops) => ops[1].register === 'B', mnemonic: 'MOV_MEM_B' },
             { operands: 'MEM_REG', opcode: Opcode.MOV_MEM_C, size: 3, condition: (ops) => ops[1].register === 'C', mnemonic: 'MOV_MEM_C' },
             { operands: 'MEM_REG', opcode: Opcode.MOV_MEM_D, size: 3, condition: (ops) => ops[1].register === 'D', mnemonic: 'MOV_MEM_D' },
+
+            { operands: 'MEM_IMM8', opcode: Opcode.MOV_MEM_IMM, size: 4, condition: (ops) => true, mnemonic: 'MOV_MEM_IMM' },
         ]
     },
 
     {
         mnemonic: 'LEA', opcode: 0x00, operands: 'REG_MEM', size: 1, variants: [
-            { operands: 'REG_MEM', opcode: Opcode.LEA_CD_A, size: 1, condition: (ops) => ops[0].register === 'A' && ops[1].type === 'MEMORY' && ops[1].register === 'CD', mnemonic: 'LEA_CD_A' },
-            { operands: 'REG_MEM', opcode: Opcode.LEA_CD_B, size: 1, condition: (ops) => ops[0].register === 'B' && ops[1].type === 'MEMORY' && ops[1].register === 'CD', mnemonic: 'LEA_CD_B' },
-            { operands: 'REG_IMM16', opcode: Opcode.LEA_IMM_CD, size: 3, condition: (ops) => ops[0].register === 'CD' && ops[1].type === 'IMMEDIATE', mnemonic: 'LEA_IMM_CD' },
-
-            // LEA avec registre 8-bit et adresse immédiate
-            { operands: 'REG_IMM16', opcode: Opcode.LEA_A_MEM, size: 3, condition: (ops) => ops[0].register === 'A' && ops[1].type === 'IMMEDIATE', mnemonic: 'LEA_A_MEM' },
-            { operands: 'REG_IMM16', opcode: Opcode.LEA_B_MEM, size: 3, condition: (ops) => ops[0].register === 'B' && ops[1].type === 'IMMEDIATE', mnemonic: 'LEA_B_MEM' },
+            { operands: 'REG_REG_REG', opcode: Opcode.LEA_A_CD, size: 1, condition: (ops) => ops[0].register === 'A' && ops[1].register === 'C' && ops[2].register === 'D', mnemonic: 'LEA_A_CD' },
+            { operands: 'REG_REG_REG', opcode: Opcode.LEA_B_CD, size: 1, condition: (ops) => ops[0].register === 'B' && ops[1].register === 'C' && ops[2].register === 'D', mnemonic: 'LEA_B_CD' },
+            { operands: 'REG_REG_IMM16', opcode: Opcode.LEA_CD_IMM, size: 3, condition: (ops) => ops[0].register === 'C' && ops[1].register === 'D' && ['IMMEDIATE', 'LABEL'].includes(ops[2].type), mnemonic: 'LEA_CD_IMM' },
 
             // LEA avec registre 16-bit (CD) et adresse immédiate
-            { operands: 'REG_IMM16', opcode: Opcode.LEA_CD_MEM, size: 3, condition: (ops) => ops[0].register === 'CD' && ops[1].type === 'IMMEDIATE', mnemonic: 'LEA_CD_MEM' },
+            { operands: 'REG_REG_IMM16', opcode: Opcode.LEA_CD_MEM, size: 3, condition: (ops) => ops[0].register === 'C' && ops[1].register === 'D' && ['IMMEDIATE'].includes(ops[2].type), mnemonic: 'LEA_CD_MEM' },
+            { operands: 'REG_REG_MEM', opcode: Opcode.LEA_CD_MEM, size: 3, condition: (ops) => ops[0].register === 'C' && ops[1].register === 'D' && ['LABEL', 'MEMORY'].includes(ops[2].type), mnemonic: 'LEA_CD_MEM' },
 
             // LEA CD avec pointeur CD et offset
-            { operands: 'REG_MEM_IMM16', opcode: Opcode.LEA_CD_OFFSET, size: 2, condition: (ops) => ops[0].register === 'CD' && ops[1].type === 'MEMORY' && ops[1].register === 'CD' && ops[2].type === 'IMMEDIATE', mnemonic: 'LEA_CD_OFFSET' },
+            { operands: 'REG_REG_MEM_IMM16', opcode: Opcode.LEA_CD_OFFSET, size: 2, condition: (ops) => ops[0].register === 'C' && ops[1].register === 'D' && ops[2].type === 'MEMORY' && ops[3].type === 'IMMEDIATE', mnemonic: 'LEA_CD_OFFSET' },
 
         ]
     },
@@ -460,10 +461,10 @@ const instructions: InstructionDef[] = [
             { operands: 'REG_REG', opcode: Opcode.CMP_DC, size: 1, condition: (ops) => ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'C' && ops[1].type === 'REGISTER', mnemonic: 'CMP_DC' },
             { operands: 'REG_REG', opcode: Opcode.CMP_DD, size: 1, condition: (ops) => ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].register === 'D' && ops[1].type === 'REGISTER', mnemonic: 'CMP_DD' },
             // CMP registre-immédiat
-            { operands: 'REG_IMM8', opcode: Opcode.CMP_A_IMM, size: 2, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER' && ops[1].type === 'IMMEDIATE', mnemonic: 'CMP_A_IMM' },
-            { operands: 'REG_IMM8', opcode: Opcode.CMP_B_IMM, size: 2, condition: (ops) => ops[0].register === 'B' && ops[0].type === 'REGISTER' && ops[1].type === 'IMMEDIATE', mnemonic: 'CMP_B_IMM' },
-            { operands: 'REG_IMM8', opcode: Opcode.CMP_C_IMM, size: 2, condition: (ops) => ops[0].register === 'C' && ops[0].type === 'REGISTER' && ops[1].type === 'IMMEDIATE', mnemonic: 'CMP_C_IMM' },
-            { operands: 'REG_IMM8', opcode: Opcode.CMP_D_IMM, size: 2, condition: (ops) => ops[0].register === 'D' && ops[0].type === 'REGISTER' && ops[1].type === 'IMMEDIATE', mnemonic: 'CMP_D_IMM' },
+            { operands: 'REG_IMM8', opcode: Opcode.CMP_A_IMM, size: 2, condition: (ops) => ops[0].register === 'A' && ops[0].type === 'REGISTER' && ['IMMEDIATE', 'LABEL'].includes(ops[1].type), mnemonic: 'CMP_A_IMM' },
+            { operands: 'REG_IMM8', opcode: Opcode.CMP_B_IMM, size: 2, condition: (ops) => ops[0].register === 'B' && ops[0].type === 'REGISTER' && ['IMMEDIATE', 'LABEL'].includes(ops[1].type), mnemonic: 'CMP_B_IMM' },
+            { operands: 'REG_IMM8', opcode: Opcode.CMP_C_IMM, size: 2, condition: (ops) => ops[0].register === 'C' && ops[0].type === 'REGISTER' && ['IMMEDIATE', 'LABEL'].includes(ops[1].type), mnemonic: 'CMP_C_IMM' },
+            { operands: 'REG_IMM8', opcode: Opcode.CMP_D_IMM, size: 2, condition: (ops) => ops[0].register === 'D' && ops[0].type === 'REGISTER' && ['IMMEDIATE', 'LABEL'].includes(ops[1].type), mnemonic: 'CMP_D_IMM' },
         ]
     },
 
