@@ -43,15 +43,16 @@ export const TestV3Component: React.FC = () => {
     const readString = (ptr: number) => {
         //if (1) return ""; // TODO
 
-        console.log('readString1', computerPointer)
+        console.log('readString1', wasm, computerPointer)
         console.log('memory:', memory)
-        const memoryArray = new Uint8Array(memory, ptr, 0xFF)
-        console.log('memoryArray:', memoryArray)
 
-        let end = ptr;
-        //while (memoryArray[end] !== 0) end++;
+        const bytes = new Uint8Array(memory.buffer, ptr, 0xFF)
+        //console.log('bytes:', bytes)
 
-        const str = ""; // TODO: subarray(ptr, end)
+        let end = 0;
+        while (bytes[end] !== 0) end++;
+        const str = new TextDecoder().decode(bytes.subarray(ptr, ptr + end));
+
         return str;
 
     }
