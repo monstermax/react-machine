@@ -18,14 +18,14 @@ export default defineConfig({
       rollupTypes: true,
       insertTypesEntry: true,
     }),
-    viteStaticCopy({
-      targets: [
-        {
-          src: "resources/**/*",
-          dest: "resources",
-        },
-      ],
-    }),
+    //viteStaticCopy({
+    //  targets: [
+    //    {
+    //      src: "resources/**/*",
+    //      dest: "resources",
+    //    },
+    //  ],
+    //}),
   ],
   build: {
     sourcemap: true,

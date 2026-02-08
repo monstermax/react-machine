@@ -1,6 +1,6 @@
 {
-  "generated": "2026-01-28T22:05:41.243Z",
-  "count": 19,
+  "generated": "2026-02-05T16:27:09.541Z",
+  "count": 22,
   "files": [
     "bootloader/bootloader_v1.asm",
     "bootloader/bootloader_v2.lib.asm",
@@ -15,6 +15,9 @@
     "os/devices/led/led.driver.asm",
     "os/devices/led/led.lib.test.asm",
     "os/memory/malloc.lib.asm",
+    "os/v3/drivers/lib_console.asm",
+    "os/v3/drivers/lib_ascii.asm",
+    "os/v3/drivers/lib_leds.asm",
     "os/v3/arithmetic/lib_math.asm",
     "os/v3/arithmetic/lib_math.test.asm",
     "os/arithmetic/math.lib.asm",
