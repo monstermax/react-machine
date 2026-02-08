@@ -4,7 +4,7 @@ import { Computer } from "./Computer";
 import { MemoryBus } from "./Memory";
 
 
-class CpuRegisters {
+export class CpuRegisters {
     A: u8 = 0;
     B: u8 = 0;
     C: u8 = 0;
@@ -29,6 +29,8 @@ export class Cpu {
 
 
     public runCpuCycle(): void {
+        if (this.halted) return;
+
         this.cycles++;
         this.fetchInstruction();
         this.executeInstruction(this.registers.IR);
@@ -36,12 +38,14 @@ export class Cpu {
 
 
     private fetchInstruction(): void {
+        console.log(`fetchInstruction`)
         const memoryBus = this.computer.memoryBus;
         let opcode: u8 = 0;
 
-        if (memoryBus) {
-            opcode = memoryBus.read(this.registers.PC);
-            console.log(`instruction: ${opcode}`)
+        if (memoryBus && memoryBus.read) {
+            const address = this.registers.PC;
+            opcode = memoryBus.read(address);
+            console.log(`instruction: ${opcode.toString()}\0`)
 
         } else {
             console.warn(`MemoryBus not found`);
@@ -57,6 +61,7 @@ export class Cpu {
 
 
     private executeInstruction(opcode: u8): void {
+        console.log(`executeInstruction`)
         const memoryBus = this.computer.memoryBus;
 
         if (! memoryBus) {
@@ -95,7 +100,7 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
 
         case <u8>Opcode.MOV_A_IMM: 
             action = (cpu: Cpu, memoryBus: MemoryBus) => {
-                const immValue = memoryBus.read(cpu.registers.SP+1);
+                const immValue = memoryBus.read(cpu.registers.PC+1);
                 cpu.registers.A = immValue;
                 cpu.registers.PC += 2;
             };
@@ -103,7 +108,7 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
 
         case <u8>Opcode.MOV_A_REG: 
             action = (cpu: Cpu, memoryBus: MemoryBus) => {
-                const regIdx = memoryBus.read(cpu.registers.SP+1);
+                const regIdx = memoryBus.read(cpu.registers.PC+1);
                 let regValue: u8 = 0;
                 if (regIdx === 1) regValue = cpu.registers.A;
                 if (regIdx === 2) regValue = cpu.registers.B;
@@ -116,9 +121,9 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
 
         case <u8>Opcode.MOV_A_MEM: 
             action = (cpu: Cpu, memoryBus: MemoryBus) => {
-                const memAddressLow = memoryBus.read(cpu.registers.SP+1);
-                const memAddressHigh = memoryBus.read(cpu.registers.SP+2);
-                const memAddress = memAddressLow + (memAddressHigh << 8);
+                const memAddressLow = memoryBus.read(cpu.registers.PC+1);
+                const memAddressHigh = memoryBus.read(cpu.registers.PC+2);
+                const memAddress = memAddressLow | (memAddressHigh * <u16>256);
                 const memValue = memoryBus.read(memAddress);
                 cpu.registers.A = memValue;
                 cpu.registers.PC += 3;
@@ -127,10 +132,10 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
 
         case <u8>Opcode.MOV_MEM_A: 
             action = (cpu: Cpu, memoryBus: MemoryBus) => {
-                const memAddressLow = memoryBus.read(cpu.registers.SP+1);
-                const memAddressHigh = memoryBus.read(cpu.registers.SP+2);
-                const memAddress = memAddressLow + (memAddressHigh << 8);
-                memoryBus.write(memAddress, cpu.registers.A);
+                const memAddressLow = memoryBus.read(cpu.registers.PC+1);
+                const memAddressHigh = memoryBus.read(cpu.registers.PC+2);
+                const memAddress = memAddressLow | (memAddressHigh * <u16>256);
+                memoryBus.write((memAddress), cpu.registers.A);
                 cpu.registers.PC += 3;
             };
             break;
