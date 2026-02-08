@@ -31,13 +31,13 @@ export class Cpu {
     public runCpuCycle(): void {
         this.cycles++;
         this.fetchInstruction();
-        this.executeInstruction(this.registers.IR);
+        //this.executeInstruction(this.registers.IR);
     }
 
 
     private fetchInstruction(): void {
         const memoryBus = this.computer.memoryBus;
-        let opcode: u8 = 0; // NOP
+        let opcode: u8 = 0;
 
         if (memoryBus) {
             opcode = memoryBus.read(this.registers.PC);
@@ -48,8 +48,6 @@ export class Cpu {
         }
 
         this.registers.IR = opcode;
-
-        throw new Error(`Instruction not found: ${opcode}`);
     }
 
 
