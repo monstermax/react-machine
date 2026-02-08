@@ -31,7 +31,7 @@ export class Cpu {
     public runCpuCycle(): void {
         this.cycles++;
         this.fetchInstruction();
-        //this.executeInstruction(this.registers.IR);
+        this.executeInstruction(this.registers.IR);
     }
 
 
