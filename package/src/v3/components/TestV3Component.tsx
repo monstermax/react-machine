@@ -41,10 +41,10 @@ export const TestV3Component: React.FC = () => {
 
 
     const readString = (ptr: number) => {
-        //if (1) return ""; // TODO
+        if (!wasm) throw new Error("wasm not found in readString");
 
-        console.log('readString1', wasm, computerPointer)
-        console.log('memory:', memory)
+        //console.log('readString1', wasm, computerPointer)
+        //console.log('memory:', memory)
 
         const bytes = new Uint8Array(memory.buffer, ptr, 0xFF)
         //console.log('bytes:', bytes)
