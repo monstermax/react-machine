@@ -1,24 +1,24 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 
 export const TestV3Component: React.FC = () => {
-    const [wasm, setWasm] = useState<WebAssembly.Instance | null>(null);
+    const wasmRef = useRef<WebAssembly.Instance | null>(null);
     const [computerPointer, setComputerPointer] = useState<number | null>(null);
-
-    const [memory] = useState(() => new WebAssembly.Memory({ initial: 256 }));
 
 
     useEffect(() => {
         const _initWasm = async () => {
-            if (wasm) return;
+            if (wasmRef.current) return;
+
+            let wasmInstance: WebAssembly.Instance | null = null;
 
             const imports = {
                 env: {
-                    memory,
-                    abort: (ptr: number) => { throw new Error(`abort ${ptr}`); },
-                    'console.log' : (ptr: number) => console.log ("[WASM]", readString(ptr)),
-                    'console.warn': (ptr: number) => console.warn("[WASM]", readString(ptr)),
+                    memory: new WebAssembly.Memory({ initial: 256 }),
+                    abort: (ptr: number) => { console.warn ("[WASM ABORT]", readString(ptr)) },
+                    'console.log' : (ptr: number) => console.log ("[WASM LOG]", readString(ptr)),
+                    'console.warn': (ptr: number) => console.warn("[WASM WARN]", readString(ptr)),
                 },
             };
 
@@ -26,12 +26,13 @@ export const TestV3Component: React.FC = () => {
             const url = importUrl.default;
 
             const response = fetch(url);
-
             const _wasm = await WebAssembly.instantiateStreaming(response, imports)
-            const _computerPointer = _wasm.instance.exports.instanciateComputer()
+            wasmRef.current = _wasm.instance;
 
-            setWasm(_wasm.instance);
+            const _computerPointer = _wasm.instance.exports.instanciateComputer()
             setComputerPointer(_computerPointer);
+
+            console.log('new wasm:', _wasm.instance)
         }
 
         const timer = setTimeout(_initWasm, 100);
@@ -41,11 +42,12 @@ export const TestV3Component: React.FC = () => {
 
 
     const readString = (ptr: number) => {
-        if (!wasm) throw new Error("wasm not found in readString");
+        if (!wasmRef.current) throw new Error("wasm not found in readString");
 
         //console.log('readString1', wasm, computerPointer)
         //console.log('memory:', memory)
 
+        const memory = wasmRef.current.exports.memory as WebAssembly.Memory;
         const bytes = new Uint8Array(memory.buffer, ptr, 0xFF)
         //console.log('bytes:', bytes)
 
@@ -59,14 +61,14 @@ export const TestV3Component: React.FC = () => {
 
 
     const testClick = () => {
-        if (!wasm || computerPointer === null) return;
+        if (!wasmRef.current || computerPointer === null) return;
 
         //console.log('testClick')
         //console.log('computerPtr:', computerPointer);
 
-        wasm.exports.computerRunCycle(computerPointer);
+        wasmRef.current.exports.computerRunCycle(computerPointer);
 
-        const cycles = wasm.exports.computerGetCycles(computerPointer);
+        const cycles = wasmRef.current.exports.computerGetCycles(computerPointer);
         console.log('cycles:', cycles);
     }
 
