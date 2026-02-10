@@ -13,7 +13,6 @@ export type KeyboardDeviceParams = {
 }
 
 export class KeyboardDevice extends IoDevice {
-    idx = 0 as u8;
     name = 'keyboard';
     type = 'input';
     vendor = '';
@@ -25,13 +24,9 @@ export class KeyboardDevice extends IoDevice {
     irqEnabled = false;
 
 
-    constructor(name: string, params: KeyboardDeviceParams) {
-        super();
-
-        this.name = name;
-        this.type = params.type;
-        this.vendor = params.vendor ?? '';
-        this.model = params.model ?? '';
+    constructor(idx: u8, name: string, params: KeyboardDeviceParams) {
+        super(idx, name, params);
+        this.start()
     }
 
     read(port: u8): u8 {
@@ -118,9 +113,6 @@ export class KeyboardDevice extends IoDevice {
     }
 
 }
-
-
-//export const keyboardDevice = new KeyboardDevice('keyboard', { type: 'input' });
 
 
 

@@ -1,10 +1,16 @@
 
+import { u32 } from "@/types/cpu.types";
 import EventEmitter from "eventemitter3";
 
 
 export class Clock extends EventEmitter {
     private timer: NodeJS.Timeout | null = null;
-    private frequency = 200;
+    private frequency: u32;
+
+    constructor(frequency: u32) {
+        super();
+        this.frequency = frequency;
+    }
 
     start() {
         if (this.timer) return;
@@ -22,7 +28,7 @@ export class Clock extends EventEmitter {
         console.log('clock stopped')
     }
 
-    setFrequency(frequency: number) {
+    setFrequency(frequency: u32) {
         this.frequency = frequency;
 
         if (this.timer) {

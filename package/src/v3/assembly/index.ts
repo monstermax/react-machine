@@ -29,7 +29,7 @@ export function instanciateComputer(): Computer {
 
     if (memoryBus) {
         // write some BIOS code
-        loadTmpCode(memoryBus);
+        //loadTmpCode(memoryBus);
     }
 
     console.log(`Computer instanciated`)
@@ -88,7 +88,7 @@ export function loadTmpCode(memoryBus: MemoryBus): void {
 function loadCode(memoryBus: MemoryBus, addresses: Uint8Array, values: Uint8Array): void {
     if (addresses.length !== values.length) throw new Error(`Length mismatch`);
 
-    for (let i=0; i<addresses.length; i++) {
+    for (let i = 0; i < addresses.length; i++) {
         const address = addresses[i];
         const value = values[i];
         memoryBus.write(address, value);
@@ -98,23 +98,37 @@ function loadCode(memoryBus: MemoryBus, addresses: Uint8Array, values: Uint8Arra
 }
 
 
-export function computerloadCode(computer: Computer, addresses: Uint8Array, values: Uint8Array): void {
+export function allocate(size: i32): usize {
+    const buf = new ArrayBuffer(size);
+    return changetype<usize>(buf);
+}
+
+
+export function computerloadCode(
+    computer: Computer,
+    addrPtr: usize,
+    addrLen: i32,
+    valPtr: usize,
+    valLen: i32
+): void {
     const memoryBus = computer.memoryBus;
 
-    console.log(`${addresses.length} addresses received, ${values.length} values received`)
-
-    if (memoryBus) {
-        loadCode(memoryBus, addresses, values);
-        return;
+    if (!memoryBus) {
+        throw new Error("Memory Bus not found");
     }
 
-    throw new Error("Memory Bus not found");
+    const len = min(addrLen, valLen);
+    for (let i: i32 = 0; i < len; i++) {
+        const addr: u16 = load<u8>(addrPtr + i);
+        const val: u8 = load<u8>(valPtr + i);
+        memoryBus.write(addr, val);
+    }
 }
 
 
 export function computerRunCycles(computer: Computer, cycles: u32): void {
     if (computer.cpus.length > 0) {
-        for (let i: u32=0; i<cycles; i++) {
+        for (let i: u32 = 0; i < cycles; i++) {
             computer.cpus[0].runCpuCycle();
         }
     }

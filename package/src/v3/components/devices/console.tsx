@@ -16,7 +16,6 @@ export type ConsoleDeviceParams = {
 }
 
 export class ConsoleDevice extends IoDevice {
-    idx = 0 as u8;
     name = 'console';
     type = 'output';
     vendor = '';
@@ -29,13 +28,9 @@ export class ConsoleDevice extends IoDevice {
     currentLine = "";
 
 
-    constructor(name: string, params: ConsoleDeviceParams) {
-        super();
+    constructor(idx: u8, name: string, params: ConsoleDeviceParams) {
+        super(idx, name, params);
 
-        this.name = name;
-        this.type = params.type;
-        this.vendor = params.vendor ?? '';
-        this.model = params.model ?? '';
         this.width = params.width ?? this.width;
         this.height = params.height ?? this.height;
         this.maxLines = params.maxLines ?? this.maxLines;
@@ -98,9 +93,6 @@ export class ConsoleDevice extends IoDevice {
         this.emit('state', { lines: this.lines, currentLine: this.currentLine })
     }
 }
-
-
-//export const consoleDevice = new ConsoleDevice('console', { type: 'output' });
 
 
 

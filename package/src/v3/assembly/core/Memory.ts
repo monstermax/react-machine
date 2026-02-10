@@ -105,7 +105,7 @@ abstract class Memory {
     protected storage: StaticArray<u8>;
 
     constructor(size: i32) {
-        this.storage = new StaticArray(size);
+        this.storage = new StaticArray<u8>(size);
     }
 
     public read(address: u16): u8 {
