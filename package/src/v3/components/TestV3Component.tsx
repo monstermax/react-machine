@@ -7,7 +7,7 @@ import { Console, ConsoleDevice } from "./devices/console";
 import { Clock } from "./devices/clock";
 
 import type { u16, u8, u32 } from "@/types/cpu.types";
-import { Opcode } from "../assembly/cpu_instructions";
+import { Opcode } from "../assembly/core/cpu_instructions";
 import { Screen, ScreenDevice } from "./devices/screen";
 
 

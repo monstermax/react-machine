@@ -3,7 +3,7 @@
 
 import { Computer } from "./core/Computer";
 import { MemoryBus } from "./core/Memory";
-import { Opcode } from "./cpu_instructions";
+import { Opcode } from "./core/cpu_instructions";
 
 
 //@external("env", "jsIoRead")

@@ -1,5 +1,5 @@
 
-import { Opcode } from "../cpu_instructions";
+import { Opcode } from "./cpu_instructions";
 import { Computer } from "./Computer";
 import { MemoryBus } from "./Memory";
 
