@@ -39,14 +39,14 @@ export class Cpu {
 
 
     private fetchInstruction(): void {
-        console.log(`fetchInstruction`)
+        //console.log(`fetchInstruction`)
         const memoryBus = this.computer.memoryBus;
         let opcode: u8 = 0;
 
         if (memoryBus && memoryBus.read) {
             const address = this.registers.PC;
             opcode = memoryBus.read(address);
-            console.log(`instruction: ${opcode.toString()}\0`)
+            //console.log(`instruction: ${opcode.toString()}\0`)
 
         } else {
             console.warn(`MemoryBus not found`);
@@ -58,6 +58,14 @@ export class Cpu {
 
     public getCpuCycles(): u64 {
         return this.cycles;
+    }
+
+
+    public getFlag(flag: string): boolean {
+        // flag type: 'zero' | 'carry'
+        return flag === 'zero'
+            ? !!(this.registers.FLAGS & 0b10)
+            : !!(this.registers.FLAGS & 0b01);
     }
 
 
@@ -94,8 +102,18 @@ export class Cpu {
     }
 
 
+    public getRegisterValueByIdx(regIdx: u8): u8 {
+        if (regIdx === 1) return this.registers.A;
+        if (regIdx === 2) return this.registers.B;
+        if (regIdx === 3) return this.registers.C;
+        if (regIdx === 4) return this.registers.D;
+
+        throw new Error(`Register #${regIdx} not found`);
+    }
+
+
     private executeInstruction(opcode: u8): void {
-        console.log(`executeInstruction`)
+        //console.log(`executeInstruction`)
         const memoryBus = this.computer.memoryBus;
 
         if (! memoryBus) {
@@ -132,6 +150,127 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
             };
             break;
 
+        case <u8>Opcode.JMP: 
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                cpu.registers.PC = memAddress;
+            };
+            break;
+
+        case <u8>Opcode.JC: 
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                if (cpu.getFlag('carry')) {
+                    const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                    const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                    const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                    cpu.registers.PC = memAddress;
+
+                } else {
+                    cpu.registers.PC += 3;
+                }
+            };
+            break;
+
+        case <u8>Opcode.JNC: 
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                if (!cpu.getFlag('carry')) {
+                    const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                    const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                    const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                    cpu.registers.PC = memAddress;
+
+                } else {
+                    cpu.registers.PC += 3;
+                }
+            };
+            break;
+
+        case <u8>Opcode.JZ: 
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                if (cpu.getFlag('zero')) {
+                    const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                    const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                    const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                    cpu.registers.PC = memAddress;
+
+                } else {
+                    cpu.registers.PC += 3;
+                }
+            };
+            break;
+
+        case <u8>Opcode.JNZ: 
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                if (!cpu.getFlag('zero')) {
+                    const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                    const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                    const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                    cpu.registers.PC = memAddress;
+
+                } else {
+                    cpu.registers.PC += 3;
+                }
+            };
+            break;
+
+        case <u8>Opcode.JL: 
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                if (!cpu.getFlag('zero') && cpu.getFlag('carry')) {
+                    const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                    const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                    const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                    cpu.registers.PC = memAddress;
+
+                } else {
+                    cpu.registers.PC += 3;
+                }
+            };
+            break;
+
+        case <u8>Opcode.JLE: 
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                if (cpu.getFlag('zero') || cpu.getFlag('carry')) {
+                    const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                    const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                    const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                    cpu.registers.PC = memAddress;
+
+                } else {
+                    cpu.registers.PC += 3;
+                }
+            };
+            break;
+
+        case <u8>Opcode.JG: 
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                if (!cpu.getFlag('zero') && !cpu.getFlag('carry')) {
+                    const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                    const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                    const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                    cpu.registers.PC = memAddress;
+
+                } else {
+                    cpu.registers.PC += 3;
+                }
+            };
+            break;
+
+        case <u8>Opcode.JGE: 
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                if (cpu.getFlag('zero') || !cpu.getFlag('carry')) {
+                    const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                    const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                    const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                    cpu.registers.PC = memAddress;
+
+                } else {
+                    cpu.registers.PC += 3;
+                }
+            };
+            break;
+
         case <u8>Opcode.MOV_A_IMM: 
             action = (cpu: Cpu, memoryBus: MemoryBus) => {
                 const immValue: u8 = memoryBus.read(cpu.registers.PC+1);
@@ -143,11 +282,7 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
         case <u8>Opcode.MOV_A_REG: 
             action = (cpu: Cpu, memoryBus: MemoryBus) => {
                 const regIdx = memoryBus.read(cpu.registers.PC+1);
-                let regValue: u8 = 0;
-                if (regIdx === 1) regValue = cpu.registers.A;
-                if (regIdx === 2) regValue = cpu.registers.B;
-                if (regIdx === 3) regValue = cpu.registers.C;
-                if (regIdx === 4) regValue = cpu.registers.D;
+                const regValue: u8 = cpu.getRegisterValueByIdx(regIdx);
                 cpu.registers.A = regValue;
                 cpu.registers.PC += 2;
             };
@@ -159,7 +294,6 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
                 const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
                 const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
                 const memValue = memoryBus.read(memAddress);
-                //console.log(`MOV_A_MEM ${memAddress}`)
                 cpu.registers.A = memValue;
                 cpu.registers.PC += 3;
             };
@@ -170,36 +304,8 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
                 const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
                 const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
                 const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
-                //console.log(`MOV_MEM_A ${memAddress}`)
                 memoryBus.write(memAddress, cpu.registers.A);
                 cpu.registers.PC += 3;
-            };
-            break;
-
-        case <u8>Opcode.INC_A:
-            action = (cpu: Cpu, memoryBus: MemoryBus) => {
-                const aluResult = cpu.alu.inc(cpu.registers.A);
-                cpu.registers.A = aluResult.result;
-                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
-                cpu.registers.PC += 1;
-            };
-            break;
-
-        case <u8>Opcode.DEC_A:
-            action = (cpu: Cpu, memoryBus: MemoryBus) => {
-                const aluResult = cpu.alu.dec(cpu.registers.A);
-                cpu.registers.A = aluResult.result;
-                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
-                cpu.registers.PC += 1;
-            };
-            break;
-
-        case <u8>Opcode.NOT_A:
-            action = (cpu: Cpu, memoryBus: MemoryBus) => {
-                const aluResult: AluResult = cpu.alu.not(cpu.registers.A);
-                cpu.registers.A = aluResult.result;
-                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
-                cpu.registers.PC += 1;
             };
             break;
 
@@ -217,13 +323,64 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
             };
             break;
 
+        case <u8>Opcode.INC_A:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const aluResult = cpu.alu.inc(cpu.registers.A);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 1;
+            };
+            break;
+
+        case <u8>Opcode.DEC_A:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const aluResult = cpu.alu.dec(cpu.registers.A);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 1;
+            };
+            break;
+
+        case <u8>Opcode.NOT_A:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const aluResult: AluResult = cpu.alu.not(cpu.registers.A);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 1;
+            };
+            break;
+
         case <u8>Opcode.ADD_A_IMM:
             action = (cpu: Cpu, memoryBus: MemoryBus) => {
                 const immValue: u8 = memoryBus.read(cpu.registers.PC+1);
                 const aluResult = cpu.alu.add(cpu.registers.A, immValue);
-                cpu.registers.A = aluResult.result;
                 cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
                 cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.ADD_A_REG:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const regIdx = memoryBus.read(cpu.registers.PC+1);
+                const regValue: u8 = cpu.getRegisterValueByIdx(regIdx);
+                const aluResult = cpu.alu.add(cpu.registers.A, regValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.ADD_A_MEM:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                const memValue = memoryBus.read(memAddress);
+                const aluResult = cpu.alu.add(cpu.registers.A, memValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 3;
             };
             break;
 
@@ -231,9 +388,197 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
             action = (cpu: Cpu, memoryBus: MemoryBus) => {
                 const immValue: u8 = memoryBus.read(cpu.registers.PC+1);
                 const aluResult = cpu.alu.sub(cpu.registers.A, immValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
                 cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.SUB_A_REG:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const regIdx = memoryBus.read(cpu.registers.PC+1);
+                const regValue: u8 = cpu.getRegisterValueByIdx(regIdx);
+                const aluResult = cpu.alu.sub(cpu.registers.A, regValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.SUB_A_MEM:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                const memValue = memoryBus.read(memAddress);
+                const aluResult = cpu.alu.sub(cpu.registers.A, memValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 3;
+            };
+            break;
+
+        case <u8>Opcode.AND_A_IMM:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const immValue: u8 = memoryBus.read(cpu.registers.PC+1);
+                const aluResult = cpu.alu.and(cpu.registers.A, immValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.AND_A_REG:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const regIdx = memoryBus.read(cpu.registers.PC+1);
+                const regValue: u8 = cpu.getRegisterValueByIdx(regIdx);
+                const aluResult = cpu.alu.and(cpu.registers.A, regValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.AND_A_MEM:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                const memValue = memoryBus.read(memAddress);
+                const aluResult = cpu.alu.and(cpu.registers.A, memValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 3;
+            };
+            break;
+
+        case <u8>Opcode.OR_A_IMM:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const immValue: u8 = memoryBus.read(cpu.registers.PC+1);
+                const aluResult = cpu.alu.or(cpu.registers.A, immValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.OR_A_REG:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const regIdx = memoryBus.read(cpu.registers.PC+1);
+                const regValue: u8 = cpu.getRegisterValueByIdx(regIdx);
+                const aluResult = cpu.alu.or(cpu.registers.A, regValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.OR_A_MEM:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                const memValue = memoryBus.read(memAddress);
+                const aluResult = cpu.alu.or(cpu.registers.A, memValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 3;
+            };
+            break;
+
+        case <u8>Opcode.XOR_A_IMM:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const immValue: u8 = memoryBus.read(cpu.registers.PC+1);
+                const aluResult = cpu.alu.xor(cpu.registers.A, immValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.XOR_A_REG:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const regIdx = memoryBus.read(cpu.registers.PC+1);
+                const regValue: u8 = cpu.getRegisterValueByIdx(regIdx);
+                const aluResult = cpu.alu.xor(cpu.registers.A, regValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.XOR_A_MEM:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                const memValue = memoryBus.read(memAddress);
+                const aluResult = cpu.alu.xor(cpu.registers.A, memValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.A = aluResult.result;
+                cpu.registers.PC += 3;
+            };
+            break;
+
+        case <u8>Opcode.CMP_A_IMM:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const immValue: u8 = memoryBus.read(cpu.registers.PC+1);
+                const aluResult = cpu.alu.cmp(cpu.registers.A, immValue);
                 cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
                 cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.CMP_A_REG:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const regIdx = memoryBus.read(cpu.registers.PC+1);
+                const regValue: u8 = cpu.getRegisterValueByIdx(regIdx);
+                const aluResult = cpu.alu.cmp(cpu.registers.A, regValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.CMP_A_MEM:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                const memValue = memoryBus.read(memAddress);
+                const aluResult = cpu.alu.cmp(cpu.registers.A, memValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.PC += 3;
+            };
+            break;
+
+        case <u8>Opcode.TEST_A_IMM:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const immValue: u8 = memoryBus.read(cpu.registers.PC+1);
+                const aluResult = cpu.alu.test(cpu.registers.A, immValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.TEST_A_REG:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const regIdx = memoryBus.read(cpu.registers.PC+1);
+                const regValue: u8 = cpu.getRegisterValueByIdx(regIdx);
+                const aluResult = cpu.alu.test(cpu.registers.A, regValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.TEST_A_MEM:
+            action = (cpu: Cpu, memoryBus: MemoryBus) => {
+                const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                const memValue = memoryBus.read(memAddress);
+                const aluResult = cpu.alu.test(cpu.registers.A, memValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.registers.PC += 3;
             };
             break;
     }
@@ -370,7 +715,7 @@ class ALU {
     // Test & Compare
     test(a: u8, b: u8): AluResult { // comme AND mais ne stocke pas le résultat
         const result = ((a & b) & 0xFF) as u8;
-        const flags = ({ zero: result === 0, carry: false });
+        const flags: Flags = ({ zero: result === 0, carry: false });
         return { result: 0, flags };
     }
 
@@ -379,7 +724,7 @@ class ALU {
         const result = ((a - b) & 0xFF) as u8;
         const zero = result === 0;
         const carry = a < b; // Borrow
-        const flags = ({ zero, carry });
+        const flags: Flags = ({ zero, carry });
         return { result: 0, flags };
     }
 }

@@ -1,14 +1,19 @@
 
-import { u16, u8 } from "@/types";
-import { Computer } from "@/v2/api";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import EventEmitter from "eventemitter3";
+
+import { Keyboard, keyboardDevice } from "./devices/keyboard";
+import { Console, consoleDevice } from "./devices/console";
+
+import type { u16, u8 } from "@/types";
+import { u32 } from "@/types/cpu.types";
 
 
 interface WasmExports extends WebAssembly.Exports {
     memory: WebAssembly.Memory;
     instanciateComputer(): number;
-    computerRunCycle(computerPtr: number): void;
-    computerGetCycles(computerPtr: number): number;
+    computerRunCycles(computerPtr: number, cycles: number): void;
+    computerGetCycles(computerPtr: number): bigint;
     computerGetRegisterPC(computerPtr: number): u16;
     computerGetRegisterIR(computerPtr: number): u8;
     computerGetRegisterA(computerPtr: number): u8;
@@ -47,6 +52,9 @@ export const TestV3Component: React.FC = () => {
     const wasmRef = useRef<WebAssembly.Instance | null>(null);
     const [computerPointer, setComputerPointer] = useState<number | null>(null);
     const devicesRef = useRef<Map<number, IoDevice>>(new Map);
+    const [clock] = useState(() => new Clock)
+
+    const [cyclesPerSecond, setCyclesPerSecond] = useState(0);
 
 
     useEffect(() => {
@@ -80,8 +88,8 @@ export const TestV3Component: React.FC = () => {
             const _computerPointer = exports.instanciateComputer()
             setComputerPointer(_computerPointer);
 
-            //exports.computerAddDevice(_computerPointer, 'keyboard', 'input')
-            //exports.computerAddDevice(_computerPointer, 'console', 'input')
+            //addDevice('keyboard', 'input')
+            //addDevice('console', 'input')
 
             //exports.computerloadCode(_computerPointer, new Uint8Array([0x0006]), new Uint8Array([62])) // DO NOT WORK // TODO
 
@@ -95,6 +103,42 @@ export const TestV3Component: React.FC = () => {
     }, [])
 
 
+    useEffect(() => {
+        if (!computerPointer) return;
+
+        const speedFactor = 1 as u32;
+
+        const _initClock = () => {
+            let lastCycles = 0n;
+            let lastCyclesDate = Date.now();
+
+            clock.on('tick', () => {
+                //console.log('found tick');
+
+                if (wasmRef.current && computerPointer) {
+                    const exports = wasmRef.current.exports as WasmExports;
+
+                    // Run cycle
+                    exports.computerRunCycles(computerPointer, speedFactor);
+
+                    // Compute speed
+                    const newCycles = exports.computerGetCycles(computerPointer);
+                    const diff = newCycles - lastCycles;
+                    const duration = Date.now() - lastCyclesDate;
+                    const _cyclesPerSecond = 1000 * Number(diff) / duration;
+                    setCyclesPerSecond(_cyclesPerSecond)
+
+                    lastCycles = newCycles;
+                    lastCyclesDate = Date.now();
+                }
+            })
+        }
+
+        const timer = setTimeout(_initClock, 100);
+        return () => clearTimeout(timer);
+    }, [computerPointer])
+
+
     const jsIoRead = (deviceIdx: u8, port: u8): u8 => {
         if (!devicesRef.current) throw new Error("missing devices ref");
 
@@ -106,7 +150,7 @@ export const TestV3Component: React.FC = () => {
 
         const value = device.read(port);
 
-        console.log('jsIoRead:', deviceIdx, port, value)
+        //console.log('jsIoRead:', deviceIdx, port, value)
         return value
     }
 
@@ -121,7 +165,7 @@ export const TestV3Component: React.FC = () => {
 
         device.write(port, value);
 
-        console.log('jsIoWrite:', deviceIdx, port, value)
+        //console.log('jsIoWrite:', deviceIdx, port, value)
     }
 
 
@@ -156,6 +200,9 @@ export const TestV3Component: React.FC = () => {
             const device = keyboardDevice;
             devicesRef.current.set(deviceIdx, device)
             device.start()
+
+            //exports.computerloadCode(computerPointer, new Uint8Array([0x0006]), new Uint8Array([62])) // DO NOT WORK // TODO
+
             return
         }
 
@@ -179,6 +226,18 @@ export const TestV3Component: React.FC = () => {
     }
 
 
+    const startClock = () => {
+        //clock.setFrequency(200)
+        //clock.setSpeedFactor(50)
+        clock.start()
+    }
+
+
+    const stopClock = () => {
+        clock.stop()
+    }
+
+
     const runCycle = () => {
         if (!wasmRef.current || computerPointer === null) return;
 
@@ -197,7 +256,7 @@ export const TestV3Component: React.FC = () => {
         console.log('BEFORE', { cycles: cycles_before, PC: PC_before, IR: IR_before, A: A_before, B: B_before, C: C_before, D: D_before });
 
 
-        exports.computerRunCycle(computerPointer);
+        exports.computerRunCycles(computerPointer, 1);
         //console.log('memory:', exports.memory);
 
         const cycles_after = exports.computerGetCycles(computerPointer);
@@ -219,12 +278,33 @@ export const TestV3Component: React.FC = () => {
 
     return (
         <div className="p-1 text-foreground">
-            V3
+            <h1>V3</h1>
+
             <hr />
+
             <div className="flex gap-4 m-2">
                 <button className="p-2 border rounded cursor-pointer" onClick={() => addDevice('keyboard', 'input', '', '')}>add Keyboard</button>
                 <button className="p-2 border rounded cursor-pointer" onClick={() => addDevice('console', 'output', '', '')}>add Console</button>
                 <button className="p-2 border rounded cursor-pointer" onClick={() => runCycle()}>runCycle</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => startClock()}>start</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => stopClock()}>stop</button>
+            </div>
+
+            <hr />
+
+            <div>Speed: {Math.round(10 * cyclesPerSecond)/10}/sec.</div>
+
+            <hr />
+
+            <div>
+                {/* Console */}
+                <Console deviceInstance={consoleDevice} />
+            </div>
+
+            <hr />
+
+            <div>
+                <Keyboard deviceInstance={keyboardDevice} />
             </div>
         </div>
     );
@@ -232,157 +312,42 @@ export const TestV3Component: React.FC = () => {
 
 
 
-const keyboardDevice = {
-    idx: 0 as u8,
-    name: 'keyboard',
-    type: 'input',
-    vendor: '',
-    model: '',
 
-    lastChar: 0 as u8,
-    hasChar: false,
-    isEnable: true,
-    irqEnabled: false,
-
-    read(port: u8): u8 {
-        switch (port) {
-            case 0x00: // KEYBOARD_DATA
-                console.log('keyboard char:', this.lastChar)
-                return this.lastChar;
-
-            case 0x01: // KEYBOARD_STATUS
-                return ((this.hasChar ? 0x01 : 0x00) | (this.irqEnabled ? 0x02 : 0x00)) as u8;
-        }
-        return 0 as u8
-    },
-
-    write(port: u8, value: u8): void {
-        switch (port) {
-            case 0x00: // KEYBOARD_DATA
-                this.lastChar = 0 as u8;
-                this.hasChar = false;
-                break;
-
-            case 0x01: // KEYBOARD_STATUS
-                // Bit 0: clear le flag hasChar
-                if ((value & 0x01) === 0) {
-                    this.hasChar = false;
-                }
-
-                // Bit 1: enable/disable IRQ
-                this.irqEnabled = (value & 0x02) !== 0;
-                break
-        }
-    },
+class Clock extends EventEmitter {
+    private timer: NodeJS.Timeout | null = null;
+    private frequency = 200;
 
     start() {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (!this.isEnable) return;
+        if (this.timer) return;
 
-            // Ignorer les touches spéciales (Ctrl, Alt, etc.)
-            //if (event.ctrlKey || event.altKey || event.metaKey) return;
+        this.timer = setInterval(this.tick.bind(this), 1000 / this.frequency)
 
-            // Ignorer si la touche ne produit pas de caractère
-            //if (event.key?.length !== 1) return;
+        console.log('clock started')
+    }
 
-            const charCode = event.key.length === 1
-                ? event.key.charCodeAt(0)
-                : event.keyCode;
+    stop() {
+        if (!this.timer) return;
+        clearInterval(this.timer)
+        this.timer = null;
 
-            // Limiter aux caractères ASCII valides (0-127)
-            //if (charCode > 127) return;
-            if (event.key === 'F5') return; // F5
-            if (charCode < 32 && charCode !== 13) return;
+        console.log('clock stopped')
+    }
 
-            this.lastChar = charCode as u8;
-            this.hasChar = true;
+    setFrequency(frequency: number) {
+        this.frequency = frequency;
 
-            //this.emit('state', { lastChar: this.lastChar, hasChar: this.hasChar })
-
-            console.log(`⌨️  Key pressed: '${event.key}' (ASCII: ${charCode})`);
-
-            // Déclencher interruption clavier (IRQ 1)
-            //if (this.irqEnabled && interruptHook?.requestInterrupt) {
-            //    interruptHook.requestInterrupt(U8(MEMORY_MAP.IRQ_KEYBOARD));
-            //}
-
-            event.preventDefault()
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-    },
-
-    reset() {
-        this.lastChar = 0 as u8;
-        this.hasChar = false;
-        this.irqEnabled = false;
-    },
-}
-
-
-const consoleDevice = {
-    idx: 0 as u8,
-    name: 'console',
-    type: 'output',
-    vendor: '',
-    model: '',
-
-    width: 30,
-    height: 15,
-    lines: [] as string[],
-    maxLines: 100,
-    currentLine: "",
-
-    read(port: u8): u8 {
-        return 0 as u8; // write only
-    },
-
-    write(port: u8, value: u8): void {
-        switch (port) {
-            case 0x00: // CONSOLE_CHAR - Écrire un caractère
-                const char = String.fromCharCode(value);
-
-                console.log('console char:', char)
-
-                if (value === 0x0A || value === 0x0D) {
-                    // Newline (LF ou CR)
-                    this.lines.push(this.currentLine)
-                    //console.log('console lines:', this.lines)
-
-                    // Limiter le nombre de lignes
-                    if (this.lines.length > this.maxLines) {
-                        this.lines = this.lines.slice(-this.maxLines);
-                        return;
-                    }
-
-                    this.currentLine = "";
-                    //console.log(`📟 Console: "${currentLine}"`);
-
-                } else if (value === 0x08) {
-                    // Backspace
-                    this.currentLine = this.currentLine.slice(0, -1);
-
-                } else if (value >= 0x20 && value <= 0x7E) {
-                    // Caractères imprimables ASCII
-                    this.currentLine = this.currentLine + char;
-
-                } else {
-                    // Autres caractères de contrôle - ignorer
-                    console.warn(`📟 Console: Unprintable character 0x${value.toString(16)}`);
-                }
-                break;
-
-            case 0x01: // CONSOLE_CLEAR - Clear screen
-                this.reset()
-                //console.log(`📟 Console: Screen cleared`);
-                break;
+        if (this.timer) {
+            this.stop()
+            this.start()
+            this.tick()
         }
-    },
+    }
 
-    reset() {
-        this.lines = [];
-        this.currentLine = "";
-    },
+    private tick() {
+        this.emit('tick');
+        //console.log('clock tick')
+    }
+
 }
 
 

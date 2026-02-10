@@ -6,11 +6,11 @@ import { MemoryBus } from "./core/Memory";
 import { Opcode } from "./cpu_instructions";
 
 
-@external("env", "jsIoRead")
-declare function jsIoRead(deviceIdx: u8, port: u8): u8;
+//@external("env", "jsIoRead")
+//declare function jsIoRead(deviceIdx: u8, port: u8): u8;
 
-@external("env", "jsIoWrite")
-declare function jsIoWrite(deviceIdx: u8, port: u8, value: u8): void;
+//@external("env", "jsIoWrite")
+//declare function jsIoWrite(deviceIdx: u8, port: u8, value: u8): void;
 
 
 export function instanciateComputer(): Computer {
@@ -28,6 +28,7 @@ export function instanciateComputer(): Computer {
     }
 
     if (memoryBus) {
+        // write some BIOS code
         loadTmpCode(memoryBus);
     }
 
@@ -45,34 +46,35 @@ export function instanciateComputer(): Computer {
 
 
 export function loadTmpCode(memoryBus: MemoryBus): void {
-    // write some BIOS code
-    memoryBus.write(0x0000, Opcode.MOV_A_IMM as u8);
-    memoryBus.write(0x0001, 13);
+    memoryBus.write(0x0000, Opcode.MOV_A_MEM as u8); // read keyboard status
+    memoryBus.write(0x0001, 0x01); // 0xF001 low byte
+    memoryBus.write(0x0002, 0xF0); // 0xF001 high byte
 
-    memoryBus.write(0x0002, Opcode.MOV_MEM_A as u8);
-    memoryBus.write(0x0003, 0x00); // 0x1000 low byte
-    memoryBus.write(0x0004, 0x10); // 0x1000 high byte
+    memoryBus.write(0x0003, Opcode.CMP_A_IMM as u8); // compare keyboard status
+    memoryBus.write(0x0004, 0);
 
-    memoryBus.write(0x0005, Opcode.MOV_A_IMM as u8);
-    memoryBus.write(0x0006, 66); // test
+    memoryBus.write(0x0005, Opcode.JE as u8);
+    memoryBus.write(0x0006, 0x00); // 0x0000 low byte
+    memoryBus.write(0x0007, 0x00); // 0x0000 high byte
 
-    memoryBus.write(0x0007, Opcode.MOV_A_MEM as u8); // read keyboard
-    memoryBus.write(0x0008, 0x00); // 0xF000 low byte
-    memoryBus.write(0x0009, 0xF0); // 0xF000 high byte
+    memoryBus.write(0x0008, Opcode.MOV_A_MEM as u8); // read keyboard
+    memoryBus.write(0x0009, 0x00); // 0xF000 low byte
+    memoryBus.write(0x000A, 0xF0); // 0xF000 high byte
 
-    memoryBus.write(0x000A, Opcode.MOV_MEM_A as u8); // write console
-    memoryBus.write(0x000B, 0x10); // 0xF010 low byte
-    memoryBus.write(0x000C, 0xF0); // 0xF010 high byte
+    memoryBus.write(0x000B, Opcode.MOV_MEM_A as u8); // write console
+    memoryBus.write(0x000C, 0x10); // 0xF010 low byte
+    memoryBus.write(0x000D, 0xF0); // 0xF010 high byte
 
-    memoryBus.write(0x000D, Opcode.MOV_A_IMM as u8);
-    memoryBus.write(0x000E, 1); // keyboard ack
+    memoryBus.write(0x000E, Opcode.MOV_A_IMM as u8); // ack keyboard status
+    memoryBus.write(0x000F, 1); // keyboard ack
 
-    memoryBus.write(0x000F, Opcode.MOV_MEM_A as u8); // write keyboard (ack)
-    memoryBus.write(0x0010, 0x00); // 0xF000 low byte
-    memoryBus.write(0x0011, 0xF0); // 0xF000 high byte
+    memoryBus.write(0x0010, Opcode.MOV_MEM_A as u8); // write keyboard (ack)
+    memoryBus.write(0x0011, 0x00); // 0xF000 low byte
+    memoryBus.write(0x0012, 0xF0); // 0xF000 high byte
 
-
-    memoryBus.write(0x0012, Opcode.HALT as u8);
+    memoryBus.write(0x0013, Opcode.JMP as u8); // loop to begin
+    memoryBus.write(0x0014, 0x00); // 0x0000 low byte
+    memoryBus.write(0x0015, 0x00); // 0x0000 high byte
 }
 
 
@@ -93,7 +95,7 @@ function loadCode(memoryBus: MemoryBus, addresses: Uint8Array, values: Uint8Arra
 export function computerloadCode(computer: Computer, addresses: Uint8Array, values: Uint8Array): void {
     const memoryBus = computer.memoryBus;
 
-    console.log(`${addresses.length} addresses received`)
+    console.log(`${addresses.length} addresses received, ${values.length} values received`)
 
     if (memoryBus) {
         loadCode(memoryBus, addresses, values);
@@ -104,9 +106,11 @@ export function computerloadCode(computer: Computer, addresses: Uint8Array, valu
 }
 
 
-export function computerRunCycle(computer: Computer): void {
+export function computerRunCycles(computer: Computer, cycles: u32): void {
     if (computer.cpus.length > 0) {
-        computer.cpus[0].runCpuCycle();
+        for (let i: u32=0; i<cycles; i++) {
+            computer.cpus[0].runCpuCycle();
+        }
     }
 }
 

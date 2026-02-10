@@ -44,7 +44,12 @@ export class IoManager {
         const ioDevice: u8 = Math.floor(ioRelativeAddress / DEVICE_PORT_SIZE) as u8
         const ioPort: u8 = ioRelativeAddress % DEVICE_PORT_SIZE as u8;
 
+        if (ioDevice < 0 || ioDevice > ((this.devices.length - 1) as u8)) {
+            throw new Error(`Invalid IO Device #${ioDevice}`);
+        }
+
         const device = this.devices[ioDevice];
+
 
         if (device) {
             return jsIoRead(ioDevice, ioPort)
