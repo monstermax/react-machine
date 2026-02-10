@@ -2,8 +2,14 @@
 // The entry file of your WebAssembly module.
 
 import { Computer } from "./core/Computer";
-import { CpuRegisters } from "./core/Cpu";
 import { Opcode } from "./cpu_instructions";
+
+
+@external("env", "jsIoRead")
+declare function jsIoRead(deviceIdx: u8, port: u8): u8;
+
+@external("env", "jsIoWrite")
+declare function jsIoWrite(deviceIdx: u8, port: u8, value: u8): void;
 
 
 export function instanciateComputer(): Computer {
@@ -38,6 +44,13 @@ export function instanciateComputer(): Computer {
 
     console.log(`Computer instanciated`)
 
+    const jsreaded = jsIoRead(1, 2) // test
+    console.log(`jsreaded: ${jsreaded}\0`)
+
+    //computerAddDevice(computer, 'keyboard', 'input')
+
+    jsIoWrite(4, 5, 6)
+
     return computer;
 }
 
@@ -68,6 +81,7 @@ export function computerGetRegisterPC(computer: Computer): u16 {
     return 0;
 }
 
+
 export function computerGetRegisterIR(computer: Computer): u8 {
     if (computer.cpus.length > 0) {
         const cpu = computer.cpus[0];
@@ -86,6 +100,7 @@ export function computerGetRegisterA(computer: Computer): u8 {
     return 0;
 }
 
+
 export function computerGetMemory(computer: Computer, address: u16): u8 {
     const memoryBus = computer.memoryBus;
 
@@ -95,6 +110,17 @@ export function computerGetMemory(computer: Computer, address: u16): u8 {
     }
 
     return 0;
+}
+
+
+export function computerAddDevice(computer: Computer, name: string, type: string, vendor: string, model: string): u8 {
+    const ioManager = computer.ioManager;
+
+    if (ioManager && ioManager.addDevice) {
+        return ioManager.addDevice(name, type, vendor, model)
+    }
+
+    throw new Error("Io Manager not found");
 }
 
 

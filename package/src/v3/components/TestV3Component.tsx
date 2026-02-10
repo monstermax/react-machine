@@ -13,6 +13,7 @@ interface WasmExports extends WebAssembly.Exports {
     computerGetRegisterIR(computerPtr: number): u8;
     computerGetRegisterA(computerPtr: number): u8;
     computerGetMemory(computerPtr: number, address: u16): u8;
+    computerAddDevice(computerPtr: number, name: string, type: string, vendor?: string, model?: string): u8;
 }
 
 declare global {
@@ -39,6 +40,8 @@ export const TestV3Component: React.FC = () => {
                     abort: (ptr: number) => { throw new Error("[WASM ABORT] " + readString(ptr)) },
                     'console.log' : (ptr: number) => console.log ("[WASM LOG]", readString(ptr)),
                     'console.warn': (ptr: number) => console.warn("[WASM WARN]", readString(ptr)),
+                    jsIoRead,
+                    jsIoWrite,
                 },
             };
 
@@ -56,6 +59,8 @@ export const TestV3Component: React.FC = () => {
             const _computerPointer = exports.instanciateComputer()
             setComputerPointer(_computerPointer);
 
+            //exports.computerAddDevice(_computerPointer, 'keyboard', 'input')
+
             //console.log('new wasm:', _wasm.instance)
             console.log('memory:', exports.memory)
         }
@@ -64,6 +69,17 @@ export const TestV3Component: React.FC = () => {
         return () => clearTimeout(timer);
 
     }, [])
+
+
+    const jsIoRead = (deviceIdx: u8, port: u8): u8 => {
+        const value = 38 as u8;
+        console.log('jsread:', deviceIdx, port, value)
+        return value
+    }
+
+    const jsIoWrite = (deviceIdx: u8, port: u8, value: u8): void => {
+        console.log('jswrite:', deviceIdx, port, value)
+    }
 
 
     const readString = (ptr: number, charSize=2) => {
@@ -86,7 +102,16 @@ export const TestV3Component: React.FC = () => {
     }
 
 
-    const testClick = () => {
+    const addDevice = (name: string, type: string, vendor='', model='') => {
+        if (!wasmRef.current || !computerPointer) return;
+
+        const exports = wasmRef.current.exports as WasmExports;
+        const deviceIdx = exports.computerAddDevice(computerPointer, name, type, vendor, model)
+        console.log(`Device #${deviceIdx} added`);
+    }
+
+
+    const runCycle = () => {
         if (!wasmRef.current || computerPointer === null) return;
 
         //console.log('testClick')
@@ -122,7 +147,11 @@ export const TestV3Component: React.FC = () => {
         <div className="p-1 text-foreground">
             V3
             <hr />
-            <button onClick={() => testClick()}>clic</button>
+            <div className="flex gap-4 m-2">
+                <button className="p-2 border rounded cursor-pointer" onClick={() => addDevice('keyboard', 'input', '', '')}>add Keyboard</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => addDevice('console', 'output', '', '')}>add Console</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => runCycle()}>runCycle</button>
+            </div>
         </div>
     );
 }
