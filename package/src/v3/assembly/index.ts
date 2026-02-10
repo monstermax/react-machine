@@ -36,17 +36,25 @@ export function instanciateComputer(): Computer {
         memoryBus.write(0x0004, 0x10); // 0x1000 high byte
 
         memoryBus.write(0x0005, Opcode.MOV_A_IMM as u8);
-        memoryBus.write(0x0006, 14);
+        memoryBus.write(0x0006, 66); // test
 
-        memoryBus.write(0x0007, Opcode.MOV_MEM_A as u8);
+        memoryBus.write(0x0007, Opcode.MOV_A_MEM as u8); // read keyboard
         memoryBus.write(0x0008, 0x00); // 0xF000 low byte
         memoryBus.write(0x0009, 0xF0); // 0xF000 high byte
 
-        memoryBus.write(0x000A, Opcode.MOV_A_MEM as u8);
-        memoryBus.write(0x000B, 0x00); // 0xF000 low byte
-        memoryBus.write(0x000C, 0xF0); // 0xF000 high byte
+        memoryBus.write(0x000A, Opcode.MOV_MEM_A as u8); // write console
+        memoryBus.write(0x000B, 0x10); // 0xF010 low byte
+        memoryBus.write(0x000C, 0xF0); // 0xF010 high byte
 
-        memoryBus.write(0x000D, Opcode.HALT as u8);
+        memoryBus.write(0x000D, Opcode.MOV_A_IMM as u8);
+        memoryBus.write(0x000E, 1); // keyboard ack
+
+        memoryBus.write(0x000F, Opcode.MOV_MEM_A as u8); // write keyboard (ack)
+        memoryBus.write(0x0010, 0x00); // 0xF000 low byte
+        memoryBus.write(0x0011, 0xF0); // 0xF000 high byte
+
+
+        memoryBus.write(0x0012, Opcode.HALT as u8);
     }
 
     console.log(`Computer instanciated`)

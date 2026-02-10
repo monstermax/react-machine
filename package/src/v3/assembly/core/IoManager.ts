@@ -42,7 +42,7 @@ export class IoManager {
 
     public read(ioRelativeAddress: u16): u8 {
         const ioDevice: u8 = Math.floor(ioRelativeAddress / DEVICE_PORT_SIZE) as u8
-        const ioPort: u8 = ioDevice % DEVICE_PORT_SIZE;
+        const ioPort: u8 = ioRelativeAddress % DEVICE_PORT_SIZE as u8;
 
         const device = this.devices[ioDevice];
 
@@ -57,7 +57,7 @@ export class IoManager {
 
     public write(ioRelativeAddress: u16, value: u8): void {
         const ioDevice: u8 = Math.floor(ioRelativeAddress / DEVICE_PORT_SIZE) as u8
-        const ioPort: u8 = ioDevice % DEVICE_PORT_SIZE;
+        const ioPort: u8 = ioRelativeAddress % DEVICE_PORT_SIZE as u8;
 
         const device = this.devices[ioDevice];
 
