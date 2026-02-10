@@ -2,6 +2,7 @@
 // The entry file of your WebAssembly module.
 
 import { Computer } from "./core/Computer";
+import { MemoryBus } from "./core/Memory";
 import { Opcode } from "./cpu_instructions";
 
 
@@ -27,34 +28,7 @@ export function instanciateComputer(): Computer {
     }
 
     if (memoryBus) {
-        // write some BIOS code
-        memoryBus.write(0x0000, Opcode.MOV_A_IMM as u8);
-        memoryBus.write(0x0001, 13);
-
-        memoryBus.write(0x0002, Opcode.MOV_MEM_A as u8);
-        memoryBus.write(0x0003, 0x00); // 0x1000 low byte
-        memoryBus.write(0x0004, 0x10); // 0x1000 high byte
-
-        memoryBus.write(0x0005, Opcode.MOV_A_IMM as u8);
-        memoryBus.write(0x0006, 66); // test
-
-        memoryBus.write(0x0007, Opcode.MOV_A_MEM as u8); // read keyboard
-        memoryBus.write(0x0008, 0x00); // 0xF000 low byte
-        memoryBus.write(0x0009, 0xF0); // 0xF000 high byte
-
-        memoryBus.write(0x000A, Opcode.MOV_MEM_A as u8); // write console
-        memoryBus.write(0x000B, 0x10); // 0xF010 low byte
-        memoryBus.write(0x000C, 0xF0); // 0xF010 high byte
-
-        memoryBus.write(0x000D, Opcode.MOV_A_IMM as u8);
-        memoryBus.write(0x000E, 1); // keyboard ack
-
-        memoryBus.write(0x000F, Opcode.MOV_MEM_A as u8); // write keyboard (ack)
-        memoryBus.write(0x0010, 0x00); // 0xF000 low byte
-        memoryBus.write(0x0011, 0xF0); // 0xF000 high byte
-
-
-        memoryBus.write(0x0012, Opcode.HALT as u8);
+        loadTmpCode(memoryBus);
     }
 
     console.log(`Computer instanciated`)
@@ -67,6 +41,66 @@ export function instanciateComputer(): Computer {
     //jsIoWrite(4, 5, 6)
 
     return computer;
+}
+
+
+export function loadTmpCode(memoryBus: MemoryBus): void {
+    // write some BIOS code
+    memoryBus.write(0x0000, Opcode.MOV_A_IMM as u8);
+    memoryBus.write(0x0001, 13);
+
+    memoryBus.write(0x0002, Opcode.MOV_MEM_A as u8);
+    memoryBus.write(0x0003, 0x00); // 0x1000 low byte
+    memoryBus.write(0x0004, 0x10); // 0x1000 high byte
+
+    memoryBus.write(0x0005, Opcode.MOV_A_IMM as u8);
+    memoryBus.write(0x0006, 66); // test
+
+    memoryBus.write(0x0007, Opcode.MOV_A_MEM as u8); // read keyboard
+    memoryBus.write(0x0008, 0x00); // 0xF000 low byte
+    memoryBus.write(0x0009, 0xF0); // 0xF000 high byte
+
+    memoryBus.write(0x000A, Opcode.MOV_MEM_A as u8); // write console
+    memoryBus.write(0x000B, 0x10); // 0xF010 low byte
+    memoryBus.write(0x000C, 0xF0); // 0xF010 high byte
+
+    memoryBus.write(0x000D, Opcode.MOV_A_IMM as u8);
+    memoryBus.write(0x000E, 1); // keyboard ack
+
+    memoryBus.write(0x000F, Opcode.MOV_MEM_A as u8); // write keyboard (ack)
+    memoryBus.write(0x0010, 0x00); // 0xF000 low byte
+    memoryBus.write(0x0011, 0xF0); // 0xF000 high byte
+
+
+    memoryBus.write(0x0012, Opcode.HALT as u8);
+}
+
+
+
+function loadCode(memoryBus: MemoryBus, addresses: Uint8Array, values: Uint8Array): void {
+    if (addresses.length !== values.length) throw new Error(`Length mismatch`);
+
+    for (let i=0; i<addresses.length; i++) {
+        const address = addresses[i];
+        const value = values[i];
+        memoryBus.write(address, value);
+    }
+
+    console.log(`${addresses.length} addresses written`)
+}
+
+
+export function computerloadCode(computer: Computer, addresses: Uint8Array, values: Uint8Array): void {
+    const memoryBus = computer.memoryBus;
+
+    console.log(`${addresses.length} addresses received`)
+
+    if (memoryBus) {
+        loadCode(memoryBus, addresses, values);
+        return;
+    }
+
+    throw new Error("Memory Bus not found");
 }
 
 
@@ -106,10 +140,38 @@ export function computerGetRegisterIR(computer: Computer): u8 {
     return 0;
 }
 
+
 export function computerGetRegisterA(computer: Computer): u8 {
     if (computer.cpus.length > 0) {
         const cpu = computer.cpus[0];
         return cpu.registers.A
+    }
+
+    return 0;
+}
+
+export function computerGetRegisterB(computer: Computer): u8 {
+    if (computer.cpus.length > 0) {
+        const cpu = computer.cpus[0];
+        return cpu.registers.B
+    }
+
+    return 0;
+}
+
+export function computerGetRegisterC(computer: Computer): u8 {
+    if (computer.cpus.length > 0) {
+        const cpu = computer.cpus[0];
+        return cpu.registers.C
+    }
+
+    return 0;
+}
+
+export function computerGetRegisterD(computer: Computer): u8 {
+    if (computer.cpus.length > 0) {
+        const cpu = computer.cpus[0];
+        return cpu.registers.D
     }
 
     return 0;

@@ -12,8 +12,12 @@ interface WasmExports extends WebAssembly.Exports {
     computerGetRegisterPC(computerPtr: number): u16;
     computerGetRegisterIR(computerPtr: number): u8;
     computerGetRegisterA(computerPtr: number): u8;
+    computerGetRegisterB(computerPtr: number): u8;
+    computerGetRegisterC(computerPtr: number): u8;
+    computerGetRegisterD(computerPtr: number): u8;
     computerGetMemory(computerPtr: number, address: u16): u8;
     computerAddDevice(computerPtr: number, name: string, type: string, vendor?: string, model?: string): u8;
+    computerloadCode(computerPtr: number, addresses: Uint8Array, values: Uint8Array): void
 }
 
 declare global {
@@ -77,6 +81,9 @@ export const TestV3Component: React.FC = () => {
             setComputerPointer(_computerPointer);
 
             //exports.computerAddDevice(_computerPointer, 'keyboard', 'input')
+            //exports.computerAddDevice(_computerPointer, 'console', 'input')
+
+            //exports.computerloadCode(_computerPointer, new Uint8Array([0x0006]), new Uint8Array([62])) // DO NOT WORK // TODO
 
             //console.log('new wasm:', _wasm.instance)
             console.log('memory:', exports.memory)
@@ -184,7 +191,10 @@ export const TestV3Component: React.FC = () => {
         const PC_before = exports.computerGetRegisterPC(computerPointer);
         const IR_before = exports.computerGetRegisterIR(computerPointer);
         const A_before = exports.computerGetRegisterA(computerPointer);
-        console.log('BEFORE', { cycles: cycles_before, PC: PC_before, IR: IR_before, A: A_before });
+        const B_before = exports.computerGetRegisterB(computerPointer);
+        const C_before = exports.computerGetRegisterC(computerPointer);
+        const D_before = exports.computerGetRegisterD(computerPointer);
+        console.log('BEFORE', { cycles: cycles_before, PC: PC_before, IR: IR_before, A: A_before, B: B_before, C: C_before, D: D_before });
 
 
         exports.computerRunCycle(computerPointer);
@@ -194,7 +204,10 @@ export const TestV3Component: React.FC = () => {
         const PC_after = exports.computerGetRegisterPC(computerPointer);
         const IR_after = exports.computerGetRegisterIR(computerPointer);
         const A_after = exports.computerGetRegisterA(computerPointer);
-        console.log('AFTER', { cycles: cycles_after, PC: PC_after, IR: IR_after, A: A_after });
+        const B_after = exports.computerGetRegisterB(computerPointer);
+        const C_after = exports.computerGetRegisterC(computerPointer);
+        const D_after = exports.computerGetRegisterD(computerPointer);
+        console.log('AFTER', { cycles: cycles_after, PC: PC_after, IR: IR_after, A: A_after, B: B_after, C: C_after, D: D_after });
 
         //const memValue_0x1000 = exports.computerGetMemory(computerPointer, 0x1000);
         //console.log('memValue 0x1000:', memValue_0x1000);
