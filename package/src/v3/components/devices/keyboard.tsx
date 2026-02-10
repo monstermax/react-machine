@@ -1,17 +1,18 @@
 
 import { useEffect, useState } from "react";
-import { EventEmitter } from "eventemitter3";
 
-import { u8 } from "@/types";
+import { IoDevice } from "./IoDevice";
+
+import type { u8 } from "@/types";
 
 
-type KeyboardDeviceParams = {
+export type KeyboardDeviceParams = {
     type: string;
     vendor?: string;
     model?: string;
 }
 
-class KeyboardDevice extends EventEmitter {
+export class KeyboardDevice extends IoDevice {
     idx = 0 as u8;
     name = 'keyboard';
     type = 'input';
@@ -36,7 +37,7 @@ class KeyboardDevice extends EventEmitter {
     read(port: u8): u8 {
         switch (port) {
             case 0x00: // KEYBOARD_DATA
-                console.log('keyboard char:', this.lastChar)
+                //console.log('keyboard char:', this.lastChar)
                 return this.lastChar;
 
             case 0x01: // KEYBOARD_STATUS
@@ -84,7 +85,7 @@ class KeyboardDevice extends EventEmitter {
             //if (charCode > 127) return;
             if (event.key === 'F5') return; // F5
 
-            console.log(`⌨️  Key pressed: '${event.key}' (ASCII: ${charCode})`);
+            //console.log(`⌨️  Key pressed: '${event.key}' (ASCII: ${charCode})`);
 
             if (charCode < 0x20 && charCode !== 13 && charCode !== 8) return;
 
@@ -119,7 +120,7 @@ class KeyboardDevice extends EventEmitter {
 }
 
 
-export const keyboardDevice = new KeyboardDevice('keyboard', { type: 'input' });
+//export const keyboardDevice = new KeyboardDevice('keyboard', { type: 'input' });
 
 
 

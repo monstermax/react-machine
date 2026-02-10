@@ -1,11 +1,12 @@
 
 import { useEffect, useRef, useState } from "react";
-import { EventEmitter } from "eventemitter3";
 
-import { u8 } from "@/types";
+import { IoDevice } from "./IoDevice";
+
+import type { u8 } from "@/types";
 
 
-type ConsoleDeviceParams = {
+export type ConsoleDeviceParams = {
     type: string;
     vendor?: string;
     model?: string;
@@ -14,7 +15,7 @@ type ConsoleDeviceParams = {
     maxLines?: number;
 }
 
-class ConsoleDevice extends EventEmitter {
+export class ConsoleDevice extends IoDevice {
     idx = 0 as u8;
     name = 'console';
     type = 'output';
@@ -50,7 +51,7 @@ class ConsoleDevice extends EventEmitter {
             case 0x00: // CONSOLE_CHAR - Écrire un caractère
                 const char = String.fromCharCode(value);
 
-                console.log('console char:', char)
+                //console.log('console char:', char)
 
                 if (value === 0x0A || value === 0x0D) {
                     // Newline (LF ou CR)
@@ -99,7 +100,7 @@ class ConsoleDevice extends EventEmitter {
 }
 
 
-export const consoleDevice = new ConsoleDevice('console', { type: 'output' });
+//export const consoleDevice = new ConsoleDevice('console', { type: 'output' });
 
 
 

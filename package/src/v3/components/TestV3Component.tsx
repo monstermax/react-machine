@@ -1,12 +1,12 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import EventEmitter from "eventemitter3";
 
-import { Keyboard, keyboardDevice } from "./devices/keyboard";
-import { Console, consoleDevice } from "./devices/console";
+import { IoDevice } from "./devices/IoDevice";
+import { Keyboard, KeyboardDevice } from "./devices/keyboard";
+import { Console, ConsoleDevice } from "./devices/console";
+import { Clock } from "./devices/clock";
 
-import type { u16, u8 } from "@/types";
-import { u32 } from "@/types/cpu.types";
+import type { u16, u8, u32 } from "@/types/cpu.types";
 
 
 interface WasmExports extends WebAssembly.Exports {
@@ -32,22 +32,6 @@ declare global {
 }
 
 
-abstract class IoDevice {
-    idx: u8 = 0 as u8;
-    name: string = '';
-    type: string = '';
-    vendor: string = '';
-    model: string = '';
-
-    read(port: u8): u8 {
-        return 0 as u8
-    }
-
-    write(port: u8, value: u8): void {
-    }
-}
-
-
 export const TestV3Component: React.FC = () => {
     const wasmRef = useRef<WebAssembly.Instance | null>(null);
     const [computerPointer, setComputerPointer] = useState<number | null>(null);
@@ -55,13 +39,13 @@ export const TestV3Component: React.FC = () => {
     const [clock] = useState(() => new Clock)
 
     const [cyclesPerSecond, setCyclesPerSecond] = useState(0);
+    const [keyboardDevice, setKeyboardDevice] = useState<KeyboardDevice | null>(null)
+    const [consoleDevice, setConsoleDevice] = useState<ConsoleDevice | null>(null)
 
 
     useEffect(() => {
         const _initWasm = async () => {
             if (wasmRef.current) return;
-
-            let wasmInstance: WebAssembly.Instance | null = null;
 
             const imports = {
                 env: {
@@ -197,7 +181,8 @@ export const TestV3Component: React.FC = () => {
         console.log(`Device #${deviceIdx} added`);
 
         if (name === 'keyboard') {
-            const device = keyboardDevice;
+            const device = new KeyboardDevice('keyboard', { type: 'input' });
+            setKeyboardDevice(device)
             devicesRef.current.set(deviceIdx, device)
             device.start()
 
@@ -207,7 +192,8 @@ export const TestV3Component: React.FC = () => {
         }
 
         if (name === 'console') {
-            const device = consoleDevice;
+            const device = new ConsoleDevice('console', { type: 'output' });
+            setConsoleDevice(device)
             devicesRef.current.set(deviceIdx, device)
             return
         }
@@ -308,46 +294,6 @@ export const TestV3Component: React.FC = () => {
             </div>
         </div>
     );
-}
-
-
-
-
-class Clock extends EventEmitter {
-    private timer: NodeJS.Timeout | null = null;
-    private frequency = 200;
-
-    start() {
-        if (this.timer) return;
-
-        this.timer = setInterval(this.tick.bind(this), 1000 / this.frequency)
-
-        console.log('clock started')
-    }
-
-    stop() {
-        if (!this.timer) return;
-        clearInterval(this.timer)
-        this.timer = null;
-
-        console.log('clock stopped')
-    }
-
-    setFrequency(frequency: number) {
-        this.frequency = frequency;
-
-        if (this.timer) {
-            this.stop()
-            this.start()
-            this.tick()
-        }
-    }
-
-    private tick() {
-        this.emit('tick');
-        //console.log('clock tick')
-    }
-
 }
 
 
