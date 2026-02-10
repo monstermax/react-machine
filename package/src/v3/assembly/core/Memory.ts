@@ -89,7 +89,9 @@ export class MemoryBus {
                 return;
             }
 
-            ioManager.write(address, value);
+            const ioRelativeAddress = address - MEMORY_MAP.IO_START;
+
+            ioManager.write(ioRelativeAddress, value);
             return
         }
 

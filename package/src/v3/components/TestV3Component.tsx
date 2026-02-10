@@ -23,9 +23,26 @@ declare global {
 }
 
 
+abstract class IoDevice {
+    idx: u8 = 0 as u8;
+    name: string = '';
+    type: string = '';
+    vendor: string = '';
+    model: string = '';
+
+    read(port: u8): u8 {
+        return 0 as u8
+    }
+
+    write(port: u8, value: u8): void {
+    }
+}
+
+
 export const TestV3Component: React.FC = () => {
     const wasmRef = useRef<WebAssembly.Instance | null>(null);
     const [computerPointer, setComputerPointer] = useState<number | null>(null);
+    const devicesRef = useRef<Map<number, IoDevice>>(new Map);
 
 
     useEffect(() => {
@@ -72,13 +89,32 @@ export const TestV3Component: React.FC = () => {
 
 
     const jsIoRead = (deviceIdx: u8, port: u8): u8 => {
-        const value = 38 as u8;
-        console.log('jsread:', deviceIdx, port, value)
+        if (!devicesRef.current) throw new Error("missing devices ref");
+
+        const device = devicesRef.current.get(deviceIdx);
+
+        if (!device) {
+            throw new Error(`device #${deviceIdx} not found`);
+        }
+
+        const value = device.read(port);
+
+        console.log('jsIoRead:', deviceIdx, port, value)
         return value
     }
 
     const jsIoWrite = (deviceIdx: u8, port: u8, value: u8): void => {
-        console.log('jswrite:', deviceIdx, port, value)
+        if (!devicesRef.current) throw new Error("missing devices ref");
+
+        const device = devicesRef.current.get(deviceIdx);
+
+        if (!device) {
+            throw new Error(`device #${deviceIdx} not found`);
+        }
+
+        device.write(port, value);
+
+        console.log('jsIoWrite:', deviceIdx, port, value)
     }
 
 
@@ -103,11 +139,23 @@ export const TestV3Component: React.FC = () => {
 
 
     const addDevice = (name: string, type: string, vendor='', model='') => {
-        if (!wasmRef.current || !computerPointer) return;
+        if (!wasmRef.current || !computerPointer || !devicesRef.current) return;
 
         const exports = wasmRef.current.exports as WasmExports;
         const deviceIdx = exports.computerAddDevice(computerPointer, name, type, vendor, model)
         console.log(`Device #${deviceIdx} added`);
+
+        const device: IoDevice = {
+            idx: deviceIdx,
+            name,
+            type,
+            vendor,
+            model,
+            read: (port: u8) => 42 as u8,
+            write: (port: u8, value: u8) => {},
+        }
+
+        devicesRef.current.set(deviceIdx, device)
     }
 
 

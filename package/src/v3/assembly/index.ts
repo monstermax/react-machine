@@ -35,21 +35,28 @@ export function instanciateComputer(): Computer {
         memoryBus.write(0x0003, 0x00); // 0x1000 low byte
         memoryBus.write(0x0004, 0x10); // 0x1000 high byte
 
-        memoryBus.write(0x0005, Opcode.MOV_MEM_A as u8);
-        memoryBus.write(0x0006, 0x0F); // 0x000F low byte
-        memoryBus.write(0x0007, 0x00); // 0x000F high byte
+        memoryBus.write(0x0005, Opcode.MOV_A_IMM as u8);
+        memoryBus.write(0x0006, 14);
 
-        memoryBus.write(0x0008, Opcode.HALT as u8);
+        memoryBus.write(0x0007, Opcode.MOV_MEM_A as u8);
+        memoryBus.write(0x0008, 0x00); // 0xF000 low byte
+        memoryBus.write(0x0009, 0xF0); // 0xF000 high byte
+
+        memoryBus.write(0x000A, Opcode.MOV_A_MEM as u8);
+        memoryBus.write(0x000B, 0x00); // 0xF000 low byte
+        memoryBus.write(0x000C, 0xF0); // 0xF000 high byte
+
+        memoryBus.write(0x000D, Opcode.HALT as u8);
     }
 
     console.log(`Computer instanciated`)
 
-    const jsreaded = jsIoRead(1, 2) // test
-    console.log(`jsreaded: ${jsreaded}\0`)
+    //const jsreaded = jsIoRead(1, 2) // test
+    //console.log(`jsreaded: ${jsreaded}\0`)
 
     //computerAddDevice(computer, 'keyboard', 'input')
 
-    jsIoWrite(4, 5, 6)
+    //jsIoWrite(4, 5, 6)
 
     return computer;
 }

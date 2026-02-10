@@ -100,7 +100,7 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
 
         case <u8>Opcode.MOV_A_IMM: 
             action = (cpu: Cpu, memoryBus: MemoryBus) => {
-                const immValue = memoryBus.read(cpu.registers.PC+1);
+                const immValue: u8 = memoryBus.read(cpu.registers.PC+1);
                 cpu.registers.A = immValue;
                 cpu.registers.PC += 2;
             };
@@ -121,10 +121,11 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
 
         case <u8>Opcode.MOV_A_MEM: 
             action = (cpu: Cpu, memoryBus: MemoryBus) => {
-                const memAddressLow = memoryBus.read(cpu.registers.PC+1);
-                const memAddressHigh = memoryBus.read(cpu.registers.PC+2);
-                const memAddress = memAddressLow | (memAddressHigh * <u16>256);
+                const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
                 const memValue = memoryBus.read(memAddress);
+                //console.log(`MOV_A_MEM ${memAddress}`)
                 cpu.registers.A = memValue;
                 cpu.registers.PC += 3;
             };
@@ -132,10 +133,11 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu, memoryBus: MemoryBus) =
 
         case <u8>Opcode.MOV_MEM_A: 
             action = (cpu: Cpu, memoryBus: MemoryBus) => {
-                const memAddressLow = memoryBus.read(cpu.registers.PC+1);
-                const memAddressHigh = memoryBus.read(cpu.registers.PC+2);
-                const memAddress = memAddressLow | (memAddressHigh * <u16>256);
-                memoryBus.write((memAddress), cpu.registers.A);
+                const memAddressLow: u8 = memoryBus.read(cpu.registers.PC+1);
+                const memAddressHigh: u8 = memoryBus.read(cpu.registers.PC+2);
+                const memAddress: u16 = memAddressLow | (memAddressHigh * <u16>256);
+                //console.log(`MOV_MEM_A ${memAddress}`)
+                memoryBus.write(memAddress, cpu.registers.A);
                 cpu.registers.PC += 3;
             };
             break;
