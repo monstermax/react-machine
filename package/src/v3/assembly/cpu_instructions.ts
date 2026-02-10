@@ -4,6 +4,15 @@ export enum Opcode {
     // CONTROL
     NOP = 0x00,
     HALT = 0x01,
+    CALL = 0x02,    // TODO
+    RET = 0x03,     // TODO
+    //INT = 0x04,     // TODO
+    //EI = 0x05,      // TODO   // Enable Interrupts
+    //DI = 0x06,      // TODO   // Disable Interrupts
+    //IRET = 0x07,    // TODO   // Return from Interrupt
+    //SYSCALL = 0x08, // TODO
+
+    MOV_MEM_IMM = 0x09,
 
     // JUMP
     JMP = 0x10, // Jump
@@ -22,45 +31,70 @@ export enum Opcode {
     JB = JL,    // Jump if Lower
     JBE = JLE,  // Jump if Lower or Equals
 
-    // REGISTER A
-    MOV_A_IMM = 0x20,
-    MOV_A_REG = 0x21,
-    MOV_A_MEM = 0x22,
-    MOV_MEM_A = 0x23,
+    // MOV
+    MOV_REG_IMM = 0x20,
+    MOV_REG_REG = 0x21,
+    MOV_REG_MEM = 0x22,
+    MOV_MEM_REG = 0x23,
 
-    PUSH_A = 0x24,
-    POP_A = 0x25,
+    // STACK
+    PUSH_REG = 0x24,
+    POP_REG = 0x25,
 
-    INC_A = 0x26,
-    DEC_A = 0x27,
-    NOT_A = 0x28,
+    // ALU
+    INC_REG = 0x30,
+    DEC_REG = 0x31,
+    NOT_REG = 0x32,
 
-    ADD_A_IMM = 0x29,
-    ADD_A_REG = 0x2A,
-    ADD_A_MEM = 0x2B,
+    ADD_REG_IMM = 0x33,
+    ADD_REG_REG = 0x34,
+    ADD_REG_MEM = 0x35,
+    //ADD_MEM_IMM = 0x36,
+    //ADD_MEM_REG = 0x37,
 
-    SUB_A_IMM = 0x2C,
-    SUB_A_REG = 0x2D,
-    SUB_A_MEM = 0x2E,
+    SUB_REG_IMM = 0x38,
+    SUB_REG_REG = 0x39,
+    SUB_REG_MEM = 0x3A,
+    //SUB_MEM_IMM = 0x3B,
+    //SUB_MEM_REG = 0x3C,
 
-    AND_A_IMM = 0x2F,
-    AND_A_REG = 0x30,
-    AND_A_MEM = 0x31,
+    AND_REG_IMM = 0x3D,
+    AND_REG_REG = 0x3E,
+    AND_REG_MEM = 0x3F,
+    //AND_MEM_IMM = 0x40,
+    //AND_MEM_REG = 0x41,
 
-    OR_A_IMM = 0x32,
-    OR_A_REG = 0x33,
-    OR_A_MEM = 0x34,
+    OR_REG_IMM = 0x42,
+    OR_REG_REG = 0x43,
+    OR_REG_MEM = 0x44,
+    //OR_MEM_IMM = 0x45,
+    //OR_MEM_REG = 0x46,
 
-    XOR_A_IMM = 0x35,
-    XOR_A_REG = 0x36,
-    XOR_A_MEM = 0x37,
+    XOR_REG_IMM = 0x47,
+    XOR_REG_REG = 0x48,
+    XOR_REG_MEM = 0x49,
+    //XOR_MEM_IMM = 0x4A,
+    //XOR_MEM_REG = 0x4B,
 
-    CMP_A_IMM = 0x38,
-    CMP_A_REG = 0x39,
-    CMP_A_MEM = 0x3A,
+    // TESTS
+    CMP_REG_IMM = 0x50,
+    CMP_REG_REG = 0x51,
+    CMP_REG_MEM = 0x52,
 
-    TEST_A_IMM = 0x3B,
-    TEST_A_REG = 0x3C,
-    TEST_A_MEM = 0x3D,
+    TEST_REG_IMM = 0x53,
+    TEST_REG_REG = 0x54,
+    TEST_REG_MEM = 0x55,
+
+    // TODO
+
+    // BIT SHIFT
+    ROL = 0x48,
+    ROR = 0x49,
+    SHL = 0x4A,
+    SHR = 0x4B,
+    SHL_IMM = 0x4C,
+    SHR_IMM = 0x4D,
+    // LEA = 0x..
+
 };
 

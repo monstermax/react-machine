@@ -46,35 +46,41 @@ export function instanciateComputer(): Computer {
 
 
 export function loadTmpCode(memoryBus: MemoryBus): void {
-    memoryBus.write(0x0000, Opcode.MOV_A_MEM as u8); // read keyboard status
-    memoryBus.write(0x0001, 0x01); // 0xF001 low byte
-    memoryBus.write(0x0002, 0xF0); // 0xF001 high byte
+    memoryBus.write(0x0000, Opcode.MOV_REG_MEM as u8); // read keyboard status
+    memoryBus.write(0x0001, 0x01); // register A
+    memoryBus.write(0x0002, 0x01); // 0xF001 low byte
+    memoryBus.write(0x0003, 0xF0); // 0xF001 high byte
 
-    memoryBus.write(0x0003, Opcode.CMP_A_IMM as u8); // compare keyboard status
-    memoryBus.write(0x0004, 0);
+    memoryBus.write(0x0004, Opcode.CMP_REG_IMM as u8); // compare keyboard status
+    memoryBus.write(0x0005, 0x01); // register A
+    memoryBus.write(0x0006, 0x00); // IMM 0
 
-    memoryBus.write(0x0005, Opcode.JE as u8);
-    memoryBus.write(0x0006, 0x00); // 0x0000 low byte
-    memoryBus.write(0x0007, 0x00); // 0x0000 high byte
+    memoryBus.write(0x0007, Opcode.JE as u8);
+    memoryBus.write(0x0008, 0x00); // 0x0000 low byte
+    memoryBus.write(0x0009, 0x00); // 0x0000 high byte
 
-    memoryBus.write(0x0008, Opcode.MOV_A_MEM as u8); // read keyboard
-    memoryBus.write(0x0009, 0x00); // 0xF000 low byte
-    memoryBus.write(0x000A, 0xF0); // 0xF000 high byte
+    memoryBus.write(0x000A, Opcode.MOV_REG_MEM as u8); // read keyboard
+    memoryBus.write(0x000B, 0x01); // register A
+    memoryBus.write(0x000C, 0x00); // 0xF000 low byte
+    memoryBus.write(0x000D, 0xF0); // 0xF000 high byte
 
-    memoryBus.write(0x000B, Opcode.MOV_MEM_A as u8); // write console
-    memoryBus.write(0x000C, 0x10); // 0xF010 low byte
-    memoryBus.write(0x000D, 0xF0); // 0xF010 high byte
+    memoryBus.write(0x000E, Opcode.MOV_MEM_REG as u8); // write console
+    memoryBus.write(0x000F, 0x10); // 0xF010 low byte
+    memoryBus.write(0x0010, 0xF0); // 0xF010 high byte
+    memoryBus.write(0x0011, 0x01); // register A
 
-    memoryBus.write(0x000E, Opcode.MOV_A_IMM as u8); // ack keyboard status
-    memoryBus.write(0x000F, 1); // keyboard ack
+    memoryBus.write(0x0012, Opcode.MOV_REG_IMM as u8); // ack keyboard status
+    memoryBus.write(0x0013, 0x01); // register A
+    memoryBus.write(0x0014, 0x01); // IMM 1 => keyboard ack
 
-    memoryBus.write(0x0010, Opcode.MOV_MEM_A as u8); // write keyboard (ack)
-    memoryBus.write(0x0011, 0x00); // 0xF000 low byte
-    memoryBus.write(0x0012, 0xF0); // 0xF000 high byte
+    memoryBus.write(0x0015, Opcode.MOV_MEM_REG as u8); // write keyboard (ack)
+    memoryBus.write(0x0016, 0x00); // 0xF000 low byte
+    memoryBus.write(0x0017, 0xF0); // 0xF000 high byte
+    memoryBus.write(0x0018, 0x01); // register A
 
-    memoryBus.write(0x0013, Opcode.JMP as u8); // loop to begin
-    memoryBus.write(0x0014, 0x00); // 0x0000 low byte
-    memoryBus.write(0x0015, 0x00); // 0x0000 high byte
+    memoryBus.write(0x0019, Opcode.JMP as u8); // loop to begin
+    memoryBus.write(0x001A, 0x00); // 0x0000 low byte
+    memoryBus.write(0x001B, 0x00); // 0x0000 high byte
 }
 
 
