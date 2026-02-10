@@ -83,9 +83,10 @@ class KeyboardDevice extends EventEmitter {
             // Limiter aux caractères ASCII valides (0-127)
             //if (charCode > 127) return;
             if (event.key === 'F5') return; // F5
-            if (charCode < 32 && charCode !== 13) return;
 
             console.log(`⌨️  Key pressed: '${event.key}' (ASCII: ${charCode})`);
+
+            if (charCode < 0x20 && charCode !== 13 && charCode !== 8) return;
 
             this.handleCharCode(charCode);
             event.preventDefault()
@@ -103,7 +104,7 @@ class KeyboardDevice extends EventEmitter {
 
     // Fonction pour simuler une touche (pour testing)
     handleCharCode(charCode: number) {
-        if (charCode > 127) return;
+        //if (charCode > 127) return;
 
         this.lastChar = charCode as u8;
         this.hasChar = true;

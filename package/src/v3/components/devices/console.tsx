@@ -73,7 +73,7 @@ class ConsoleDevice extends EventEmitter {
                     this.currentLine = this.currentLine.slice(0, -1);
                     this.emit('state', { currentLine: this.currentLine })
 
-                } else if (value >= 0x20 && value <= 0x7E) {
+                } else if (value >= 0x20 /* && value <= 0x7E */) {
                     // Caractères imprimables ASCII
                     this.currentLine = this.currentLine + char;
                     this.emit('state', { currentLine: this.currentLine })
