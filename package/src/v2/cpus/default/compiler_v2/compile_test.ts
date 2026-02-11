@@ -1,5 +1,5 @@
 
-import { compileCode, formatBytecode, loadSourceCodeFromFile, setCompilationAsmBaseUrl } from '../../../../v2/lib/compilation';
+import { compileCode, loadSourceCodeFromFile, setCompilationAsmBaseUrl } from '@/v2/lib/compilation';
 
 
 async function main() {

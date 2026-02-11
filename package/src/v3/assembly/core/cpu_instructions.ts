@@ -41,41 +41,45 @@ export enum Opcode {
     // STACK
     PUSH_REG = 0x25,
     POP_REG = 0x26,
+    SET_SP = 0x27,
 
     // ALU
     INC_REG = 0x30,
-    DEC_REG = 0x31,
-    NOT_REG = 0x32,
+    INC_MEM = 0x31,
+    DEC_REG = 0x32,
+    DEC_MEM = 0x33,
+    NOT_REG = 0x34,
+    NOT_MEM = 0x35,
 
-    ADD_REG_IMM = 0x33,
-    ADD_REG_REG = 0x34,
-    ADD_REG_MEM = 0x35,
-    ADD_MEM_IMM = 0x36,
-    ADD_MEM_REG = 0x37,
+    ADD_REG_IMM = 0x36,
+    ADD_REG_REG = 0x37,
+    ADD_REG_MEM = 0x38,
+    ADD_MEM_IMM = 0x39,
+    ADD_MEM_REG = 0x3A,
 
-    SUB_REG_IMM = 0x38,
-    SUB_REG_REG = 0x39,
-    SUB_REG_MEM = 0x3A,
-    SUB_MEM_IMM = 0x3B,
-    SUB_MEM_REG = 0x3C,
+    SUB_REG_IMM = 0x3B,
+    SUB_REG_REG = 0x3C,
+    SUB_REG_MEM = 0x3D,
+    SUB_MEM_IMM = 0x3E,
+    SUB_MEM_REG = 0x3F,
 
-    AND_REG_IMM = 0x3D,
-    AND_REG_REG = 0x3E,
-    AND_REG_MEM = 0x3F,
-    AND_MEM_IMM = 0x40,
-    AND_MEM_REG = 0x41,
+    AND_REG_IMM = 0x40,
+    AND_REG_REG = 0x41,
+    AND_REG_MEM = 0x42,
+    AND_MEM_IMM = 0x43,
+    AND_MEM_REG = 0x44,
 
-    OR_REG_IMM = 0x42,
-    OR_REG_REG = 0x43,
-    OR_REG_MEM = 0x44,
-    OR_MEM_IMM = 0x45,
-    OR_MEM_REG = 0x46,
+    OR_REG_IMM = 0x45,
+    OR_REG_REG = 0x46,
+    OR_REG_MEM = 0x47,
+    OR_MEM_IMM = 0x48,
+    OR_MEM_REG = 0x49,
 
-    XOR_REG_IMM = 0x47,
-    XOR_REG_REG = 0x48,
-    XOR_REG_MEM = 0x49,
-    XOR_MEM_IMM = 0x4A,
-    XOR_MEM_REG = 0x4B,
+    XOR_REG_IMM = 0x4A,
+    XOR_REG_REG = 0x4B,
+    XOR_REG_MEM = 0x4C,
+    XOR_MEM_IMM = 0x4D,
+    XOR_MEM_REG = 0x4E,
 
     // TESTS
     CMP_REG_IMM = 0x50,
@@ -88,16 +92,46 @@ export enum Opcode {
 
     // TODO
 
-    // BIT SHIFT
-    ROL = 0x48,     // Rotate Left (avec carry)
-    ROR = 0x49,     // Rotate Right (avec carry)
-    RCL = 0x4A,     // Rotate Left through Carry
-    RCR = 0x4B,     // Rotate Right through Carry
-    SHL = 0x4C,     // Shift Left (val << 1)
-    SHR = 0x4D,     // Shift Right (val >> 1)
-    SHL_IMM = 0x4E, // Shift Left, N bits
-    SHR_IMM = 0x4F, // Shift Right, N bits
-    // LEA = 0x..
+    // BITS ROL
+    ROL_REG_IMM = 0x60,     // Rotate Left (avec carry)
+    ROL_REG_REG = 0x61,     // Rotate Left (avec carry)
+    ROL_REG_MEM = 0x62,     // Rotate Left (avec carry)
+    ROL_MEM_IMM = 0x63,     // Rotate Left (avec carry)
+    ROL_MEM_REG = 0x64,     // Rotate Left (avec carry)
+    ROR_REG_IMM = 0x65,     // Rotate Right (avec carry)
+    ROR_REG_REG = 0x66,     // Rotate Right (avec carry)
+    ROR_REG_MEM = 0x67,     // Rotate Right (avec carry)
+    ROR_MEM_IMM = 0x68,     // Rotate Right (avec carry)
+    ROR_MEM_REG = 0x69,     // Rotate Right (avec carry)
+
+    RCL_REG_IMM = 0x6A,     // Rotate Left through Carry
+    RCL_REG_REG = 0x6B,     // Rotate Left through Carry
+    RCL_REG_MEM = 0x6C,     // Rotate Left through Carry
+    RCL_MEM_IMM = 0x6D,     // Rotate Left through Carry
+    RCL_MEM_REG = 0x6E,     // Rotate Left through Carry
+    RCR_REG_IMM = 0x6F,     // Rotate Right through Carry
+    RCR_REG_REG = 0x70,     // Rotate Right through Carry
+    RCR_REG_MEM = 0x71,     // Rotate Right through Carry
+    RCR_MEM_IMM = 0x72,     // Rotate Right through Carry
+    RCR_MEM_REG = 0x73,     // Rotate Right through Carry
+
+    // BITS SHIFT
+    SHL_REG_IMM = 0x74, // Shift Left, N bits
+    SHL_REG_REG = 0x75, // Shift Left, N bits
+    SHL_REG_MEM = 0x76, // Shift Left, N bits
+    SHL_MEM_IMM = 0x77, // Shift Left, N bits
+    SHL_MEM_REG = 0x78, // Shift Left, N bits
+    SHR_REG_IMM = 0x79, // Shift Right, N bits
+    SHR_REG_REG = 0x7A, // Shift Right, N bits
+    SHR_REG_MEM = 0x7B, // Shift Right, N bits
+    SHR_MEM_IMM = 0x7C, // Shift Right, N bits
+    SHR_MEM_REG = 0x7D, // Shift Right, N bits
+
+    // TODO
+
+    LEA_REG_REG_IMM = 0x80,
+    LEA_REG_REG_MEM = 0x81,
+    LEA_REG_REG_REG = 0x82,
 
 };
 

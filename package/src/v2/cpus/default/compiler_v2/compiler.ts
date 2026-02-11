@@ -794,7 +794,7 @@ export class Compiler {
 
             if (token.type === 'REGISTER') {
                 operands.push({
-                    type: 'REGISTER',
+                    type: (token.value === 'SP') ? 'SKIP' : 'REGISTER',
                     value: token.value,
                     register: this.mapRegister(token.value)
                 });
@@ -1026,6 +1026,38 @@ export class Compiler {
                     this.emitByte((value >> 8) & 0xFF, `${commentPrefix} (high byte)`, false);
                     this.emitByte(value & 0xFF, `${commentPrefix} (low byte)`, false);
                 }
+
+            } else if (part === 'REG') {
+                let value = 0;
+                let reg = '';
+                if (op.register === 'A') {
+                    reg = 'A'
+                    value = 1;
+                }
+                if (op.register === 'B') {
+                    reg = 'B'
+                    value = 2;
+                }
+                if (op.register === 'C') {
+                    reg = 'C'
+                    value = 3;
+                }
+                if (op.register === 'D') {
+                    reg = 'D'
+                    value = 4;
+                }
+                if (op.register === 'SP') {
+                    reg = ''
+                    value = 0;
+                }
+
+                if (value !== 0) {
+                    const commentPrefix = `Register ${reg}`;
+                    this.emitByte(value, `${commentPrefix}`, false);
+                }
+
+            } else {
+                console.warn(`Unknown operand: ${part}`);
             }
         }
     }

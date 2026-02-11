@@ -143,6 +143,7 @@ export class Cpu {
         if (regIdx === 2) return this.registers.B;
         if (regIdx === 3) return this.registers.C;
         if (regIdx === 4) return this.registers.D;
+        //if (regIdx === 11) return this.registers.SP; // TODO: u16
 
         throw new Error(`Register #${regIdx} not found`);
     }
@@ -164,6 +165,10 @@ export class Cpu {
             this.registers.D = value;
             return;
         }
+        //if (regIdx === 11) {
+        //    this.registers.SP = value; // TODO: u16
+        //    return;
+        //}
 
         throw new Error(`Register #${regIdx} not found`);
     }
@@ -428,6 +433,17 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
             };
             break;
 
+        case <u8>Opcode.INC_MEM:
+            action = (cpu: Cpu) => {
+                const memAddress = cpu.readMem16(cpu.registers.PC);
+                const memValue = cpu.readMemory(memAddress);
+                const aluResult = cpu.alu.inc(memValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.writeMemory(memAddress, aluResult.result);
+                cpu.registers.PC += 3;
+            };
+            break;
+
         case <u8>Opcode.DEC_REG:
             action = (cpu: Cpu) => {
                 const regIdx = cpu.readMem8(cpu.registers.PC);
@@ -439,6 +455,17 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
             };
             break;
 
+        case <u8>Opcode.DEC_MEM:
+            action = (cpu: Cpu) => {
+                const memAddress = cpu.readMem16(cpu.registers.PC);
+                const memValue = cpu.readMemory(memAddress);
+                const aluResult = cpu.alu.dec(memValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.writeMemory(memAddress, aluResult.result);
+                cpu.registers.PC += 3;
+            };
+            break;
+
         case <u8>Opcode.NOT_REG:
             action = (cpu: Cpu) => {
                 const regIdx = cpu.readMem8(cpu.registers.PC);
@@ -447,6 +474,17 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
                 cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
                 cpu.setRegisterValueByIdx(regIdx, aluResult.result);
                 cpu.registers.PC += 2;
+            };
+            break;
+
+        case <u8>Opcode.NOT_MEM:
+            action = (cpu: Cpu) => {
+                const memAddress = cpu.readMem16(cpu.registers.PC);
+                const memValue = cpu.readMemory(memAddress);
+                const aluResult = cpu.alu.not(memValue);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.writeMemory(memAddress, aluResult.result);
+                cpu.registers.PC += 3;
             };
             break;
 

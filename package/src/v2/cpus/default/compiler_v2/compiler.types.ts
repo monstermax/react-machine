@@ -54,7 +54,7 @@ export interface CPUArchitecture {
 }
 
 export interface ParsedOperand {
-    type: 'REGISTER' | 'IMMEDIATE' | 'MEMORY' | 'LABEL';
+    type: 'REGISTER' | 'IMMEDIATE' | 'MEMORY' | 'LABEL' | 'SKIP';
     value: string;
     register?: string;
     size?: number;

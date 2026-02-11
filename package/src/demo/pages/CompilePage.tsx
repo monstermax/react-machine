@@ -9,6 +9,7 @@ import "prism-react-editor/layout.css"
 import "prism-react-editor/themes/github-dark.css"
 
 import { compilerV2, loadSourceCodeFromFile, toHex, U16 } from "@/index" // "react-machine-package";
+import { CUSTOM_CPU } from "@/v3/compiler/arch_custom";
 const { compileCode, formatBytecode, getBytecodeArray } = compilerV2;
 
 
@@ -145,10 +146,13 @@ export const CompilePage: React.FC = () => {
     };
 
     const handleCompile = async () => {
+        //const arch = undefined;
+        const arch = CUSTOM_CPU;
+
         try {
             const startAddress = 0;
             //const startAddress = 1; // debug
-            const compiled = await compileCode(editorContent, undefined, { startAddress });
+            const compiled = await compileCode(editorContent, arch, { startAddress });
 
             const bytecode = formatBytecode(compiled);
             const compiledFormatted = `[\n${bytecode}\n]`;

@@ -1,7 +1,7 @@
 ; Author: yomax
 ; Date: 2026-01
 ; Name: bootloader_v2
-; Description: OS for React Machine (v2)
+; Description: Bootloader for React Machine (v2)
 
 
 .include "bootloader/bootloader_v2.lib.asm"
@@ -79,7 +79,7 @@ WAIT_FOR_OS:
     mov al, bl
     add al, bl
 
-    test al
+    cmp al, 0
     jz BOOTLOADER_READY ; apres l'affichage de la derniere LED, jump to BOOTLOADER_READY
 
     mov bl, al
@@ -88,13 +88,13 @@ WAIT_FOR_OS:
     mov [OS_DISK_ADDR_LOW], 0
     mov [OS_DISK_ADDR_HIGH], 0
     mov al, [OS_DISK_DATA]
-    test al
+    cmp al, 0
     jz WAIT_FOR_OS ; si pas d'OS chargé on retourne à WAIT_FOR_OS
     call LOAD_OS_IN_RAM
 
     ; check OS in RAM
     mov al, [OS_START] ; detection de chargement de l'OS
-    test al
+    cmp al, 0
     jz WAIT_FOR_OS ; si pas d'OS chargé on retourne à WAIT_FOR_OS
 
     ; un OS a été trouvé. on se prépare à le lancer

@@ -9,6 +9,8 @@ import { Clock } from "./devices/clock";
 import type { u16, u8, u32 } from "@/types/cpu.types";
 import { Opcode } from "../assembly/core/cpu_instructions";
 import { Screen, ScreenDevice } from "./devices/screen";
+import { compileCode, getBytecodeArray, loadSourceCodeFromFile } from "@/v2/lib/compilation";
+import { CUSTOM_CPU } from "../compiler/arch_custom";
 
 
 interface WasmExports extends WebAssembly.Exports {
@@ -201,12 +203,12 @@ export const TestV3Component: React.FC = () => {
     }
 
 
-    const loadCode = () => {
+    const loadCode = async () => {
         if (!wasmRef.current || !computerPointer || !devicesRef.current) return;
 
         const wasmExports = wasmRef.current.exports as WasmExports;
 
-        const code = [
+        const codeDemo = [
             [0x0000, Opcode.MOV_REG_MEM as u8], // read keyboard status
             [0x0001, 0x01], // register A
             [0x0002, 0x01], // 0xF001 low byte
@@ -243,6 +245,12 @@ export const TestV3Component: React.FC = () => {
             [0x001A, 0x00], // 0x0000 low byte
             [0x001B, 0x00], // 0x0000 high byte
         ];
+
+        //const code = codeDemo // OK
+        const sourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v2.asm")
+        const compiled = await compileCode(sourceCode, CUSTOM_CPU);
+        const code = Array.from(getBytecodeArray(compiled).entries())
+        //console.log({code})
 
         const addresses = new Uint8Array(code.map(r => r[0]));
         const values = new Uint8Array(code.map(r => r[1]));
