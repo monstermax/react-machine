@@ -35,7 +35,7 @@ export function instanciateComputer(): Computer {
     console.log(`Computer instanciated`)
 
     //const jsreaded = jsIoRead(1, 2) // test
-    //console.log(`jsreaded: ${jsreaded}\0`)
+    //console.log(`jsreaded: ${jsreaded}`)
 
     //computerAddDevice(computer, 'keyboard', 'input')
 
@@ -106,10 +106,8 @@ export function allocate(size: i32): usize {
 
 export function computerloadCode(
     computer: Computer,
-    addrPtr: usize,
-    addrLen: i32,
     valPtr: usize,
-    valLen: i32
+    dataLen: i32
 ): void {
     const memoryBus = computer.memoryBus;
 
@@ -117,10 +115,11 @@ export function computerloadCode(
         throw new Error("Memory Bus not found");
     }
 
-    const len = min(addrLen, valLen);
-    for (let i: i32 = 0; i < len; i++) {
-        const addr: u16 = load<u8>(addrPtr + i);
+    for (let i: i32 = 0; i < dataLen; i++) {
+        //const addr: u16 = load<u16>(addrPtr + i);
+        const addr: u16 = i as u16;
         const val: u8 = load<u8>(valPtr + i);
+        //console.log(`load code line #${i} (addr=${addr} | val=${val})`)
         memoryBus.write(addr, val);
     }
 }
@@ -196,6 +195,24 @@ export function computerGetRegisterD(computer: Computer): u8 {
     if (computer.cpus.length > 0) {
         const cpu = computer.cpus[0];
         return cpu.registers.D
+    }
+
+    return 0;
+}
+
+export function computerGetRegisterE(computer: Computer): u8 {
+    if (computer.cpus.length > 0) {
+        const cpu = computer.cpus[0];
+        return cpu.registers.E
+    }
+
+    return 0;
+}
+
+export function computerGetRegisterF(computer: Computer): u8 {
+    if (computer.cpus.length > 0) {
+        const cpu = computer.cpus[0];
+        return cpu.registers.F
     }
 
     return 0;

@@ -9,6 +9,8 @@ const registers: RegisterDef[] = [
     { name: 'B', aliases: ['BL', 'BH', 'BX', 'EBX', 'RBX'], id: 'B', size: 8 },
     { name: 'C', aliases: ['CL', 'CH', 'CX', 'ECX', 'RCX'], id: 'C', size: 8 },
     { name: 'D', aliases: ['DL', 'DH', 'DX', 'EDX', 'RDX'], id: 'D', size: 8 },
+    { name: 'E', aliases: ['EL', 'EH', 'EX', 'EEX', 'REX'], id: 'E', size: 8 },
+    { name: 'F', aliases: ['FL', 'FH', 'FX', 'EFX', 'RFX'], id: 'F', size: 8 },
     //{ name: 'SI', aliases: ['ESI', 'RSI'], id: 'SI', size: 8 }, // Source Index (pointeur source)
     //{ name: 'DI', aliases: ['EDI', 'RDI'], id: 'DI', size: 8 }, // Destination Index (pointeur destination)
     { name: 'SP', aliases: ['ESP', 'RSP'], id: 'SP', size: 8 },

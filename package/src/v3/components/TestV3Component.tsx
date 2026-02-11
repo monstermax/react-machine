@@ -11,6 +11,7 @@ import { Opcode } from "../assembly/core/cpu_instructions";
 import { Screen, ScreenDevice } from "./devices/screen";
 import { compileCode, getBytecodeArray, loadSourceCodeFromFile } from "@/v2/lib/compilation";
 import { CUSTOM_CPU } from "../compiler/arch_custom";
+import { Leds, LedsDevice } from "./devices/leds";
 
 
 interface WasmExports extends WebAssembly.Exports {
@@ -24,9 +25,11 @@ interface WasmExports extends WebAssembly.Exports {
     computerGetRegisterB(computerPtr: number): u8;
     computerGetRegisterC(computerPtr: number): u8;
     computerGetRegisterD(computerPtr: number): u8;
+    computerGetRegisterE(computerPtr: number): u8;
+    computerGetRegisterF(computerPtr: number): u8;
     computerGetMemory(computerPtr: number, address: u16): u8;
     computerAddDevice(computerPtr: number, name: string, type: string, vendor?: string, model?: string): u8;
-    computerloadCode(computerPtr: number, addrPtr: number, addrLen: number, valPtr: number, valLen: number): void;
+    computerloadCode(computerPtr: number, valPtr: number, dataLen: number): void;
     allocate(size: number): number;
 }
 
@@ -52,6 +55,7 @@ export const TestV3Component: React.FC = () => {
     const [keyboardDevice, setKeyboardDevice] = useState<KeyboardDevice | null>(null)
     const [consoleDevice, setConsoleDevice] = useState<ConsoleDevice | null>(null)
     const [screenDevice, setScreenDevice] = useState<ScreenDevice | null>(null)
+    const [ledsDevice, setLedsDevice] = useState<LedsDevice | null>(null)
 
 
     useEffect(() => {
@@ -63,13 +67,31 @@ export const TestV3Component: React.FC = () => {
                     memory: new WebAssembly.Memory({ initial: 256 }),
                     abort: (ptr: number) => {
                         clock.stop();
-                        throw new Error("[WASM ABORT] " + readString(ptr));
+                        const message = readWasmStringUtf16(ptr);
+                        console.error("[WASM ERROR]", message);
+                        throw new Error("[WASM ABORT]");
                     },
                     'console.log': (ptr: number) => {
-                        console.log("[WASM LOG]", readString(ptr));
+                        const message = readWasmStringUtf16(ptr);
+                        let styles: string[] = [];
+
+                        if (message.startsWith('Reading Memory')) {
+                            styles.push('color:green');
+                        }
+
+                        if (message.startsWith('Writing Memory')) {
+                            styles.push('color:yellow');
+                        }
+
+                        let messages = styles.length
+                            ? ["%c[WASM LOG]", styles.join(';'), message]
+                            : [  "[WASM LOG]", message]
+
+                        console.log(...messages);
                     },
                     'console.warn': (ptr: number) => {
-                        console.warn("[WASM WARN]", readString(ptr));
+                        const message = readWasmStringUtf16(ptr);
+                        console.warn("[WASM WARN]", message);
                     },
                     jsIoRead,
                     jsIoWrite,
@@ -90,7 +112,7 @@ export const TestV3Component: React.FC = () => {
             const _computerPointer = wasmExports.instanciateComputer()
             setComputerPointer(_computerPointer);
 
-            console.log('memory:', wasmExports.memory)
+            //console.log('memory:', wasmExports.memory)
         }
 
         const timer = setTimeout(_initWasm, 100);
@@ -117,6 +139,7 @@ export const TestV3Component: React.FC = () => {
             addDevice('keyboard', 'input', '', '')
             addDevice('console', 'output', '', '')
             addDevice('screen', 'output', '', '')
+            addDevice('leds', 'output', '', '')
         }
 
         const timer = setTimeout(_loadDevices, 100);
@@ -190,23 +213,31 @@ export const TestV3Component: React.FC = () => {
     }
 
 
-    const readString = (ptr: number, charSize = 2) => {
+    const readWasmStringUtf8 = (ptr: number) => {
         if (!wasmRef.current) throw new Error("wasm not found in readString");
-
-        //console.log('readString1', ptr)
-        //console.log('memory:', memory)
 
         const wasmExports = wasmRef.current.exports as WasmExports;
         const memory = wasmExports.memory as WebAssembly.Memory;
-        const bytes = new Uint8Array(memory.buffer, ptr)
-        //console.log('bytes:', bytes)
 
-        let end = 0;
-        while (bytes[end] !== 0) end += charSize;
-        const str = new TextDecoder().decode(bytes.subarray(0, end));
+        let buffer = new Uint16Array(memory.buffer, ptr, memory.buffer.byteLength - ptr);
+        let term = buffer.indexOf(0);
 
-        return str;
+        return new TextDecoder('utf-8').decode(buffer.subarray(0, term));
+    }
 
+    const readWasmStringUtf16 = (ptr: number) => {
+        if (!wasmRef.current) throw new Error("wasm not found in readString");
+
+        const wasmExports = wasmRef.current.exports as WasmExports;
+        const memory = wasmExports.memory as WebAssembly.Memory;
+
+        const uint16 = new Uint16Array(memory.buffer, ptr);
+        let len = 0;
+        while (uint16[len] !== 0) len++;
+
+        const bytes = new Uint8Array(memory.buffer, ptr, len * 2);
+        const result = new TextDecoder('utf-16le').decode(bytes);
+        return result;
     }
 
 
@@ -257,20 +288,26 @@ export const TestV3Component: React.FC = () => {
         const sourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v2.asm")
         const compiled = await compileCode(sourceCode, CUSTOM_CPU);
 
-        const code = Array.from(getBytecodeArray(compiled).entries())
-            .slice(0, 100) // DEBUG
-        //console.log({code})
+        const codeRaw = Array.from(getBytecodeArray(compiled).entries())
+        //console.log('codeRaw:', codeRaw)
 
-        const addresses = new Uint8Array(code.map(r => r[0]));
+        const code = codeRaw
+        //.slice(0, 20) // DEBUG
+        //.slice(0, 684) // DEBUG
+        //console.log('code:', code)
+
+        //const addresses = new Uint16Array(code.map(r => r[0]));
         const values = new Uint8Array(code.map(r => r[1]));
 
-        const addrPtr = wasmExports.allocate(addresses.length);
+        //const addrPtr = wasmExports.allocate(addresses.length);
         const valPtr = wasmExports.allocate(values.length);
 
-        new Uint8Array(wasmExports.memory.buffer).set(addresses, addrPtr);
+        //new Uint8Array(wasmExports.memory.buffer).set(addresses, addrPtr);
         new Uint8Array(wasmExports.memory.buffer).set(values, valPtr);
 
-        wasmExports.computerloadCode(computerPointer, addrPtr, addresses.length, valPtr, values.length);
+        //console.log('memory:', wasmExports.memory)
+
+        wasmExports.computerloadCode(computerPointer, valPtr, values.length);
     }
 
 
@@ -295,6 +332,11 @@ export const TestV3Component: React.FC = () => {
             const device = new ScreenDevice(deviceIdx, 'screen', { type: 'output' });
             devicesRef.current.set(deviceIdx, device)
             setScreenDevice(device)
+
+        } else if (name === 'leds') {
+            const device = new LedsDevice(deviceIdx, 'leds', { type: 'output' });
+            devicesRef.current.set(deviceIdx, device)
+            setLedsDevice(device)
 
         } else {
             const device = new IoDevice(deviceIdx, name, { type });
@@ -329,7 +371,9 @@ export const TestV3Component: React.FC = () => {
         const B_before = wasmExports.computerGetRegisterB(computerPointer);
         const C_before = wasmExports.computerGetRegisterC(computerPointer);
         const D_before = wasmExports.computerGetRegisterD(computerPointer);
-        console.log('BEFORE', { cycles: cycles_before, PC: PC_before, IR: IR_before, A: A_before, B: B_before, C: C_before, D: D_before });
+        const E_before = wasmExports.computerGetRegisterE(computerPointer);
+        const F_before = wasmExports.computerGetRegisterF(computerPointer);
+        console.log('BEFORE', { cycles: cycles_before, PC: PC_before, IR: IR_before }, { A: A_before, B: B_before, C: C_before, D: D_before, E: E_before, F: F_before });
 
 
         wasmExports.computerRunCycles(computerPointer, 1);
@@ -342,7 +386,9 @@ export const TestV3Component: React.FC = () => {
         const B_after = wasmExports.computerGetRegisterB(computerPointer);
         const C_after = wasmExports.computerGetRegisterC(computerPointer);
         const D_after = wasmExports.computerGetRegisterD(computerPointer);
-        console.log('AFTER', { cycles: cycles_after, PC: PC_after, IR: IR_after, A: A_after, B: B_after, C: C_after, D: D_after });
+        const E_after = wasmExports.computerGetRegisterE(computerPointer);
+        const F_after = wasmExports.computerGetRegisterF(computerPointer);
+        console.log('AFTER', { cycles: cycles_after, PC: PC_after, IR: IR_after }, { A: A_after, B: B_after, C: C_after, D: D_after, E: E_after, F: F_after });
 
         //const memValue_0x1000 = exports.computerGetMemory(computerPointer, 0x1000);
         //console.log('memValue 0x1000:', memValue_0x1000);
@@ -379,6 +425,12 @@ export const TestV3Component: React.FC = () => {
 
             <div>
                 <Screen deviceInstance={screenDevice} />
+            </div>
+
+            <hr />
+
+            <div>
+                <Leds deviceInstance={ledsDevice} />
             </div>
 
             <hr />

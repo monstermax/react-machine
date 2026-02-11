@@ -162,7 +162,7 @@ export const Screen: React.FC<ScreenProps> = (props) => {
 
     if (!deviceInstance) {
         return (
-            <>Loading Console...</>
+            <>Loading Screen...</>
         );
     }
 

@@ -5,6 +5,7 @@
 
 
 .include "bootloader/bootloader_v2.lib.asm"
+.include "bootloader/lib_devices.asm"
 
 
 section .data
@@ -20,7 +21,7 @@ section .data
     LEDS_STATE_HALF_2   equ 0xAA
 
     ; Variables (références à MEMORY_MAP par exemple)
-    LEDS_BASE    equ 0xF030
+    ;LEDS_BASE    equ 0xF030
     CLOCK_FREQ   equ 0xF120
     OS_START     equ 0x0500
     STACK_END    equ 0xEE0F
@@ -41,8 +42,8 @@ section .data
     DMA_TARGET_ADDR_HIGH equ 0xF116
     DMA_DATA             equ 0xF117
 
-    str_leds    db "leds", 0       ; le nom du device à chercher
-    leds_base   dw 0x0000          ; variable qui contiendra l'adresse I/O du device
+    ;str_leds       db "leds", 0       ; le nom du device à chercher
+    ;leds_io_base   dw 0x0000          ; variable qui contiendra l'adresse I/O du device
 
 
 
@@ -65,24 +66,17 @@ MAIN:
 
 
 INIT_DEVICES:
-    ; Détecter le device "leds"
-    ; A:B = pointeur vers str_leds
-    ; appel find_device_by_name
-    ; retour A:B = pointeur vers l'entrée table (ou 0x0000)
+    call INIT_LEDS
 
-    ; lire I/O base à offset +2 dans l'entrée
-    ; stocker dans leds_base
 
-    ; ensuite, utilisation :
-    ; charger leds_base dans un registre pair
-    ; écrire via LEA ou indirection
-
+    call TEST_LEDS
+    hlt
 
 
 RESET_LEDS:
-    nop
-    mov bl, LEDS_STATE_ALL_OFF
-    mov [LEDS_BASE], bl ; eteint les LEDS
+    mov bl, LEDS_STATE_ALL_OFF ; eteint les LEDS
+    lea cl, dl, [leds_io_base]
+    sti cl, dl, bl                    ; écrit B sur le device LEDs
 
     mov al, SKIP_PRINT_INFO
     cmp al, 1
@@ -94,7 +88,9 @@ BOOTLOADER_READY:
     inc bl ; label BOOTLOADER_READY
 
 WAIT_FOR_OS:
-    mov [LEDS_BASE], bl ; allume les leds (selon la valeur de B)
+    ; mov [leds_io_base], bl ; allume les leds (selon la valeur de B)  => Ça écrase la variable leds_io_base au lieu d'écrire sur le device
+    lea C, D, [leds_io_base]
+    sti C, D, B              ; allume les leds (selon la valeur de B)
 
     ; double la valeur de B (décalage de bits) ; decale la led à afficher
     mov al, bl
@@ -156,7 +152,7 @@ RUN_OS:
 
 BOOTLOADER_LEAVE:
     mov al, 0x00
-    mov [LEDS_BASE], al ; eteint les leds
+    mov [leds_io_base], al ; eteint les leds
 
     ; SET_FREQ 10 (commenté dans votre code original)
     ; call @OS_START
@@ -167,4 +163,45 @@ OS_RETURN:
     jmp INIT ; os return. jump to INIT
 
 hlt
+
+
+
+
+
+INIT_LEDS:
+    ; Détecter les LEDs
+    lea al, bl, [str_leds]
+    call FIND_DEVICE_BY_NAME
+
+    ; C:D = pointeur entrée table (ou 0x0000)
+    ; Vérifier si trouvé
+    mov el, cl
+    or el, dl
+    jz LEDS_NOT_FOUND
+
+    ; Lire l'adresse I/O base (offset +2 dans l'entrée)
+    mov el, 2
+    call ADD_CD_E
+    ldi fl, C, D           ; low byte de l'adresse I/O
+    mov el, 1
+    call ADD_CD_E
+    ldi el, C, D           ; high byte
+
+    ; Stocker dans leds_io_base
+    mov [leds_io_base], fl
+    mov [leds_io_base + 1], el
+
+    ret
+
+
+LEDS_NOT_FOUND:
+    hlt ; TODO
+
+
+TEST_LEDS:
+    ; Utiliser les LEDs
+    mov al, 0x55
+    lea C, D, [leds_io_base]
+    sti C, D, A
+    ret
 

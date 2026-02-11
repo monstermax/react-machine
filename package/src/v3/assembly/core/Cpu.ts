@@ -1,7 +1,6 @@
 
 import { Opcode } from "./cpu_instructions";
 import { Computer } from "./Computer";
-import { MemoryBus } from "./Memory";
 
 
 export class CpuRegisters {
@@ -9,6 +8,8 @@ export class CpuRegisters {
     B: u8 = 0;
     C: u8 = 0;
     D: u8 = 0;
+    E: u8 = 0;
+    F: u8 = 0;
     PC: u16 = 0;
     IR: u8 = 0;
     SP: u16 = 0;
@@ -46,7 +47,7 @@ export class Cpu {
         if (memoryBus) {
             const address = this.registers.PC;
             opcode = this.readMemory(address);
-            //console.log(`instruction: ${opcode.toString()}\0`)
+            //console.log(`instruction: ${opcode.toString()}`)
 
         } else {
             console.warn(`MemoryBus not found`);
@@ -143,6 +144,8 @@ export class Cpu {
         if (regIdx === 2) return this.registers.B;
         if (regIdx === 3) return this.registers.C;
         if (regIdx === 4) return this.registers.D;
+        if (regIdx === 5) return this.registers.E;
+        if (regIdx === 6) return this.registers.F;
         //if (regIdx === 11) return this.registers.SP; // TODO: u16
 
         throw new Error(`Register #${regIdx} not found`);
@@ -163,6 +166,14 @@ export class Cpu {
         }
         if (regIdx === 4) {
             this.registers.D = value;
+            return;
+        }
+        if (regIdx === 5) {
+            this.registers.E = value;
+            return;
+        }
+        if (regIdx === 6) {
+            this.registers.F = value;
             return;
         }
         //if (regIdx === 11) {
@@ -209,6 +220,7 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
         case <u8>Opcode.HALT:
             action = (cpu: Cpu) => {
                 cpu.halted = true;
+                console.log(`CPU Halted`)
             };
             break;
 

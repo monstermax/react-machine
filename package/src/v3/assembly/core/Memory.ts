@@ -6,6 +6,7 @@ import { Computer } from "./Computer";
 
 export class MemoryBus {
     private computer: Computer;
+    verbose: boolean = true;
 
     constructor(computer: Computer) {
         this.computer = computer;
@@ -47,13 +48,17 @@ export class MemoryBus {
             throw new Error(`Address read out of memory range : ${toHex(address)}`);
         }
 
-        //console.log(`Reading Memory value "${toHex(value)}" at address "${toHex(address)}"\0`);
+        if (this.verbose) {
+            console.log(`Reading Memory value "${toHex(value)}" (${value}) at address "${toHex(address)} (${address})"`);
+        }
         return value;
     }
 
 
     public write(address: u16, value: u8): void {
-        //console.log(`Writing Memory value "${toHex(value)}" at address "${toHex(address)}"\0`);
+        if (this.verbose && ! isRomAddress(address)) {
+            console.log(`Writing Memory value "${toHex(value)}" (${value}) at address "${toHex(address)} (${address})"`);
+        }
 
         if (isRomAddress(address)) {
             const rom = this.computer.rom;

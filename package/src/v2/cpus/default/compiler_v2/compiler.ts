@@ -411,19 +411,19 @@ export class Compiler {
                 if (directive === 'GLOBAL') {
                     // Global symbol handling (commented out)
 
-//                    const sym = this.symbols.get(symbolName);
-//
-//                    if (sym) {
-//                        sym.global = true;
-//                    }
-//
-//                    if (symbolName === '_start' || symbolName === 'start' || symbolName === 'main') {
-//                        const labelInfo = this.labels.get(symbolName);
-//
-//                        if (labelInfo !== undefined) {
-//                            this.entryPoint = labelInfo.address;
-//                        }
-//                    }
+                    //                    const sym = this.symbols.get(symbolName);
+                    //
+                    //                    if (sym) {
+                    //                        sym.global = true;
+                    //                    }
+                    //
+                    //                    if (symbolName === '_start' || symbolName === 'start' || symbolName === 'main') {
+                    //                        const labelInfo = this.labels.get(symbolName);
+                    //
+                    //                        if (labelInfo !== undefined) {
+                    //                            this.entryPoint = labelInfo.address;
+                    //                        }
+                    //                    }
 
                 } else {
                     // Register external symbol
@@ -525,9 +525,9 @@ export class Compiler {
     }
 
 
-    private extractCurrentLine(offset=0) {
+    private extractCurrentLine(offset = 0) {
         const current = this.peek(offset);
-        const tokens: Token[] = current.type === 'NEWLINE' ? [] : [ current ];
+        const tokens: Token[] = current.type === 'NEWLINE' ? [] : [current];
 
         let currentPosMinus = offset - 1
         while (true) {
@@ -852,6 +852,7 @@ export class Compiler {
 
 
     // Parse memory addressing operand inside brackets
+    // Supports expressions: [label + 1], [0x1234 + 5], [label - 2]
     private parseMemoryOperand(): ParsedOperand {
         // called by parseOperands
 
@@ -862,26 +863,86 @@ export class Compiler {
 
         const token = this.peek();
 
-        if (token.type === 'NUMBER') {
-            // Direct address [0x1234]
-            operand.address = this.parseNumber(token.value);
-            operand.value = token.value;
-            this.advance();
-
-        } else if (token.type === 'IDENTIFIER') {
-            // Label address [my_var]
-            operand.value = token.value;
-            operand.address = this.labels.get(token.value)?.address;
-            this.advance();
-
-        } else if (token.type === 'REGISTER') {
+        if (token.type === 'REGISTER') {
             // Register indirect [eax]
             operand.base = this.mapRegister(token.value);
             operand.value = token.value;
             this.advance();
+            return operand;
+        }
+
+        // Parse expression: terme (op terme)*
+        const firstValue = this.parseMemoryTerm();
+        operand.value = firstValue.name;
+        operand.address = firstValue.value;
+
+        // Parse optional + / - offset
+        while (!this.isAtEnd()) {
+            const next = this.peek();
+
+            if (next.type === 'PLUS') {
+                this.advance();
+                const term = this.parseMemoryTerm();
+                operand.address! += term.value;
+                operand.value += ' + ' + term.name;
+
+            } else if (next.type === 'MINUS') {
+                this.advance();
+                const term = this.parseMemoryTerm();
+                operand.address! -= term.value;
+                operand.value += ' - ' + term.name;
+
+            } else {
+                break;
+            }
         }
 
         return operand;
+    }
+
+
+    // Parse a single term inside a memory expression: NUMBER or IDENTIFIER
+    private parseMemoryTerm(): { value: number, name: string } {
+        const token = this.peek();
+
+        if (token.type === 'NUMBER') {
+            this.advance();
+            return {
+                value: this.parseNumber(token.value),
+                name: token.value,
+            };
+        }
+
+        if (token.type === 'IDENTIFIER') {
+            const label = this.labels.get(token.value);
+            this.advance();
+
+            if (!label) {
+                // Label pas encore connu (forward reference) — valeur temporaire
+                return {
+                    value: 0,
+                    name: token.value,
+                };
+            }
+
+            if (label.dataSize === 0 && label.values) {
+                return {
+                    value: this.parseNumber(label.values[0]),
+                    name: token.value,
+                };
+            }
+
+            if (label.address === undefined) {
+                throw new Error(`Label "${token.value}" has no address`);
+            }
+
+            return {
+                value: label.address,
+                name: token.value,
+            };
+        }
+
+        throw new Error(`Unexpected token "${token.value}" in memory expression at line ${token.line}`);
     }
 
 
@@ -968,32 +1029,32 @@ export class Compiler {
                 // 16-bit immediate or memory address
                 let value = 0;
 
-                if (op.type === 'LABEL') {
+                if (op.type === 'MEMORY' && op.address !== undefined) {
+                    // Address already resolved by parseMemoryOperand (handles expressions like [label + 1])
+                    value = op.address;
+
+                } else if (op.type === 'LABEL') {
                     const labelInfo = this.labels.get(op.value);
                     const labelSection = this.sections.get(labelInfo?.section || '.none')
 
                     if (labelInfo !== undefined && labelSection !== undefined) {
                         if (labelInfo.dataSize === 0 && labelInfo.values) {
-                            // EQU constant value
                             value = labelInfo.values ? this.parseNumber(labelInfo.values[0]) : 0x00;
-
                         } else {
-                            // Absolute address = section start + label offset
-                            value = /* labelSection.startAddress + */ labelInfo.address;
+                            value = labelInfo.address;
                         }
 
                     } else {
-                        // Add to unresolved references
                         this.unresolvedRefs.push({
                             address: this.currentAddress,
                             section: this.currentSection,
                             label: op.value,
                             size: 2,
                         });
-
                     }
 
                 } else if (op.type === 'MEMORY') {
+                    // Fallback: no address resolved yet (shouldn't happen after parseMemoryOperand fix)
                     const label = this.labels.get(op.value);
 
                     if (!label) {
@@ -1002,7 +1063,6 @@ export class Compiler {
 
                     if (label.dataSize === 0 && label.values) {
                         value = this.parseNumber(label.values[0]);
-
                     } else {
                         if (label.address === undefined) throw new Error("missing label address");
                         value = label.address;
@@ -1017,11 +1077,9 @@ export class Compiler {
 
                 const commentPrefix = `${isNaN(Number(op.value)) ? `${op.value} = ` : ''}${toHex(value)} (${value})`;
 
-                // Emit 16-bit value with correct endianness
                 if (this.arch.endianness === 'little') {
                     this.emitByte(value & 0xFF, `${commentPrefix} (low byte)`, false);
                     this.emitByte((value >> 8) & 0xFF, `${commentPrefix} (high byte)`, false);
-
                 } else {
                     this.emitByte((value >> 8) & 0xFF, `${commentPrefix} (high byte)`, false);
                     this.emitByte(value & 0xFF, `${commentPrefix} (low byte)`, false);
@@ -1045,6 +1103,14 @@ export class Compiler {
                 if (op.register === 'D') {
                     reg = 'D'
                     value = 4;
+                }
+                if (op.register === 'E') {
+                    reg = 'E'
+                    value = 5;
+                }
+                if (op.register === 'F') {
+                    reg = 'F'
+                    value = 6;
                 }
                 if (op.register === 'SP') {
                     reg = ''
