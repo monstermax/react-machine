@@ -1,6 +1,7 @@
 
 import { Opcode } from "./cpu_instructions";
 import { Computer } from "./Computer";
+import { toHex } from "../utils";
 
 
 export class CpuRegisters {
@@ -41,17 +42,13 @@ export class Cpu {
 
     private fetchInstruction(): void {
         //console.log(`fetchInstruction`)
-        const memoryBus = this.computer.memoryBus;
         let opcode: u8 = 0;
 
-        if (memoryBus) {
-            const address = this.registers.PC;
-            opcode = this.readMemory(address);
-            //console.log(`instruction: ${opcode.toString()}`)
+        const address = this.registers.PC;
+        opcode = this.readMemory(address);
+        //console.log(`instruction: ${opcode.toString()}`)
 
-        } else {
-            console.warn(`MemoryBus not found`);
-        }
+        console.log(`Executing instruction ${toHex(opcode)} (${opcode}) at address ${toHex(address)} (${address})`);
 
         this.registers.IR = opcode;
     }

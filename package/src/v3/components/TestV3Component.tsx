@@ -75,6 +75,10 @@ export const TestV3Component: React.FC = () => {
                         const message = readWasmStringUtf16(ptr);
                         let styles: string[] = [];
 
+                        if (message.startsWith('Executing instruction')) {
+                            styles.push('color:cyan');
+                        }
+
                         if (message.startsWith('Reading Memory')) {
                             styles.push('color:green');
                         }
