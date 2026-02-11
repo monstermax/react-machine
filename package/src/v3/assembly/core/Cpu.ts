@@ -212,6 +212,14 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
             };
             break;
 
+        case <u8>Opcode.SET_SP:
+            action = (cpu: Cpu) => {
+                const imm16 = cpu.readMem16(cpu.registers.PC);
+                cpu.registers.SP = imm16
+                cpu.registers.PC += 3;
+            };
+            break;
+
         case <u8>Opcode.CALL:
             action = (cpu: Cpu) => {
                 // Adresse de retour = PC + 3 (opcode + 2 bytes d'adresse)

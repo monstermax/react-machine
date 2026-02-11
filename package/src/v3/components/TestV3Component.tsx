@@ -249,7 +249,9 @@ export const TestV3Component: React.FC = () => {
         //const code = codeDemo // OK
         const sourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v2.asm")
         const compiled = await compileCode(sourceCode, CUSTOM_CPU);
+
         const code = Array.from(getBytecodeArray(compiled).entries())
+            .slice(0, 100) // DEBUG
         //console.log({code})
 
         const addresses = new Uint8Array(code.map(r => r[0]));
