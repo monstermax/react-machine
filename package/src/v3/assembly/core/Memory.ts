@@ -18,8 +18,7 @@ export class MemoryBus {
             const rom = this.computer.rom;
 
             if (!rom || !rom.read) {
-                console.warn(`No ROM found. Cannot read at address ${toHex(address)}`);
-                return 0;
+                throw new Error(`No ROM found. Cannot read at address ${toHex(address)}`);
             }
 
             value = rom.read(address);
@@ -28,8 +27,7 @@ export class MemoryBus {
             const ram = this.computer.ram;
 
             if (!ram) {
-                console.warn(`No RAM found. Cannot read at address ${toHex(address)}`);
-                return 0;
+                throw new Error(`No RAM found. Cannot read at address ${toHex(address)}`);
             }
 
             value = ram.read(address);
@@ -38,8 +36,7 @@ export class MemoryBus {
             const ioManager = this.computer.ioManager;
 
             if (!ioManager) {
-                console.warn(`No IO Manager found. Cannot read at address ${toHex(address)}`);
-                return 0;
+                throw new Error(`No IO Manager found. Cannot read at address ${toHex(address)}`);
             }
 
             const ioRelativeAddress = address - MEMORY_MAP.IO_START;
@@ -62,8 +59,7 @@ export class MemoryBus {
             const rom = this.computer.rom;
 
             if (!rom) {
-                console.warn(`No ROM found. Cannot write at address ${toHex(address)}`);
-                return;
+                throw new Error(`No ROM found. Cannot write at address ${toHex(address)}`);
             }
 
             rom.write(address, value)
@@ -74,8 +70,7 @@ export class MemoryBus {
             const ram = this.computer.ram;
 
             if (!ram) {
-                console.warn(`No RAM found. Cannot write at address ${toHex(address)}`);
-                return;
+                throw new Error(`No RAM found. Cannot write at address ${toHex(address)}`);
             }
 
             ram.write(address, value);
@@ -86,8 +81,7 @@ export class MemoryBus {
             const ioManager = this.computer.ioManager;
 
             if (!ioManager) {
-                console.warn(`No IO Manager found. Cannot write at address ${toHex(address)}`);
-                return;
+                throw new Error(`No IO Manager found. Cannot write at address ${toHex(address)}`);
             }
 
             const ioRelativeAddress = address - MEMORY_MAP.IO_START;
@@ -110,9 +104,7 @@ abstract class Memory {
 
     public read(address: u16): u8 {
         if (address < 0 || address > <u16>this.storage.length - 1) {
-            //throw new Error(`Address out of memory range : ${address}`);
-            console.warn(`Address out of memory range : ${address}`);
-            return 0;
+            throw new Error(`Address out of memory range : ${address}`);
         }
 
         return this.storage[address];
@@ -120,9 +112,7 @@ abstract class Memory {
 
     public write(address: u16, value: u8): void {
         if (address < 0 || address > <u16>this.storage.length - 1) {
-            //throw new Error(`Address out of memory range : ${address}`);
-            console.warn(`Address out of memory range : ${address}`);
-            return;
+            throw new Error(`Address out of memory range : ${address}`);
         }
 
         this.storage[address] = value;

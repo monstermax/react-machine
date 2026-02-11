@@ -159,7 +159,18 @@ const instructions: InstructionDef[] = [
         mnemonic: 'LEA', opcode: 0x00, operands: 'NONE', size: 1, variants: [
             { operands: 'REG_REG_IMM16', opcode: Opcode.LEA_REG_REG_IMM, size: 5, condition: (ops) => true, mnemonic: 'LEA_REG_REG_IMM' },
             { operands: 'REG_REG_MEM', opcode: Opcode.LEA_REG_REG_MEM, size: 5, condition: (ops) => true, mnemonic: 'LEA_REG_REG_MEM' },
-            { operands: 'REG_REG_REG', opcode: Opcode.LEA_REG_REG_REG, size: 4, condition: (ops) => true, mnemonic: 'LEA_REG_REG_REG' },
+        ]
+    },
+
+    {
+        mnemonic: 'LDI', opcode: 0x00, operands: 'NONE', size: 1, variants: [
+            { operands: 'REG_REG_REG', opcode: Opcode.LDI_REG_REG_REG, size: 4, condition: (ops) => true, mnemonic: 'LDI_REG_REG_REG' },
+        ]
+    },
+
+    {
+        mnemonic: 'STI', opcode: 0x00, operands: 'NONE', size: 1, variants: [
+            { operands: 'REG_REG_REG', opcode: Opcode.STI_REG_REG_REG, size: 4, condition: (ops) => true, mnemonic: 'STI_REG_REG_REG' },
         ]
     },
 

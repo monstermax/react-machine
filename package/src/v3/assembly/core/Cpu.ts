@@ -880,6 +880,67 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
                 cpu.registers.PC += 4;
             };
             break;
+
+
+        // LEA_REG_REG_IMM: (regLow, regHigh) = imm16
+        // Encoding: [opcode] [regLow] [regHigh] [imm16_low] [imm16_high]
+        case <u8>Opcode.LEA_REG_REG_IMM:
+            action = (cpu: Cpu) => {
+                const regLowIdx = cpu.readMem8(cpu.registers.PC);
+                const regHighIdx = cpu.readMem8(cpu.registers.PC + 1);
+                const imm16 = cpu.readMem16(cpu.registers.PC + 2);
+                cpu.setRegisterValueByIdx(regHighIdx, ((imm16 >> 8) & 0xFF) as u8);
+                cpu.setRegisterValueByIdx(regLowIdx, (imm16 & 0xFF) as u8);
+                cpu.registers.PC += 5;
+            };
+            break;
+
+        // LEA_REG_REG_MEM: (regLow, regHigh) = mem16[addr] // Reads 2 bytes from memory (little-endian) into register pair
+        // Encoding: [opcode] [regLow] [regHigh] [addr_low] [addr_high]
+        case <u8>Opcode.LEA_REG_REG_MEM:
+            action = (cpu: Cpu) => {
+                const regLowIdx = cpu.readMem8(cpu.registers.PC);
+                const regHighIdx = cpu.readMem8(cpu.registers.PC + 1);
+                const memAddress = cpu.readMem16(cpu.registers.PC + 2);
+                const low = cpu.readMemory(memAddress);
+                const high = cpu.readMemory((memAddress + 1) as u16);
+                cpu.setRegisterValueByIdx(regHighIdx, high);
+                cpu.setRegisterValueByIdx(regLowIdx, low);
+                cpu.registers.PC += 5;
+            };
+            break;
+
+        // LDI_REG_REG_REG: destReg = memory[regLow:regHigh] // Load indirect: read value at address formed by register pair
+        // Encoding: [opcode] [destReg] [regLow] [regHigh]
+        case <u8>Opcode.LDI_REG_REG_REG:
+            action = (cpu: Cpu) => {
+                const destRegIdx = cpu.readMem8(cpu.registers.PC);
+                const regLowIdx = cpu.readMem8(cpu.registers.PC + 1);
+                const regHighIdx = cpu.readMem8(cpu.registers.PC + 2);
+                const high: u16 = cpu.getRegisterValueByIdx(regHighIdx) as u16;
+                const low: u16 = cpu.getRegisterValueByIdx(regLowIdx) as u16;
+                const address: u16 = ((high * 256) + low) as u16;
+                const value = cpu.readMemory(address);
+                cpu.setRegisterValueByIdx(destRegIdx, value);
+                cpu.registers.PC += 4;
+            };
+            break;
+
+        // STI_REG_REG_REG: memory[regLow:regHigh] = srcReg // Store indirect: write value to address formed by register pair
+        // Encoding: [opcode] [regLow] [regHigh] [srcReg]
+        case <u8>Opcode.STI_REG_REG_REG:
+            action = (cpu: Cpu) => {
+                const regLowIdx = cpu.readMem8(cpu.registers.PC);
+                const regHighIdx = cpu.readMem8(cpu.registers.PC + 1);
+                const srcRegIdx = cpu.readMem8(cpu.registers.PC + 2);
+                const high: u16 = cpu.getRegisterValueByIdx(regHighIdx) as u16;
+                const low: u16 = cpu.getRegisterValueByIdx(regLowIdx) as u16;
+                const address: u16 = ((high * 256) + low) as u16;
+                const value = cpu.getRegisterValueByIdx(srcRegIdx);
+                cpu.writeMemory(address, value);
+                cpu.registers.PC += 4;
+            };
+            break;
     }
 
     return action;

@@ -214,14 +214,22 @@ export function computerGetMemory(computer: Computer, address: u16): u8 {
 }
 
 
-export function computerAddDevice(computer: Computer, name: string, type: string, vendor: string, model: string): u8 {
+export function computerAddDevice(
+    computer: Computer,
+    namePtr: usize,
+    nameLen: i32,
+    typeId: u8
+): u8 {
     const ioManager = computer.ioManager;
+    if (!ioManager) throw new Error("IoManager not found");
 
-    if (ioManager && ioManager.addDevice) {
-        return ioManager.addDevice(name, type, vendor, model)
+    // Convert raw pointer to AS string
+    let name = '';
+    for (let i: i32 = 0; i < nameLen; i++) {
+        name += String.fromCharCode(load<u8>(namePtr + i));
     }
 
-    throw new Error("Io Manager not found");
+    return ioManager.addDevice(name, typeId);
 }
 
 

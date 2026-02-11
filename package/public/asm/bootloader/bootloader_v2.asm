@@ -32,14 +32,18 @@ section .data
     OS_DISK_ADDR_LOW   equ 0xF003
     OS_DISK_ADDR_HIGH  equ 0xF004
 
-    DMA_IO equ 0xF110
-    DMA_ADDR_START_LOW equ 0xF111
-    DMA_ADDR_START_HIGH equ 0xF112
-    DMA_ADDR_END_LOW equ 0xF113
-    DMA_ADDR_END_HIGH equ 0xF114
-    DMA_TARGET_ADDR_LOW equ 0xF115
+    DMA_IO               equ 0xF110
+    DMA_ADDR_START_LOW   equ 0xF111
+    DMA_ADDR_START_HIGH  equ 0xF112
+    DMA_ADDR_END_LOW     equ 0xF113
+    DMA_ADDR_END_HIGH    equ 0xF114
+    DMA_TARGET_ADDR_LOW  equ 0xF115
     DMA_TARGET_ADDR_HIGH equ 0xF116
-    DMA_DATA           equ 0xF117
+    DMA_DATA             equ 0xF117
+
+    str_leds    db "leds", 0       ; le nom du device à chercher
+    leds_base   dw 0x0000          ; variable qui contiendra l'adresse I/O du device
+
 
 
 section .text
@@ -55,8 +59,25 @@ MAIN:
     mov dl, BOOTLOADER_VERSION
     mov esp, STACK_END ; set stack pointer
 
-    mov al, INITIAL_FREQ
-    mov [CLOCK_FREQ], al ; set clock frequency
+;    mov al, INITIAL_FREQ
+;    mov [CLOCK_FREQ], al ; set clock frequency
+
+
+
+INIT_DEVICES:
+    ; Détecter le device "leds"
+    ; A:B = pointeur vers str_leds
+    ; appel find_device_by_name
+    ; retour A:B = pointeur vers l'entrée table (ou 0x0000)
+
+    ; lire I/O base à offset +2 dans l'entrée
+    ; stocker dans leds_base
+
+    ; ensuite, utilisation :
+    ; charger leds_base dans un registre pair
+    ; écrire via LEA ou indirection
+
+
 
 RESET_LEDS:
     nop

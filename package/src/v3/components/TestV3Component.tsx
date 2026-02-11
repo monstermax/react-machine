@@ -61,9 +61,16 @@ export const TestV3Component: React.FC = () => {
             const imports = {
                 env: {
                     memory: new WebAssembly.Memory({ initial: 256 }),
-                    abort: (ptr: number) => { throw new Error("[WASM ABORT] " + readString(ptr)) },
-                    'console.log': (ptr: number) => console.log("[WASM LOG]", readString(ptr)),
-                    'console.warn': (ptr: number) => console.warn("[WASM WARN]", readString(ptr)),
+                    abort: (ptr: number) => {
+                        clock.stop();
+                        throw new Error("[WASM ABORT] " + readString(ptr));
+                    },
+                    'console.log': (ptr: number) => {
+                        console.log("[WASM LOG]", readString(ptr));
+                    },
+                    'console.warn': (ptr: number) => {
+                        console.warn("[WASM WARN]", readString(ptr));
+                    },
                     jsIoRead,
                     jsIoWrite,
                 },

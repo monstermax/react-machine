@@ -127,11 +127,12 @@ export enum Opcode {
     SHR_MEM_IMM = 0x7C, // Shift Right, N bits
     SHR_MEM_REG = 0x7D, // Shift Right, N bits
 
-    // TODO
+    // OK
 
-    LEA_REG_REG_IMM = 0x80,
-    LEA_REG_REG_MEM = 0x81,
-    LEA_REG_REG_REG = 0x82,
+    LEA_REG_REG_IMM = 0x80, // (REG, REG) = IMM16
+    LEA_REG_REG_MEM = 0x81, // (REG, REG) = MEM   // (copie l'adresse MEM dans (REG, REG))
+    LDI_REG_REG_REG = 0x82, // REG = [REG:REG]    // (load indirect)
+    STI_REG_REG_REG = 0x83, // [REG:REG] = REG    // (store indirect)
 
 };
 
