@@ -11,7 +11,7 @@ section .data
     _find_counter    db 0x00
 
     ; Strings des devices
-    str_leds    db "ledsjjj", 0
+    str_leds    db "leds", 0
 
     ; Résultats de la détection
     leds_io_base    dw 0x0000

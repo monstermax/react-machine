@@ -407,6 +407,7 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
                 const memAddress = cpu.readMem16(cpu.registers.PC + 1);
                 const memValue = cpu.readMemory(memAddress);
                 cpu.setRegisterValueByIdx(regIdx, memValue);
+                console.log(`MOV_REG_MEM pc=${cpu.registers.PC} memAddress=${toHex(memAddress)} memValue=${toHex(memValue)}`)
                 cpu.registers.PC += 4;
             };
             break;

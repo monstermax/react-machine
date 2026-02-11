@@ -205,10 +205,18 @@ LEDS_NOT_FOUND:
 TEST_LEDS:
     ; Utiliser les LEDs
     mov al, 0x55
+
+    ; Option 1 : do no work. WHY ?
     mov cl, [leds_io_base]
     mov dl, [leds_io_base+1]
+
+    ; Option 2 : do not work (copy the leds_io_base's address and not the content)
     ;lea cl, dl, [leds_io_base]
+
+    ; Option 3 : works but hardcoded
     ;lea cl, dl, 0xF030 ; works
+
     sti cl, dl, al
+    hlt ; debug ; ok si leds allumées
     ret
 

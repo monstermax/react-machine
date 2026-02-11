@@ -120,7 +120,7 @@ export const TestV3Component: React.FC = () => {
             const _computerPointer = wasmExports.instanciateComputer()
             setComputerPointer(_computerPointer);
 
-            //console.log('memory:', wasmExports.memory)
+            console.log('memory:', wasmExports.memory)
         }
 
         const timer = setTimeout(_initWasm, 100);

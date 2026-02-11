@@ -128,7 +128,7 @@ export default function WasmMemoryViewer(props: WasmMemoryViewerProps) {
                     {/* Quick jump */}
                     <div className="mt-4 pt-2 border-t border-gray-700 flex gap-2 text-xs">
                         <span className="text-gray-400">Jump to:</span>
-                        {[0x0000, 0x1000, 0x8000, 0xA000, 0xC000, 0xF000].map(addr => (
+                        {[0x0000, 0x1000, 0x8000, 0xA000, 0xC000, 0xF000, 0xa950].map(addr => (
                             <button
                                 key={addr}
                                 onClick={() => setPage(Math.floor(addr / bytesPerPage))}

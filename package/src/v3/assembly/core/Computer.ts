@@ -1,4 +1,5 @@
 
+import { toHex } from "../utils";
 import { Cpu } from "./Cpu";
 import { IoManager } from "./IoManager";
 import { MemoryBus, Ram, Rom } from "./Memory";
@@ -21,6 +22,12 @@ export class Computer {
 
     addMemoryRam(): void {
         this.ram = new Ram(this);
+
+        //const ram = this.ram;
+        //if (ram) {
+        //    const ptr = changetype<usize>(ram) as i32;
+        //    console.log(`Ram mounted at address ${toHex(ptr)}`)
+        //}
     }
 
     addMemoryRom(): void {
