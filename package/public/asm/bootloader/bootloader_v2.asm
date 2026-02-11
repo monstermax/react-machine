@@ -75,7 +75,9 @@ INIT_DEVICES:
 
 RESET_LEDS:
     mov bl, LEDS_STATE_ALL_OFF ; eteint les LEDS
-    lea cl, dl, [leds_io_base]
+    mov cl, [leds_io_base]
+    mov dl, [leds_io_base+1]
+    ;lea cl, dl, [leds_io_base]
     sti cl, dl, bl                    ; écrit B sur le device LEDs
 
     mov al, SKIP_PRINT_INFO
@@ -89,8 +91,10 @@ BOOTLOADER_READY:
 
 WAIT_FOR_OS:
     ; mov [leds_io_base], bl ; allume les leds (selon la valeur de B)  => Ça écrase la variable leds_io_base au lieu d'écrire sur le device
-    lea C, D, [leds_io_base]
-    sti C, D, B              ; allume les leds (selon la valeur de B)
+    mov cl, [leds_io_base]
+    mov dl, [leds_io_base+1]
+    ;lea cl, dl, [leds_io_base]
+    sti cl, dl, bl              ; allume les leds (selon la valeur de B)
 
     ; double la valeur de B (décalage de bits) ; decale la led à afficher
     mov al, bl
@@ -201,7 +205,10 @@ LEDS_NOT_FOUND:
 TEST_LEDS:
     ; Utiliser les LEDs
     mov al, 0x55
-    lea C, D, [leds_io_base]
-    sti C, D, A
+    mov cl, [leds_io_base]
+    mov dl, [leds_io_base+1]
+    ;lea cl, dl, [leds_io_base]
+    ;lea cl, dl, 0xF030 ; works
+    sti cl, dl, al
     ret
 

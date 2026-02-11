@@ -12,6 +12,7 @@ import { Screen, ScreenDevice } from "./devices/screen";
 import { compileCode, getBytecodeArray, loadSourceCodeFromFile } from "@/v2/lib/compilation";
 import { CUSTOM_CPU } from "../compiler/arch_custom";
 import { Leds, LedsDevice } from "./devices/leds";
+import WasmMemoryViewer from "./WasmMemoryViewer";
 
 
 interface WasmExports extends WebAssembly.Exports {
@@ -20,6 +21,7 @@ interface WasmExports extends WebAssembly.Exports {
     computerRunCycles(computerPtr: number, cycles: number): void;
     computerGetCycles(computerPtr: number): bigint;
     computerGetRegisterPC(computerPtr: number): u16;
+    computerGetRegisterSP(computerPtr: number): u16;
     computerGetRegisterIR(computerPtr: number): u8;
     computerGetRegisterA(computerPtr: number): u8;
     computerGetRegisterB(computerPtr: number): u8;
@@ -28,7 +30,7 @@ interface WasmExports extends WebAssembly.Exports {
     computerGetRegisterE(computerPtr: number): u8;
     computerGetRegisterF(computerPtr: number): u8;
     computerGetMemory(computerPtr: number, address: u16): u8;
-    computerAddDevice(computerPtr: number, name: string, type: string, vendor?: string, model?: string): u8;
+    computerAddDevice(computerPtr: number, namePtr: number, nameLen: number, typeId: u8): u8;
     computerloadCode(computerPtr: number, valPtr: number, dataLen: number): void;
     allocate(size: number): number;
 }
@@ -49,6 +51,8 @@ export const TestV3Component: React.FC = () => {
     const speedFactor = 5 as u32;
     const [clock] = useState(() => new Clock(clockFrequency))
     const [cyclesPerSecond, setCyclesPerSecond] = useState(0);
+    const [registers, setRegisters] = useState<Record<string, u8>>({});
+    const [memory, setMemory] = useState<WebAssembly.Memory | null>(null)
 
     // devices
     const devicesRef = useRef<Map<number, IoDevice>>(new Map);
@@ -89,7 +93,7 @@ export const TestV3Component: React.FC = () => {
 
                         let messages = styles.length
                             ? ["%c[WASM LOG]", styles.join(';'), message]
-                            : [  "[WASM LOG]", message]
+                            : ["[WASM LOG]", message]
 
                         console.log(...messages);
                     },
@@ -319,21 +323,30 @@ export const TestV3Component: React.FC = () => {
         if (!wasmRef.current || !computerPointer || !devicesRef.current) return;
 
         const wasmExports = wasmRef.current.exports as WasmExports;
-        const deviceIdx = wasmExports.computerAddDevice(computerPointer, name, type, vendor, model)
-        console.log(`Device #${deviceIdx} added`);
+
+        let typeId = 1 as u8;
+        const nameBuffer = new TextEncoder().encode(name);
+        const namePtr = wasmExports.allocate(nameBuffer.length);
+
+        const memoryUint8 = new Uint8Array(wasmExports.memory.buffer);
+        memoryUint8.set(nameBuffer, namePtr);
+
+        const deviceIdx = wasmExports.computerAddDevice(computerPointer, namePtr, nameBuffer.length, typeId)
+
+        //console.log(`Device #${deviceIdx} added`);
 
         if (name === 'keyboard') {
-            const device = new KeyboardDevice(deviceIdx, 'keyboard', { type: 'input' });
+            const device = new KeyboardDevice(deviceIdx, 'keyboard', { type: 'input', vendor, model });
             devicesRef.current.set(deviceIdx, device)
             setKeyboardDevice(device)
 
         } else if (name === 'console') {
-            const device = new ConsoleDevice(deviceIdx, 'console', { type: 'output' });
+            const device = new ConsoleDevice(deviceIdx, 'console', { type: 'output', vendor, model });
             devicesRef.current.set(deviceIdx, device)
             setConsoleDevice(device)
 
         } else if (name === 'screen') {
-            const device = new ScreenDevice(deviceIdx, 'screen', { type: 'output' });
+            const device = new ScreenDevice(deviceIdx, 'screen', { type: 'output', vendor, model });
             devicesRef.current.set(deviceIdx, device)
             setScreenDevice(device)
 
@@ -362,43 +375,53 @@ export const TestV3Component: React.FC = () => {
 
     const runCycle = () => {
         if (!wasmRef.current || computerPointer === null) return;
-
-        //console.log('testClick')
-        //console.log('computerPtr:', computerPointer);
-
         const wasmExports = wasmRef.current.exports as WasmExports;
 
-        const cycles_before = wasmExports.computerGetCycles(computerPointer);
-        const PC_before = wasmExports.computerGetRegisterPC(computerPointer);
-        const IR_before = wasmExports.computerGetRegisterIR(computerPointer);
-        const A_before = wasmExports.computerGetRegisterA(computerPointer);
-        const B_before = wasmExports.computerGetRegisterB(computerPointer);
-        const C_before = wasmExports.computerGetRegisterC(computerPointer);
-        const D_before = wasmExports.computerGetRegisterD(computerPointer);
-        const E_before = wasmExports.computerGetRegisterE(computerPointer);
-        const F_before = wasmExports.computerGetRegisterF(computerPointer);
-        console.log('BEFORE', { cycles: cycles_before, PC: PC_before, IR: IR_before }, { A: A_before, B: B_before, C: C_before, D: D_before, E: E_before, F: F_before });
+        // Debug state (before cycle)
+        const controlBefore = readControlRegisters(wasmExports, computerPointer);
+        const dataBefore = readDataRegisters(wasmExports, computerPointer);
+        console.log('BEFORE', controlBefore, dataBefore);
 
-
+        // Run cycle
         wasmExports.computerRunCycles(computerPointer, 1);
-        //console.log('memory:', exports.memory);
 
-        const cycles_after = wasmExports.computerGetCycles(computerPointer);
-        const PC_after = wasmExports.computerGetRegisterPC(computerPointer);
-        const IR_after = wasmExports.computerGetRegisterIR(computerPointer);
-        const A_after = wasmExports.computerGetRegisterA(computerPointer);
-        const B_after = wasmExports.computerGetRegisterB(computerPointer);
-        const C_after = wasmExports.computerGetRegisterC(computerPointer);
-        const D_after = wasmExports.computerGetRegisterD(computerPointer);
-        const E_after = wasmExports.computerGetRegisterE(computerPointer);
-        const F_after = wasmExports.computerGetRegisterF(computerPointer);
-        console.log('AFTER', { cycles: cycles_after, PC: PC_after, IR: IR_after }, { A: A_after, B: B_after, C: C_after, D: D_after, E: E_after, F: F_after });
+        // Debug state (after cycle)
+        const controlAfter = readControlRegisters(wasmExports, computerPointer);
+        const dataAfter = readDataRegisters(wasmExports, computerPointer);
+        console.log('AFTER', controlAfter, dataAfter);
+    }
 
-        //const memValue_0x1000 = exports.computerGetMemory(computerPointer, 0x1000);
-        //console.log('memValue 0x1000:', memValue_0x1000);
 
-        //const memValue_0x000F = exports.computerGetMemory(computerPointer, 0x000F as u16);
-        //console.log('memValue 0x000F:', memValue_0x000F);
+    const readControlRegisters = (wasmExports: WasmExports, computerPointer: number) => {
+        const cycles = wasmExports.computerGetCycles(computerPointer);
+        const PC = wasmExports.computerGetRegisterPC(computerPointer);
+        const SP = wasmExports.computerGetRegisterSP(computerPointer);
+        const IR = wasmExports.computerGetRegisterIR(computerPointer);
+
+        return { cycles, PC, SP, IR }
+    }
+
+
+    const readDataRegisters = (wasmExports: WasmExports, computerPointer: number) => {
+        const A = wasmExports.computerGetRegisterA(computerPointer);
+        const B = wasmExports.computerGetRegisterB(computerPointer);
+        const C = wasmExports.computerGetRegisterC(computerPointer);
+        const D = wasmExports.computerGetRegisterD(computerPointer);
+        const E = wasmExports.computerGetRegisterE(computerPointer);
+        const F = wasmExports.computerGetRegisterF(computerPointer);
+
+        return { A, B, C, D, E, F }
+    }
+
+
+    const updateRegisters = async () => {
+        if (!wasmRef.current || computerPointer === null) return;
+        const wasmExports = wasmRef.current.exports as WasmExports;
+
+        const _registers = readDataRegisters(wasmExports, computerPointer);
+        setRegisters(_registers)
+
+        setMemory(wasmExports.memory);
     }
 
 
@@ -412,35 +435,51 @@ export const TestV3Component: React.FC = () => {
                 <button className="p-2 border rounded cursor-pointer" onClick={() => runCycle()}>runCycle</button>
                 <button className="p-2 border rounded cursor-pointer" onClick={() => startClock()}>start</button>
                 <button className="p-2 border rounded cursor-pointer" onClick={() => stopClock()}>stop</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => updateRegisters()}>update Registers</button>
             </div>
 
             <hr />
 
             <div>Speed: {Math.round(10 * cyclesPerSecond) / 10}/sec.</div>
 
-            <hr />
+            <div className="flex flex-col gap-8">
+                <div className="flex gap-8 mt-4">
+                    <div className="border p-2 rounded">
+                        {/* Console */}
+                        <Console deviceInstance={consoleDevice} />
+                    </div>
 
-            <div>
-                {/* Console */}
-                <Console deviceInstance={consoleDevice} />
-            </div>
+                    <div className="border p-2 rounded">
+                        <Screen deviceInstance={screenDevice} />
+                    </div>
 
-            <hr />
+                    <div className="border p-2 rounded flex flex-col gap-8">
+                        <div className="border p-2 rounded">
+                            <Leds deviceInstance={ledsDevice} />
+                        </div>
 
-            <div>
-                <Screen deviceInstance={screenDevice} />
-            </div>
+                        <div className="border p-2 rounded">
+                            <Keyboard deviceInstance={keyboardDevice} />
+                        </div>
+                    </div>
 
-            <hr />
+                    <div>
+                        {Object.entries(registers).map(([name, value]) => (
+                            <div key={name}>
+                                {name}: {value}
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
-            <div>
-                <Leds deviceInstance={ledsDevice} />
-            </div>
-
-            <hr />
-
-            <div>
-                <Keyboard deviceInstance={keyboardDevice} />
+                <div>
+                    <WasmMemoryViewer
+                        memory={memory}
+                        offset={0x00}
+                        bytesPerLine={32}
+                        linesPerPage={16}
+                    />
+                </div>
             </div>
         </div>
     );

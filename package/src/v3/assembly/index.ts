@@ -154,6 +154,16 @@ export function computerGetRegisterPC(computer: Computer): u16 {
 }
 
 
+export function computerGetRegisterSP(computer: Computer): u16 {
+    if (computer.cpus.length > 0) {
+        const cpu = computer.cpus[0];
+        return cpu.registers.SP
+    }
+
+    return 0;
+}
+
+
 export function computerGetRegisterIR(computer: Computer): u8 {
     if (computer.cpus.length > 0) {
         const cpu = computer.cpus[0];
@@ -245,6 +255,8 @@ export function computerAddDevice(
     for (let i: i32 = 0; i < nameLen; i++) {
         name += String.fromCharCode(load<u8>(namePtr + i));
     }
+
+    //console.log(`Adding Device "${name}" [${nameLen}] (type ${typeId})`);
 
     return ioManager.addDevice(name, typeId);
 }

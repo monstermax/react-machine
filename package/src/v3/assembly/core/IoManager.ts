@@ -1,5 +1,6 @@
 
 import { MEMORY_MAP } from "../memory_map";
+import { toHex } from "../utils";
 import { Computer } from "./Computer";
 
 
@@ -35,6 +36,8 @@ export class IoManager {
         if (deviceIdx > <u8>255) {
             throw new Error(`Too many IO devices`);
         }
+
+        //console.log(`Device "${name}" (type ${typeId}) added`);
 
         const device: IoDevice = {
             idx: deviceIdx,
@@ -75,6 +78,8 @@ export class IoManager {
 
         // Update device count
         this.writeRam(MEMORY_MAP.DEVICE_TABLE_COUNT, (deviceIdx + 1) as u8);
+
+        console.log(`Device #${deviceIdx} "${name}" entry added at address ${toHex(entryAddr)} (ioBase = ${toHex(ioBase)})`);
     }
 
 

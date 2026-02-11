@@ -11,7 +11,7 @@ section .data
     _find_counter    db 0x00
 
     ; Strings des devices
-    str_leds    db "leds", 0
+    str_leds    db "ledsjjj", 0
 
     ; Résultats de la détection
     leds_io_base    dw 0x0000
@@ -74,37 +74,37 @@ FIND_DEVICE_BY_NAME:
     mov [_find_counter], el
 
     ; Initialiser le pointeur table
-    lea C, D, DEVICE_TABLE_START
+    lea cl, dl, DEVICE_TABLE_START
     mov [_find_table_ptr], dl
     mov [_find_table_ptr + 1], cl
 
 FIND_DEVICE_LOOP:
     ; Charger le pointeur table courant dans C:D
-    lea C, D, [_find_table_ptr]
+    lea cl, dl, [_find_table_ptr]
 
     ; Avancer de 4 pour lire le name_ptr (offset +4)
     mov el, 4
     call ADD_CD_E
 
     ; Lire name_ptr (2 bytes, little-endian)
-    ldi fl, C, D           ; low byte du name_ptr
+    ldi fl, cl, dl           ; low byte du name_ptr
     mov el, 1
     call ADD_CD_E
-    ldi el, C, D           ; high byte du name_ptr
+    ldi el, cl, dl           ; high byte du name_ptr
 
     ; C:D = pointeur vers le nom du device
     mov cl, el
     mov dl, fl
 
     ; A:B = pointeur vers le nom cherché
-    lea A, B, [_find_name_ptr]
+    lea al, bl, [_find_name_ptr]
 
     ; Comparer
     call STRCMP
     je FIND_DEVICE_FOUND
 
     ; Pas trouvé, avancer au prochain entry
-    lea C, D, [_find_table_ptr]
+    lea cl, dl, [_find_table_ptr]
     mov el, DEVICE_ENTRY_SIZE
     call ADD_CD_E
     mov [_find_table_ptr], dl
@@ -124,5 +124,5 @@ FIND_DEVICE_NOT_FOUND:
 
 FIND_DEVICE_FOUND:
     ; C:D = pointeur vers l'entrée table
-    lea C, D, [_find_table_ptr]
+    lea cl, dl, [_find_table_ptr]
     ret
