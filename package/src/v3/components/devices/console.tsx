@@ -141,6 +141,8 @@ export const Console: React.FC<ConsoleProps> = (props) => {
 
     return (
         <>
+            <h2>Console</h2>
+
             <div className="flex justify-between gap-4">
                 <div>
 

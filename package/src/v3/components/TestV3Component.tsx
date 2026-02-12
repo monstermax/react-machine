@@ -580,7 +580,7 @@ const Registers: React.FC<RegistersProps> = (props) => {
 
     return (
         <>
-            <h2>Registers</h2>
+            <h2>CPU State</h2>
 
             <div className="flex flex-col gap-1">
                 {Object.entries(registers16).map(([name, value]) => (

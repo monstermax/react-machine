@@ -100,6 +100,8 @@ export const Leds: React.FC<LedsProps> = (props) => {
 
     return (
         <>
+            <h2>LEDs</h2>
+
             <div className="p-2 rounded flex gap-4 items-center">
 
                 <div className="flex gap-2 mx-auto">

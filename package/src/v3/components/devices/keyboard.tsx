@@ -154,35 +154,34 @@ export const Keyboard: React.FC<KeyboardProps> = (props) => {
 
     return (
         <>
-            <div>
-                {/* Status */}
-                <div className="grid grid-cols-2 gap-4 p-3 bg-slate-900/50 rounded">
-                    <div>
-                        <div className="text-xs text-slate-400 mb-1">Last Char:</div>
-                        <div className="text-2xl font-mono text-green-400">
-                            {lastChar > 0 ? (
-                                <>
-                                    '{String.fromCharCode(lastChar)}'
-                                    <span className="text-sm text-slate-400 ml-2">
-                                        (0x{lastChar.toString(16).padStart(2, '0')})
-                                    </span>
-                                </>
-                            ) : (
-                                <span className="text-slate-600">--</span>
-                            )}
-                        </div>
+            <h2>Keyboard</h2>
+
+            <div className="grid grid-cols-2 gap-4 p-3 bg-slate-900/50 rounded">
+                <div>
+                    <div className="text-xs text-slate-400 mb-1">Last Char:</div>
+                    <div className="text-2xl font-mono text-green-400">
+                        {lastChar > 0 ? (
+                            <>
+                                '{String.fromCharCode(lastChar)}'
+                                <span className="text-sm text-slate-400 ml-2">
+                                    (0x{lastChar.toString(16).padStart(2, '0')})
+                                </span>
+                            </>
+                        ) : (
+                            <span className="text-slate-600">--</span>
+                        )}
                     </div>
-                    <div>
-                        <div className="text-xs text-slate-400 mb-1">Status:</div>
-                        <div className="flex items-center gap-2 mt-2">
-                            <div
-                                className={`w-4 h-4 rounded-full ${hasChar ? 'bg-green-500 animate-pulse' : 'bg-slate-700'
-                                    }`}
-                            />
-                            <span className="text-sm text-slate-300">
-                                {hasChar ? 'Char Available' : 'Waiting'}
-                            </span>
-                        </div>
+                </div>
+                <div>
+                    <div className="text-xs text-slate-400 mb-1">Status:</div>
+                    <div className="flex items-center gap-2 mt-2">
+                        <div
+                            className={`w-4 h-4 rounded-full ${hasChar ? 'bg-green-500 animate-pulse' : 'bg-slate-700'
+                                }`}
+                        />
+                        <span className="text-sm text-slate-300">
+                            {hasChar ? 'Char Available' : 'Waiting'}
+                        </span>
                     </div>
                 </div>
             </div>

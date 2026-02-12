@@ -13,7 +13,7 @@ interface MemoryExplorerProps {
 }
 
 export const MemoryExplorer = (props: MemoryExplorerProps) => {
-    const { memory, offset = 0, bytesPerLine = 16, linesPerPage = 16, open: isOpenAtStart=true } = props
+    const { memory, offset = 0, bytesPerLine = 16, linesPerPage = 16, open: isOpenAtStart=false } = props
 
     const [data, setData] = useState<Uint8Array>(new Uint8Array());
     const [page, setPage] = useState(0);
