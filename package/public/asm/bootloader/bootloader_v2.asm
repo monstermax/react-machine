@@ -11,13 +11,12 @@
 section .data
     ; bootloader config
     BOOTLOADER_VERSION  equ 2
-    INITIAL_FREQ        equ 10
     SKIP_PRINT_INFO     equ 0x00
     SKIP_PRINT_GITHUB   equ 0x00
     SKIP_PRINT_WAITING  equ 0x00
     SKIP_PRINT_RUN      equ 0x00
 
-    ; Emplacements memoire
+    ; Emplacements memoire (voir MEMORY_MAP)
     OS_START     equ 0x0700
     STACK_END    equ 0xEE0F
 
@@ -72,6 +71,9 @@ INTRO:
     call PRINT_GITHUB ; call PRINT_GITHUB
     CALL_PRINT_GITHUB_END:
 
+    mov al, 13 ; ASCII EOL
+    call console_print_char
+
     ; print waiting for os
     mov al, SKIP_PRINT_WAITING ; verifier si on skip ce print
     cmp al, 1
@@ -103,29 +105,42 @@ INIT_WAIT_FOR_OS:
 
 WAIT_FOR_OS:
     mov cl, [leds_io_base]
-    mov dl, [leds_io_base+1]
-    sti cl, dl, bl              ; allume les leds (selon la valeur de B)
+    mov dl, [leds_io_base + 1]
+    sti cl, dl, bl ; [C:D] = B     ; allume les leds (selon la valeur de B)
 
     ; double la valeur de B (décalage de bits) ; decale la led à afficher
     add bl, bl
 
-    ; apres l'affichage de la derniere LED, jump to WAIT_FOR_OS_LEDS_REWIND
-    ;cmp bl, 0
-    ;jz WAIT_FOR_OS_LEDS_REWIND
-    jc WAIT_FOR_OS_LEDS_REWIND
+    ; si (plus) aucune LED allumé, on allume la 1ere (cf WAIT_FOR_OS_LEDS_REWIND)
+    cmp bl, 0
+    jz WAIT_FOR_OS_LEDS_REWIND
     jmp CHECK_OS
 
     WAIT_FOR_OS_LEDS_REWIND:
     inc bl ; reinitialise B = 1 (au lieu de 0)
 
     CHECK_OS:
-    ; lit un byte à l'adresse configurée, depuis le disque
+
+    ; recuperation du pointeur vers os_disk_io_base + verification presence du disk (si adresse > 0)
     mov cl, [os_disk_io_base]
     mov dl, [os_disk_io_base + 1]
-    ldi al, cl, dl
+
+    cmp cl, 0
+    jnz CHECK_DISK_PRESNT_END
+
+    cmp dl, 0
+    jnz CHECK_DISK_PRESNT_END
+
+    jz WAIT_FOR_OS ; si pas de disk present on retourne à WAIT_FOR_OS
+
+    CHECK_DISK_PRESNT_END:
+
+    ; lit un byte à l'adresse configurée, depuis le disque
+    ldi al, cl, dl ; A = [C:D]
 
     cmp al, 0
     jz WAIT_FOR_OS ; si pas d'OS chargé on retourne à WAIT_FOR_OS
+
     call LOAD_OS_IN_RAM
 
     ; check OS in RAM
@@ -210,6 +225,7 @@ RUN_OS:
     cmp al, 1
     je BOOTLOADER_LEAVE ; skip PRINT_RUN
 
+    mov al, [os_disk_device_idx]
     call PRINT_RUN ; label RUN_OS. call PRINT_RUN
 
     BOOTLOADER_LEAVE:

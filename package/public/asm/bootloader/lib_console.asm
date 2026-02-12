@@ -9,6 +9,7 @@
 
 section .data
     ; Codes ASCII
+    ASCII_NUL           equ 0x00
     ASCII_A             equ 0x41
     ASCII_B             equ 0x42
     ASCII_C             equ 0x43
@@ -56,6 +57,10 @@ section .data
     ASCII_SLASH         equ 0x2F
     ASCII_AROBASE       equ 0x40
 
+    STR_WELCOME_LINE_1 db "BOOTLOADER OK", 13, 0
+    STR_GITHUB_LINK db "GITHUB.COM/MONSTERMAX", 13, 0
+    STR_WAITING_OS db "WAITING FOR OS...", 13, 0
+    STR_OS_FOUND db "OS FOUND ON DEVICE #", 0
 
 
 section .text
@@ -64,7 +69,41 @@ section .text
     global PRINT_RUN
     global PRINT_GITHUB
 
-; CONSOLE_DRIVER:
+
+
+; Register A = ASCII Char
+console_print_char:
+    mov el, [console_io_base]     ; low  byte de l'adresse de la variable console_io_base
+    mov fl, [console_io_base + 1] ; high byte de l'adresse de la variable console_io_base
+    sti el, fl, al ; [e:f] = A
+    ret
+
+
+
+console_print_string:
+    CONSOLE_PRINT_STRING_LOOP:
+    ; Lire caractère depuis buffer
+    ldi al, cl, dl ; A = [C:D]
+
+    ; Vérifier si \0 (fin de string)
+    cmp al, 0x00                   ; A = 0
+    jz CONSOLE_PRINT_STRING_END    ; Si \0, terminer
+
+    ; Afficher le caractère
+    call console_print_char
+
+    ; Incrémenter pointeur C:D
+    inc cl
+    jnc CONSOLE_PRINT_STRING_LOOP
+    inc dl
+    jmp CONSOLE_PRINT_STRING_LOOP
+
+    CONSOLE_PRINT_STRING_END:
+
+    ret
+
+
+
 
 PRINT_CHAR:
     mov cl, [console_io_base]
@@ -74,211 +113,36 @@ PRINT_CHAR:
 
 
 PRINT_INFO:
-    mov al, ASCII_B ; letter B. start of PRINT_INFO
-    call PRINT_CHAR
-
-    mov al, ASCII_O
-    call PRINT_CHAR
-
-    mov al, ASCII_O
-    call PRINT_CHAR
-
-    mov al, ASCII_T
-    call PRINT_CHAR
-
-    mov al, ASCII_L
-    call PRINT_CHAR
-
-    mov al, ASCII_O
-    call PRINT_CHAR
-
-    mov al, ASCII_A
-    call PRINT_CHAR
-
-    mov al, ASCII_D
-    call PRINT_CHAR
-
-    mov al, ASCII_E
-    call PRINT_CHAR
-
-    mov al, ASCII_R
-    call PRINT_CHAR
-
-    mov al, ASCII_SPACE
-    call PRINT_CHAR
-
-    mov al, ASCII_O
-    call PRINT_CHAR
-
-    mov al, ASCII_K
-    call PRINT_CHAR
-
-    mov al, ASCII_EOL
-    call PRINT_CHAR
-
+    lea cl, dl, [STR_WELCOME_LINE_1]
+    call console_print_string
     ret ; end of PRINT_INFO
 
 
 PRINT_WAITING:
-    mov al, ASCII_W
-    call PRINT_CHAR
-
-    mov al, ASCII_A
-    call PRINT_CHAR
-
-    mov al, ASCII_I
-    call PRINT_CHAR
-
-    mov al, ASCII_T
-    call PRINT_CHAR
-
-    mov al, ASCII_I
-    call PRINT_CHAR
-
-    mov al, ASCII_N
-    call PRINT_CHAR
-
-    mov al, ASCII_G
-    call PRINT_CHAR
-
-    mov al, ASCII_SPACE
-    call PRINT_CHAR
-
-    mov al, ASCII_F
-    call PRINT_CHAR
-
-    mov al, ASCII_O
-    call PRINT_CHAR
-
-    mov al, ASCII_R
-    call PRINT_CHAR
-
-    mov al, ASCII_SPACE
-    call PRINT_CHAR
-
-    mov al, ASCII_O
-    call PRINT_CHAR
-
-    mov al, ASCII_S
-    call PRINT_CHAR
-
-    mov al, ASCII_DOT
-    call PRINT_CHAR
-
-    mov al, ASCII_DOT
-    call PRINT_CHAR
-
-    mov al, ASCII_DOT
-    call PRINT_CHAR
-
-    mov al, ASCII_EOL
-    call PRINT_CHAR
-
-    ret
+    lea cl, dl, [STR_WAITING_OS]
+    call console_print_string
+    ret; end of PRINT_WAITING
 
 
+; A = deviceIdx du disque contenant l'OS
 PRINT_RUN:
-    mov al, ASCII_O ; letter O. start of PRINT_RUN
-    call PRINT_CHAR
+    push al
+    lea cl, dl, [STR_OS_FOUND]
+    call console_print_string
+    pop al
 
-    mov al, ASCII_S
-    call PRINT_CHAR
-
-    mov al, ASCII_SPACE
-    call PRINT_CHAR
-
-    mov al, ASCII_F
-    call PRINT_CHAR
-
-    mov al, ASCII_O
-    call PRINT_CHAR
-
-    mov al, ASCII_U
-    call PRINT_CHAR
-
-    mov al, ASCII_N
-    call PRINT_CHAR
-
-    mov al, ASCII_D
-    call PRINT_CHAR
-
-    mov al, ASCII_EXCLAM
-    call PRINT_CHAR
+    add al, 48 ; conversion number => ascii number
+    call console_print_char
 
     mov al, ASCII_EOL
-    call PRINT_CHAR
+    call console_print_char
 
     ret ; end of PRINT_RUN
 
 
 PRINT_GITHUB:
-    ; TODO
-    mov al, ASCII_G ; letter G. start of PRINT_GITHUB
-    call PRINT_CHAR
-
-    mov al, ASCII_I
-    call PRINT_CHAR
-
-    mov al, ASCII_T
-    call PRINT_CHAR
-
-    mov al, ASCII_H
-    call PRINT_CHAR
-
-    mov al, ASCII_U
-    call PRINT_CHAR
-
-    mov al, ASCII_B
-    call PRINT_CHAR
-
-    mov al, ASCII_DOT
-    call PRINT_CHAR
-
-    mov al, ASCII_C
-    call PRINT_CHAR
-
-    mov al, ASCII_O
-    call PRINT_CHAR
-
-    mov al, ASCII_M
-    call PRINT_CHAR
-
-    mov al, ASCII_SLASH
-    call PRINT_CHAR
-
-    mov al, ASCII_M
-    call PRINT_CHAR
-
-    mov al, ASCII_O
-    call PRINT_CHAR
-
-    mov al, ASCII_N
-    call PRINT_CHAR
-
-    mov al, ASCII_S
-    call PRINT_CHAR
-
-    mov al, ASCII_T
-    call PRINT_CHAR
-
-    mov al, ASCII_E
-    call PRINT_CHAR
-
-    mov al, ASCII_R
-    call PRINT_CHAR
-
-    mov al, ASCII_M
-    call PRINT_CHAR
-
-    mov al, ASCII_A
-    call PRINT_CHAR
-
-    mov al, ASCII_X
-    call PRINT_CHAR
-
-    mov al, ASCII_EOL
-    call PRINT_CHAR
-
+    lea cl, dl, [STR_GITHUB_LINK]
+    call console_print_string
     ret ; end of PRINT_GITHUB
 
 

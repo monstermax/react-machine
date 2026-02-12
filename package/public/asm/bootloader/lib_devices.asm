@@ -152,7 +152,8 @@ INIT_LEDS:
     ret
 
 LEDS_NOT_FOUND:
-    hlt ; LEDS not found
+    ;hlt
+    ret ; LEDS not found
 
 
 ; Device OS_DISK
@@ -187,7 +188,8 @@ INIT_OS_DISK:
     ret
 
 OS_DISK_NOT_FOUND:
-    hlt ; OS_DISK not found
+    ;hlt
+    ret ; OS_DISK not found
 
 
 ; Device DMA
@@ -222,7 +224,8 @@ INIT_DMA:
     ret
 
 DMA_NOT_FOUND:
-    hlt ; DMA not found
+    ;hlt
+    ret ; DMA not found
 
 
 ; Device CONSOLE
@@ -257,6 +260,7 @@ INIT_CONSOLE:
     ret
 
 CONSOLE_NOT_FOUND:
-    hlt ; CONSOLE not found
+    ;hlt
+    ret ; CONSOLE not found
 
 
