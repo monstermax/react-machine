@@ -136,6 +136,18 @@ export class Cpu {
     }
 
 
+    public getRegisterNameByIdx(regIdx: u8): string {
+        if (regIdx === 1) return 'A';
+        if (regIdx === 2) return 'B';
+        if (regIdx === 3) return 'C';
+        if (regIdx === 4) return 'D';
+        if (regIdx === 5) return 'E';
+        if (regIdx === 6) return 'F';
+        //if (regIdx === 11) return 'SP';
+
+        throw new Error(`Register #${regIdx} not found`);
+    }
+
     public getRegisterValueByIdx(regIdx: u8): u8 {
         if (regIdx === 1) return this.registers.A;
         if (regIdx === 2) return this.registers.B;
@@ -218,6 +230,36 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
             action = (cpu: Cpu) => {
                 cpu.halted = true;
                 console.log(`CPU Halted`)
+            };
+            break;
+
+        case <u8>Opcode.DEBUG_IMM:
+            action = (cpu: Cpu) => {
+                const debugId = cpu.readMem8(cpu.registers.PC);
+                const debugValue = cpu.readMem8(cpu.registers.PC + 1);
+                console.log(`DEBUG IMM #${debugId} : ${toHex(debugValue)}`)
+                cpu.registers.PC += 3;
+            };
+            break;
+
+        case <u8>Opcode.DEBUG_REG:
+            action = (cpu: Cpu) => {
+                const debugId = cpu.readMem8(cpu.registers.PC);
+                const regIdx = cpu.readMem8(cpu.registers.PC + 1);
+                const regName = cpu.getRegisterNameByIdx(regIdx);
+                const debugValue = cpu.getRegisterValueByIdx(regIdx);
+                console.log(`DEBUG REG #${debugId} : ${regName} = ${toHex(debugValue)}`)
+                cpu.registers.PC += 3;
+            };
+            break;
+
+        case <u8>Opcode.DEBUG_MEM:
+            action = (cpu: Cpu) => {
+                const debugId = cpu.readMem8(cpu.registers.PC);
+                const memAddress = cpu.readMem16(cpu.registers.PC + 1);
+                const debugValue = cpu.readMemory(memAddress);
+                console.log(`DEBUG MEM #${debugId} : [${toHex(memAddress)}] = ${toHex(debugValue)}`)
+                cpu.registers.PC += 4;
             };
             break;
 
@@ -407,7 +449,7 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
                 const memAddress = cpu.readMem16(cpu.registers.PC + 1);
                 const memValue = cpu.readMemory(memAddress);
                 cpu.setRegisterValueByIdx(regIdx, memValue);
-                console.log(`MOV_REG_MEM pc=${cpu.registers.PC} memAddress=${toHex(memAddress)} memValue=${toHex(memValue)}`)
+                console.log(`DEBUG MOV_REG_MEM pc=${toHex(cpu.registers.PC)} memAddress=${toHex(memAddress)} memValue=${toHex(memValue)}`)
                 cpu.registers.PC += 4;
             };
             break;
@@ -912,8 +954,10 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
                 const regLowIdx = cpu.readMem8(cpu.registers.PC);
                 const regHighIdx = cpu.readMem8(cpu.registers.PC + 1);
                 const memAddress = cpu.readMem16(cpu.registers.PC + 2);
-                const low = cpu.readMemory(memAddress);
-                const high = cpu.readMemory((memAddress + 1) as u16);
+                //const low = cpu.readMemory(memAddress);
+                //const high = cpu.readMemory((memAddress + 1) as u16);
+                const low = (memAddress & 0xFF) as u8;
+                const high = ((memAddress & 0xFF00) >> 8) as u8;
                 cpu.setRegisterValueByIdx(regHighIdx, high);
                 cpu.setRegisterValueByIdx(regLowIdx, low);
                 cpu.registers.PC += 5;

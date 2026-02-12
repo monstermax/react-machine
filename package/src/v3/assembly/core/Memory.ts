@@ -6,7 +6,7 @@ import { Computer } from "./Computer";
 
 export class MemoryBus {
     private computer: Computer;
-    verbose: boolean = true;
+    verbose: boolean = false;
 
     constructor(computer: Computer) {
         this.computer = computer;

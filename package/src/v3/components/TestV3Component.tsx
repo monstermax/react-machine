@@ -52,7 +52,7 @@ export const TestV3Component: React.FC = () => {
     const [clock] = useState(() => new Clock(clockFrequency))
     const [cyclesPerSecond, setCyclesPerSecond] = useState(0);
     const [registers, setRegisters] = useState<Record<string, u8>>({});
-    const [memory, setMemory] = useState<WebAssembly.Memory | null>(null)
+    const [memory, setMemory] = useState<Uint8Array<ArrayBuffer> | null>(null)
 
     // devices
     const devicesRef = useRef<Map<number, IoDevice>>(new Map);
@@ -89,6 +89,10 @@ export const TestV3Component: React.FC = () => {
 
                         if (message.startsWith('Writing Memory')) {
                             styles.push('color:yellow');
+                        }
+
+                        if (message.startsWith('DEBUG')) {
+                            styles.push('color:orange');
                         }
 
                         let messages = styles.length
@@ -421,7 +425,34 @@ export const TestV3Component: React.FC = () => {
         const _registers = readDataRegisters(wasmExports, computerPointer);
         setRegisters(_registers)
 
-        setMemory(wasmExports.memory);
+        const memoryUint8Array = new Uint8Array(wasmExports.memory.buffer);
+        setMemory(memoryUint8Array);
+
+        //const low = wasmExports.computerGetMemory(computerPointer, 0x032C as u16)
+        //const high = wasmExports.computerGetMemory(computerPointer, 0x032D as u16)
+        //console.log({low, high})
+    }
+
+
+    const dumpRam = () => {
+        if (!wasmRef.current || computerPointer === null) return;
+        const wasmExports = wasmRef.current.exports as WasmExports;
+
+        const start = 0x0000;
+        const end = 0x04FF;
+
+        //const values = new Map<u16, u8>()
+
+        const memoryUint8Array = new Uint8Array(1 + end - start);
+
+        for (let address=start; address<=end; address++) {
+            const value = wasmExports.computerGetMemory(computerPointer, address as u16)
+            //values.set(address as u16, value);
+            memoryUint8Array[address] = value;
+        }
+
+        setMemory(memoryUint8Array);
+        //console.log('RAM:', values)
     }
 
 
@@ -436,6 +467,7 @@ export const TestV3Component: React.FC = () => {
                 <button className="p-2 border rounded cursor-pointer" onClick={() => startClock()}>start</button>
                 <button className="p-2 border rounded cursor-pointer" onClick={() => stopClock()}>stop</button>
                 <button className="p-2 border rounded cursor-pointer" onClick={() => updateRegisters()}>update Registers</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => dumpRam()}>dump RAM</button>
             </div>
 
             <hr />
@@ -476,7 +508,7 @@ export const TestV3Component: React.FC = () => {
                     <WasmMemoryViewer
                         memory={memory}
                         offset={0x00}
-                        bytesPerLine={32}
+                        bytesPerLine={16}
                         linesPerPage={16}
                     />
                 </div>

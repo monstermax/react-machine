@@ -7,12 +7,16 @@ export enum Opcode {
     CALL = 0x02,
     RET = 0x03,
 
+    DEBUG_IMM = 0x04,
+    DEBUG_REG = 0x05,
+    DEBUG_MEM = 0x06,
+
     // INTERRUPTS
-    //INT = 0x04,     // TODO
-    //EI = 0x05,      // TODO   // Enable Interrupts
-    //DI = 0x06,      // TODO   // Disable Interrupts
-    //IRET = 0x07,    // TODO   // Return from Interrupt
-    //SYSCALL = 0x08, // TODO
+    //INT = 0x08,     // TODO
+    //EI = 0x09,      // TODO   // Enable Interrupts
+    //DI = 0x0A,      // TODO   // Disable Interrupts
+    //IRET = 0x0B,    // TODO   // Return from Interrupt
+    //SYSCALL = 0x0C, // TODO
 
     // JUMP
     JMP = 0x10, // Jump

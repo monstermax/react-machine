@@ -156,7 +156,7 @@ RUN_OS:
 
 BOOTLOADER_LEAVE:
     mov al, 0x00
-    mov [leds_io_base], al ; eteint les leds
+;    mov [leds_io_base], al ; eteint les leds
 
     ; SET_FREQ 10 (commenté dans votre code original)
     ; call @OS_START
@@ -177,6 +177,11 @@ INIT_LEDS:
     lea al, bl, [str_leds]
     call FIND_DEVICE_BY_NAME
 
+    ; fix hardcodé car leds_io_base est mal initialisé (probleme dans FIND_DEVICE_BY_NAME ?)
+    lea cl, dl, 0x0513 ; hack car FIND_DEVICE_BY_NAME est buggué
+    debug 1, cl
+    debug 1, dl
+
     ; C:D = pointeur entrée table (ou 0x0000)
     ; Vérifier si trouvé
     mov el, cl
@@ -186,10 +191,17 @@ INIT_LEDS:
     ; Lire l'adresse I/O base (offset +2 dans l'entrée)
     mov el, 2
     call ADD_CD_E
-    ldi fl, C, D           ; low byte de l'adresse I/O
+    ldi fl, cl, dl           ; low byte de l'adresse I/O
+
     mov el, 1
     call ADD_CD_E
-    ldi el, C, D           ; high byte
+    ldi el, cl, dl           ; high byte
+
+    ;debug 2, cl
+    ;debug 2, dl
+    ;debug 2, el
+    ;debug 2, fl
+    ;hlt
 
     ; Stocker dans leds_io_base
     mov [leds_io_base], fl
@@ -199,21 +211,21 @@ INIT_LEDS:
 
 
 LEDS_NOT_FOUND:
-    hlt ; TODO
+    hlt ; TODO not found
 
 
 TEST_LEDS:
     ; Utiliser les LEDs
     mov al, 0x55
 
-    ; Option 1 : do no work. WHY ?
+    ; fix hardcodé car leds_io_base est mal initialisé (probleme dans INIT_LEDS ou FIND_DEVICE_BY_NAME ?)
+    ; mov [leds_io_base], 0x30
+    ; mov [leds_io_base+1], 0xF0
+
     mov cl, [leds_io_base]
     mov dl, [leds_io_base+1]
 
-    ; Option 2 : do not work (copy the leds_io_base's address and not the content)
-    ;lea cl, dl, [leds_io_base]
-
-    ; Option 3 : works but hardcoded
+    ; Alternative : works but hardcoded
     ;lea cl, dl, 0xF030 ; works
 
     sti cl, dl, al

@@ -5,7 +5,7 @@ import { toHex } from '@/v2/lib/integers';
 
 
 interface WasmMemoryViewerProps {
-    memory: WebAssembly.Memory | null;
+    memory: Uint8Array<ArrayBuffer> | null;
     offset?: number;
     bytesPerLine?: number;
     linesPerPage?: number;
@@ -20,7 +20,7 @@ export default function WasmMemoryViewer(props: WasmMemoryViewerProps) {
 
     useEffect(() => {
         if (!memory) return;
-        const view = new Uint8Array(memory.buffer);
+        const view = memory; //new Uint8Array(memory.buffer);
         setData(view);
     }, [memory]);
 
@@ -29,26 +29,49 @@ export default function WasmMemoryViewer(props: WasmMemoryViewerProps) {
     const startOffset = offset + page * bytesPerPage;
 
     const bytesToHex = (bytes: Uint8Array, start: number, len: number) => {
-        let hex = '';
+        //let hex = '';
+        const values: string[] = [];
         for (let i = 0; i < len; i++) {
             if (start + i < bytes.length) {
-                hex += bytes[start + i].toString(16).padStart(2, '0') + ' ';
+                const value = bytes[start + i].toString(16).padStart(2, '0');
+                //hex += value + ' ';
+                values.push(value);
+
             } else {
-                hex += '   ';
+                //hex += '   ';
             }
         }
-        return hex;
+
+        return (
+            <div className="flex">
+                {values.map((v, idx) => (
+                    <span className={`px-1 ${idx===len/2 ? "ps-4" : ""}`}>{v}</span>
+                ))}
+            </div>
+        );
     };
 
     const bytesToAscii = (bytes: Uint8Array, start: number, len: number) => {
-        let ascii = '';
+        //let ascii = '';
+        const values: string[] = [];
+
         for (let i = 0; i < len; i++) {
             if (start + i < bytes.length) {
                 const b = bytes[start + i];
-                ascii += b >= 32 && b <= 126 ? String.fromCharCode(b) : '.';
+                const value = b >= 32 && b <= 126 ? String.fromCharCode(b) : '.';
+                values.push(value);
+                //ascii += value;
+                //if (i === len/2-1) ascii += ' | ';
             }
         }
-        return ascii;
+
+        return (
+            <div className="flex">
+                {values.map((v, idx) => (
+                    <span className={`px-1 ${idx===len/2 ? "ps-4" : ""}`}>{v}</span>
+                ))}
+            </div>
+        );
     };
 
     const goToPage = (newPage: number) => {
@@ -128,7 +151,7 @@ export default function WasmMemoryViewer(props: WasmMemoryViewerProps) {
                     {/* Quick jump */}
                     <div className="mt-4 pt-2 border-t border-gray-700 flex gap-2 text-xs">
                         <span className="text-gray-400">Jump to:</span>
-                        {[0x0000, 0x1000, 0x8000, 0xA000, 0xC000, 0xF000, 0xa950].map(addr => (
+                        {[0x0000, 0x1000, 0x8000, 0xA000, 0xC000, 0xF000, 0x0320].map(addr => (
                             <button
                                 key={addr}
                                 onClick={() => setPage(Math.floor(addr / bytesPerPage))}

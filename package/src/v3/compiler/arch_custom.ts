@@ -24,6 +24,14 @@ const instructions: InstructionDef[] = [
     { mnemonic: 'HALT', opcode: Opcode.HALT, operands: 'NONE', size: 1 },
     { mnemonic: 'HLT', opcode: Opcode.HALT, operands: 'NONE', size: 1 },
 
+    { 
+        mnemonic: 'DEBUG', opcode: Opcode.DEBUG_IMM, operands: 'IMM8_IMM8', size: 3, variants: [
+            { operands: 'IMM8_IMM8', opcode: Opcode.DEBUG_IMM, size: 3, condition: (ops) => true, mnemonic: 'DEBUG_IMM' },
+            { operands: 'IMM8_REG', opcode: Opcode.DEBUG_REG, size: 3, condition: (ops) => true, mnemonic: 'DEBUG_REG' },
+            { operands: 'IMM8_MEM', opcode: Opcode.DEBUG_MEM, size: 4, condition: (ops) => true, mnemonic: 'DEBUG_MEM' },
+        ]
+     },
+
     // STACK
     {
         mnemonic: 'PUSH', opcode: 0x00, operands: 'NONE', size: 1, variants: [
