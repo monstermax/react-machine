@@ -4,9 +4,10 @@
 ; Description: Lib for bootloader_v2
 
 
-section .data
-    CONSOLE_CHAR            dw 0xF070
+.include "bootloader/lib_devices.asm"
 
+
+section .data
     ; Codes ASCII
     ASCII_A             equ 0x41
     ASCII_B             equ 0x42
@@ -58,47 +59,17 @@ section .data
 
 
 section .text
-
+    global PRINT_INFO
+    global PRINT_RUN
+    global PRINT_GITHUB
 
     ; CONSOLE_DRIVER:
 
     PRINT_CHAR:
-        mov [CONSOLE_CHAR], al ; print char
+        mov cl, [console_io_base]
+        mov dl, [console_io_base + 1]
+        sti cl, dl, al ; [C:D] = A
         ret
-
-
-    PRINT_RUN:
-        mov al, ASCII_O ; letter O. start of PRINT_RUN
-        call PRINT_CHAR
-
-        mov al, ASCII_S
-        call PRINT_CHAR
-
-        mov al, ASCII_SPACE
-        call PRINT_CHAR
-
-        mov al, ASCII_F
-        call PRINT_CHAR
-
-        mov al, ASCII_O
-        call PRINT_CHAR
-
-        mov al, ASCII_U
-        call PRINT_CHAR
-
-        mov al, ASCII_N
-        call PRINT_CHAR
-
-        mov al, ASCII_D
-        call PRINT_CHAR
-
-        mov al, ASCII_EXCLAM
-        call PRINT_CHAR
-
-        mov al, ASCII_EOL
-        call PRINT_CHAR
-
-        ret ; end of PRINT_RUN
 
 
     PRINT_INFO:
@@ -200,6 +171,39 @@ section .text
 
         ret ; end of PRINT_INFO
 
+
+    PRINT_RUN:
+        mov al, ASCII_O ; letter O. start of PRINT_RUN
+        call PRINT_CHAR
+
+        mov al, ASCII_S
+        call PRINT_CHAR
+
+        mov al, ASCII_SPACE
+        call PRINT_CHAR
+
+        mov al, ASCII_F
+        call PRINT_CHAR
+
+        mov al, ASCII_O
+        call PRINT_CHAR
+
+        mov al, ASCII_U
+        call PRINT_CHAR
+
+        mov al, ASCII_N
+        call PRINT_CHAR
+
+        mov al, ASCII_D
+        call PRINT_CHAR
+
+        mov al, ASCII_EXCLAM
+        call PRINT_CHAR
+
+        mov al, ASCII_EOL
+        call PRINT_CHAR
+
+        ret ; end of PRINT_RUN
 
 
     PRINT_GITHUB:

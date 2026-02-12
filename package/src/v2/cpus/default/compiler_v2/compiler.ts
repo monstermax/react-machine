@@ -157,7 +157,7 @@ export class Compiler {
             labels: this.labels,
             symbols: this.symbols,
             entryPoint: this.entryPoint,
-            errors: this.errors
+            errors: this.errors,
         };
     }
 
@@ -178,9 +178,12 @@ export class Compiler {
     }
 
 
+    // ## PASS 1 ## //
+
+
     // Pass 1: scan source to collect labels, calculate addresses, and gather comments
     private pass1CollectSymbols(): void {
-        // called by compile
+        // called by compile (pass1)
 
         this.pos = 0;
         this.currentSection = '.text';
@@ -332,7 +335,7 @@ export class Compiler {
 
     // Handle directives during pass 1 (section changes, .org, global/extern)
     private handleDirectivePass1(): void {
-        // called by pass1CollectSymbols
+        // called by pass1CollectSymbols (pass1)
 
         const directive = this.normalize(this.peek().value);
 
@@ -449,6 +452,68 @@ export class Compiler {
     }
 
 
+    // Calculate instruction size in bytes (used in pass1)
+    private calculateInstructionSize(): number {
+        // called by pass1CollectSymbols (pass1)
+
+        const instrToken = this.peek();
+        const mnemonic = this.normalize(instrToken.value);
+        const instrDef = this.instructionMap.get(mnemonic);
+
+        if (!instrDef) return 1;
+
+        this.advance();
+        const operands = this.parseOperands();
+
+        const variant = this.findInstructionVariant(instrDef, operands);
+        return variant ? variant.size : 1;
+    }
+
+
+    // Calculate data declaration size in bytes (db, dw, dd, dq with values)
+    private calculateDataSize(itemSize: number): number {
+        // called by pass1CollectSymbols (pass1)
+
+        let size = 0;
+        let offset = 1; // Start after DIRECTIVE
+
+        while (true) {
+            const token = this.peek(offset);
+            if (!token || token.type === 'EOF') break;
+
+            if (token.type === 'INSTRUCTION' || token.type === 'LABEL') break;
+
+            if (token.type === 'STRING') {
+                // Each character is one byte
+                size += token.value.length;
+                offset++;
+
+            } else if (token.type === 'NUMBER') {
+                size += itemSize;
+                offset++;
+
+            } else if (token.type === 'IDENTIFIER') {
+                const next = this.peek(offset + 1);
+                if (next.type === 'DIRECTIVE') break
+
+                size += itemSize;
+                offset++;
+
+            } else if (token.type === 'COMMA') {
+                offset++;
+
+            } else {
+                break;
+            }
+        }
+
+        return size;
+    }
+
+
+    // ## PASS 2 ## //
+
+
     // Pass 2: generate actual machine code bytes
     private pass2GenerateCode(): void {
         // called by compile
@@ -525,37 +590,9 @@ export class Compiler {
     }
 
 
-    private extractCurrentLine(offset = 0) {
-        const current = this.peek(offset);
-        const tokens: Token[] = current.type === 'NEWLINE' ? [] : [current];
-
-        let currentPosMinus = offset - 1
-        while (true) {
-            const prev = this.peek(currentPosMinus);
-            if (prev.type === 'EOF') break;
-            if (prev.type === 'NEWLINE') break;
-            tokens.unshift(prev);
-            currentPosMinus--;
-        }
-
-        if (current.type !== 'NEWLINE') {
-            let currentPosPlus = offset + 1
-            while (true) {
-                const next = this.peek(currentPosPlus);
-                if (next.type === 'EOF') break;
-                if (next.type === 'NEWLINE') break;
-                tokens.push(next);
-                currentPosPlus++;
-            }
-        }
-
-        return tokens;
-    }
-
-
     // Handle directives during pass 2 (simpler than pass1, just section switching)
     private handleDirectivePass2(): void {
-        // called by pass2GenerateCode
+        // called by pass2GenerateCode (pass2)
 
         const directive = this.normalize(this.peek().value);
 
@@ -632,7 +669,7 @@ export class Compiler {
 
     // Emit data bytes for variable declarations (db, dw, dd, dq)
     private generateData(varName: string | undefined, directiveName: string): void {
-        // called by pass2GenerateCode (gère les valeurs situées après un couple [IDENTIFIER, DIRECTIVE]. example "my_var db 0x05, 0x06, 0x07")
+        // called by pass2GenerateCode (pass2) (gère les valeurs situées après un couple [IDENTIFIER, DIRECTIVE]. example "my_var db 0x05, 0x06, 0x07")
 
         const directive = this.normalize(directiveName);
 
@@ -730,7 +767,7 @@ export class Compiler {
 
     // Reserve uninitialized space (resb, resw, resd, resq)
     private reserveSpace(): void {
-        // called by pass2GenerateCode
+        // called by pass2GenerateCode (pass2)
 
         const comment = this.comments.get(this.currentAddress);
 
@@ -751,7 +788,7 @@ export class Compiler {
 
     // Encode instruction opcode and operands to bytes
     private generateInstruction(): void {
-        // called by pass2GenerateCode
+        // called by pass2GenerateCode (pass2)
 
         const instrToken = this.peek();
         const mnemonic = this.normalize(instrToken.value);
@@ -783,232 +820,9 @@ export class Compiler {
     }
 
 
-    // Parse instruction operands into structured format
-    private parseOperands(): ParsedOperand[] {
-        // called by generateInstruction & calculateInstructionSize
-
-        const operands: ParsedOperand[] = [];
-
-        while (!this.isAtEnd()) {
-            const token = this.peek();
-
-            if (token.type === 'REGISTER') {
-                operands.push({
-                    type: (token.value === 'SP') ? 'SKIP' : 'REGISTER',
-                    value: token.value,
-                    register: this.mapRegister(token.value)
-                });
-                this.advance();
-
-            } else if (token.type === 'NUMBER') {
-                operands.push({
-                    type: 'IMMEDIATE',
-                    value: token.value,
-                    address: this.parseNumber(token.value)
-                });
-                this.advance();
-
-            } else if (token.type === 'LBRACKET') {
-                // Memory operand [...]
-                this.advance();
-                const memOperand = this.parseMemoryOperand();
-                this.skip('RBRACKET');
-                operands.push(memOperand);
-
-            } else if (token.type === 'IDENTIFIER') {
-                const label = this.labels.get(token.value);
-
-                // EQU constants become immediate values
-                if (label && label.dataSize === 0) {
-                    operands.push({
-                        type: 'IMMEDIATE',
-                        value: label?.values ? label.values[0] : token.value,
-                        //address: label?.address,
-                        //size: 2,
-                    });
-
-                } else {
-                    // Label reference
-                    operands.push({
-                        type: 'LABEL',
-                        value: label?.values ? label.values[0] : token.value,
-                        address: label?.address,
-                        //size: 2,
-                    });
-                }
-
-                this.advance();
-
-            } else if (token.type === 'COMMA') {
-                this.advance();
-
-            } else {
-                break;
-            }
-        }
-
-        return operands;
-    }
-
-
-    // Parse memory addressing operand inside brackets
-    // Supports expressions: [label + 1], [0x1234 + 5], [label - 2]
-    private parseMemoryOperand(): ParsedOperand {
-        // called by parseOperands
-
-        const operand: ParsedOperand = {
-            type: 'MEMORY',
-            value: ''
-        };
-
-        const token = this.peek();
-
-        if (token.type === 'REGISTER') {
-            // Register indirect [eax]
-            operand.base = this.mapRegister(token.value);
-            operand.value = token.value;
-            this.advance();
-            return operand;
-        }
-
-        // Parse expression: terme (op terme)*
-        const firstValue = this.parseMemoryTerm();
-        operand.value = firstValue.name;
-        operand.address = firstValue.value;
-
-        // Parse optional + / - offset
-        while (!this.isAtEnd()) {
-            const next = this.peek();
-
-            if (next.type === 'PLUS') {
-                this.advance();
-                const term = this.parseMemoryTerm();
-                operand.address! += term.value;
-                operand.value += ' + ' + term.name;
-
-            } else if (next.type === 'MINUS') {
-                this.advance();
-                const term = this.parseMemoryTerm();
-                operand.address! -= term.value;
-                operand.value += ' - ' + term.name;
-
-            } else {
-                break;
-            }
-        }
-
-        return operand;
-    }
-
-
-    // Parse a single term inside a memory expression: NUMBER or IDENTIFIER
-    private parseMemoryTerm(): { value: number, name: string } {
-        const token = this.peek();
-
-        if (token.type === 'NUMBER') {
-            this.advance();
-            return {
-                value: this.parseNumber(token.value),
-                name: token.value,
-            };
-        }
-
-        if (token.type === 'IDENTIFIER') {
-            const label = this.labels.get(token.value);
-            this.advance();
-
-            if (!label) {
-                // Label pas encore connu (forward reference) — valeur temporaire
-                return {
-                    value: 0,
-                    name: token.value,
-                };
-            }
-
-            if (label.dataSize === 0 && label.values) {
-                return {
-                    value: this.parseNumber(label.values[0]),
-                    name: token.value,
-                };
-            }
-
-            if (label.address === undefined) {
-                throw new Error(`Label "${token.value}" has no address`);
-            }
-
-            return {
-                value: label.address,
-                name: token.value,
-            };
-        }
-
-        throw new Error(`Unexpected token "${token.value}" in memory expression at line ${token.line}`);
-    }
-
-
-    // Find instruction variant matching operand pattern
-    private findInstructionVariant(instrDef: InstructionDef, operands: ParsedOperand[]): InstructionVariant | null {
-        // called by generateInstruction & calculateInstructionSize
-
-        // No variants means single encoding
-        if (!instrDef.variants || instrDef.variants.length === 0) {
-            if (this.matchesOperandPattern(instrDef.operands, operands)) {
-                return {
-                    operands: instrDef.operands,
-                    opcode: instrDef.opcode,
-                    size: instrDef.size,
-                    mnemonic: instrDef.mnemonic,
-                };
-            }
-            return null;
-        }
-
-        // Try each variant until pattern matches
-        for (const variant of instrDef.variants) {
-            if (this.matchesOperandPattern(variant.operands, operands)) {
-                if (!variant.condition || variant.condition(operands)) {
-                    return variant;
-                }
-            }
-        }
-
-        return null;
-    }
-
-
-    // Check if operand types match expected pattern (e.g., "REG_IMM8")
-    private matchesOperandPattern(pattern: string, operands: ParsedOperand[]): boolean {
-        // called by findInstructionVariant
-
-        if (pattern === 'NONE') {
-            return operands.length === 0;
-        }
-
-        const parts = pattern.split('_');
-        if (parts.length !== operands.length) return false;
-
-        for (let i = 0; i < parts.length; i++) {
-            const part = parts[i];
-            const op = operands[i];
-
-            const isReg = (part === 'REG');
-            const isImm = (part.startsWith('IMM'));
-            const isMem = (part === 'MEM');
-
-            if (isReg && op.type !== 'REGISTER') return false;
-
-            if (isImm && op.type !== 'IMMEDIATE' && op.type !== 'LABEL') return false;
-
-            if (isMem && op.type !== 'MEMORY' && op.type !== 'LABEL') return false;
-        }
-
-        return true;
-    }
-
-
     // Emit operand bytes based on instruction variant pattern
     private emitOperands(operands: ParsedOperand[], variant: InstructionVariant): void {
-        // called by generateInstruction
+        // called by generateInstruction (pass2)
 
         const pattern = variant.operands;
 
@@ -1129,62 +943,255 @@ export class Compiler {
     }
 
 
-    // Calculate instruction size in bytes (used in pass1)
-    private calculateInstructionSize(): number {
-        // called by pass1CollectSymbols
-
-        const instrToken = this.peek();
-        const mnemonic = this.normalize(instrToken.value);
-        const instrDef = this.instructionMap.get(mnemonic);
-
-        if (!instrDef) return 1;
-
-        this.advance();
-        const operands = this.parseOperands();
-
-        const variant = this.findInstructionVariant(instrDef, operands);
-        return variant ? variant.size : 1;
-    }
+    // ## COMMON (pass1 & pass2) ## //
 
 
-    // Calculate data declaration size in bytes (db, dw, dd, dq with values)
-    private calculateDataSize(itemSize: number): number {
-        // called by pass1CollectSymbols
+    // Parse instruction operands into structured format
+    private parseOperands(): ParsedOperand[] {
+        // called by calculateInstructionSize (pass1) & generateInstruction (pass2)
 
-        let size = 0;
-        let offset = 1; // Start after DIRECTIVE
+        const operands: ParsedOperand[] = [];
 
-        while (true) {
-            const token = this.peek(offset);
-            if (!token || token.type === 'EOF') break;
+        while (!this.isAtEnd()) {
+            const token = this.peek();
 
-            if (token.type === 'INSTRUCTION' || token.type === 'LABEL') break;
-
-            if (token.type === 'STRING') {
-                // Each character is one byte
-                size += token.value.length;
-                offset++;
+            if (token.type === 'REGISTER') {
+                operands.push({
+                    type: (token.value === 'SP') ? 'SKIP' : 'REGISTER',
+                    value: token.value,
+                    register: this.mapRegister(token.value)
+                });
+                this.advance();
 
             } else if (token.type === 'NUMBER') {
-                size += itemSize;
-                offset++;
+                operands.push({
+                    type: 'IMMEDIATE',
+                    value: token.value,
+                    address: this.parseNumber(token.value)
+                });
+                this.advance();
+
+            } else if (token.type === 'LBRACKET') {
+                // Memory operand [...]
+                this.advance();
+                const memOperand = this.parseMemoryOperand();
+                this.skip('RBRACKET');
+                operands.push(memOperand);
 
             } else if (token.type === 'IDENTIFIER') {
-                const next = this.peek(offset + 1);
-                if (next.type === 'DIRECTIVE') break
+                const label = this.labels.get(token.value);
 
-                size += itemSize;
-                offset++;
+                if (! label) {
+                    //console.warn(`Unknown label:`, label, token);
+
+                    this.unresolvedRefs.push({
+                        address: this.currentAddress,
+                        section: this.currentSection,
+                        label: token.value,
+                        size: 2,
+                    });
+                }
+
+                // EQU constants become immediate values
+                if (label && label.dataSize === 0) {
+                    operands.push({
+                        type: 'IMMEDIATE',
+                        value: label?.values ? label.values[0] : token.value,
+                        //address: label?.address,
+                        //size: 2,
+                    });
+
+                } else {
+                    // Label reference
+                    operands.push({
+                        type: 'LABEL',
+                        value: label?.values ? label.values[0] : token.value,
+                        address: label?.address,
+                        //size: 2,
+                    });
+                }
+
+                this.advance();
 
             } else if (token.type === 'COMMA') {
-                offset++;
+                this.advance();
 
             } else {
                 break;
             }
         }
 
-        return size;
+        return operands;
+    }
+
+
+    // Parse memory addressing operand inside brackets
+    // Supports expressions: [label + 1], [0x1234 + 5], [label - 2]
+    private parseMemoryOperand(): ParsedOperand {
+        // called by parseOperands (pass1 & pass2)
+
+        const operand: ParsedOperand = {
+            type: 'MEMORY',
+            value: ''
+        };
+
+        const token = this.peek();
+
+        if (token.type === 'REGISTER') {
+            // Register indirect [eax]
+            operand.base = this.mapRegister(token.value);
+            operand.value = token.value;
+            this.advance();
+            return operand;
+        }
+
+        // Parse expression: terme (op terme)*
+        const firstValue = this.parseMemoryTerm();
+        operand.value = firstValue.name;
+        operand.address = firstValue.value;
+
+        // Parse optional + / - offset
+        while (!this.isAtEnd()) {
+            const next = this.peek();
+
+            if (next.type === 'PLUS') {
+                this.advance();
+                const term = this.parseMemoryTerm();
+                operand.address! += term.value;
+                operand.value += ' + ' + term.name;
+
+            } else if (next.type === 'MINUS') {
+                this.advance();
+                const term = this.parseMemoryTerm();
+                operand.address! -= term.value;
+                operand.value += ' - ' + term.name;
+
+            } else if (next.type === 'RBRACKET') {
+                break;
+
+            } else {
+                console.warn(`Unknown operand:`, operand, next);
+                break;
+            }
+        }
+
+        return operand;
+    }
+
+
+    // Parse a single term inside a memory expression: NUMBER or IDENTIFIER
+    private parseMemoryTerm(): { value: number, name: string } {
+        // called by parseMemoryOperand (pass1 & pass2)
+
+        const token = this.peek();
+
+        if (token.type === 'NUMBER') {
+            this.advance();
+            return {
+                value: this.parseNumber(token.value),
+                name: token.value,
+            };
+        }
+
+        if (token.type === 'IDENTIFIER') {
+            const label = this.labels.get(token.value);
+            this.advance();
+
+            if (!label) {
+                // Label pas encore connu (forward reference) — valeur temporaire
+                //console.warn(`Unknown label:`, label, token);
+
+                this.unresolvedRefs.push({
+                    address: this.currentAddress,
+                    section: this.currentSection,
+                    label: token.value,
+                    size: 2,
+                });
+
+                return {
+                    value: 0,
+                    name: token.value,
+                };
+            }
+
+            if (label.dataSize === 0 && label.values) {
+                return {
+                    value: this.parseNumber(label.values[0]),
+                    name: token.value,
+                };
+            }
+
+            if (label.address === undefined) {
+                throw new Error(`Label "${token.value}" has no address`);
+            }
+
+            return {
+                value: label.address,
+                name: token.value,
+            };
+        }
+
+        throw new Error(`Unexpected token "${token.value}" in memory expression at line ${token.line}`);
+    }
+
+
+    // Find instruction variant matching operand pattern
+    private findInstructionVariant(instrDef: InstructionDef, operands: ParsedOperand[]): InstructionVariant | null {
+        // called by calculateInstructionSize (pass1) & generateInstruction (pass2)
+
+        // No variants means single encoding
+        if (!instrDef.variants || instrDef.variants.length === 0) {
+            if (this.matchesOperandPattern(instrDef.operands, operands)) {
+                return {
+                    operands: instrDef.operands,
+                    opcode: instrDef.opcode,
+                    size: instrDef.size,
+                    mnemonic: instrDef.mnemonic,
+                };
+            }
+            return null;
+        }
+
+        // Try each variant until pattern matches
+        for (const variant of instrDef.variants) {
+            if (this.matchesOperandPattern(variant.operands, operands)) {
+                if (!variant.condition || variant.condition(operands)) {
+                    return variant;
+                }
+            }
+        }
+
+        return null;
+    }
+
+
+    // Check if operand types match expected pattern (e.g., "REG_IMM8")
+    private matchesOperandPattern(pattern: string, operands: ParsedOperand[]): boolean {
+        // called by findInstructionVariant (pass1 & pass2)
+
+        if (pattern === 'NONE') {
+            return operands.length === 0;
+        }
+
+        const parts = pattern.split('_');
+        if (parts.length !== operands.length) return false;
+
+        for (let i = 0; i < parts.length; i++) {
+            const part = parts[i];
+            const op = operands[i];
+
+            const isReg = (part === 'REG');
+            const isImm = (part.startsWith('IMM'));
+            const isMem = (part === 'MEM');
+
+            if (isReg && op.type !== 'REGISTER') return false;
+
+            if (isImm && op.type !== 'IMMEDIATE' && op.type !== 'LABEL') return false;
+
+            if (isMem && op.type !== 'MEMORY' && op.type !== 'LABEL') return false;
+        }
+
+        return true;
     }
 
 
@@ -1194,6 +1201,7 @@ export class Compiler {
 
         for (const ref of this.unresolvedRefs) {
             const labelInfo = this.labels.get(ref.label);
+
             if (labelInfo === undefined) {
                 this.errors.push({
                     line: 0,
@@ -1201,8 +1209,11 @@ export class Compiler {
                     message: `Undefined label: ${ref.label}`,
                     severity: 'error'
                 });
+
                 continue;
             }
+
+            if (1) continue;
 
             const section = this.sections.get(ref.section);
             if (!section) continue;
@@ -1321,6 +1332,36 @@ export class Compiler {
             severity: 'error'
         });
     }
+
+    private extractCurrentLine(offset = 0) {
+        // debug
+
+        const current = this.peek(offset);
+        const tokens: Token[] = current.type === 'NEWLINE' ? [] : [current];
+
+        let currentPosMinus = offset - 1
+        while (true) {
+            const prev = this.peek(currentPosMinus);
+            if (prev.type === 'EOF') break;
+            if (prev.type === 'NEWLINE') break;
+            tokens.unshift(prev);
+            currentPosMinus--;
+        }
+
+        if (current.type !== 'NEWLINE') {
+            let currentPosPlus = offset + 1
+            while (true) {
+                const next = this.peek(currentPosPlus);
+                if (next.type === 'EOF') break;
+                if (next.type === 'NEWLINE') break;
+                tokens.push(next);
+                currentPosPlus++;
+            }
+        }
+
+        return tokens;
+    }
+
 }
 
 

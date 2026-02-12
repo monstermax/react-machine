@@ -5,7 +5,8 @@
 
 
 section .data
-    CONSOLE_CHAR  equ 0xF070 ; TODO: a remplacer par [console_io_base]
+    console_io_base  equ 0xF070 ; TODO: a remplacer par [console_io_base]
+    ;CONSOLE_CHAR  equ 0xF070 ; TODO: a remplacer par [console_io_base]
     CONSOLE_CLEAR equ 0xF071 ; TODO: a remplacer par [console_io_base]+1
 
 
@@ -20,7 +21,10 @@ console_clear:
 
 ; Register A = ASCII Char
 console_print_char:
-    mov [CONSOLE_CHAR], al
+    ;mov [CONSOLE_CHAR], al
+    mov cl, [console_io_base]
+    mov dl, [console_io_base + 1]
+    sti cl, dl, al ; [C:D] = A
     ret
 
 

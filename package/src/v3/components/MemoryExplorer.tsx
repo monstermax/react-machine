@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { toHex } from '@/v2/lib/integers';
 
 
-interface WasmMemoryViewerProps {
+interface MemoryExplorerProps {
     memory: Uint8Array<ArrayBuffer> | null;
     offset?: number;
     bytesPerLine?: number;
@@ -12,7 +12,7 @@ interface WasmMemoryViewerProps {
     open?: boolean;
 }
 
-export default function WasmMemoryViewer(props: WasmMemoryViewerProps) {
+export const MemoryExplorer = (props: MemoryExplorerProps) => {
     const { memory, offset = 0, bytesPerLine = 16, linesPerPage = 16, open: isOpenAtStart=true } = props
 
     const [data, setData] = useState<Uint8Array>(new Uint8Array());
@@ -85,7 +85,7 @@ export default function WasmMemoryViewer(props: WasmMemoryViewerProps) {
             {/* Navigation */}
             <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-700">
                 <div className="text-gray-400">
-                    WASM Memory • Page {page + 1}/{totalPages || 1}
+                    Memory Explorer • Page {page + 1}/{totalPages || 1}
                 </div>
 
                 {isOpen && (
@@ -152,7 +152,7 @@ export default function WasmMemoryViewer(props: WasmMemoryViewerProps) {
                     {/* Quick jump */}
                     <div className="mt-4 pt-2 border-t border-gray-700 flex gap-2 text-xs">
                         <span className="text-gray-400">Jump to:</span>
-                        {[0x0000, 0x1000, 0x0320, 0x0500].map(addr => (
+                        {[0x0000, 0x1000, 0x0320, 0x0500, 0x0700].map(addr => (
                             <button
                                 key={addr}
                                 onClick={() => setPage(Math.floor(addr / bytesPerPage))}

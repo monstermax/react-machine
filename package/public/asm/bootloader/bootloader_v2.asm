@@ -12,8 +12,8 @@ section .data
     ; bootloader config
     BOOTLOADER_VERSION  equ 2
     INITIAL_FREQ        equ 10
-    SKIP_PRINT_INFO     equ 0x01
-    SKIP_PRINT_RUN      equ 0x01
+    SKIP_PRINT_INFO     equ 0x00
+    SKIP_PRINT_RUN      equ 0x00
 
     ; Emplacements memoire
     OS_START     equ 0x0700
@@ -44,6 +44,7 @@ INIT_DEVICES:
     call INIT_LEDS ; initialise le device LEDs
     call INIT_OS_DISK ; initialise le device OS_DISK
     call INIT_DMA ; initialise le device DMA
+    call INIT_CONSOLE ; initialise le device Console
     ret
 
 
@@ -58,6 +59,7 @@ INTRO:
     je INTRO_END ; skip PRINT_INFO
 
     call PRINT_INFO ; call PRINT_INFO
+    call PRINT_GITHUB ; call PRINT_GITHUB
 
     INTRO_END:
     ret
@@ -120,7 +122,7 @@ WAIT_FOR_OS:
 
 LOAD_OS_IN_RAM:
     ; setup dma disk IO
-    mov al, [os_disk_io_idx]
+    mov al, [os_disk_device_idx]
     mov cl, [dma_io_base]
     mov dl, [dma_io_base + 1]
     sti cl, dl, al ; define IO of disk on dma
@@ -152,7 +154,7 @@ LOAD_OS_IN_RAM:
     jnc LOAD_OS_IN_RAM_NO_CARRY
     dec bl
 
-LOAD_OS_IN_RAM_NO_CARRY:
+    LOAD_OS_IN_RAM_NO_CARRY:
     mov cl, [dma_io_base]
     mov dl, [dma_io_base + 1]
 
@@ -191,118 +193,14 @@ RUN_OS:
 
     call PRINT_RUN ; label RUN_OS. call PRINT_RUN
 
-BOOTLOADER_LEAVE:
+    BOOTLOADER_LEAVE:
     mov al, 0x00
 ;    mov [leds_io_base], al ; eteint les leds
 
     call OS_START ; call OS_START
 
-OS_RETURN:
+    OS_RETURN:
     jmp _start ; os return. jump to _start
-
-hlt
-
-
-
-
-
-INIT_LEDS:
-    ; Détecter les LEDs
-    lea al, bl, [str_leds]
-    call FIND_DEVICE_BY_NAME
-
-    ; C:D = pointeur entrée table (ou 0x0000)
-    ; Vérifier si trouvé
-    mov el, cl
-    or el, dl
-    jz LEDS_NOT_FOUND
-
-    ; Lire l'adresse I/O base (offset +2 dans l'entrée)
-    mov el, 2
-    call ADD_CD_E
-    ldi fl, cl, dl           ; low byte de l'adresse I/O
-
-    mov el, 1
-    call ADD_CD_E
-    ldi el, cl, dl           ; high byte
-
-    ; Stocker dans leds_io_base
-    mov [leds_io_base], fl
-    mov [leds_io_base + 1], el
-
-    ret
-
-LEDS_NOT_FOUND:
-    hlt ; LEDS not found
-
-
-
-INIT_OS_DISK:
-    ; Détecter OS_DISK
-    lea al, bl, [str_os_disk]
-    call FIND_DEVICE_BY_NAME
-
-    ; C:D = pointeur entrée table (ou 0x0000)
-    ; Vérifier si trouvé
-    mov el, cl
-    or el, dl
-    jz OS_DISK_NOT_FOUND
-
-    ldi fl, cl, dl
-    mov [os_disk_io_idx], fl
-
-    ; Lire l'adresse I/O base (offset +2 dans l'entrée)
-    mov el, 2
-    call ADD_CD_E
-    ldi fl, cl, dl           ; low byte de l'adresse I/O
-
-    mov el, 1
-    call ADD_CD_E
-    ldi el, cl, dl           ; high byte
-
-    ; Stocker dans os_disk_io_base
-    mov [os_disk_io_base], fl
-    mov [os_disk_io_base + 1], el
-
-    ret
-
-OS_DISK_NOT_FOUND:
-    hlt ; OS_DISK not found
-
-
-
-INIT_DMA:
-    ; Détecter les DMA
-    lea al, bl, [str_dma]
-    call FIND_DEVICE_BY_NAME
-
-    ; C:D = pointeur entrée table (ou 0x0000)
-    ; Vérifier si trouvé
-    mov el, cl
-    or el, dl
-    jz DMA_NOT_FOUND
-
-    ldi fl, cl, dl
-    mov [dma_io_idx], fl
-
-    ; Lire l'adresse I/O base (offset +2 dans l'entrée)
-    mov el, 2
-    call ADD_CD_E
-    ldi fl, cl, dl           ; low byte de l'adresse I/O
-
-    mov el, 1
-    call ADD_CD_E
-    ldi el, cl, dl           ; high byte
-
-    ; Stocker dans dma_io_base
-    mov [dma_io_base], fl
-    mov [dma_io_base + 1], el
-
-    ret
-
-DMA_NOT_FOUND:
-    hlt ; DMA not found
-
 
 
 

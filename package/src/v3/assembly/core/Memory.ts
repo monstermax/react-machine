@@ -12,6 +12,8 @@ export class MemoryBus {
         this.computer = computer;
     }
 
+    // TODO: le mapping des adresses empeche d'utiliser toute la ram (la plage située avant RAM_START)
+
     public read(address: u16): u8 {
         let value: u8 = 0;
 

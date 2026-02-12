@@ -1,5 +1,7 @@
 
 section .text
+    global STRCMP
+
 
 ; -----------------------------------------------
 ; STRCMP : compare string [A:B] vs [C:D] (null-terminated)
@@ -20,6 +22,6 @@ STRCMP:
     call ADD_CD_E
     jmp STRCMP
 
-STRCMP_END:
+    STRCMP_END:
     ret
 

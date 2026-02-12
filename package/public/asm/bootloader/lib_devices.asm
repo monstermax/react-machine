@@ -23,14 +23,17 @@ section .data
     str_leds         db "leds", 0
     str_os_disk      db "os_disk", 0
     str_dma          db "dma", 0
+    str_console      db "console", 0
 
     ; Résultats de la détection
-    leds_io_base     dw 0x0000
-    os_disk_io_base  dw 0x0000
-    os_disk_io_idx   db 0x00
-    dma_io_base      dw 0x0000
-    dma_io_idx       db 0x00
-    console_io_base  dw 0x0000
+    leds_device_idx     db 0x00
+    leds_io_base        dw 0x0000
+    os_disk_device_idx  db 0x00
+    os_disk_io_base     dw 0x0000
+    dma_device_idx      db 0x00
+    dma_io_base         dw 0x0000
+    console_device_idx  db 0x00
+    console_io_base     dw 0x0000
 
 
 section .text
@@ -112,3 +115,148 @@ FIND_DEVICE_FOUND:
     mov cl, [_find_table_ptr]
     mov dl, [_find_table_ptr + 1]
     ret
+
+
+
+; == Initialisation des devices ==
+
+; Device LEDs
+
+INIT_LEDS:
+    ; Détecter le device LEDs => Sortie : (C:D) = pointeur vers l'entrée table (ou 0x0000)
+    lea al, bl, [str_leds]
+    call FIND_DEVICE_BY_NAME
+
+    ; C:D = pointeur entrée table (ou 0x0000)
+    ; Vérifier si trouvé
+    mov el, cl
+    or el, dl
+    jz LEDS_NOT_FOUND
+
+    ldi fl, cl, dl ; lit l'idx du device au 1er emplacement de l'entrée
+    mov [leds_device_idx], fl ; enregistre l'idx du device à l'adresse leds_device_idx
+
+    ; Lire l'adresse I/O base (offset +2 dans l'entrée)
+    mov el, 2
+    call ADD_CD_E
+    ldi fl, cl, dl           ; low byte de l'adresse I/O
+
+    mov el, 1
+    call ADD_CD_E
+    ldi el, cl, dl           ; high byte
+
+    ; Stocker dans leds_io_base
+    mov [leds_io_base], fl
+    mov [leds_io_base + 1], el
+
+    ret
+
+LEDS_NOT_FOUND:
+    hlt ; LEDS not found
+
+
+; Device OS_DISK
+
+INIT_OS_DISK:
+    ; Détecter le device OS_DISK => Sortie : (C:D) = pointeur vers l'entrée table (ou 0x0000)
+    lea al, bl, [str_os_disk]
+    call FIND_DEVICE_BY_NAME
+
+    ; C:D = pointeur entrée table (ou 0x0000)
+    ; Vérifier si trouvé
+    mov el, cl
+    or el, dl
+    jz OS_DISK_NOT_FOUND
+
+    ldi fl, cl, dl ; lit l'idx du device au 1er emplacement de l'entrée
+    mov [os_disk_device_idx], fl ; enregistre l'idx du device à l'adresse os_disk_device_idx
+
+    ; Lire l'adresse I/O base (offset +2 dans l'entrée)
+    mov el, 2
+    call ADD_CD_E
+    ldi fl, cl, dl           ; low byte de l'adresse I/O
+
+    mov el, 1
+    call ADD_CD_E
+    ldi el, cl, dl           ; high byte
+
+    ; Stocker dans os_disk_io_base
+    mov [os_disk_io_base], fl
+    mov [os_disk_io_base + 1], el
+
+    ret
+
+OS_DISK_NOT_FOUND:
+    hlt ; OS_DISK not found
+
+
+; Device DMA
+
+INIT_DMA:
+    ; Détecter le device DMA => Sortie : (C:D) = pointeur vers l'entrée table (ou 0x0000)
+    lea al, bl, [str_dma]
+    call FIND_DEVICE_BY_NAME
+
+    ; C:D = pointeur entrée table (ou 0x0000)
+    ; Vérifier si trouvé
+    mov el, cl
+    or el, dl
+    jz DMA_NOT_FOUND
+
+    ldi fl, cl, dl ; lit l'idx du device au 1er emplacement de l'entrée
+    mov [dma_device_idx], fl ; enregistre l'idx du device à l'adresse dma_device_idx
+
+    ; Lire l'adresse I/O base (offset +2 dans l'entrée)
+    mov el, 2
+    call ADD_CD_E
+    ldi fl, cl, dl           ; low byte de l'adresse I/O
+
+    mov el, 1
+    call ADD_CD_E
+    ldi el, cl, dl           ; high byte
+
+    ; Stocker dans dma_io_base
+    mov [dma_io_base], fl
+    mov [dma_io_base + 1], el
+
+    ret
+
+DMA_NOT_FOUND:
+    hlt ; DMA not found
+
+
+; Device CONSOLE
+
+INIT_CONSOLE:
+    ; Détecter le device CONSOLE => Sortie : (C:D) = pointeur vers l'entrée table (ou 0x0000)
+    lea al, bl, [str_console]
+    call FIND_DEVICE_BY_NAME
+
+    ; C:D = pointeur entrée table (ou 0x0000)
+    ; Vérifier si trouvé
+    mov el, cl
+    or el, dl
+    jz CONSOLE_NOT_FOUND
+
+    ldi fl, cl, dl ; lit l'idx du device au 1er emplacement de l'entrée
+    mov [console_device_idx], fl ; enregistre l'idx du device à l'adresse console_device_idx
+
+    ; Lire l'adresse I/O base (offset +2 dans l'entrée)
+    mov el, 2
+    call ADD_CD_E
+    ldi fl, cl, dl           ; low byte de l'adresse I/O
+
+    mov el, 1
+    call ADD_CD_E
+    ldi el, cl, dl           ; high byte
+
+    ; Stocker dans console_io_base
+    mov [console_io_base], fl
+    mov [console_io_base + 1], el
+
+    ret
+
+CONSOLE_NOT_FOUND:
+    hlt ; CONSOLE not found
+
+

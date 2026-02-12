@@ -1,22 +1,23 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
+import { Opcode } from "../assembly/core/cpu_instructions";
+import { MEMORY_MAP } from "../assembly/memory_map";
+
 import { IoDevice } from "./devices/IoDevice";
 import { Keyboard, KeyboardDevice } from "./devices/keyboard";
 import { Console, ConsoleDevice } from "./devices/console";
 import { Clock } from "./devices/clock";
-import { Opcode } from "../assembly/core/cpu_instructions";
 import { Screen, ScreenDevice } from "./devices/screen";
-import { compileCode, getBytecodeArray, loadSourceCodeFromFile, universalCompiler } from "@/v2/lib/compilation";
+import { compileCode, getBytecodeArray, loadSourceCodeFromFile } from "@/v2/lib/compilation";
 import { CUSTOM_CPU } from "../compiler/arch_custom";
 import { Leds, LedsDevice } from "./devices/leds";
-import WasmMemoryViewer from "./WasmMemoryViewer";
+import { MemoryExplorer } from "./MemoryExplorer";
 import { Disk, DiskDevice } from "./devices/disk";
 import { toHex } from "@/v2/lib/integers";
 import { DmaDevice } from "./devices/dma";
 
 import type { u16, u8, u32 } from "@/types/cpu.types";
-import { MEMORY_MAP } from "../assembly/memory_map";
 
 
 interface WasmExports extends WebAssembly.Exports {
@@ -52,11 +53,12 @@ export const TestV3Component: React.FC = () => {
     const [computerPointer, setComputerPointer] = useState<number | null>(null);
 
     // clock
-    const clockFrequency = 200 as u32;
+    const clockFrequency = 100 as u32;
     const speedFactor = 5 as u32;
     const [clock] = useState(() => new Clock(clockFrequency))
     const [cyclesPerSecond, setCyclesPerSecond] = useState(0);
-    const [registers, setRegisters] = useState<Record<string, u8>>({});
+    const [registers8, setRegisters8] = useState<Record<string, u8>>({});
+    const [registers16, setRegisters16] = useState<Record<string, u8 | u16 | bigint>>({});
     const [memory, setMemory] = useState<Uint8Array<ArrayBuffer> | null>(null)
 
     // devices
@@ -465,8 +467,10 @@ export const TestV3Component: React.FC = () => {
         if (!wasmRef.current || computerPointer === null) return;
         const wasmExports = wasmRef.current.exports as WasmExports;
 
-        const _registers = readDataRegisters(wasmExports, computerPointer);
-        setRegisters(_registers)
+        const dataRegisters = readDataRegisters(wasmExports, computerPointer);
+        const controlRegisters = readControlRegisters(wasmExports, computerPointer);
+        setRegisters8(dataRegisters)
+        setRegisters16(controlRegisters)
     }
 
 
@@ -508,12 +512,13 @@ export const TestV3Component: React.FC = () => {
             <hr />
 
             <div className="flex gap-4 m-2">
-                <button className="p-2 border rounded cursor-pointer" onClick={() => runCycle()}>runCycle</button>
-                <button className="p-2 border rounded cursor-pointer" onClick={() => startClock()}>start</button>
-                <button className="p-2 border rounded cursor-pointer" onClick={() => stopClock()}>stop</button>
-                <button className="p-2 border rounded cursor-pointer" onClick={() => dumpRegisters()}>dump Registers</button>
-                <button className="p-2 border rounded cursor-pointer" onClick={() => dumpMemory()}>dump Wasm Memory</button>
-                <button className="p-2 border rounded cursor-pointer" onClick={() => dumpRam()}>dump RAM</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => runCycle()}>Run Cycle</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => startClock()}>Start</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => stopClock()}>Stop</button>
+                &nbsp;
+                <button className="p-2 border rounded cursor-pointer" onClick={() => dumpMemory()}>Dump Wasm Memory</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => dumpRam()}>Dump RAM</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => dumpRegisters()}>Dump Registers</button>
             </div>
 
             <hr />
@@ -541,12 +546,22 @@ export const TestV3Component: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="border p-2 rounded">
-                        {Object.entries(registers).map(([name, value]) => (
-                            <div key={name}>
-                                {name}: {toHex(value)}
-                            </div>
-                        ))}
+                    <div className="border p-2 rounded flex flex-col gap-4">
+                        <div className="flex flex-col gap-1">
+                            {Object.entries(registers16).map(([name, value]) => (
+                                <div key={name}>
+                                    {name}: {toHex(Number(value))}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                            {Object.entries(registers8).map(([name, value]) => (
+                                <div key={name}>
+                                    {name}: {toHex(value)}
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="border p-2 rounded">
@@ -555,7 +570,7 @@ export const TestV3Component: React.FC = () => {
                 </div>
 
                 <div>
-                    <WasmMemoryViewer
+                    <MemoryExplorer
                         memory={memory}
                         offset={0x00}
                         bytesPerLine={16}

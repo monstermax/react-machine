@@ -1,5 +1,8 @@
 
 section .text
+    global ADD_CD_E
+    global ADD_AB_E
+
 
 ; -----------------------------------------------
 ; ADD_CD_E : C:D += E
