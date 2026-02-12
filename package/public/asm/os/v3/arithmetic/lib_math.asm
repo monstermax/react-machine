@@ -4,6 +4,9 @@
 ; Description: 8 bits Math Library
 
 
+; DEPREACTED / EDIT ME
+
+
 section .text
 
 

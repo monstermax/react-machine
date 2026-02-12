@@ -9,9 +9,9 @@
 
 section .data
     OS_VERSION         equ 3
-    KEYBOARD_DATA      equ 0xF050 ; TODO: a remplacer par [keyboard_io_base]
-    KEYBOARD_STATUS    equ 0xF051 ; TODO: a remplacer par [keyboard_io_base]+1
-    CONSOLE_CHAR       equ 0xF070 ; TODO: a remplacer par [console_io_base]
+
+    keyboard_io_base   dw 0xF000 ; TODO: a remplacer par [keyboard_io_base] ; TODO: reproduire/copier/importer le code du bootloader pour initialiser les devices
+    KEYBOARD_STATUS    equ 0xF001 ; TODO: a remplacer par [keyboard_io_base]+1
 
     STR_WELCOME_LINE_1 dw "OS v3", 13, 0
     STR_CONSOLE_PROMPT dw "root@react-machine $ ", 0
@@ -94,11 +94,14 @@ run_shell:
     je run_shell_readline ; loop to wait for keyboard
 
     ; run_shell_readchar:
-    mov al, [KEYBOARD_DATA]
+    ;mov al, [KEYBOARD_DATA]
+    mov el, [keyboard_io_base]     ; low  byte de l'adresse de la variable keyboard_io_base
+    mov fl, [keyboard_io_base + 1] ; high byte de l'adresse de la variable keyboard_io_base
+    ldi al, el, fl ; A = [e:f]
 
     ; run_shell_write_console:
     call console_print_char
-    mov [KEYBOARD_STATUS], 0
+    mov [KEYBOARD_STATUS], 0 ; confirme la lecture du clavier
 
     ; check return key
     cmp al, 13

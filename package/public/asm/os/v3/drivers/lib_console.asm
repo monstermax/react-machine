@@ -5,24 +5,32 @@
 
 
 section .data
-    console_io_base  dw 0xF010 ; TODO: a remplacer par [console_io_base]
-    ;CONSOLE_CHAR  equ 0xF070 ; TODO: a remplacer par [console_io_base]
-    CONSOLE_CLEAR equ 0xF011 ; TODO: a remplacer par [console_io_base]+1
-
+    console_io_base  dw 0xF010  ; TODO: reproduire/copier/importer le code du bootloader pour initialiser les devices
 
 
 section .text
 
 console_clear:
     mov al, 0x01
-    mov [CONSOLE_CLEAR], al
+    ; mov [CONSOLE_CLEAR], al
+
+    mov el, [console_io_base]     ; low  byte de l'adresse de la variable console_io_base
+    mov fl, [console_io_base + 1] ; high byte de l'adresse de la variable console_io_base
+
+    ; incremente (E:F) pour acceder à CONSOLE_CLEAR
+    inc el
+    jnc console_clear_after_carry
+    inc fl
+    console_clear_after_carry:
+
+    sti el, fl, al ; [e:f] = A
     ret
 
 
 ; Register A = ASCII Char
 console_print_char:
-    mov el, [console_io_base]
-    mov fl, [console_io_base + 1]
+    mov el, [console_io_base]     ; low  byte de l'adresse de la variable console_io_base
+    mov fl, [console_io_base + 1] ; high byte de l'adresse de la variable console_io_base
     sti el, fl, al ; [e:f] = A
     ret
 

@@ -53,8 +53,8 @@ export const TestV3Component: React.FC = () => {
     const [computerPointer, setComputerPointer] = useState<number | null>(null);
 
     // clock
-    const clockFrequency = 100 as u32;
-    const speedFactor = 5 as u32;
+    const clockFrequency = 200 as u32;
+    const speedFactor = 50 as u32;
     const [clock] = useState(() => new Clock(clockFrequency))
     const [cyclesPerSecond, setCyclesPerSecond] = useState(0);
     const [registers8, setRegisters8] = useState<Record<string, u8>>({});
@@ -547,21 +547,7 @@ export const TestV3Component: React.FC = () => {
                     </div>
 
                     <div className="border p-2 rounded flex flex-col gap-4">
-                        <div className="flex flex-col gap-1">
-                            {Object.entries(registers16).map(([name, value]) => (
-                                <div key={name}>
-                                    {name}: {toHex(Number(value))}
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            {Object.entries(registers8).map(([name, value]) => (
-                                <div key={name}>
-                                    {name}: {toHex(value)}
-                                </div>
-                            ))}
-                        </div>
+                        <Registers registers8={registers8} registers16={registers16} />
                     </div>
 
                     <div className="border p-2 rounded">
@@ -582,4 +568,36 @@ export const TestV3Component: React.FC = () => {
     );
 }
 
+
+
+type RegistersProps = {
+    registers8: Record<string, u8>,
+    registers16: Record<string, u8 | u16 | bigint>,
+}
+
+const Registers: React.FC<RegistersProps> = (props) => {
+    const { registers8, registers16 } = props;
+
+    return (
+        <>
+            <h2>Registers</h2>
+
+            <div className="flex flex-col gap-1">
+                {Object.entries(registers16).map(([name, value]) => (
+                    <div key={name}>
+                        {name}: {toHex(Number(value))}
+                    </div>
+                ))}
+            </div>
+
+            <div className="flex flex-col gap-1">
+                {Object.entries(registers8).map(([name, value]) => (
+                    <div key={name}>
+                        {name}: {toHex(value)}
+                    </div>
+                ))}
+            </div>
+        </>
+    );
+}
 

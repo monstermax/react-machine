@@ -78,7 +78,7 @@ export class DmaDevice extends IoDevice {
     }
 
     write(port: u8, value: u8): void {
-        console.log(`DMA writing value ${toHex(value)} (${value}) on port ${toHex(port)} (${port})`);
+        //console.log(`DMA writing value ${toHex(value)} (${value}) on port ${toHex(port)} (${port})`);
 
         switch (port) {
             case 0x00 : { // DMA_IO - setIo

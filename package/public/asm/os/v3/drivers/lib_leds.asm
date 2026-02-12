@@ -4,6 +4,9 @@
 ; Description: LEDs Display Driver
 
 
+; DEPREACTED / EDIT ME
+
+
 section .data
     LEDS_BASE equ 0xF030 ; address of io port in memory map
     LEDS_NONE equ 0x00

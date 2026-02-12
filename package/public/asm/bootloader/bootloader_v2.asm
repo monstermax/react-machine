@@ -13,8 +13,8 @@ section .data
     BOOTLOADER_VERSION  equ 2
     INITIAL_FREQ        equ 10
     SKIP_PRINT_INFO     equ 0x00
-    SKIP_PRINT_GITHUB   equ 0x01
-    SKIP_PRINT_WAITING  equ 0x01
+    SKIP_PRINT_GITHUB   equ 0x00
+    SKIP_PRINT_WAITING  equ 0x00
     SKIP_PRINT_RUN      equ 0x00
 
     ; Emplacements memoire

@@ -122,8 +122,8 @@ FIND_DEVICE_FOUND:
 
 ; Device LEDs
 
+; Détecter le device LEDs => Sortie : (C:D) = pointeur vers l'entrée table (ou 0x0000)
 INIT_LEDS:
-    ; Détecter le device LEDs => Sortie : (C:D) = pointeur vers l'entrée table (ou 0x0000)
     lea al, bl, [str_leds]
     call FIND_DEVICE_BY_NAME
 
@@ -157,8 +157,8 @@ LEDS_NOT_FOUND:
 
 ; Device OS_DISK
 
+; Détecter le device OS_DISK => Sortie : (C:D) = pointeur vers l'entrée table (ou 0x0000)
 INIT_OS_DISK:
-    ; Détecter le device OS_DISK => Sortie : (C:D) = pointeur vers l'entrée table (ou 0x0000)
     lea al, bl, [str_os_disk]
     call FIND_DEVICE_BY_NAME
 
@@ -192,8 +192,8 @@ OS_DISK_NOT_FOUND:
 
 ; Device DMA
 
+; Détecter le device DMA => Sortie : (C:D) = pointeur vers l'entrée table (ou 0x0000)
 INIT_DMA:
-    ; Détecter le device DMA => Sortie : (C:D) = pointeur vers l'entrée table (ou 0x0000)
     lea al, bl, [str_dma]
     call FIND_DEVICE_BY_NAME
 
@@ -227,8 +227,8 @@ DMA_NOT_FOUND:
 
 ; Device CONSOLE
 
+; Détecter le device CONSOLE => Sortie : (C:D) = pointeur vers l'entrée table (ou 0x0000)
 INIT_CONSOLE:
-    ; Détecter le device CONSOLE => Sortie : (C:D) = pointeur vers l'entrée table (ou 0x0000)
     lea al, bl, [str_console]
     call FIND_DEVICE_BY_NAME
 

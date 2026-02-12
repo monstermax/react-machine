@@ -168,7 +168,7 @@ export const Disk: React.FC<DiskProps> = (props) => {
         <>
             <div className="font-mono text-sm space-y-1 max-h-[400px] overflow-y-auto overscroll-contain">
                 <div className="text-xs text-slate-400 mb-2">
-                    Data: {sortedDiskData.length} bytes
+                    {deviceInstance.name} | Data: {sortedDiskData.length} bytes
                 </div>
 
                 {sortedDiskData.length > 0 ? (
