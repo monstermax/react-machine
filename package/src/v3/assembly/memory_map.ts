@@ -10,6 +10,7 @@ export namespace MEMORY_MAP {
     export const RAM_END: u16 = 0xEFFF;
 
 //    // OS (0x0500-0x0FFF) - ~3KB
+    export const OS_START: u16 = 0x0700;
 //    export const OS_START: u16 = 0x0500;
 //    export const OS_END: u16 = 0x0FFF;
 //

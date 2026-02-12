@@ -26,7 +26,7 @@ section .data
     OS_START     equ 0x0700
     STACK_END    equ 0xEE0F
 
-    OS_DISK            equ 0x04 ; io num
+    ;OS_DISK            equ 0x04 ; io num
     ;OS_DISK_DATA       equ 0xF000
     ;OS_DISK_SIZE_LOW   equ 0xF001
     ;OS_DISK_SIZE_HIGH  equ 0xF002
@@ -48,33 +48,33 @@ section .data
 
 
 section .text
-    global INIT
+    global _start
 
 
-; TODO: "Booting from hardisk..." + Load OS in RAM (implement DMA IO read-write)
 
-
-INIT:
-
-MAIN:
-    mov dl, BOOTLOADER_VERSION
+_start:
+    mov dl, BOOTLOADER_VERSION ; set register D with bootloader version
     mov esp, STACK_END ; set stack pointer
 
-;    mov al, INITIAL_FREQ
-;    mov [CLOCK_FREQ], al ; set clock frequency
+    call INIT_DEVICES ; cherche les addresses IO de chaque devices
+    call DISPLAY_DEVICES ; affiche la liste des devices
+    call TEST_LEDS ; allume la moitié des leds (retour visuel de bon fonctionnement)
 
+    call INTRO ; affiche les informations du bootloader
+
+    call INIT_WAIT_FOR_OS ; indique au disk quelle adresse on voudra lire
+    call WAIT_FOR_OS
+    hlt
 
 
 INIT_DEVICES:
-    call INIT_LEDS
-    call INIT_OS_DISK
-
-    call DISPLAY_DEVICES
-
-    call TEST_LEDS ; allume la moitié des leds
+    call INIT_LEDS ; initialise le device LEDs
+    call INIT_OS_DISK ; initialise le device OS_DISK
+    call INIT_DMA ; initialise le device DMA
+    ret
 
 
-RESET_LEDS:
+INTRO:
     mov bl, LEDS_STATE_ALL_OFF ; eteint les LEDS
     mov cl, [leds_io_base]
     mov dl, [leds_io_base+1]
@@ -82,12 +82,15 @@ RESET_LEDS:
 
     mov al, SKIP_PRINT_INFO
     cmp al, 1
-    je BOOTLOADER_READY ; skip PRINT_INFO
+    je INTRO_END ; skip PRINT_INFO
 
     call PRINT_INFO ; call PRINT_INFO
 
-BOOTLOADER_READY:
+    INTRO_END:
+    ret
 
+
+INIT_WAIT_FOR_OS:
     mov cl, [os_disk_io_base]
     mov dl, [os_disk_io_base + 1]
 
@@ -100,27 +103,28 @@ BOOTLOADER_READY:
     mov el, 1
     call ADD_CD_E
     sti cl, dl, 0 ; [OS_DISK_ADDR_HIGH] = 0
+    ret
 
-LOOP_LEDS:
-    inc bl ; label LOOP_LEDS
+
 
 WAIT_FOR_OS:
-    ; mov [leds_io_base], bl ; allume les leds (selon la valeur de B)  => Ça écrase la variable leds_io_base au lieu d'écrire sur le device
     mov cl, [leds_io_base]
     mov dl, [leds_io_base+1]
-    ;lea cl, dl, [leds_io_base]
     sti cl, dl, bl              ; allume les leds (selon la valeur de B)
 
     ; double la valeur de B (décalage de bits) ; decale la led à afficher
     add bl, bl
 
-    cmp bl, 0
-    jz LOOP_LEDS ; apres l'affichage de la derniere LED, jump to LOOP_LEDS
+    ; apres l'affichage de la derniere LED, jump to WAIT_FOR_OS_LEDS_REWIND
+    ;cmp bl, 0
+    ;jz WAIT_FOR_OS_LEDS_REWIND
+    jc WAIT_FOR_OS_LEDS_REWIND
+    jmp CHECK_OS
 
+    WAIT_FOR_OS_LEDS_REWIND:
+    inc bl ; reinitialise B = 1 (au lieu de 0)
 
-
-; TODO: gestion du DISK
-
+    CHECK_OS:
     ; lit un byte à l'adresse configurée, depuis le disque
     mov cl, [os_disk_io_base]
     mov dl, [os_disk_io_base + 1]
@@ -138,33 +142,72 @@ WAIT_FOR_OS:
     ; un OS a été trouvé. on se prépare à le lancer
 
     call RUN_OS
+    ret
 
 
 LOAD_OS_IN_RAM:
+    ; setup dma disk IO
     mov al, [os_disk_io_idx]
-    mov [dma_io_base], al ; define IO
+    mov cl, [dma_io_base]
+    mov dl, [dma_io_base + 1]
+    sti cl, dl, al ; define IO of disk on dma
 
-    mov [dma_io_base + 1], 0x00 ; DMA_ADDR_START_LOW : define start disk address (low byte)
-    mov [dma_io_base + 2], 0x00 ; DMA_ADDR_START_HIGH : define start disk address (high byte)
+    ; setup dma disk start address (low)
+    mov el, 1
+    call ADD_CD_E
+    sti cl, dl, 0 ; [DMA_ADDR_START_LOW] = 0
 
-debug 2, [dma_io_base]
-hlt
+    ; setup dma disk start address (high)
+    mov el, 1
+    call ADD_CD_E
+    sti cl, dl, 0 ; [DMA_ADDR_START_HIGH] = 0
 
-    mov al, [os_disk_io_base + 1] ; OS_DISK_SIZE_LOW : load disk size (low)
-    mov bl, [os_disk_io_base + 2] ; OS_DISK_SIZE_HIGH : load disk size (high)
+    ; lire la taille du disk et stocker dans (A:B)
+    mov cl, [os_disk_io_base]
+    mov dl, [os_disk_io_base + 1]
 
+    mov el, 1
+    call ADD_CD_E
+    ldi al, cl, dl ; [OS_DISK_SIZE_LOW] = 0
+
+    ;mov el, 1
+    call ADD_CD_E
+    ldi bl, cl, dl ; [OS_DISK_SIZE_HIGH] = 0
+
+    ; décrementer pour obtenir l'adresse de fin ( = taille du disk - 1)
     dec al
     jnc LOAD_OS_IN_RAM_NO_CARRY
     dec bl
 
-    LOAD_OS_IN_RAM_NO_CARRY:
-    mov [dma_io_base + 3], al ; DMA_ADDR_END_LOW : define end disk address (low byte) ;; TODO: -1
-    mov [dma_io_base + 4], bl ; DMA_ADDR_END_HIGH : define end disk address (high byte) ;; TODO: -1
+LOAD_OS_IN_RAM_NO_CARRY:
+    mov cl, [dma_io_base]
+    mov dl, [dma_io_base + 1]
 
-    mov [dma_io_base + 5], 0x00 ; DMA_TARGET_ADDR_LOW : define target ram address (low byte)
-    mov [dma_io_base + 6], 0x05 ; DMA_TARGET_ADDR_HIGH : define target ram address (high byte)
+    mov el, 3
+    call ADD_CD_E
+    sti cl, dl, al ; [DMA_ADDR_END_LOW] = A (taille du disk low)
 
-    mov [dma_io_base + 7], 1 ; DMA_DATA
+    mov el, 1
+    call ADD_CD_E
+    sti cl, dl, bl ; [DMA_ADDR_END_HIGH] = B (taille du disk high)
+
+    ;mov [dma_io_base + 3], al ; DMA_ADDR_END_LOW : define end disk address (low byte) ;; TODO: -1
+    ;mov [dma_io_base + 4], bl ; DMA_ADDR_END_HIGH : define end disk address (high byte) ;; TODO: -1
+
+    lea al, bl, OS_START
+
+    mov el, 1
+    call ADD_CD_E
+    sti cl, dl, al ; [DMA_TARGET_ADDR_LOW] = target ram address (low)
+
+    mov el, 1
+    call ADD_CD_E
+    sti cl, dl, bl ; [DMA_TARGET_ADDR_HIGH] = target ram address (high)
+
+    mov el, 1
+    call ADD_CD_E
+    sti cl, dl, 1 ; [DMA_DATA] = 1 (write bulk data)
+
     ret
 
 
@@ -179,13 +222,10 @@ BOOTLOADER_LEAVE:
     mov al, 0x00
 ;    mov [leds_io_base], al ; eteint les leds
 
-    ; SET_FREQ 10 (commenté dans votre code original)
-    ; call @OS_START
     call OS_START ; call OS_START
 
 OS_RETURN:
-    ; JMP $INIT
-    jmp INIT ; os return. jump to INIT
+    jmp _start ; os return. jump to _start
 
 hlt
 
@@ -305,7 +345,6 @@ TEST_LEDS:
 
 
 
-
 DISPLAY_DEVICES:
     mov el, [DEVICE_TABLE_COUNT]
     cmp el, 0
@@ -313,5 +352,6 @@ DISPLAY_DEVICES:
 
     ; TODO: lister les devices (id + name) // commencer par verifier que le device console existe (pour la sortie)
 
-DISPLAY_DEVICES_END:
+    DISPLAY_DEVICES_END:
     ret
+

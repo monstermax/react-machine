@@ -7,16 +7,16 @@ import { Console, ConsoleDevice } from "./devices/console";
 import { Clock } from "./devices/clock";
 import { Opcode } from "../assembly/core/cpu_instructions";
 import { Screen, ScreenDevice } from "./devices/screen";
-import { compileCode, getBytecodeArray, loadSourceCodeFromFile } from "@/v2/lib/compilation";
+import { compileCode, getBytecodeArray, loadSourceCodeFromFile, universalCompiler } from "@/v2/lib/compilation";
 import { CUSTOM_CPU } from "../compiler/arch_custom";
 import { Leds, LedsDevice } from "./devices/leds";
 import WasmMemoryViewer from "./WasmMemoryViewer";
-import { MEMORY_MAP } from "@/v2/lib/memory_map_16x8_bits";
 import { Disk, DiskDevice } from "./devices/disk";
 import { toHex } from "@/v2/lib/integers";
 import { DmaDevice } from "./devices/dma";
 
 import type { u16, u8, u32 } from "@/types/cpu.types";
+import { MEMORY_MAP } from "../assembly/memory_map";
 
 
 interface WasmExports extends WebAssembly.Exports {
@@ -332,7 +332,7 @@ export const TestV3Component: React.FC = () => {
     }
 
 
-    const addDevice = (name: string, type: string, vendor = '', model = '') => {
+    const addDevice = async (name: string, type: string, vendor = '', model = '') => {
         if (!wasmRef.current || !computerPointer || !devicesRef.current) return;
 
         const wasmExports = wasmRef.current.exports as WasmExports;
@@ -374,12 +374,21 @@ export const TestV3Component: React.FC = () => {
             setDmaDevice(device)
 
         } else if (name === 'os_disk') {
-            const data = [
-                [0, 100],
-                [1, 101],
-                [2, 102],
-                [3, 103],
-            ] as [u16, u8][]; // example disk content
+            const arch = CUSTOM_CPU;
+            const startAddress = 0x0700;
+            const sourceCode = await loadSourceCodeFromFile('os/os_v3.asm')
+            //const compiled = await compileCode(sourceCode, arch, { startAddress });
+            const compiled = await universalCompiler(sourceCode, MEMORY_MAP.OS_START);
+
+            //const data = [
+            //    [0, 100],
+            //    [1, 101],
+            //    [2, 102],
+            //    [3, 103],
+            //    [4, 104],
+            //] as [u16, u8][]; // example disk content
+
+            const data = compiled ?? [];
 
             const device = new DiskDevice(deviceIdx, 'os_disk', { type: 'storage', vendor, model, data });
             devicesRef.current.set(deviceIdx, device)
