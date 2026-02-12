@@ -23,6 +23,8 @@ section .text
 _start:
     mov dl, OS_VERSION
 
+    call console_clear
+
     ; init virtual file system
     call init_vfs
 
@@ -78,12 +80,11 @@ init_syscalls:
 
 
 run_shell:
-
-    run_shell_print_info:
+    ; run_shell_print_info:
     lea cl, dl, [STR_WELCOME_LINE_1]
     call console_print_string
 
-    run_shell_print_prompt:
+    ; run_shell_print_prompt:
     lea cl, dl, [STR_CONSOLE_PROMPT]
     call console_print_string
 
@@ -92,10 +93,10 @@ run_shell:
     cmp al, 0
     je run_shell_readline ; loop to wait for keyboard
 
-    run_shell_readchar:
+    ; run_shell_readchar:
     mov al, [KEYBOARD_DATA]
 
-    run_shell_write_console:
+    ; run_shell_write_console:
     call console_print_char
     mov [KEYBOARD_STATUS], 0
 

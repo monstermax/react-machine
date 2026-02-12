@@ -5,9 +5,9 @@
 
 
 section .data
-    console_io_base  equ 0xF070 ; TODO: a remplacer par [console_io_base]
+    console_io_base  dw 0xF010 ; TODO: a remplacer par [console_io_base]
     ;CONSOLE_CHAR  equ 0xF070 ; TODO: a remplacer par [console_io_base]
-    CONSOLE_CLEAR equ 0xF071 ; TODO: a remplacer par [console_io_base]+1
+    CONSOLE_CLEAR equ 0xF011 ; TODO: a remplacer par [console_io_base]+1
 
 
 
@@ -21,58 +21,54 @@ console_clear:
 
 ; Register A = ASCII Char
 console_print_char:
-    ;mov [CONSOLE_CHAR], al
-    mov cl, [console_io_base]
-    mov dl, [console_io_base + 1]
-    sti cl, dl, al ; [C:D] = A
+    mov el, [console_io_base]
+    mov fl, [console_io_base + 1]
+    sti el, fl, al ; [e:f] = A
     ret
 
 
 
 console_print_string:
     CONSOLE_PRINT_STRING_LOOP:
-        ; Lire caractère depuis buffer
-        ; MOV_A_PTR_CD
-        ;lea al, cl, dl
-        ldi al, cl, dl ; A = [C:D]
+    ; Lire caractère depuis buffer
+    ldi al, cl, dl ; A = [C:D]
 
-        ; Vérifier si \0 (fin de string)
-        cmp al, 0x00                   ; A = 0
-        jz CONSOLE_PRINT_STRING_END    ; Si \0, terminer
+    ; Vérifier si \0 (fin de string)
+    cmp al, 0x00                   ; A = 0
+    jz CONSOLE_PRINT_STRING_END    ; Si \0, terminer
 
-        ; Afficher le caractère
-        call console_print_char
+    ; Afficher le caractère
+    call console_print_char
 
-        ; Incrémenter pointeur C:D
-        inc cl
-        jnc CONSOLE_PRINT_STRING_LOOP
-        inc dl
-        jmp CONSOLE_PRINT_STRING_LOOP
+    ; Incrémenter pointeur C:D
+    inc cl
+    jnc CONSOLE_PRINT_STRING_LOOP
+    inc dl
+    jmp CONSOLE_PRINT_STRING_LOOP
 
     CONSOLE_PRINT_STRING_END:
-        ret
+
+    ret
 
 
 ; Affiche une string depuis un buffer mémoire
 ; Input: C:D = adresse du buffer, B = taille
 console_print_sized_string:
     DEQUEUE:
-        ; Lire caractère depuis buffer
-        ;MOV_A_PTR_CD
-        ;lea al, cl, dl
-        ldi al, cl, dl ; A = [C:D]
+    ; Lire caractère depuis buffer
+    ldi al, cl, dl ; A = [C:D]
 
-        CALL console_print_char
+    call console_print_char
 
-        ; Incrémenter pointeur C:D
-        inc cl
-        jnc NO_CARRY_PRINT
-        inc dl
+    ; Incrémenter pointeur C:D
+    inc cl
+    jnc NO_CARRY_PRINT
+    inc dl
 
     NO_CARRY_PRINT:
-        ; Décrémenter compteur
-        dec bl
-        jnz DEQUEUE
+    ; Décrémenter compteur
+    dec bl
+    jnz DEQUEUE
 
     CONSOLE_PRINT_SIZED_STRING_END:
-        RET
+    ret
