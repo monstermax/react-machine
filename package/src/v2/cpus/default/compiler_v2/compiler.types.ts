@@ -21,6 +21,7 @@ export type OperandType =
     | 'REG_IMM8_IMM8'
     | 'REG_REG_MEM'
     | 'REG_REG_REG'
+    | 'REG_REG_IMM8'
     | 'REG_REG_IMM16'
     | 'REG_REG_MEM_IMM16'
     ;

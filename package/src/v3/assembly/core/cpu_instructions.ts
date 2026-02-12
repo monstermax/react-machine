@@ -138,6 +138,7 @@ export enum Opcode {
 
     LDI_REG_REG_REG = 0x82, // REG = [REG:REG]    // (load indirect)
     STI_REG_REG_REG = 0x83, // [REG:REG] = REG    // (store indirect)
+    STI_REG_REG_IMM = 0x84, // [REG:REG] = IMM
 
 };
 

@@ -11,10 +11,16 @@ section .data
     _find_counter    db 0x00
 
     ; Strings des devices
-    str_leds    db "leds", 0
+    str_leds         db "leds", 0
+    str_os_disk      db "os_disk", 0
+    str_dma          db "dma", 0
 
     ; Résultats de la détection
-    leds_io_base    dw 0x0000
+    leds_io_base     dw 0x0000
+    os_disk_io_base  dw 0x0000
+    os_disk_io_idx   db 0x00
+    dma_io_base      dw 0x0000
+    dma_io_idx       db 0x00
 
 
 section .text

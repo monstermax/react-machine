@@ -241,6 +241,16 @@ export function computerGetMemory(computer: Computer, address: u16): u8 {
 }
 
 
+export function computerSetMemory(computer: Computer, address: u16, value: u8): void {
+    const memoryBus = computer.memoryBus;
+
+    if (memoryBus) {
+        memoryBus.write(address, value);
+        return
+    }
+}
+
+
 export function computerAddDevice(
     computer: Computer,
     namePtr: usize,

@@ -180,6 +180,7 @@ const instructions: InstructionDef[] = [
 
     {
         mnemonic: 'STI', opcode: 0x00, operands: 'NONE', size: 1, variants: [
+            { operands: 'REG_REG_IMM8', opcode: Opcode.STI_REG_REG_IMM, size: 4, condition: (ops) => true, mnemonic: 'STI_REG_REG_IMM' },
             { operands: 'REG_REG_REG', opcode: Opcode.STI_REG_REG_REG, size: 4, condition: (ops) => true, mnemonic: 'STI_REG_REG_REG' },
         ]
     },

@@ -40,8 +40,6 @@ export class Dma extends EventEmitter implements IoDevice {
     // Lecture depuis les ports IO
     read(port: u8): u8 {
 
-        // TODO
-
         switch (port) {
             case 0x00 : { // DMA_IO - getIo
                 return this.selectedIo;

@@ -5,8 +5,6 @@ import { IoDevice } from "./devices/IoDevice";
 import { Keyboard, KeyboardDevice } from "./devices/keyboard";
 import { Console, ConsoleDevice } from "./devices/console";
 import { Clock } from "./devices/clock";
-
-import type { u16, u8, u32 } from "@/types/cpu.types";
 import { Opcode } from "../assembly/core/cpu_instructions";
 import { Screen, ScreenDevice } from "./devices/screen";
 import { compileCode, getBytecodeArray, loadSourceCodeFromFile } from "@/v2/lib/compilation";
@@ -16,6 +14,9 @@ import WasmMemoryViewer from "./WasmMemoryViewer";
 import { MEMORY_MAP } from "@/v2/lib/memory_map_16x8_bits";
 import { Disk, DiskDevice } from "./devices/disk";
 import { toHex } from "@/v2/lib/integers";
+import { DmaDevice } from "./devices/dma";
+
+import type { u16, u8, u32 } from "@/types/cpu.types";
 
 
 interface WasmExports extends WebAssembly.Exports {
@@ -33,6 +34,7 @@ interface WasmExports extends WebAssembly.Exports {
     computerGetRegisterE(computerPtr: number): u8;
     computerGetRegisterF(computerPtr: number): u8;
     computerGetMemory(computerPtr: number, address: u16): u8;
+    computerSetMemory(computerPtr: number, address: u16, value: u8): void;
     computerAddDevice(computerPtr: number, namePtr: number, nameLen: number, typeId: u8): u8;
     computerloadCode(computerPtr: number, valPtr: number, dataLen: number): void;
     allocate(size: number): number;
@@ -64,6 +66,7 @@ export const TestV3Component: React.FC = () => {
     const [screenDevice, setScreenDevice] = useState<ScreenDevice | null>(null)
     const [ledsDevice, setLedsDevice] = useState<LedsDevice | null>(null)
     const [diskDevice, setDiskDevice] = useState<DiskDevice | null>(null)
+    const [dmaDevice, setDmaDevice] = useState<DmaDevice | null>(null)
 
 
     useEffect(() => {
@@ -157,6 +160,7 @@ export const TestV3Component: React.FC = () => {
             addDevice('leds', 'output', '', '')
             addDevice('screen', 'output', '', '')
             addDevice('os_disk', 'storage', '', '')
+            addDevice('dma', 'system', '', '')
         }
 
         const timer = setTimeout(_loadDevices, 100);
@@ -364,13 +368,18 @@ export const TestV3Component: React.FC = () => {
             devicesRef.current.set(deviceIdx, device)
             setLedsDevice(device)
 
+        } else if (name === 'dma') {
+            const device = new DmaDevice(deviceIdx, 'dma', { type: 'system', vendor, model, devicesRef, writeRam });
+            devicesRef.current.set(deviceIdx, device)
+            setDmaDevice(device)
+
         } else if (name === 'os_disk') {
             const data = [
                 [0, 100],
                 [1, 101],
                 [2, 102],
                 [3, 103],
-            ] as [u16, u8][];
+            ] as [u16, u8][]; // example disk content
 
             const device = new DiskDevice(deviceIdx, 'os_disk', { type: 'storage', vendor, model, data });
             devicesRef.current.set(deviceIdx, device)
@@ -381,6 +390,14 @@ export const TestV3Component: React.FC = () => {
             devicesRef.current.set(deviceIdx, device)
         }
 
+    }
+
+
+    const writeRam = (address: u16, value: u8) => {
+        if (!wasmRef.current || computerPointer === null) return;
+        const wasmExports = wasmRef.current.exports as WasmExports;
+
+        wasmExports.computerSetMemory(computerPointer, address, value);
     }
 
 

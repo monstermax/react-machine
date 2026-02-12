@@ -41,14 +41,12 @@ export class Cpu {
 
 
     private fetchInstruction(): void {
-        //console.log(`fetchInstruction`)
         let opcode: u8 = 0;
 
         const address = this.registers.PC;
         opcode = this.readMemory(address);
-        //console.log(`instruction: ${opcode.toString()}`)
 
-        console.log(`Executing instruction ${toHex(opcode)} (${opcode}) at address ${toHex(address)} (${address})`);
+        //console.log(`Executing instruction ${toHex(opcode)} (${opcode}) at address ${toHex(address, 4)} (${address})`);
 
         this.registers.IR = opcode;
     }
@@ -195,7 +193,6 @@ export class Cpu {
 
 
     private executeInstruction(opcode: u8): void {
-        //console.log(`executeInstruction`)
         const memoryBus = this.computer.memoryBus;
 
         if (!memoryBus) {
@@ -449,7 +446,7 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
                 const memAddress = cpu.readMem16(cpu.registers.PC + 1);
                 const memValue = cpu.readMemory(memAddress);
                 cpu.setRegisterValueByIdx(regIdx, memValue);
-                console.log(`DEBUG MOV_REG_MEM pc=${toHex(cpu.registers.PC)} memAddress=${toHex(memAddress)} memValue=${toHex(memValue)}`)
+                //console.log(`DEBUG MOV_REG_MEM pc=${toHex(cpu.registers.PC)} memAddress=${toHex(memAddress)} memValue=${toHex(memValue)}`)
                 cpu.registers.PC += 4;
             };
             break;
@@ -992,6 +989,19 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
                 const address: u16 = ((high * 256) + low) as u16;
                 const value = cpu.getRegisterValueByIdx(srcRegIdx);
                 cpu.writeMemory(address, value);
+                cpu.registers.PC += 4;
+            };
+            break;
+
+        case <u8>Opcode.STI_REG_REG_IMM:
+            action = (cpu: Cpu) => {
+                const regLowIdx = cpu.readMem8(cpu.registers.PC);
+                const regHighIdx = cpu.readMem8(cpu.registers.PC + 1);
+                const immValue = cpu.readMem8(cpu.registers.PC + 2);
+                const high: u16 = cpu.getRegisterValueByIdx(regHighIdx) as u16;
+                const low: u16 = cpu.getRegisterValueByIdx(regLowIdx) as u16;
+                const address: u16 = ((high * 256) + low) as u16;
+                cpu.writeMemory(address, immValue);
                 cpu.registers.PC += 4;
             };
             break;

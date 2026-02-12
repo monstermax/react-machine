@@ -11,9 +11,6 @@ export type DiskDeviceParams = {
     type: string;
     vendor?: string;
     model?: string;
-    width?: number;
-    height?: number;
-    maxLines?: number;
     data?: Array<[u16, u8]> | Map<u16, u8>;
     maxSize?: u16;
 }
@@ -43,6 +40,8 @@ export class DiskDevice extends IoDevice {
 
 
     read(port: u8): u8 {
+        console.log(`DEBUG Reading Disk value on port ${toHex(port)} (${port})`);
+
         switch (port) {
             // ===== MODE RAW =====
             case 0: // DISK_DATA - lecture byte à l'adresse courante
@@ -67,6 +66,8 @@ export class DiskDevice extends IoDevice {
     }
 
     write(port: u8, value: u8): void {
+        console.log(`DEBUG Writing Disk value ${toHex(value)} (${value}) on port ${toHex(port)} (${port})`);
+
         switch (port) {
             // ===== MODE RAW =====
             case 0: // DISK_DATA - écrire byte à l'adresse courante
