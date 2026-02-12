@@ -13,6 +13,7 @@ import { compileCode, getBytecodeArray, loadSourceCodeFromFile } from "@/v2/lib/
 import { CUSTOM_CPU } from "../compiler/arch_custom";
 import { Leds, LedsDevice } from "./devices/leds";
 import WasmMemoryViewer from "./WasmMemoryViewer";
+import { MEMORY_MAP } from "@/v2/lib/memory_map_16x8_bits";
 
 
 interface WasmExports extends WebAssembly.Exports {
@@ -150,8 +151,8 @@ export const TestV3Component: React.FC = () => {
         const _loadDevices = () => {
             addDevice('keyboard', 'input', '', '')
             addDevice('console', 'output', '', '')
-            addDevice('screen', 'output', '', '')
             addDevice('leds', 'output', '', '')
+            addDevice('screen', 'output', '', '')
         }
 
         const timer = setTimeout(_loadDevices, 100);
@@ -427,10 +428,6 @@ export const TestV3Component: React.FC = () => {
 
         const memoryUint8Array = new Uint8Array(wasmExports.memory.buffer);
         setMemory(memoryUint8Array);
-
-        //const low = wasmExports.computerGetMemory(computerPointer, 0x032C as u16)
-        //const high = wasmExports.computerGetMemory(computerPointer, 0x032D as u16)
-        //console.log({low, high})
     }
 
 
@@ -439,7 +436,7 @@ export const TestV3Component: React.FC = () => {
         const wasmExports = wasmRef.current.exports as WasmExports;
 
         const start = 0x0000;
-        const end = 0x04FF;
+        const end = MEMORY_MAP.RAM_END;
 
         //const values = new Map<u16, u8>()
 

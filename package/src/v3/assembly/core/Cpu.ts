@@ -957,9 +957,9 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
                 //const low = cpu.readMemory(memAddress);
                 //const high = cpu.readMemory((memAddress + 1) as u16);
                 const low = (memAddress & 0xFF) as u8;
-                const high = ((memAddress & 0xFF00) >> 8) as u8;
-                cpu.setRegisterValueByIdx(regHighIdx, high);
+                const high = ((memAddress >> 8) & 0xFF) as u8;
                 cpu.setRegisterValueByIdx(regLowIdx, low);
+                cpu.setRegisterValueByIdx(regHighIdx, high);
                 cpu.registers.PC += 5;
             };
             break;

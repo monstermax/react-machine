@@ -9,14 +9,15 @@ interface WasmMemoryViewerProps {
     offset?: number;
     bytesPerLine?: number;
     linesPerPage?: number;
+    open?: boolean;
 }
 
 export default function WasmMemoryViewer(props: WasmMemoryViewerProps) {
-    const { memory, offset = 0, bytesPerLine = 16, linesPerPage = 16 } = props
+    const { memory, offset = 0, bytesPerLine = 16, linesPerPage = 16, open: isOpenAtStart=true } = props
 
     const [data, setData] = useState<Uint8Array>(new Uint8Array());
     const [page, setPage] = useState(0);
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(isOpenAtStart);
 
     useEffect(() => {
         if (!memory) return;
@@ -45,7 +46,7 @@ export default function WasmMemoryViewer(props: WasmMemoryViewerProps) {
         return (
             <div className="flex">
                 {values.map((v, idx) => (
-                    <span className={`px-1 ${idx===len/2 ? "ps-4" : ""}`}>{v}</span>
+                    <span key={idx} className={`px-1 ${idx===len/2 ? "ps-4" : ""}`}>{v}</span>
                 ))}
             </div>
         );
@@ -68,7 +69,7 @@ export default function WasmMemoryViewer(props: WasmMemoryViewerProps) {
         return (
             <div className="flex">
                 {values.map((v, idx) => (
-                    <span className={`px-1 ${idx===len/2 ? "ps-4" : ""}`}>{v}</span>
+                    <span key={idx} className={`px-1 ${idx===len/2 ? "ps-4" : ""}`}>{v}</span>
                 ))}
             </div>
         );
@@ -151,7 +152,7 @@ export default function WasmMemoryViewer(props: WasmMemoryViewerProps) {
                     {/* Quick jump */}
                     <div className="mt-4 pt-2 border-t border-gray-700 flex gap-2 text-xs">
                         <span className="text-gray-400">Jump to:</span>
-                        {[0x0000, 0x1000, 0x8000, 0xA000, 0xC000, 0xF000, 0x0320].map(addr => (
+                        {[0x0000, 0x1000, 0x0320, 0x0500].map(addr => (
                             <button
                                 key={addr}
                                 onClick={() => setPage(Math.floor(addr / bytesPerPage))}

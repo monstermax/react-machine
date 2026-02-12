@@ -177,10 +177,9 @@ INIT_LEDS:
     lea al, bl, [str_leds]
     call FIND_DEVICE_BY_NAME
 
-    ; fix hardcodé car leds_io_base est mal initialisé (probleme dans FIND_DEVICE_BY_NAME ?)
-    lea cl, dl, 0x0513 ; hack car FIND_DEVICE_BY_NAME est buggué
-    debug 1, cl
-    debug 1, dl
+debug 5, cl
+debug 5, dl
+;hlt
 
     ; C:D = pointeur entrée table (ou 0x0000)
     ; Vérifier si trouvé
@@ -197,12 +196,6 @@ INIT_LEDS:
     call ADD_CD_E
     ldi el, cl, dl           ; high byte
 
-    ;debug 2, cl
-    ;debug 2, dl
-    ;debug 2, el
-    ;debug 2, fl
-    ;hlt
-
     ; Stocker dans leds_io_base
     mov [leds_io_base], fl
     mov [leds_io_base + 1], el
@@ -216,19 +209,12 @@ LEDS_NOT_FOUND:
 
 TEST_LEDS:
     ; Utiliser les LEDs
-    mov al, 0x55
-
-    ; fix hardcodé car leds_io_base est mal initialisé (probleme dans INIT_LEDS ou FIND_DEVICE_BY_NAME ?)
-    ; mov [leds_io_base], 0x30
-    ; mov [leds_io_base+1], 0xF0
+    mov al, LEDS_STATE_HALF_2
 
     mov cl, [leds_io_base]
     mov dl, [leds_io_base+1]
 
-    ; Alternative : works but hardcoded
-    ;lea cl, dl, 0xF030 ; works
-
     sti cl, dl, al
-    hlt ; debug ; ok si leds allumées
+hlt ; debug ; ok si leds allumées
     ret
 

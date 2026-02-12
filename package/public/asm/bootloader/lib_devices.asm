@@ -47,13 +47,20 @@ STRCMP:
     ldi el, al, bl ; E = [A:B]
     ldi fl, cl, dl ; F = [C:D]
     cmp el, fl
+
+    debug 2, el
+    debug 2, fl
+
     jne STRCMP_END
+
     cmp el, 0
     je STRCMP_END
+
     mov el, 1
     call ADD_AB_E
     call ADD_CD_E
     jmp STRCMP
+
 STRCMP_END:
     ret
 
@@ -90,31 +97,28 @@ FIND_DEVICE_LOOP:
 
     ; Lire name_ptr (2 bytes, little-endian)
     ldi fl, cl, dl           ; low byte du name_ptr
+
     mov el, 1
     call ADD_CD_E
     ldi el, cl, dl           ; high byte du name_ptr
 
-    ;debug 1, cl
-    ;debug 1, dl
-    ;debug 1, el
-    ;debug 1, fl
-    ;hlt
-
     ; C:D = pointeur vers le nom du device
-    mov cl, el
-    mov dl, fl
+    mov cl, fl
+    mov dl, el
 
     ; A:B = pointeur vers le nom cherché
-    lea al, bl, [_find_name_ptr]
-
+    mov al, [_find_name_ptr]
+    mov bl, [_find_name_ptr + 1]
 
     ; Comparer
     call STRCMP
     je FIND_DEVICE_FOUND
 
     ; Pas trouvé, avancer au prochain entry
-    lea cl, dl, [_find_table_ptr]
+    mov cl, [_find_table_ptr]
+    mov dl, [_find_table_ptr + 1]
     mov el, DEVICE_ENTRY_SIZE
+
     call ADD_CD_E
     mov [_find_table_ptr], cl
     mov [_find_table_ptr + 1], dl
@@ -133,5 +137,6 @@ FIND_DEVICE_NOT_FOUND:
 
 FIND_DEVICE_FOUND:
     ; C:D = pointeur vers l'entrée table
-    lea cl, dl, [_find_table_ptr]
+    mov cl, [_find_table_ptr]
+    mov dl, [_find_table_ptr + 1]
     ret
