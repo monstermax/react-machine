@@ -128,13 +128,25 @@ export const CompilePage: React.FC = () => {
 
         const loadCode = async () => {
             //const code = await loadSourceCodeFromFile('bootloader/bootloader_v2.asm') // BOOTLOADER V2
-            const code = await loadSourceCodeFromFile('os/os_v3.asm') // OS V3
-            setInitialSourceCode(code);
+            //const code = await loadSourceCodeFromFile('os/os_v3.asm') // OS V3
+            //setInitialSourceCode(code);
         }
 
         const timer = setTimeout(loadCode, 50);
         return () => clearTimeout(timer);
     }, [])
+
+
+    const loadBootloaderCode = async () => {
+        const code = await loadSourceCodeFromFile('bootloader/bootloader_v2.asm') // BOOTLOADER V2
+        setInitialSourceCode(code);
+
+    }
+
+    const loadOsCode = async () => {
+        const code = await loadSourceCodeFromFile('os/os_v3.asm') // OS V3
+        setInitialSourceCode(code);
+    }
 
 
     const codeChanged = (value: string, editor: PrismEditor) => {
@@ -252,6 +264,20 @@ export const CompilePage: React.FC = () => {
                     className="ml-2 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors cursor-pointer"
                 >
                     🔄 Reset
+                </button>
+
+                <button
+                    onClick={() => loadBootloaderCode()}
+                    className="ml-2 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors cursor-pointer"
+                >
+                    Load Bootloader
+                </button>
+
+                <button
+                    onClick={() => loadOsCode()}
+                    className="ml-2 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors cursor-pointer"
+                >
+                    Load OS
                 </button>
             </div>
 

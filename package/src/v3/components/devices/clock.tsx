@@ -1,6 +1,7 @@
 
-import { u32 } from "@/types/cpu.types";
 import EventEmitter from "eventemitter3";
+
+import { u32 } from "@/types/cpu.types";
 
 
 export class Clock extends EventEmitter {

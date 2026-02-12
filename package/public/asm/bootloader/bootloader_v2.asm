@@ -4,8 +4,8 @@
 ; Description: Bootloader for React Machine (v2)
 
 
-.include "bootloader/bootloader_v2.lib.asm"
 .include "bootloader/lib_devices.asm"
+.include "bootloader/lib_console.asm"
 
 
 section .data
@@ -15,36 +15,9 @@ section .data
     SKIP_PRINT_INFO     equ 0x01
     SKIP_PRINT_RUN      equ 0x01
 
-    ; drivers constants
-    LEDS_STATE_ALL_OFF  equ 0x00
-    LEDS_STATE_HALF_1   equ 0x55
-    LEDS_STATE_HALF_2   equ 0xAA
-
-    ; Variables (références à MEMORY_MAP par exemple)
-    ;LEDS_BASE    equ 0xF030
-    ;CLOCK_FREQ   equ 0xF120
+    ; Emplacements memoire
     OS_START     equ 0x0700
     STACK_END    equ 0xEE0F
-
-    ;OS_DISK            equ 0x04 ; io num
-    ;OS_DISK_DATA       equ 0xF000
-    ;OS_DISK_SIZE_LOW   equ 0xF001
-    ;OS_DISK_SIZE_HIGH  equ 0xF002
-    ;OS_DISK_ADDR_LOW   equ 0xF003
-    ;OS_DISK_ADDR_HIGH  equ 0xF004
-
-    ;DMA_IO               equ 0xF110
-    ;DMA_ADDR_START_LOW   equ 0xF111
-    ;DMA_ADDR_START_HIGH  equ 0xF112
-    ;DMA_ADDR_END_LOW     equ 0xF113
-    ;DMA_ADDR_END_HIGH    equ 0xF114
-    ;DMA_TARGET_ADDR_LOW  equ 0xF115
-    ;DMA_TARGET_ADDR_HIGH equ 0xF116
-    ;DMA_DATA             equ 0xF117
-
-    ;str_leds       db "leds", 0       ; le nom du device à chercher
-    ;leds_io_base   dw 0x0000          ; variable qui contiendra l'adresse I/O du device
-
 
 
 section .text

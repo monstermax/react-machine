@@ -5,8 +5,8 @@
 
 
 section .data
-    CONSOLE_CHAR equ 0xF070
-    CONSOLE_CLEAR equ 0xF071
+    CONSOLE_CHAR  equ 0xF070 ; TODO: a remplacer par [console_io_base]
+    CONSOLE_CLEAR equ 0xF071 ; TODO: a remplacer par [console_io_base]+1
 
 
 
@@ -29,16 +29,14 @@ console_print_string:
     CONSOLE_PRINT_STRING_LOOP:
         ; Lire caractère depuis buffer
         ; MOV_A_PTR_CD
-        lea al, cl, dl
+        ;lea al, cl, dl
+        ldi al, cl, dl ; A = [C:D]
 
         ; Vérifier si \0 (fin de string)
-        mov bl, al              ; B = A (sauvegarder le caractère)
-        mov al, 0x00      ; A = 0
-        sub al, bl                 ; A = B - 0 (set zero flag si B = 0)
-        jz CONSOLE_PRINT_STRING_END             ; Si \0, terminer
+        cmp al, 0x00                   ; A = 0
+        jz CONSOLE_PRINT_STRING_END    ; Si \0, terminer
 
         ; Afficher le caractère
-        mov al, bl              ; A = B (restaurer)
         call console_print_char
 
         ; Incrémenter pointeur C:D
@@ -57,7 +55,8 @@ console_print_sized_string:
     DEQUEUE:
         ; Lire caractère depuis buffer
         ;MOV_A_PTR_CD
-        lea al, cl, dl
+        ;lea al, cl, dl
+        ldi al, cl, dl ; A = [C:D]
 
         CALL console_print_char
 

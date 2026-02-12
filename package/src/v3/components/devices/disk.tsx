@@ -40,7 +40,7 @@ export class DiskDevice extends IoDevice {
 
 
     read(port: u8): u8 {
-        console.log(`DEBUG Reading Disk value on port ${toHex(port)} (${port})`);
+        //console.log(`DEBUG Reading Disk value on port ${toHex(port)} (${port})`);
 
         switch (port) {
             // ===== MODE RAW =====
@@ -66,7 +66,7 @@ export class DiskDevice extends IoDevice {
     }
 
     write(port: u8, value: u8): void {
-        console.log(`DEBUG Writing Disk value ${toHex(value)} (${value}) on port ${toHex(port)} (${port})`);
+        //console.log(`DEBUG Writing Disk value ${toHex(value)} (${value}) on port ${toHex(port)} (${port})`);
 
         switch (port) {
             // ===== MODE RAW =====

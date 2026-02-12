@@ -308,7 +308,6 @@ export const TestV3Component: React.FC = () => {
         //const code = codeDemo // OK
         const sourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v2.asm")
         const compiled = await compileCode(sourceCode, CUSTOM_CPU);
-
         const codeRaw = Array.from(getBytecodeArray(compiled).entries())
         //console.log('codeRaw:', codeRaw)
 
@@ -375,10 +374,12 @@ export const TestV3Component: React.FC = () => {
 
         } else if (name === 'os_disk') {
             const arch = CUSTOM_CPU;
-            const startAddress = 0x0700;
+            const startAddress = MEMORY_MAP.OS_START;
             const sourceCode = await loadSourceCodeFromFile('os/os_v3.asm')
-            //const compiled = await compileCode(sourceCode, arch, { startAddress });
-            const compiled = await universalCompiler(sourceCode, MEMORY_MAP.OS_START);
+            const compiled = await compileCode(sourceCode, CUSTOM_CPU, { startAddress });
+            const codeRaw = Array.from(getBytecodeArray(compiled).entries())
+
+            const data = codeRaw ?? [];
 
             //const data = [
             //    [0, 100],
@@ -388,7 +389,6 @@ export const TestV3Component: React.FC = () => {
             //    [4, 104],
             //] as [u16, u8][]; // example disk content
 
-            const data = compiled ?? [];
 
             const device = new DiskDevice(deviceIdx, 'os_disk', { type: 'storage', vendor, model, data });
             devicesRef.current.set(deviceIdx, device)

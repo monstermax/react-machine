@@ -104,6 +104,7 @@ export function allocate(size: i32): usize {
 }
 
 
+// Load bootloader code
 export function computerloadCode(
     computer: Computer,
     valPtr: usize,

@@ -9,13 +9,13 @@
 
 section .data
     OS_VERSION         equ 3
-    KEYBOARD_DATA      equ 0xF050
-    KEYBOARD_STATUS    equ 0xF051
-    CONSOLE_CHAR       equ 0xF070
+    KEYBOARD_DATA      equ 0xF050 ; TODO: a remplacer par [keyboard_io_base]
+    KEYBOARD_STATUS    equ 0xF051 ; TODO: a remplacer par [keyboard_io_base]+1
+    CONSOLE_CHAR       equ 0xF070 ; TODO: a remplacer par [console_io_base]
 
     STR_WELCOME_LINE_1 dw "OS v3", 13, 0
     STR_CONSOLE_PROMPT dw "root@react-machine $ ", 0
-    STR_RUN_COMMAND dw "running command...", 13, 0
+    STR_RUN_COMMAND    dw "running command...", 13, 0
 
 
 section .text
