@@ -68,16 +68,15 @@ MAIN:
 INIT_DEVICES:
     call INIT_LEDS
 
+    call DISPLAY_DEVICES
 
-    call TEST_LEDS
-    hlt
+    call TEST_LEDS ; allume la moitié des leds
 
 
 RESET_LEDS:
     mov bl, LEDS_STATE_ALL_OFF ; eteint les LEDS
     mov cl, [leds_io_base]
     mov dl, [leds_io_base+1]
-    ;lea cl, dl, [leds_io_base]
     sti cl, dl, bl                    ; écrit B sur le device LEDs
 
     mov al, SKIP_PRINT_INFO
@@ -97,13 +96,14 @@ WAIT_FOR_OS:
     sti cl, dl, bl              ; allume les leds (selon la valeur de B)
 
     ; double la valeur de B (décalage de bits) ; decale la led à afficher
-    mov al, bl
-    add al, bl
+    add bl, bl
 
-    cmp al, 0
+    cmp bl, 0
     jz BOOTLOADER_READY ; apres l'affichage de la derniere LED, jump to BOOTLOADER_READY
 
-    mov bl, al
+
+
+; TODO: gestion du DISK
 
     ; check OS on disk
     mov [OS_DISK_ADDR_LOW], 0
@@ -177,10 +177,6 @@ INIT_LEDS:
     lea al, bl, [str_leds]
     call FIND_DEVICE_BY_NAME
 
-debug 5, cl
-debug 5, dl
-;hlt
-
     ; C:D = pointeur entrée table (ou 0x0000)
     ; Vérifier si trouvé
     mov el, cl
@@ -215,6 +211,17 @@ TEST_LEDS:
     mov dl, [leds_io_base+1]
 
     sti cl, dl, al
-hlt ; debug ; ok si leds allumées
     ret
 
+
+
+
+DISPLAY_DEVICES:
+    mov el, [DEVICE_TABLE_COUNT]
+    cmp el, 0
+    je DISPLAY_DEVICES_NOT_FOUND ; aucune device presente
+
+    ; TODO: lister les devices (id + name) // commencer par verifier que le device console existe (pour la sortie)
+
+DISPLAY_DEVICES_END:
+    ret

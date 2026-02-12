@@ -48,9 +48,6 @@ STRCMP:
     ldi fl, cl, dl ; F = [C:D]
     cmp el, fl
 
-    debug 2, el
-    debug 2, fl
-
     jne STRCMP_END
 
     cmp el, 0

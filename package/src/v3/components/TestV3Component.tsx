@@ -14,6 +14,8 @@ import { CUSTOM_CPU } from "../compiler/arch_custom";
 import { Leds, LedsDevice } from "./devices/leds";
 import WasmMemoryViewer from "./WasmMemoryViewer";
 import { MEMORY_MAP } from "@/v2/lib/memory_map_16x8_bits";
+import { Disk, DiskDevice } from "./devices/disk";
+import { toHex } from "@/v2/lib/integers";
 
 
 interface WasmExports extends WebAssembly.Exports {
@@ -61,6 +63,7 @@ export const TestV3Component: React.FC = () => {
     const [consoleDevice, setConsoleDevice] = useState<ConsoleDevice | null>(null)
     const [screenDevice, setScreenDevice] = useState<ScreenDevice | null>(null)
     const [ledsDevice, setLedsDevice] = useState<LedsDevice | null>(null)
+    const [diskDevice, setDiskDevice] = useState<DiskDevice | null>(null)
 
 
     useEffect(() => {
@@ -153,6 +156,7 @@ export const TestV3Component: React.FC = () => {
             addDevice('console', 'output', '', '')
             addDevice('leds', 'output', '', '')
             addDevice('screen', 'output', '', '')
+            addDevice('os_disk', 'storage', '', '')
         }
 
         const timer = setTimeout(_loadDevices, 100);
@@ -356,9 +360,21 @@ export const TestV3Component: React.FC = () => {
             setScreenDevice(device)
 
         } else if (name === 'leds') {
-            const device = new LedsDevice(deviceIdx, 'leds', { type: 'output' });
+            const device = new LedsDevice(deviceIdx, 'leds', { type: 'output', vendor, model });
             devicesRef.current.set(deviceIdx, device)
             setLedsDevice(device)
+
+        } else if (name === 'os_disk') {
+            const data = [
+                [0, 100],
+                [1, 101],
+                [2, 102],
+                [3, 103],
+            ] as [u16, u8][];
+
+            const device = new DiskDevice(deviceIdx, 'os_disk', { type: 'storage', vendor, model, data });
+            devicesRef.current.set(deviceIdx, device)
+            setDiskDevice(device)
 
         } else {
             const device = new IoDevice(deviceIdx, name, { type });
@@ -419,12 +435,18 @@ export const TestV3Component: React.FC = () => {
     }
 
 
-    const updateRegisters = async () => {
+    const dumpRegisters = async () => {
         if (!wasmRef.current || computerPointer === null) return;
         const wasmExports = wasmRef.current.exports as WasmExports;
 
         const _registers = readDataRegisters(wasmExports, computerPointer);
         setRegisters(_registers)
+    }
+
+
+    const dumpMemory = () => {
+        if (!wasmRef.current || computerPointer === null) return;
+        const wasmExports = wasmRef.current.exports as WasmExports;
 
         const memoryUint8Array = new Uint8Array(wasmExports.memory.buffer);
         setMemory(memoryUint8Array);
@@ -463,7 +485,8 @@ export const TestV3Component: React.FC = () => {
                 <button className="p-2 border rounded cursor-pointer" onClick={() => runCycle()}>runCycle</button>
                 <button className="p-2 border rounded cursor-pointer" onClick={() => startClock()}>start</button>
                 <button className="p-2 border rounded cursor-pointer" onClick={() => stopClock()}>stop</button>
-                <button className="p-2 border rounded cursor-pointer" onClick={() => updateRegisters()}>update Registers</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => dumpRegisters()}>dump Registers</button>
+                <button className="p-2 border rounded cursor-pointer" onClick={() => dumpMemory()}>dump Wasm Memory</button>
                 <button className="p-2 border rounded cursor-pointer" onClick={() => dumpRam()}>dump RAM</button>
             </div>
 
@@ -492,12 +515,16 @@ export const TestV3Component: React.FC = () => {
                         </div>
                     </div>
 
-                    <div>
+                    <div className="border p-2 rounded">
                         {Object.entries(registers).map(([name, value]) => (
                             <div key={name}>
-                                {name}: {value}
+                                {name}: {toHex(value)}
                             </div>
                         ))}
+                    </div>
+
+                    <div className="border p-2 rounded">
+                        <Disk deviceInstance={diskDevice} />
                     </div>
                 </div>
 
