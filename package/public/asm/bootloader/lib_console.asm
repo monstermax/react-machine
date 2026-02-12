@@ -60,217 +60,225 @@ section .data
 
 section .text
     global PRINT_INFO
+    global PRINT_WAITING
     global PRINT_RUN
     global PRINT_GITHUB
 
-    ; CONSOLE_DRIVER:
+; CONSOLE_DRIVER:
 
-    PRINT_CHAR:
-        mov cl, [console_io_base]
-        mov dl, [console_io_base + 1]
-        sti cl, dl, al ; [C:D] = A
-        ret
+PRINT_CHAR:
+    mov cl, [console_io_base]
+    mov dl, [console_io_base + 1]
+    sti cl, dl, al ; [C:D] = A
+    ret
 
 
-    PRINT_INFO:
-        mov al, ASCII_B ; letter B. start of PRINT_INFO
-        call PRINT_CHAR
+PRINT_INFO:
+    mov al, ASCII_B ; letter B. start of PRINT_INFO
+    call PRINT_CHAR
 
-        mov al, ASCII_O
-        call PRINT_CHAR
+    mov al, ASCII_O
+    call PRINT_CHAR
 
-        mov al, ASCII_O
-        call PRINT_CHAR
+    mov al, ASCII_O
+    call PRINT_CHAR
 
-        mov al, ASCII_T
-        call PRINT_CHAR
+    mov al, ASCII_T
+    call PRINT_CHAR
 
-        mov al, ASCII_L
-        call PRINT_CHAR
+    mov al, ASCII_L
+    call PRINT_CHAR
 
-        mov al, ASCII_O
-        call PRINT_CHAR
+    mov al, ASCII_O
+    call PRINT_CHAR
 
-        mov al, ASCII_A
-        call PRINT_CHAR
+    mov al, ASCII_A
+    call PRINT_CHAR
 
-        mov al, ASCII_D
-        call PRINT_CHAR
+    mov al, ASCII_D
+    call PRINT_CHAR
 
-        mov al, ASCII_E
-        call PRINT_CHAR
+    mov al, ASCII_E
+    call PRINT_CHAR
 
-        mov al, ASCII_R
-        call PRINT_CHAR
+    mov al, ASCII_R
+    call PRINT_CHAR
 
-        mov al, ASCII_SPACE
-        call PRINT_CHAR
+    mov al, ASCII_SPACE
+    call PRINT_CHAR
 
-        mov al, ASCII_O
-        call PRINT_CHAR
+    mov al, ASCII_O
+    call PRINT_CHAR
 
-        mov al, ASCII_K
-        call PRINT_CHAR
+    mov al, ASCII_K
+    call PRINT_CHAR
 
-        mov al, ASCII_EOL
-        call PRINT_CHAR
+    mov al, ASCII_EOL
+    call PRINT_CHAR
 
-        mov al, ASCII_W
-        call PRINT_CHAR
+    ret ; end of PRINT_INFO
 
-        mov al, ASCII_A
-        call PRINT_CHAR
 
-        mov al, ASCII_I
-        call PRINT_CHAR
+PRINT_WAITING:
+    mov al, ASCII_W
+    call PRINT_CHAR
 
-        mov al, ASCII_T
-        call PRINT_CHAR
+    mov al, ASCII_A
+    call PRINT_CHAR
 
-        mov al, ASCII_I
-        call PRINT_CHAR
+    mov al, ASCII_I
+    call PRINT_CHAR
 
-        mov al, ASCII_N
-        call PRINT_CHAR
+    mov al, ASCII_T
+    call PRINT_CHAR
 
-        mov al, ASCII_G
-        call PRINT_CHAR
+    mov al, ASCII_I
+    call PRINT_CHAR
 
-        mov al, ASCII_SPACE
-        call PRINT_CHAR
+    mov al, ASCII_N
+    call PRINT_CHAR
 
-        mov al, ASCII_F
-        call PRINT_CHAR
+    mov al, ASCII_G
+    call PRINT_CHAR
 
-        mov al, ASCII_O
-        call PRINT_CHAR
+    mov al, ASCII_SPACE
+    call PRINT_CHAR
 
-        mov al, ASCII_R
-        call PRINT_CHAR
+    mov al, ASCII_F
+    call PRINT_CHAR
 
-        mov al, ASCII_SPACE
-        call PRINT_CHAR
+    mov al, ASCII_O
+    call PRINT_CHAR
 
-        mov al, ASCII_O
-        call PRINT_CHAR
+    mov al, ASCII_R
+    call PRINT_CHAR
 
-        mov al, ASCII_S
-        call PRINT_CHAR
+    mov al, ASCII_SPACE
+    call PRINT_CHAR
 
-        mov al, ASCII_DOT
-        call PRINT_CHAR
+    mov al, ASCII_O
+    call PRINT_CHAR
 
-        mov al, ASCII_DOT
-        call PRINT_CHAR
+    mov al, ASCII_S
+    call PRINT_CHAR
 
-        mov al, ASCII_DOT
-        call PRINT_CHAR
+    mov al, ASCII_DOT
+    call PRINT_CHAR
 
-        mov al, ASCII_EOL
-        call PRINT_CHAR
+    mov al, ASCII_DOT
+    call PRINT_CHAR
 
-        ret ; end of PRINT_INFO
+    mov al, ASCII_DOT
+    call PRINT_CHAR
 
+    mov al, ASCII_EOL
+    call PRINT_CHAR
 
-    PRINT_RUN:
-        mov al, ASCII_O ; letter O. start of PRINT_RUN
-        call PRINT_CHAR
+    ret
 
-        mov al, ASCII_S
-        call PRINT_CHAR
 
-        mov al, ASCII_SPACE
-        call PRINT_CHAR
+PRINT_RUN:
+    mov al, ASCII_O ; letter O. start of PRINT_RUN
+    call PRINT_CHAR
 
-        mov al, ASCII_F
-        call PRINT_CHAR
+    mov al, ASCII_S
+    call PRINT_CHAR
 
-        mov al, ASCII_O
-        call PRINT_CHAR
+    mov al, ASCII_SPACE
+    call PRINT_CHAR
 
-        mov al, ASCII_U
-        call PRINT_CHAR
+    mov al, ASCII_F
+    call PRINT_CHAR
 
-        mov al, ASCII_N
-        call PRINT_CHAR
+    mov al, ASCII_O
+    call PRINT_CHAR
 
-        mov al, ASCII_D
-        call PRINT_CHAR
+    mov al, ASCII_U
+    call PRINT_CHAR
 
-        mov al, ASCII_EXCLAM
-        call PRINT_CHAR
+    mov al, ASCII_N
+    call PRINT_CHAR
 
-        mov al, ASCII_EOL
-        call PRINT_CHAR
+    mov al, ASCII_D
+    call PRINT_CHAR
 
-        ret ; end of PRINT_RUN
+    mov al, ASCII_EXCLAM
+    call PRINT_CHAR
 
+    mov al, ASCII_EOL
+    call PRINT_CHAR
 
-    PRINT_GITHUB:
-        ; TODO
-        mov al, ASCII_G ; letter G. start of PRINT_GITHUB
-        call PRINT_CHAR
+    ret ; end of PRINT_RUN
 
-        mov al, ASCII_I
-        call PRINT_CHAR
 
-        mov al, ASCII_T
-        call PRINT_CHAR
+PRINT_GITHUB:
+    ; TODO
+    mov al, ASCII_G ; letter G. start of PRINT_GITHUB
+    call PRINT_CHAR
 
-        mov al, ASCII_H
-        call PRINT_CHAR
+    mov al, ASCII_I
+    call PRINT_CHAR
 
-        mov al, ASCII_U
-        call PRINT_CHAR
+    mov al, ASCII_T
+    call PRINT_CHAR
 
-        mov al, ASCII_B
-        call PRINT_CHAR
+    mov al, ASCII_H
+    call PRINT_CHAR
 
-        mov al, ASCII_DOT
-        call PRINT_CHAR
+    mov al, ASCII_U
+    call PRINT_CHAR
 
-        mov al, ASCII_C
-        call PRINT_CHAR
+    mov al, ASCII_B
+    call PRINT_CHAR
 
-        mov al, ASCII_O
-        call PRINT_CHAR
+    mov al, ASCII_DOT
+    call PRINT_CHAR
 
-        mov al, ASCII_M
-        call PRINT_CHAR
+    mov al, ASCII_C
+    call PRINT_CHAR
 
-        mov al, ASCII_SLASH
-        call PRINT_CHAR
+    mov al, ASCII_O
+    call PRINT_CHAR
 
-        mov al, ASCII_M
-        call PRINT_CHAR
+    mov al, ASCII_M
+    call PRINT_CHAR
 
-        mov al, ASCII_O
-        call PRINT_CHAR
+    mov al, ASCII_SLASH
+    call PRINT_CHAR
 
-        mov al, ASCII_N
-        call PRINT_CHAR
+    mov al, ASCII_M
+    call PRINT_CHAR
 
-        mov al, ASCII_S
-        call PRINT_CHAR
+    mov al, ASCII_O
+    call PRINT_CHAR
 
-        mov al, ASCII_T
-        call PRINT_CHAR
+    mov al, ASCII_N
+    call PRINT_CHAR
 
-        mov al, ASCII_E
-        call PRINT_CHAR
+    mov al, ASCII_S
+    call PRINT_CHAR
 
-        mov al, ASCII_R
-        call PRINT_CHAR
+    mov al, ASCII_T
+    call PRINT_CHAR
 
-        mov al, ASCII_M
-        call PRINT_CHAR
+    mov al, ASCII_E
+    call PRINT_CHAR
 
-        mov al, ASCII_A
-        call PRINT_CHAR
+    mov al, ASCII_R
+    call PRINT_CHAR
 
-        mov al, ASCII_X
-        call PRINT_CHAR
+    mov al, ASCII_M
+    call PRINT_CHAR
 
-        ret ; end of PRINT_GITHUB
+    mov al, ASCII_A
+    call PRINT_CHAR
+
+    mov al, ASCII_X
+    call PRINT_CHAR
+
+    mov al, ASCII_EOL
+    call PRINT_CHAR
+
+    ret ; end of PRINT_GITHUB
 
 

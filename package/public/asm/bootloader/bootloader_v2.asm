@@ -13,6 +13,8 @@ section .data
     BOOTLOADER_VERSION  equ 2
     INITIAL_FREQ        equ 10
     SKIP_PRINT_INFO     equ 0x00
+    SKIP_PRINT_GITHUB   equ 0x00
+    SKIP_PRINT_WAITING  equ 0x00
     SKIP_PRINT_RUN      equ 0x00
 
     ; Emplacements memoire
@@ -54,12 +56,29 @@ INTRO:
     mov dl, [leds_io_base+1]
     sti cl, dl, bl                    ; écrit B sur le device LEDs
 
-    mov al, SKIP_PRINT_INFO
+    ; print info
+    mov al, SKIP_PRINT_INFO ; verifier si on skip ce print
     cmp al, 1
-    je INTRO_END ; skip PRINT_INFO
+    je CALL_PRINT_INFO_END ; skip PRINT_INFO
 
     call PRINT_INFO ; call PRINT_INFO
+    CALL_PRINT_INFO_END:
+
+    ; print github
+    mov al, SKIP_PRINT_GITHUB ; verifier si on skip ce print
+    cmp al, 1
+    je CALL_PRINT_GITHUB_END ; skip PRINT_INFO
+
     call PRINT_GITHUB ; call PRINT_GITHUB
+    CALL_PRINT_GITHUB_END:
+
+    ; print waiting for os
+    mov al, SKIP_PRINT_WAITING ; verifier si on skip ce print
+    cmp al, 1
+    je CALL_PRINT_WAITING_END ; skip PRINT_GITHUB
+
+    call PRINT_WAITING
+    CALL_PRINT_WAITING_END:
 
     INTRO_END:
     ret
