@@ -277,6 +277,45 @@ display_devices:
 
     ; TODO: lister les devices (id + name) // commencer par verifier que le device console existe (pour la sortie)
 
+    mov bl, [DEVICE_TABLE_COUNT] ; nb de devices restantes à parcourir = nb de devices
+
+    lea cl, dl, [DEVICE_TABLE_START + 4] ; positionnement sur le 1er [name ptr low]
+
+    DISPLAY_DEVICES_LOOP:
+    cmp bl, 0
+    je DISPLAY_DEVICES_END ; Fin du parcourt des devices
+
+    ;lea cl, dl, [DEVICE_TABLE_START] ; positionnement sur [name ptr low]
+    ;mov el, 4
+    ;call add_cd_e
+
+    push cl
+    push dl
+
+    ldi el, cl, dl
+
+    call inc_cd
+    ldi fl, cl, dl
+
+    mov cl, el
+    mov dl, fl
+
+    call console_print_string
+
+    mov al, ASCII_EOL
+    call console_print_char
+
+    pop dl
+    pop cl
+
+    dec bl
+    jz DISPLAY_DEVICES_END
+
+    mov el, 6
+    call add_cd_e
+
+    jmp DISPLAY_DEVICES_LOOP
+
     DISPLAY_DEVICES_END:
     ret
 
