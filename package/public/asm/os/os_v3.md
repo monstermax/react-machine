@@ -4,7 +4,7 @@
 ## Architecture recommandée :
 
 1. **Bootstrapping** (déjà fait par bootloader)
-   - Votre OS est chargé à l'adresse 0x0500
+   - Votre OS est chargé à l'adresse 0x0700
    - Stack pointer initialisé
    - Vous commencez l'exécution depuis OS_START
 

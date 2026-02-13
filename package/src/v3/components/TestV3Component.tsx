@@ -370,7 +370,7 @@ export const TestV3Component: React.FC = () => {
             setLedsDevice(device)
 
         } else if (name === 'dma') {
-            const device = new DmaDevice(deviceIdx, 'dma', { type: 'system', vendor, model, devicesRef, writeRam });
+            const device = new DmaDevice(deviceIdx, 'dma', { type: 'system', vendor, model, devicesRef, readRam, writeRam });
             devicesRef.current.set(deviceIdx, device)
             setDmaDevice(device)
 
@@ -401,6 +401,15 @@ export const TestV3Component: React.FC = () => {
             devicesRef.current.set(deviceIdx, device)
         }
 
+    }
+
+
+    const readRam = (address: u16): u8 => {
+        if (!wasmRef.current || computerPointer === null) return 0 as u8;
+        const wasmExports = wasmRef.current.exports as WasmExports;
+
+        const value = wasmExports.computerGetMemory(computerPointer, address);
+        return value;
     }
 
 

@@ -4,7 +4,7 @@
 ; Description: LEDs Display Driver
 
 
-; DEPREACTED / EDIT ME
+; DEPREACTED / EDIT ME => voir lib_leds du bootloader
 
 
 section .data
@@ -14,6 +14,10 @@ section .data
 
 
 section .text
+    global leds_set_value
+    global leds_set_all_on
+    global leds_set_all_off
+
 
 ; Set LEDs value
 leds_set_value: ; A = Leds Value

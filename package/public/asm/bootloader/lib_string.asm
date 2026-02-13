@@ -1,13 +1,19 @@
+; Author: yomax
+; Date: 2026-02
+; Name: lib_string
+; Description: Lib string for bootloader_v2
+
 
 section .text
-    global STRCMP
+    global strcmp
 
 
 ; -----------------------------------------------
-; STRCMP : compare string [A:B] vs [C:D] (null-terminated)
+; strcmp : compare string [A:B] vs [C:D] (null-terminated)
 ; Résultat : flag zero=1 si égales
 ; -----------------------------------------------
-STRCMP:
+strcmp:
+    STRCMP_START:
     ldi el, al, bl ; E = [A:B]
     ldi fl, cl, dl ; F = [C:D]
     cmp el, fl
@@ -18,9 +24,9 @@ STRCMP:
     je STRCMP_END
 
     mov el, 1
-    call ADD_AB_E
-    call ADD_CD_E
-    jmp STRCMP
+    call add_ab_e
+    call add_cd_e
+    jmp STRCMP_START
 
     STRCMP_END:
     ret

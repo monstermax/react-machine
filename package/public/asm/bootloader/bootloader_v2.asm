@@ -1,66 +1,97 @@
 ; Author: yomax
-; Date: 2026-01
+; Date: 2026-02
 ; Name: bootloader_v2
 ; Description: Bootloader for React Machine (v2)
 
 
 .include "bootloader/lib_devices.asm"
-.include "bootloader/lib_console.asm"
+.include "bootloader/devices/lib_console.asm"
+.include "bootloader/devices/lib_dma.asm"
+.include "bootloader/devices/lib_leds.asm"
+.include "bootloader/devices/lib_os_disk.asm"
+.include "bootloader/devices/lib_screen.asm"
 
 
 section .data
-    ; bootloader config
+    ; Bootloader config
     BOOTLOADER_VERSION  equ 2
     SKIP_PRINT_INFO     equ 0x00
     SKIP_PRINT_GITHUB   equ 0x00
     SKIP_PRINT_WAITING  equ 0x00
     SKIP_PRINT_RUN      equ 0x00
 
+    ; LEDs states
+    LEDS_STATE_HALF_1   equ 0x55
+    LEDS_STATE_HALF_2   equ 0xAA
+
     ; Emplacements memoire (voir MEMORY_MAP)
-    OS_START     equ 0x0700
-    STACK_END    equ 0xEE0F
+    OS_START     equ 0x1000
+    STACK_END    equ 0xEFFF
+
+    ; Strings
+    ASCII_EOL           equ 0x0A
+    STR_WELCOME_LINE_1  db "BOOTLOADER OK", 13, 0
+    STR_GITHUB_LINK     db "GITHUB.COM/MONSTERMAX", 13, 0
+    STR_WAITING_OS      db "WAITING FOR OS...", 13, 0
+    STR_OS_FOUND        db "OS FOUND ON DEVICE #", 0
+
 
 
 section .text
     global _start
 
 
-
 _start:
-    mov dl, BOOTLOADER_VERSION ; set register D with bootloader version
-    mov esp, STACK_END ; set stack pointer
+    ; Indique la version du bootloader => D = BOOTLOADER_VERSION
+    mov dl, BOOTLOADER_VERSION
 
-    call INIT_DEVICES ; cherche les addresses IO de chaque devices
-    call DISPLAY_DEVICES ; affiche la liste des devices
-    call TEST_LEDS ; allume la moitié des leds (retour visuel de bon fonctionnement)
+    ; Défini le stack pointer
+    mov esp, STACK_END
 
-    call INTRO ; affiche les informations du bootloader
+    ; Cherche les addresses IO de chaque devices
+    call init_devices
 
-    call INIT_WAIT_FOR_OS ; indique au disk quelle adresse on voudra lire
-    call WAIT_FOR_OS
+    ; Affiche la liste des devices
+    call display_devices
+
+    ; Allume la moitié des leds (retour visuel de bon fonctionnement)
+    mov al, LEDS_STATE_HALF_2
+    call leds_set_value
+
+    ; Affiche les informations du bootloader
+    call intro
+
+    ; Attente d'un OS
+    call init_wait_for_os ; indique au disk quelle adresse on voudra lire
+    call wait_for_os
+
+    ; Charger l'OS en RAM
+    call load_os_in_ram
+
+    ; Lance l'OS
+    call run_os
+
     hlt
 
 
-INIT_DEVICES:
-    call INIT_LEDS ; initialise le device LEDs
-    call INIT_OS_DISK ; initialise le device OS_DISK
-    call INIT_DMA ; initialise le device DMA
-    call INIT_CONSOLE ; initialise le device Console
+init_devices:
+    call init_leds_device ; initialise le device LEDs
+    call init_os_disk_device ; initialise le device OS_DISK
+    call init_dma_device ; initialise le device DMA
+    call init_console_device ; initialise le device Console
+    call init_screen_device ; initialise le device Screen
     ret
 
 
-INTRO:
-    mov bl, LEDS_STATE_ALL_OFF ; eteint les LEDS
-    mov cl, [leds_io_base]
-    mov dl, [leds_io_base+1]
-    sti cl, dl, bl                    ; écrit B sur le device LEDs
+intro:
+    call leds_set_none ; eteint les LEDs
 
     ; print info
     mov al, SKIP_PRINT_INFO ; verifier si on skip ce print
     cmp al, 1
     je CALL_PRINT_INFO_END ; skip PRINT_INFO
 
-    call PRINT_INFO ; call PRINT_INFO
+    call print_info ; call PRINT_INFO
     CALL_PRINT_INFO_END:
 
     ; print github
@@ -68,7 +99,7 @@ INTRO:
     cmp al, 1
     je CALL_PRINT_GITHUB_END ; skip PRINT_INFO
 
-    call PRINT_GITHUB ; call PRINT_GITHUB
+    call print_github ; call PRINT_GITHUB
     CALL_PRINT_GITHUB_END:
 
     mov al, 13 ; ASCII EOL
@@ -79,179 +110,167 @@ INTRO:
     cmp al, 1
     je CALL_PRINT_WAITING_END ; skip PRINT_GITHUB
 
-    call PRINT_WAITING
+    call print_waiting
     CALL_PRINT_WAITING_END:
 
     INTRO_END:
     ret
 
 
-INIT_WAIT_FOR_OS:
+init_wait_for_os:
     mov cl, [os_disk_io_base]
     mov dl, [os_disk_io_base + 1]
 
     ; défini l'adresse du disk à lire (low)
     mov el, 3
-    call ADD_CD_E
+    call add_cd_e
     sti cl, dl, 0 ; [OS_DISK_ADDR_LOW] = 0
 
     ; défini l'adresse du disk à lire (high)
-    mov el, 1
-    call ADD_CD_E
+    call inc_cd ; increment (C:D)
     sti cl, dl, 0 ; [OS_DISK_ADDR_HIGH] = 0
     ret
 
 
 
-WAIT_FOR_OS:
-    mov cl, [leds_io_base]
-    mov dl, [leds_io_base + 1]
-    sti cl, dl, bl ; [C:D] = B     ; allume les leds (selon la valeur de B)
+wait_for_os:
+    mov al, 1
 
-    ; double la valeur de B (décalage de bits) ; decale la led à afficher
-    add bl, bl
+    WAIT_FOR_OS_START:
+    call leds_set_value ; allume les leds (selon la valeur de A)
+
+    ; double la valeur de A (décalage de bits) ; decale la led à afficher
+    add al, al
 
     ; si (plus) aucune LED allumé, on allume la 1ere (cf WAIT_FOR_OS_LEDS_REWIND)
-    cmp bl, 0
+    cmp al, 0
     jz WAIT_FOR_OS_LEDS_REWIND
     jmp CHECK_OS
 
     WAIT_FOR_OS_LEDS_REWIND:
-    inc bl ; reinitialise B = 1 (au lieu de 0)
+    inc al ; reinitialise A = 1 (au lieu de 0)
 
     CHECK_OS:
-
     ; recuperation du pointeur vers os_disk_io_base + verification presence du disk (si adresse > 0)
     mov cl, [os_disk_io_base]
     mov dl, [os_disk_io_base + 1]
 
     cmp cl, 0
-    jnz CHECK_DISK_PRESNT_END
+    jnz CHECK_DISK_PRESENT_END
 
     cmp dl, 0
-    jnz CHECK_DISK_PRESNT_END
+    jnz CHECK_DISK_PRESENT_END
 
-    jz WAIT_FOR_OS ; si pas de disk present on retourne à WAIT_FOR_OS
+    jz WAIT_FOR_OS_START ; si pas de disk present on retourne à WAIT_FOR_OS_START
 
-    CHECK_DISK_PRESNT_END:
+    CHECK_DISK_PRESENT_END:
 
     ; lit un byte à l'adresse configurée, depuis le disque
-    ldi al, cl, dl ; A = [C:D]
+    ldi bl, cl, dl ; B = [C:D]
+    cmp bl, 0
 
-    cmp al, 0
-    jz WAIT_FOR_OS ; si pas d'OS chargé on retourne à WAIT_FOR_OS
+    jz WAIT_FOR_OS_START ; si pas d'OS chargé on retourne à WAIT_FOR_OS_START
 
-    call LOAD_OS_IN_RAM
-
-    ; check OS in RAM
-    mov al, [OS_START] ; detection de chargement de l'OS
-    cmp al, 0
-    jz WAIT_FOR_OS ; si pas d'OS chargé on retourne à WAIT_FOR_OS
-
-    ; un OS a été trouvé. on se prépare à le lancer
-
-    call RUN_OS
+    ; OS Trouvé, on quitte la fonction wait_for_os
     ret
 
 
-LOAD_OS_IN_RAM:
+run_os:
+    ; Detecte s'il faut skipper l'affichage du message d'information (voir ci-apres)
+    mov al, SKIP_PRINT_RUN
+    cmp al, 1
+    je AFTER_PRINT_RUN ; skip PRINT_RUN
+
+    ; Affiche un message d'information
+    mov al, [os_disk_device_idx]
+    call print_run ; call PRINT_RUN
+    AFTER_PRINT_RUN:
+
+    ; Eteint les leds
+    call leds_set_none
+
+    ; Saute l'adresse de l'OS
+    jmp OS_START
+    ret ; JAmais atteint
+
+
+
+load_os_in_ram:
     ; setup dma disk IO
     mov al, [os_disk_device_idx]
     mov cl, [dma_io_base]
     mov dl, [dma_io_base + 1]
     sti cl, dl, al ; define IO of disk on dma
 
-    ; setup dma disk start address (low)
-    mov el, 1
-    call ADD_CD_E
+
+    ; initialise le DMA avec la premiere adresse source du disk
+    call inc_cd ; incremente (C:D)
     sti cl, dl, 0 ; [DMA_ADDR_START_LOW] = 0
 
-    ; setup dma disk start address (high)
-    mov el, 1
-    call ADD_CD_E
+    call inc_cd ; incremente (C:D)
     sti cl, dl, 0 ; [DMA_ADDR_START_HIGH] = 0
 
     ; lire la taille du disk et stocker dans (A:B)
     mov cl, [os_disk_io_base]
     mov dl, [os_disk_io_base + 1]
 
-    mov el, 1
-    call ADD_CD_E
+    call inc_cd ; incremente (C:D)
     ldi al, cl, dl ; [OS_DISK_SIZE_LOW] = 0
 
-    ;mov el, 1
-    call ADD_CD_E
+    call inc_cd ; incremente (C:D)
     ldi bl, cl, dl ; [OS_DISK_SIZE_HIGH] = 0
 
-    ; décrementer pour obtenir l'adresse de fin ( = taille du disk - 1)
+    ; décrementer pour obtenir l'adresse de fin : (A:B) = taille du disk - 1 = derniere adresse
     dec al
-    jnc LOAD_OS_IN_RAM_NO_CARRY
+    jnc LOAD_OS_NO_CARRY
     dec bl
 
-    LOAD_OS_IN_RAM_NO_CARRY:
+    LOAD_OS_NO_CARRY:
     mov cl, [dma_io_base]
     mov dl, [dma_io_base + 1]
 
+
+    ; initialise le DMA avec la derniere adresse source du disk
     mov el, 3
-    call ADD_CD_E
+    call add_cd_e
     sti cl, dl, al ; [DMA_ADDR_END_LOW] = A (taille du disk low)
 
-    mov el, 1
-    call ADD_CD_E
+    call inc_cd ; incremente (C:D)
     sti cl, dl, bl ; [DMA_ADDR_END_HIGH] = B (taille du disk high)
 
-    ;mov [dma_io_base + 3], al ; DMA_ADDR_END_LOW : define end disk address (low byte) ;; TODO: -1
-    ;mov [dma_io_base + 4], bl ; DMA_ADDR_END_HIGH : define end disk address (high byte) ;; TODO: -1
 
+    ; initialise l'adresse de debut de l'OS dans la RAM : (A:B) = OS_START
     lea al, bl, OS_START
 
-    mov el, 1
-    call ADD_CD_E
+
+    ; initialise l'adresse de destination en RAM (low=A, high=B)
+    call inc_cd ; incremente (C:D)
     sti cl, dl, al ; [DMA_TARGET_ADDR_LOW] = target ram address (low)
 
-    mov el, 1
-    call ADD_CD_E
+    call inc_cd ; incremente (C:D)
     sti cl, dl, bl ; [DMA_TARGET_ADDR_HIGH] = target ram address (high)
 
-    mov el, 1
-    call ADD_CD_E
+
+    ; Lance la copie de données via le DMA (Disk => RAM)
+    call inc_cd ; incremente (C:D)
     sti cl, dl, 1 ; [DMA_DATA] = 1 (write bulk data)
 
-    ret
 
+    ; Vérifie que l'OS a bien été chargé en RAM
+    mov bl, [OS_START]
+    cmp bl, 0
+    jnz OS_LOADED
 
-RUN_OS:
-    mov al, SKIP_PRINT_RUN
-    cmp al, 1
-    je BOOTLOADER_LEAVE ; skip PRINT_RUN
+    ; Si l'OS n'a pas été chargé, il doit y avoir un probleme. on arrete le CPU
+    hlt
 
-    mov al, [os_disk_device_idx]
-    call PRINT_RUN ; label RUN_OS. call PRINT_RUN
-
-    BOOTLOADER_LEAVE:
-    mov al, 0x00
-;    mov [leds_io_base], al ; eteint les leds
-
-    call OS_START ; call OS_START
-
-    OS_RETURN:
-    jmp _start ; os return. jump to _start
-
-
-
-TEST_LEDS:
-    ; Utiliser les LEDs
-    mov al, LEDS_STATE_HALF_2
-
-    mov cl, [leds_io_base]
-    mov dl, [leds_io_base+1]
-    sti cl, dl, al
+    OS_LOADED:
+    ; L'OS a bien été chargé. on va ensuite le lancer
 
     ret
 
 
-
-DISPLAY_DEVICES:
+display_devices:
     mov el, [DEVICE_TABLE_COUNT]
     cmp el, 0
     je DISPLAY_DEVICES_END ; aucune device presente
@@ -260,4 +279,46 @@ DISPLAY_DEVICES:
 
     DISPLAY_DEVICES_END:
     ret
+
+
+
+; print bootloader info (no input required)
+print_info:
+    lea cl, dl, [STR_WELCOME_LINE_1]
+    call console_print_string
+    ret ; end of PRINT_INFO
+
+
+; print waiting message (no input required)
+print_waiting:
+    lea cl, dl, [STR_WAITING_OS]
+    call console_print_string
+    ret; end of PRINT_WAITING
+
+
+; print "OS FOUND" (INPUT => A = deviceIdx du disque contenant l'OS)
+print_run:
+
+    ; 1. print "OS FOUND ON DEVICE #"
+    push al
+    lea cl, dl, [STR_OS_FOUND]
+    call console_print_string
+    pop al
+
+    ; 2. print deviceIdx
+    add al, 48 ; conversion number => ascii number
+    call console_print_char
+
+    ; 3. print EOL
+    mov al, ASCII_EOL
+    call console_print_char
+
+    ret ; end of PRINT_RUN
+
+
+; print Github link (no input required)
+print_github:
+    lea cl, dl, [STR_GITHUB_LINK]
+    call console_print_string
+    ret ; end of PRINT_GITHUB
 

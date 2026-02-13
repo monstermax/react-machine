@@ -9,6 +9,11 @@ section .data
 
 
 section .text
+    global console_print_char
+    global console_clear
+    global console_print_string
+    global console_print_sized_string
+
 
 console_clear:
     mov al, 0x01
@@ -19,9 +24,9 @@ console_clear:
 
     ; incremente (E:F) pour acceder à CONSOLE_CLEAR
     inc el
-    jnc console_clear_after_carry
+    jnc CONSOLE_CLEAR_AFTER_CARRY
     inc fl
-    console_clear_after_carry:
+    CONSOLE_CLEAR_AFTER_CARRY:
 
     sti el, fl, al ; [e:f] = A
     ret
@@ -49,9 +54,8 @@ console_print_string:
     call console_print_char
 
     ; Incrémenter pointeur C:D
-    inc cl
-    jnc CONSOLE_PRINT_STRING_LOOP
-    inc dl
+    mov el, 1
+    call add_cd_e
     jmp CONSOLE_PRINT_STRING_LOOP
 
     CONSOLE_PRINT_STRING_END:

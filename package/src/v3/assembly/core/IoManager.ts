@@ -59,7 +59,8 @@ export class IoManager {
         const namePtr = this.writeString(name);
 
         // Calculate entry address
-        const entryAddr: u16 = MEMORY_MAP.DEVICE_TABLE_START + (deviceIdx as u16) * (MEMORY_MAP.DEVICE_TABLE_ENTRY_SIZE as u16);
+        const deviceOffset = (deviceIdx as u16) * (MEMORY_MAP.DEVICE_TABLE_ENTRY_SIZE as u16);
+        const entryAddr: u16 = MEMORY_MAP.DEVICE_TABLE_START + deviceOffset;
 
         // Compute I/O base address
         const ioBase: u16 = MEMORY_MAP.IO_START + (deviceIdx as u16) * (DEVICE_PORT_SIZE as u16);

@@ -195,6 +195,7 @@ const instructions: InstructionDef[] = [
     {
         mnemonic: 'INC', opcode: 0x00, operands: 'NONE', size: 1, variants: [
             { operands: 'REG', opcode: Opcode.INC_REG, size: 2, condition: (ops) => true, mnemonic: 'INC_REG' },
+            { operands: 'MEM', opcode: Opcode.INC_MEM, size: 3, condition: (ops) => true, mnemonic: 'INC_MEM' },
         ]
     },
 

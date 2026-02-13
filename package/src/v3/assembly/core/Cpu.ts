@@ -951,8 +951,6 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
                 const regLowIdx = cpu.readMem8(cpu.registers.PC);
                 const regHighIdx = cpu.readMem8(cpu.registers.PC + 1);
                 const memAddress = cpu.readMem16(cpu.registers.PC + 2);
-                //const low = cpu.readMemory(memAddress);
-                //const high = cpu.readMemory((memAddress + 1) as u16);
                 const low = (memAddress & 0xFF) as u8;
                 const high = ((memAddress >> 8) & 0xFF) as u8;
                 cpu.setRegisterValueByIdx(regLowIdx, low);
@@ -1034,7 +1032,8 @@ class ALU {
     }
     add(a: u8, b: u8): AluResult {
         const result = ((a + b) & 0xFF) as u8;
-        const carry = (a + b) > 0xFF;
+        //const carry = (a + b) > 0xFF;
+        const carry = (result < a);
         const zero = result === 0;
         const flags: Flags = ({ zero, carry });
         return { result, flags };
@@ -1044,6 +1043,7 @@ class ALU {
         const result = ((a - b) & 0xFF) as u8;
         const zero = result === 0;
         const carry = a < b; // Borrow
+        //const carry = (result > a);
         const flags: Flags = ({ zero, carry });
         return { result, flags };
     }
@@ -1068,13 +1068,13 @@ class ALU {
 
     inc(value: u8): AluResult {
         const result = ((value + 1) & 0xFF) as u8;
-        const flags: Flags = ({ zero: result === 0, carry: false });
+        const flags: Flags = ({ zero: result === 0, carry: result < value });
         return { result, flags };
     }
 
     dec(value: u8): AluResult {
         const result = ((value - 1) & 0xFF) as u8;
-        const flags: Flags = ({ zero: result === 0, carry: false });
+        const flags: Flags = ({ zero: result === 0, carry: result > value });
         return { result, flags };
     }
 
