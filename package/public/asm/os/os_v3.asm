@@ -5,13 +5,13 @@
 
 
 .include "os/v3/drivers/lib_console.asm"
+.include "os/v3/arithmetic/lib_math.asm"
 
 
 section .data
     OS_VERSION         equ 3
 
     keyboard_io_base   dw 0xF000 ; TODO: a remplacer par [keyboard_io_base] ; TODO: reproduire/copier/importer le code du bootloader pour initialiser les devices
-    KEYBOARD_STATUS    equ 0xF001 ; TODO: a remplacer par [keyboard_io_base]+1
 
     STR_WELCOME_LINE_1 dw "OS v3", 13, 0
     STR_CONSOLE_PROMPT dw "root@react-machine $ ", 0
@@ -89,19 +89,28 @@ run_shell:
     call console_print_string
 
     run_shell_readline:
-    mov al, [KEYBOARD_STATUS]
+    mov cl, [keyboard_io_base]     ; low  byte de l'adresse de la variable keyboard_io_base
+    mov dl, [keyboard_io_base + 1] ; high byte de l'adresse de la variable keyboard_io_base
+
+    mov el, 1 ; incremente (C:D) pour atteindre KEYBOARD_STATUS
+    call ADD_CD_E
+
+    ldi al, cl, dl ; A = [C:D]
     cmp al, 0
     je run_shell_readline ; loop to wait for keyboard
 
     ; run_shell_readchar:
     ;mov al, [KEYBOARD_DATA]
-    mov el, [keyboard_io_base]     ; low  byte de l'adresse de la variable keyboard_io_base
-    mov fl, [keyboard_io_base + 1] ; high byte de l'adresse de la variable keyboard_io_base
-    ldi al, el, fl ; A = [e:f]
+    mov cl, [keyboard_io_base]     ; low  byte de l'adresse de la variable keyboard_io_base
+    mov dl, [keyboard_io_base + 1] ; high byte de l'adresse de la variable keyboard_io_base
+    ldi al, cl, dl ; A = [C:D]
 
     ; run_shell_write_console:
+    mov el, 1 ; incremente (C:D) pour atteindre KEYBOARD_STATUS
+    call ADD_CD_E
+    sti cl, dl, 0 ; confirme la lecture du clavier
+
     call console_print_char
-    mov [KEYBOARD_STATUS], 0 ; confirme la lecture du clavier
 
     ; check return key
     cmp al, 13
