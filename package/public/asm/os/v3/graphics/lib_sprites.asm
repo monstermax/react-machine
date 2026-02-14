@@ -4,6 +4,9 @@
 ; Description: Graphics Sprites Library
 
 
+.include "os/v3/drivers/lib_screen.asm"
+
+
 section .data
     _spr_x_start   db 0            ; X de départ sauvegardé
     _spr_y_start   db 0            ; Y de départ sauvegardé

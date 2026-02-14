@@ -176,7 +176,11 @@ export const Screen: React.FC<ScreenProps> = (props) => {
                 <div>
                     <div className="flex flex-col gap-2">
                         <div className="mt-3 text-xs text-slate-400 p-2 bg-slate-900/30 rounded">
-                            Cursor: X={currentX}, Y={currentY}
+                            Cursor:
+                            <ul>
+                                <li>X={currentX}</li>
+                                <li>Y={currentY}</li>
+                            </ul>
                         </div>
 
                         <button

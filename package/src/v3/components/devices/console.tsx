@@ -160,6 +160,7 @@ export const Console: React.FC<ConsoleProps> = (props) => {
                     ref={scrollRef}
                     className="bg-black mx-auto rounded-lg p-4 font-mono text-sm overflow-y-auto border border-green-500/30"
                     style={{ height: `${deviceInstance.height * 1.15}em`, width: `${deviceInstance.width * 1.1}ch` }}
+                    onClick={() => document.getElementById('device-keyboard')?.focus()}
                 >
                     {lines.length === 0 && !currentLine ? (
                         <div className="text-green-500/50 italic">

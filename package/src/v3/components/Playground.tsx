@@ -58,7 +58,7 @@ declare global {
 
 
 //  Default user code
-const DEFAULT_CODE = `; == User Program (Loaded in RAM @ 0xA000) ==
+const DEFAULT_CODE = `; == User Program (Loaded @ 0xA000) ==
 ; Type "exec" in the shell to run it.
 ; IMPORTANT: end with "ret" !
 
@@ -418,7 +418,8 @@ export const Playground: React.FC = () => {
             setKeyboardDevice(device);
 
         } else if (name === 'console') {
-            const device = new ConsoleDevice(deviceIdx, 'console', { type: 'output', vendor, model });
+            const { width, height } = { width: 80, height: 25 };
+            const device = new ConsoleDevice(deviceIdx, 'console', { type: 'output', vendor, model, width, height });
             devicesRef.current.set(deviceIdx, device);
             setConsoleDevice(device);
 
@@ -751,40 +752,46 @@ export const Playground: React.FC = () => {
                     </div>
 
                     {rightTab === 'devices' ? (
-                        <div className="flex-1 overflow-y-auto">
-                            {/* Devices */}
-                            <div className="flex gap-4 p-4 flex-wrap">
-
+                        <div className="flex-1 overflow-y-auto p-4">
+                            {/* ── Row 1: Console + Screen ── */}
+                            <div className="flex gap-3 mb-3">
                                 {/* Console */}
-                                <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
+                                <div className="flex-1 border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14] min-w-0">
                                     <Console deviceInstance={consoleDevice} />
                                 </div>
 
                                 {/* Screen */}
-                                <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
+                                <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14] shrink-0">
                                     <Screen deviceInstance={screenDevice} />
                                 </div>
+                            </div>
 
-                                {/* LEDs + Keyboard */}
-                                <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14] flex flex-col gap-4">
-                                    <div className="border border-zinc-800/50 rounded p-2">
-                                        <Leds deviceInstance={ledsDevice} />
-                                    </div>
-                                    <div className="border border-zinc-800/50 rounded p-2">
+                            {/* ── Row 2: LEDs + Keyboard + CPU State ── */}
+                            <div className="flex gap-3 mb-3 w-full">
+
+                                <div className="flex-1 flex flex-col gap-3">
+                                    {/* Keyboard */}
+                                    <div className="flex-1 border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14] min-w-0 grow-0">
                                         <Keyboard deviceInstance={keyboardDevice} />
+                                    </div>
+
+                                    {/* LEDs */}
+                                    <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
+                                        <Leds deviceInstance={ledsDevice} />
                                     </div>
                                 </div>
 
-                                {/* CPU State (registers) */}
-                                <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14] flex flex-col gap-4">
+                                {/* CPU State */}
+                                <div className="flex-1 border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
                                     <Registers registers8={registers8} registers16={registers16} />
                                 </div>
 
-                                {/* Disk */}
-                                <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
+                                {/* Disk ── */}
+                                <div className="flex-1 border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
                                     <Disk deviceInstance={diskDevice} />
                                 </div>
                             </div>
+
                         </div>
                     ) : (
                         <div className="flex-1 overflow-y-auto p-4">

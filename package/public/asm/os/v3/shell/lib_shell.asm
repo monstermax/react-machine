@@ -24,7 +24,7 @@ section .data
     STR_CONSOLE_PROMPT    db "root@react-machine $ ", 0
     STR_RUN_COMMAND       db "running command...", 13, 0
     STR_COMMAND_NOT_FOUND db "command not found", 13, 0
-    STR_COMMAND_HELP_TEST db "help is coming very soon...", 13, 0
+    STR_COMMAND_HELP_TEST db "Commands:", 13, " - help : this message", 13, " - halt : halt the computer", 13, " - leds : toggle leds", 13, " - ls : list files", 13, " - pixels : screen demo", 13, " - sprites : screen demo", 13, " - custom : run custom code", 13, 0
     STR_COMMAND_LS_TEST   db "files list here...", 13, 0
 
     STR_COMMANDS_BEGIN    db 0
