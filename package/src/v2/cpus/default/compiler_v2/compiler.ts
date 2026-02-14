@@ -139,8 +139,11 @@ export class Compiler {
         this.resolveReferences();
 
         // Sync line numbers with expected offset
-        if (this.startLine !== this.startAddress) {
+        const syncLines: boolean = true; // synchronise les numéros de ligne avec les offset et non avec les addresses
+
+        if (syncLines && this.startLine !== this.startAddress) {
             const offset = this.startAddress - this.startLine
+            console.log(`Applying addresses offset: ${offset}`)
 
             this.sections.forEach(s => {
                 s.startAddress -= offset;
@@ -457,8 +460,6 @@ export class Compiler {
             return;
         }
 
-        console.log(`Unknown directive: ${directive}`)
-
         // Handle bare data directives (DB/DW/DD/DQ without preceding identifier)
         // e.g., continuation lines after a label:
         //   sprite_mario:
@@ -485,6 +486,11 @@ export class Compiler {
             }
             return;
         }
+
+        console.log(`Unknown directive: ${directive}`)
+
+        const token = this.peek();
+        this.error(token, `Unknown directive: ${directive}`)
 
         this.advance();
     }

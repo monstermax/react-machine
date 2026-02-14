@@ -34,6 +34,7 @@ section .data
     STR_COMMAND_HELP      db "help", 0
     STR_COMMAND_HALT      db "halt", 0
     STR_COMMAND_LEDS      db "leds", 0
+    STR_COMMAND_CUSTOM    db "custom", 0
     STR_COMMAND_LS        db "ls", 0
     STR_COMMANDS_END      db 0
 
@@ -268,6 +269,23 @@ run_command:
     AFTER_CHECK_COMMAND_LEDS:
 
 
+    ; HANDLE CUSTOM
+
+    ; recupere un pointer vers la chaine de caractere de la commande à executer
+    lea al, bl, [shell_command_input]
+
+    ; recupere un pointer vers la chaine de caractere à comparer (parmi la liste des commandes connues)
+    lea cl, dl, [STR_COMMAND_CUSTOM] ; (C,D) = [STR_COMMAND_CUSTOM]
+
+    pop fl ; restaure la longueur de la chaine
+    push fl ; sauvegarde la longueur de la chaine
+    call strcmp_len
+    jne AFTER_CHECK_COMMAND_CUSTOM
+    call run_command_custom
+    jmp RUN_COMMAND_END
+    AFTER_CHECK_COMMAND_CUSTOM:
+
+
     ; HANDLE HALT
 
     ; recupere un pointer vers la chaine de caractere de la commande à executer
@@ -395,14 +413,22 @@ run_command_leds:
     ret
 
 
-run_command_clear:
+run_command_custom:
     debug 9, 6
+    ; TODO: verifier si du code est chargé à cette addresse
+    call 0xA000
+    ;hlt
+    ret
+
+
+run_command_clear:
+    debug 9, 7
     call console_clear
     ret
 
 
 run_command_halt:
-    debug 9, 7
+    debug 9, 8
     hlt
     ret
 

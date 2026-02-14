@@ -66,7 +66,7 @@ export const CompilePage: React.FC = () => {
 
         try {
             const startAddress = 0;
-            //const startAddress = 1; // debug
+            //const startAddress = 0x0700; // debug
             const compiled = await compileCode(editorContent, arch, { startAddress });
 
             const bytecode = formatBytecode(compiled);

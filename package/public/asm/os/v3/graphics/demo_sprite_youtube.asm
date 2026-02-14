@@ -3,9 +3,12 @@
 ; Name: demo_sprite_youtube
 ; Description: Logo YouTube 16x16 - rectangle rouge arrondi + triangle play blanc
 ;
-; Dépendances : demo_sprites.asm (draw_sprite)
+; Dépendances : lib_sprites.asm (draw_sprite)
 ;
 ; Convention draw_sprite : A:B=adresse sprite, F=X, E=Y
+
+
+.include "os/v3/graphics/lib_sprites.asm"
 
 
 section .data

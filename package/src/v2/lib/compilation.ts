@@ -37,10 +37,12 @@ export async function compileCode(source: string, architecture: CPUArchitecture 
     const { source: resolvedSource, stats } = await resolveIncludes(source);
 
     // Log des stats si besoin
-    console.log('Include stats:');
-    stats.forEach((stat, file) => {
-        console.log(`  ${stat.file}: ${stat.references} references from [${stat.includedBy.join(', ')}]`);
-    });
+    if (stats.size > 0) {
+        console.log('Include stats:');
+        stats.forEach((stat, file) => {
+            console.log(`  ${stat.file}: ${stat.references} references from [${stat.includedBy.join(', ')}]`);
+        });
+    }
 
     const compiler = new Compiler({
         architecture,
@@ -55,7 +57,7 @@ export async function compileCode(source: string, architecture: CPUArchitecture 
         compiled.errors.forEach(error => {
             console.warn(JSON.stringify(error));
         })
-        throw new Error(`Compilation completed with errors`)
+        //throw new Error(`Compilation completed with errors`)
     }
 
     return compiled

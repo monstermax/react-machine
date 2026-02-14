@@ -3,12 +3,12 @@
 ; Name: demo_sprites_pack2
 ; Description: Collection de sprites 16x16 en pixel art
 ;
-; Dépendances : lib_math.asm (inc_cd, add_cd_e)
-;               lib_screen.asm (screen_set_pixel)
-;               demo_sprites.asm (draw_sprite)
+; Dépendances : lib_sprites.asm (draw_sprite)
 ;
-; Convention screen_set_pixel : F=X, E=Y, AL=couleur
 ; Convention draw_sprite : A:B=adresse sprite, F=X, E=Y
+
+
+.include "os/v3/graphics/lib_sprites.asm"
 
 
 section .data

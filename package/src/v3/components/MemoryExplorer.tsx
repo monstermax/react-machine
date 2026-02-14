@@ -152,7 +152,7 @@ export const MemoryExplorer = (props: MemoryExplorerProps) => {
                     {/* Quick jump */}
                     <div className="mt-4 pt-2 border-t border-gray-700 flex gap-2 text-xs">
                         <span className="text-gray-400">Jump to:</span>
-                        {[0x0000, 0x0300, 0x0500, 0x0700, 0x1000].map(addr => (
+                        {[0x0000, 0x0300, 0x0500, 0x0700, 0x1000, 0xA000].map(addr => (
                             <button
                                 key={addr}
                                 onClick={() => setPage(Math.floor(addr / bytesPerPage))}

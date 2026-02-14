@@ -328,6 +328,13 @@ export const TestV3Component: React.FC = () => {
         //const code = codeDemo // OK
         const sourceCode = await loadSourceCodeFromFile("bootloader/bootloader_v2.asm")
         const compiled = await compileCode(sourceCode, CUSTOM_CPU);
+
+        if (compiled.errors.length > 0) {
+            const errMsg = compiled.errors.map(e => `Line ${e.line}: ${e.message}`).join('\n');
+            console.warn(`Bootloader Compilation errors:`, errMsg)
+            throw new Error();
+        }
+
         const codeRaw = Array.from(getBytecodeArray(compiled).entries())
         //console.log('codeRaw:', codeRaw)
 
@@ -399,6 +406,13 @@ export const TestV3Component: React.FC = () => {
             const startAddress = MEMORY_MAP.OS_START;
             const sourceCode = await loadSourceCodeFromFile('os/os_v3.asm')
             const compiled = await compileCode(sourceCode, CUSTOM_CPU, { startAddress });
+
+            if (compiled.errors.length > 0) {
+                const errMsg = compiled.errors.map(e => `Line ${e.line}: ${e.message}`).join('\n');
+                console.warn(`OS Compilation errors:`, errMsg)
+                throw new Error();
+            }
+
             const codeRaw = Array.from(getBytecodeArray(compiled).entries())
 
             const data = codeRaw ?? [];
