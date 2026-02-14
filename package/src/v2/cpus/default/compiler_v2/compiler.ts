@@ -1,4 +1,3 @@
-
 import { Lexer, type Token } from './compiler_lexer';
 
 import type { CPUArchitecture, CompilerOptions, CompiledProgram, Section, ByteEntry, SymbolInfo, CompilerError, ParsedOperand, InstructionDef, InstructionVariant } from './compiler.types';
@@ -298,6 +297,17 @@ export class Compiler {
                                 if (!label.values) label.values = [];
                                 label.values.push(t.value)
 
+                            } else if (t.type === 'IDENTIFIER') {
+                                // Reference to another identifier (e.g., _R equ COL_RED)
+                                const nextAfter = this.peek(1);
+                                // Stop if this identifier starts a new declaration (e.g., "other_var db ...")
+                                if (nextAfter.type === 'DIRECTIVE') break;
+
+                                this.advance();
+
+                                if (!label.values) label.values = [];
+                                label.values.push(t.value)
+
                             } else {
                                 break;
                             }
@@ -448,6 +458,33 @@ export class Compiler {
         }
 
         console.log(`Unknown directive: ${directive}`)
+
+        // Handle bare data directives (DB/DW/DD/DQ without preceding identifier)
+        // e.g., continuation lines after a label:
+        //   sprite_mario:
+        //       db _X, _X, _X
+        //       db _X, _X, _X
+        if (['DB', 'DW', 'DD', 'DQ'].includes(directive)) {
+            const itemSize = getDirectiveDataSize(directive);
+            this.currentAddress += this.calculateDataSize(itemSize);
+            this.advance(); // consume the directive
+
+            // Skip over the values (they'll be processed in pass2)
+            while (!this.isAtEnd()) {
+                const t = this.peek();
+                if (['STRING', 'NUMBER', 'IDENTIFIER', 'COMMA'].includes(t.type)) {
+                    // For IDENTIFIER, stop if it starts a new declaration
+                    if (t.type === 'IDENTIFIER') {
+                        const nextAfter = this.peek(1);
+                        if (nextAfter.type === 'DIRECTIVE') break;
+                    }
+                    this.advance();
+                } else {
+                    break;
+                }
+            }
+            return;
+        }
 
         this.advance();
     }
@@ -664,11 +701,14 @@ export class Compiler {
             return;
         }
 
+        // Handle bare data directives (DB/DW/DD/DQ without preceding identifier)
+        if (['DB', 'DW', 'DD', 'DQ'].includes(directive)) {
+            this.generateData(undefined, directive);
+            return;
+        }
+
         this.advance();
     }
-
-
-    // Emit data bytes for variable declarations (db, dw, dd, dq)
     private generateData(varName: string | undefined, directiveName: string): void {
         // called by pass2GenerateCode (pass2) (gère les valeurs situées après un couple [IDENTIFIER, DIRECTIVE]. example "my_var db 0x05, 0x06, 0x07")
 
@@ -688,12 +728,8 @@ export class Compiler {
 
                 // Stop if we encounter a new variable declaration
                 if (nextToken.type === 'DIRECTIVE') {
-                    if (['EQU', 'DB', 'DW', 'DD', 'DQ'].includes(this.normalize(nextToken.value))) {
-
-                    } else {
-                        // Nouvel identifier, on arrête
-                        break;
-                    }
+                    // Any directive after an identifier means a new declaration, stop here
+                    break;
                 }
 
                 if (nextToken.type === 'INSTRUCTION' || nextToken.type === 'LABEL') {
@@ -703,16 +739,26 @@ export class Compiler {
 
                 // Sinon, c'est une référence à un label
 
-                // Emit label address as data
+                // Emit label address as data (or EQU value if it's a constant)
                 const labelInfo = this.labels.get(token.value);
 
                 if (labelInfo !== undefined) {
-                    for (let i = 0; i < itemSize; i++) {
-                        const defaultComment = i === 0
-                            ? `low  byte of label ${token.value} = ${labelInfo.address}`
-                            : `high byte of label ${token.value} = ${labelInfo.address}`
+                    // EQU constant: resolve the value (possibly chained)
+                    if (labelInfo.dataSize === 0 && labelInfo.values && labelInfo.values.length > 0) {
+                        const resolvedValue = this.resolveEquValue(labelInfo.values[0]);
+                        for (let i = 0; i < itemSize; i++) {
+                            const defaultComment = `${token.value} = ${toHex(resolvedValue)} (${resolvedValue})`;
+                            this.emitByte((resolvedValue >> (i * 8)) & 0xFF, comment || defaultComment, false);
+                        }
+                    } else {
+                        // Regular label: emit its address
+                        for (let i = 0; i < itemSize; i++) {
+                            const defaultComment = i === 0
+                                ? `low  byte of label ${token.value} = ${labelInfo.address}`
+                                : `high byte of label ${token.value} = ${labelInfo.address}`
 
-                        this.emitByte((labelInfo.address >> (i * 8)) & 0xFF, comment || defaultComment, false);
+                            this.emitByte((labelInfo.address >> (i * 8)) & 0xFF, comment || defaultComment, false);
+                        }
                     }
 
                 } else {
@@ -854,7 +900,7 @@ export class Compiler {
 
                     if (labelInfo !== undefined && labelSection !== undefined) {
                         if (labelInfo.dataSize === 0 && labelInfo.values) {
-                            value = labelInfo.values ? this.parseNumber(labelInfo.values[0]) : 0x00;
+                            value = this.resolveEquValue(labelInfo.values[0]);
                         } else {
                             value = labelInfo.address;
                         }
@@ -877,7 +923,7 @@ export class Compiler {
                     }
 
                     if (label.dataSize === 0 && label.values) {
-                        value = this.parseNumber(label.values[0]);
+                        value = this.resolveEquValue(label.values[0]);
                     } else {
                         if (label.address === undefined) throw new Error("missing label address");
                         value = label.address;
@@ -995,11 +1041,11 @@ export class Compiler {
 
                 // EQU constants become immediate values
                 if (label && label.dataSize === 0) {
+                    const resolvedValue = label?.values ? this.resolveEquValue(label.values[0]) : 0;
                     operands.push({
                         type: 'IMMEDIATE',
                         value: label?.values ? label.values[0] : token.value,
-                        //address: label?.address,
-                        //size: 2,
+                        address: resolvedValue,
                     });
 
                 } else {
@@ -1269,6 +1315,38 @@ export class Compiler {
         // used at several places
 
         return this.caseSensitive ? str : str.toUpperCase();
+    }
+
+
+    // Resolve an EQU value that may reference another EQU identifier (chain resolution)
+    // e.g., _R equ COL_RED, COL_RED equ 0x01 → resolves _R to 0x01
+    private resolveEquValue(value: string, maxDepth = 10): number {
+        let current = value;
+
+        for (let i = 0; i < maxDepth; i++) {
+            // Try parsing as a number first
+            const asNumber = parseInt(current);
+            if (!isNaN(asNumber) || current.startsWith('0x') || current.startsWith('0b') || current.startsWith('$')) {
+                return this.parseNumber(current);
+            }
+
+            // Look up as a label/identifier
+            const label = this.labels.get(current);
+            if (label && label.dataSize === 0 && label.values && label.values.length > 0) {
+                current = label.values[0];
+                continue;
+            }
+
+            // If it's a known label (not EQU), return its address
+            if (label) {
+                return label.address;
+            }
+
+            // Couldn't resolve
+            break;
+        }
+
+        return this.parseNumber(current);
     }
 
 

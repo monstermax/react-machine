@@ -10,7 +10,9 @@
 .include "os/v3/drivers/lib_screen.asm"
 .include "os/v3/strings/lib_ascii.asm"
 .include "os/v3/strings/lib_string.asm"
-;.include "os/v3/graphics/lib_sprites.asm" ; require un fix (du compilateur)
+.include "os/v3/graphics/demo_sprites_pack1.asm"
+.include "os/v3/graphics/demo_sprites_pack2.asm"
+.include "os/v3/graphics/demo_sprite_youtube.asm"
 
 
 section .data
@@ -27,6 +29,7 @@ section .data
 
     STR_COMMANDS_BEGIN    db 0
     STR_COMMAND_PIXELS    db "pixels", 0
+    STR_COMMAND_SPRITE    db "sprite", 0
     STR_COMMAND_CLEAR     db "clear", 0
     STR_COMMAND_HELP      db "help", 0
     STR_COMMAND_HALT      db "halt", 0
@@ -231,6 +234,23 @@ run_command:
     AFTER_CHECK_COMMAND_PIXELS:
 
 
+    ; HANDLE SPRITE
+
+    ; recupere un pointer vers la chaine de caractere de la commande à executer
+    lea al, bl, [shell_command_input]
+
+    ; recupere un pointer vers la chaine de caractere à comparer (parmi la liste des commandes connues)
+    lea cl, dl, [STR_COMMAND_SPRITE] ; (C,D) = [STR_COMMAND_SPRITE]
+
+    pop fl ; restaure la longueur de la chaine
+    push fl ; sauvegarde la longueur de la chaine
+    call strcmp_len
+    jne AFTER_CHECK_COMMAND_SPRITE
+    call run_command_sprite
+    jmp RUN_COMMAND_END
+    AFTER_CHECK_COMMAND_SPRITE:
+
+
     ; HANDLE LEDS
 
     ; recupere un pointer vers la chaine de caractere de la commande à executer
@@ -284,7 +304,7 @@ run_command:
 
 
     COMMAND_NOT_FOUND:
-    debug 9, 9
+    debug 9, 0xFF
     lea cl, dl, [STR_COMMAND_NOT_FOUND]
     call console_print_string
     ;hlt
@@ -298,7 +318,7 @@ run_command:
 
 
 run_command_help:
-    debug 9,1
+    debug 9, 1
     lea cl, dl, [STR_COMMAND_HELP_TEST]
     call console_print_string
     ;hlt
@@ -306,7 +326,7 @@ run_command_help:
 
 
 run_command_ls:
-    debug 9,2
+    debug 9, 2
     lea cl, dl, [STR_COMMAND_LS_TEST]
     call console_print_string
     ;hlt
@@ -314,7 +334,7 @@ run_command_ls:
 
 
 run_command_pixels:
-    debug 9,3
+    debug 9, 3
     call draw_plasma
     ;call draw_xor_pattern
     ;call draw_tunnel
@@ -323,12 +343,26 @@ run_command_pixels:
     ;call draw_checkerboard_gradient
     ;call draw_rainbow_diagonal
     ;call draw_spiral
-    ;call draw_mario_and_sonic ; not yet available
+    ret
+
+
+run_command_sprite:
+    debug 9, 4
+    ;call draw_mario
+    ;call draw_mario_and_sonic ; Sonic est un peu foiré
+    ;call draw_pacman
+    ;call draw_ghost
+    ;call draw_invader
+    ;call draw_heart
+    ;call draw_mushroom
+    ;call draw_creeper
+    ;call draw_arcade_scene
+    call draw_youtube_logo
     ret
 
 
 run_command_leds:
-    debug 9,4
+    debug 9, 5
     call leds_get_value
     cmp al, 0
     je HANDLE_COMMAND_LEDS_ON ; si eteint, on jump pour allumer (en state half_1)
@@ -362,13 +396,13 @@ run_command_leds:
 
 
 run_command_clear:
-    debug 9,6
+    debug 9, 6
     call console_clear
     ret
 
 
 run_command_halt:
-    debug 9,5
+    debug 9, 7
     hlt
     ret
 

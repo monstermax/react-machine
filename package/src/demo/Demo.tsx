@@ -6,6 +6,7 @@ import { Home } from "./pages/Home";
 import { CompilePage } from "./pages/CompilePage";
 import { ComputerPage } from "./pages/ComputerPage";
 import { TestV3Page } from "./pages/TestV3Page";
+import { PlaygroundV3Page } from "./pages/PlaygroundV3Page";
 
 
 export const Demo: React.FC = () => {
@@ -24,6 +25,7 @@ const Router: React.FC = () => {
             <Route path={"/cpu"} component={ComputerPage} />
             <Route path={"/compiler"} component={CompilePage} />
             <Route path={"/test-v3"} component={TestV3Page} />
+            <Route path={"/playground"} component={PlaygroundV3Page} />
         </Switch>
     );
 }

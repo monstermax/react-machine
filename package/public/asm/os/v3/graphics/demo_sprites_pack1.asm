@@ -1,6 +1,6 @@
 ; Author: Claude + yomax
 ; Date: 2026-02
-; Name: demo_sprites
+; Name: demo_sprites_pack1
 ; Description: Dessine Mario et Sonic en pixel art sur l'écran 32x32
 
 ; Dépendances : lib_math.asm (inc_cd, add_cd_e)
