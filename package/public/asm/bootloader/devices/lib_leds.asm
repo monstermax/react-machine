@@ -36,14 +36,14 @@ leds_set_value:
 
 ; Switch on all LEDs (no required input)
 leds_set_all:
-    mov al, LEDS_STATE_ALL_OFF
+    mov al, LEDS_STATE_ALL_ON
     call leds_set_value
     ret
 
 
 ; Switch off all LEDs (no required input)
 leds_set_none:
-    mov al, LEDS_STATE_ALL_ON
+    mov al, LEDS_STATE_ALL_OFF
     call leds_set_value
     ret
 

@@ -30,10 +30,13 @@ section .data
 
     ; Strings
     ASCII_EOL           equ 0x0A
+    ASCII_SPACE         equ 0x20
+    ASCII_MINUS         equ 0x2D
     STR_WELCOME_LINE_1  db "BOOTLOADER OK", 13, 0
     STR_GITHUB_LINK     db "GITHUB.COM/MONSTERMAX", 13, 0
     STR_WAITING_OS      db "WAITING FOR OS...", 13, 0
     STR_OS_FOUND        db "OS FOUND ON DEVICE #", 0
+    STR_DEVICES_COUNT   db " devices found", 13, 0
 
 
 
@@ -279,6 +282,13 @@ display_devices:
 
     mov bl, [DEVICE_TABLE_COUNT] ; nb de devices restantes à parcourir = nb de devices
 
+    mov al, [DEVICE_TABLE_COUNT]
+    add al, 48 ; conversion number en ASCII
+    call console_print_char ; affiche le nombre de device trouvées
+
+    lea cl, dl, [STR_DEVICES_COUNT]
+    call console_print_string ; affiche le message " devices found"
+
     lea cl, dl, [DEVICE_TABLE_START + 4] ; positionnement sur le 1er [name ptr low]
 
     DISPLAY_DEVICES_LOOP:
@@ -288,6 +298,12 @@ display_devices:
     ;lea cl, dl, [DEVICE_TABLE_START] ; positionnement sur [name ptr low]
     ;mov el, 4
     ;call add_cd_e
+
+    ; display "- "
+    mov al, ASCII_MINUS
+    call console_print_char
+    mov al, ASCII_SPACE
+    call console_print_char
 
     push cl
     push dl

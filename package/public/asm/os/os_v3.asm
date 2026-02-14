@@ -14,8 +14,8 @@ section .data
     keyboard_io_base     dw 0xF000 ; TODO: a remplacer par [keyboard_io_base] ; TODO: reproduire/copier/importer le code du bootloader pour initialiser les devices
     shell_command_ptr    db 0x00 ; position du pointer dans l'espace "shell_command_input"
 
-    STR_WELCOME_LINE_1   db "OS v3", 13, 0
-    STR_CONSOLE_PROMPT   db "root@react-machine test $ ", 0
+    STR_WELCOME_LINE_1   db "== OS v3 ==", 13, 13, 0
+    STR_CONSOLE_PROMPT   db "root@react-machine $ ", 0
     STR_RUN_COMMAND      db "running command...", 13, 0
 
 section .bss
