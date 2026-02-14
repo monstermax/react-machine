@@ -23,7 +23,7 @@ export class ScreenDevice extends IoDevice {
 
     width = 32;
     height = 32;
-    private pixels: boolean[][];
+    private pixels: Uint8Array[];
     private currentX: u8 = 0 as u8;
     private currentY: u8 = 0 as u8;
 
@@ -32,7 +32,7 @@ export class ScreenDevice extends IoDevice {
 
         this.width = params.width ?? this.width;
         this.height = params.height ?? this.height;
-        this.pixels = Array(this.height).fill(null).map(() => Array(this.width).fill(false))
+        this.pixels = Array(this.height).fill(null).map(() => new Uint8Array(this.width))
     }
 
 
@@ -69,7 +69,8 @@ export class ScreenDevice extends IoDevice {
 
             case 0x02: // PIXEL_COLOR - Écrire pixel à (currentX, currentY)
                 if (this.currentY < this.height && this.currentX < this.width) {
-                    const color = (value & 0x01) !== 0;
+                    //const color = (value & 0x01) !== 0;
+                    const color = value;
                     this.pixels[this.currentY][this.currentX] = color;
 
                     this.emit('state', { pixels: this.pixels})
@@ -79,16 +80,16 @@ export class ScreenDevice extends IoDevice {
     }
 
 
-    getPixel(x: number, y: number): boolean {
+    getPixel(x: number, y: number): u8 {
         if (y >= 0 && y < this.height && x >= 0 && x < this.width) {
-            return this.pixels[y][x];
+            return this.pixels[y][x] as u8;
         }
-        return false;
+        return 0 as u8;
     }
 
 
     clear() {
-        this.pixels = Array(this.height).fill(null).map(() => Array(this.width).fill(false));
+        this.pixels = Array(this.height).fill(null).map(() => new Uint8Array(this.width));
         this.emit('state', { pixels: this.pixels})
     }
 
@@ -117,7 +118,7 @@ export type ScreenProps = {
 export const Screen: React.FC<ScreenProps> = (props) => {
     const { deviceInstance, width = 32, height = 32 } = props;
 
-    const [pixels, setPixels] = useState<boolean[][]>([])
+    const [pixels, setPixels] = useState<u8[][]>([])
     const [currentX, setCurrentX] = useState<number>(0)
     const [currentY, setCurrentY] = useState<number>(0)
 
@@ -150,13 +151,13 @@ export const Screen: React.FC<ScreenProps> = (props) => {
     }, [deviceInstance]);
 
 
-    const getPixel = useCallback((x: number, y: number): boolean => {
-        if (pixels.length === 0) return false;
+    const getPixel = useCallback((x: number, y: number): u8 => {
+        if (pixels.length === 0) return 0 as u8;
 
         if (y >= 0 && y < height && x >= 0 && x < width) {
             return pixels[y][x];
         }
-        return false;
+        return 0 as u8;
     }, [pixels])
 
 
@@ -200,20 +201,21 @@ export const Screen: React.FC<ScreenProps> = (props) => {
                     }}>
                         {Array.from({ length: height }).map((_, y) =>
                             Array.from({ length: width }).map((_, x) => {
-                                const isPixelOn = getPixel(x, y);
+                                const pixelColor = getPixel(x, y);
                                 const isCursor = deviceInstance && (x === currentX) && (y === currentY);
 
                                 return (
                                     <div
                                         key={`${y}-${x}`}
-                                        className={`w-2 h-2 ${isPixelOn
-                                            ? 'bg-green-400'
+                                        className={`w-2 h-2 ${pixelColor
+                                            ? ''
                                             : isCursor
                                                 ? 'bg-red-500/50'
                                                 : 'bg-slate-900'
                                             }`}
                                         style={{
-                                            transition: 'background-color 0.1s'
+                                            transition: 'background-color 0.1s',
+                                            backgroundColor: pixelColor ? getPixelColor(pixelColor) : '',
                                         }}
                                     />
                                 );
@@ -224,5 +226,15 @@ export const Screen: React.FC<ScreenProps> = (props) => {
             </div>
         </>
     );
+}
+
+
+
+function getPixelColor(pixelColor: u8, x?: u8, y?: u8) {
+    let teinte = Math.round((pixelColor / 255) * 360);
+    let htmlColor = `hsl(${teinte},100%,50%)`;
+    return htmlColor;
+    //return `bg-[${htmlColor}]`;
+    //return 'bg-green-400';
 }
 

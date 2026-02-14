@@ -22,6 +22,7 @@ export class KeyboardDevice extends IoDevice {
     hasChar = false;
     isEnable = true;
     irqEnabled = false;
+    charQueue: u8[] = [];
 
 
     constructor(idx: u8, name: string, params: KeyboardDeviceParams) {
@@ -54,6 +55,8 @@ export class KeyboardDevice extends IoDevice {
                 if ((value & 0x01) === 0) {
                     this.hasChar = false;
                     this.emit('state', { hasChar: this.hasChar })
+
+                    this.handleCharCodeDequeue()
                 }
 
                 // Bit 1: enable/disable IRQ
@@ -84,12 +87,13 @@ export class KeyboardDevice extends IoDevice {
 
             if (charCode < 0x20 && charCode !== 13 && charCode !== 8) return;
 
-            this.handleCharCode(charCode);
+            this.handleCharCodeQueued(charCode as u8);
             event.preventDefault()
         };
 
         window.addEventListener('keydown', handleKeyDown);
     }
+
 
     reset() {
         this.lastChar = 0 as u8;
@@ -98,9 +102,20 @@ export class KeyboardDevice extends IoDevice {
         this.emit('state', { lastChar: this.lastChar, hasChar: this.hasChar })
     }
 
+
+    handleCharCodeQueued(charCode: u8) {
+        this.charQueue.push(charCode)
+        this.handleCharCodeDequeue()
+    }
+
+
     // Fonction pour simuler une touche (pour testing)
-    handleCharCode(charCode: number) {
+    handleCharCodeDequeue() {
+        if (this.hasChar) return; // un caractere est toujours en attente de traitement par le cpu
+        if (this.charQueue.length === 0) return; //queue vide
         //if (charCode > 127) return;
+
+        const charCode = this.charQueue.shift();
 
         this.lastChar = charCode as u8;
         this.hasChar = true;

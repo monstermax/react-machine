@@ -53,8 +53,8 @@ export const TestV3Component: React.FC = () => {
     const [computerPointer, setComputerPointer] = useState<number | null>(null);
 
     // clock
-    const clockFrequency = 200 as u32;
-    const speedFactor = 50 as u32;
+    const clockFrequency = 10 as u32; // frequence du tick (de clock)
+    const speedFactor = 100 as u32; // nombre de cycles executés à chaque tick de clock
     const [clock] = useState(() => new Clock(clockFrequency))
     const [cyclesPerSecond, setCyclesPerSecond] = useState(0);
     const [registers8, setRegisters8] = useState<Record<string, u8>>({});

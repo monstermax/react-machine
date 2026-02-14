@@ -15,6 +15,7 @@
 section .data
     ; Bootloader config
     BOOTLOADER_VERSION  equ 2
+    SKIP_PRINT_DEVICES  equ 0x01
     SKIP_PRINT_INFO     equ 0x00
     SKIP_PRINT_GITHUB   equ 0x00
     SKIP_PRINT_WAITING  equ 0x00
@@ -274,6 +275,11 @@ load_os_in_ram:
 
 
 display_devices:
+    mov al, SKIP_PRINT_DEVICES ; verifier si on skip ce print
+    cmp al, 1
+    je DISPLAY_DEVICES_END ; skip display_devices
+
+
     mov el, [DEVICE_TABLE_COUNT]
     cmp el, 0
     je DISPLAY_DEVICES_END ; aucune device presente

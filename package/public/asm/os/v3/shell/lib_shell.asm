@@ -7,8 +7,10 @@
 .include "os/v3/arithmetic/lib_math.asm"
 .include "os/v3/drivers/lib_leds.asm"
 .include "os/v3/drivers/lib_keyboard.asm"
+.include "os/v3/drivers/lib_screen.asm"
 .include "os/v3/strings/lib_ascii.asm"
 .include "os/v3/strings/lib_string.asm"
+;.include "os/v3/graphics/lib_sprites.asm" ; require un fix (du compilateur)
 
 
 section .data
@@ -24,7 +26,8 @@ section .data
     STR_COMMAND_LS_TEST   db "files list here...", 13, 0
 
     STR_COMMANDS_BEGIN    db 0
-    STR_COMMAND_SCREEN    db "screen", 0
+    STR_COMMAND_PIXELS    db "pixels", 0
+    STR_COMMAND_CLEAR     db "clear", 0
     STR_COMMAND_HELP      db "help", 0
     STR_COMMAND_HALT      db "halt", 0
     STR_COMMAND_LEDS      db "leds", 0
@@ -170,8 +173,9 @@ run_command:
     ;call console_print_string
 
     mov fl, [shell_command_ptr] ; recupere le pointeur de position de la chaine (pour connaitre la longueur de la chaine)
-    dec fl ; recupere la longueur de la chaine saisie
+    dec fl ; recupere la longueur de la chaine saisie (decremente pour retirer le EOL)
     push fl ; sauvegarde la longueur de la chaine saisie
+    jz RUN_COMMAND_END
 
     ; TODO: on a besoin de connaitre la longueur de chaque chaine a comparer (help, ls, ...) pour que strcmp_len soit coherent
 
@@ -210,21 +214,21 @@ run_command:
     AFTER_CHECK_COMMAND_LS:
 
 
-    ; HANDLE SCREEN
+    ; HANDLE PIXELS
 
     ; recupere un pointer vers la chaine de caractere de la commande à executer
     lea al, bl, [shell_command_input]
 
     ; recupere un pointer vers la chaine de caractere à comparer (parmi la liste des commandes connues)
-    lea cl, dl, [STR_COMMAND_SCREEN] ; (C,D) = [STR_COMMAND_SCREEN]
+    lea cl, dl, [STR_COMMAND_PIXELS] ; (C,D) = [STR_COMMAND_PIXELS]
 
     pop fl ; restaure la longueur de la chaine
     push fl ; sauvegarde la longueur de la chaine
     call strcmp_len
-    jne AFTER_CHECK_COMMAND_SCREEN
-    call run_command_screen
+    jne AFTER_CHECK_COMMAND_PIXELS
+    call run_command_pixels
     jmp RUN_COMMAND_END
-    AFTER_CHECK_COMMAND_SCREEN:
+    AFTER_CHECK_COMMAND_PIXELS:
 
 
     ; HANDLE LEDS
@@ -261,6 +265,23 @@ run_command:
     AFTER_CHECK_COMMAND_HALT:
 
 
+    ; HANDLE CLEAR
+
+    ; recupere un pointer vers la chaine de caractere de la commande à executer
+    lea al, bl, [shell_command_input]
+
+    ; recupere un pointer vers la chaine de caractere à comparer (parmi la liste des commandes connues)
+    lea cl, dl, [STR_COMMAND_CLEAR] ; (C,D) = [STR_COMMAND_CLEAR]
+
+    pop fl ; restaure la longueur de la chaine
+    push fl ; sauvegarde la longueur de la chaine
+    call strcmp_len
+    jne AFTER_CHECK_COMMAND_CLEAR
+    call run_command_clear
+    jmp RUN_COMMAND_END
+    AFTER_CHECK_COMMAND_CLEAR:
+
+
 
     COMMAND_NOT_FOUND:
     debug 9, 9
@@ -292,9 +313,17 @@ run_command_ls:
     ret
 
 
-run_command_screen:
+run_command_pixels:
     debug 9,3
-    ;hlt
+    call draw_plasma
+    ;call draw_xor_pattern
+    ;call draw_tunnel
+    ;call draw_diamond
+    ;call draw_fire_palette
+    ;call draw_checkerboard_gradient
+    ;call draw_rainbow_diagonal
+    ;call draw_spiral
+    ;call draw_mario_and_sonic ; not yet available
     ret
 
 
@@ -329,6 +358,12 @@ run_command_leds:
 
     COMMAND_LEDS_END:
     ;hlt
+    ret
+
+
+run_command_clear:
+    debug 9,6
+    call console_clear
     ret
 
 

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+
+cd `dirname $0`
+
+
+# Build for prod
+#npx asc index.ts -o ../build/release.wasm
+
+# Build for dev
+npx asc index.ts -o ../build/release.wasm --debug --sourceMap --exportRuntime
+

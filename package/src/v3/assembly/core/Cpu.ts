@@ -937,6 +937,31 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
             break;
 
 
+        case <u8>Opcode.SHL_REG_IMM:
+            action = (cpu: Cpu) => {
+                const regIdx = cpu.readMem8(cpu.registers.PC);
+                const regValue: u8 = cpu.getRegisterValueByIdx(regIdx);
+                const imm = cpu.readMem8(cpu.registers.PC + 1);
+                const aluResult = cpu.alu.shl(regValue, imm);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.setRegisterValueByIdx(regIdx, aluResult.result);
+                cpu.registers.PC += 3;
+            };
+            break;
+
+        case <u8>Opcode.SHR_REG_IMM:
+            action = (cpu: Cpu) => {
+                const regIdx = cpu.readMem8(cpu.registers.PC);
+                const regValue: u8 = cpu.getRegisterValueByIdx(regIdx);
+                const imm = cpu.readMem8(cpu.registers.PC + 1);
+                const aluResult = cpu.alu.shr(regValue, imm);
+                cpu.setFlags(aluResult.flags.zero, aluResult.flags.carry);
+                cpu.setRegisterValueByIdx(regIdx, aluResult.result);
+                cpu.registers.PC += 3;
+            };
+            break;
+
+
         // LEA_REG_REG_IMM: (regLow, regHigh) = imm16
         // Encoding: [opcode] [regLow] [regHigh] [imm16_low] [imm16_high]
         case <u8>Opcode.LEA_REG_REG_IMM:
@@ -972,8 +997,8 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
                 const destRegIdx = cpu.readMem8(cpu.registers.PC);
                 const regLowIdx = cpu.readMem8(cpu.registers.PC + 1);
                 const regHighIdx = cpu.readMem8(cpu.registers.PC + 2);
-                const high: u16 = cpu.getRegisterValueByIdx(regHighIdx) as u16;
-                const low: u16 = cpu.getRegisterValueByIdx(regLowIdx) as u16;
+                const low: u8 = cpu.getRegisterValueByIdx(regLowIdx);
+                const high: u8 = cpu.getRegisterValueByIdx(regHighIdx);
                 const address: u16 = ((high * 256) + low) as u16;
                 const value = cpu.readMemory(address);
                 cpu.setRegisterValueByIdx(destRegIdx, value);
@@ -988,8 +1013,8 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
                 const regLowIdx = cpu.readMem8(cpu.registers.PC);
                 const regHighIdx = cpu.readMem8(cpu.registers.PC + 1);
                 const srcRegIdx = cpu.readMem8(cpu.registers.PC + 2);
-                const high: u16 = cpu.getRegisterValueByIdx(regHighIdx) as u16;
-                const low: u16 = cpu.getRegisterValueByIdx(regLowIdx) as u16;
+                const low: u8 = cpu.getRegisterValueByIdx(regLowIdx);
+                const high: u8 = cpu.getRegisterValueByIdx(regHighIdx);
                 const address: u16 = ((high * 256) + low) as u16;
                 const value = cpu.getRegisterValueByIdx(srcRegIdx);
                 cpu.writeMemory(address, value);
@@ -1002,8 +1027,8 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
                 const regLowIdx = cpu.readMem8(cpu.registers.PC);
                 const regHighIdx = cpu.readMem8(cpu.registers.PC + 1);
                 const immValue = cpu.readMem8(cpu.registers.PC + 2);
-                const high: u16 = cpu.getRegisterValueByIdx(regHighIdx) as u16;
-                const low: u16 = cpu.getRegisterValueByIdx(regLowIdx) as u16;
+                const low: u8 = cpu.getRegisterValueByIdx(regLowIdx);
+                const high: u8 = cpu.getRegisterValueByIdx(regHighIdx);
                 const address: u16 = ((high * 256) + low) as u16;
                 cpu.writeMemory(address, immValue);
                 cpu.registers.PC += 4;
@@ -1191,7 +1216,7 @@ class ALU {
         let result = value;
         let carry = false;
 
-        for (let i = 0; i < count; i++) {
+        for (let i = 0 as u8; i < count; i++) {
             carry = !!(result & 0x80);  // MSB -> carry
             result = ((result << 1) & 0xFF) as u8;
         }
@@ -1205,7 +1230,7 @@ class ALU {
         let result = value;
         let carry = false;
 
-        for (let i = 0; i < count; i++) {
+        for (let i = 0 as u8; i < count; i++) {
             carry = !!(result & 0x01);  // LSB -> carry
             result = ((result >> 1) & 0xFF) as u8;
         }

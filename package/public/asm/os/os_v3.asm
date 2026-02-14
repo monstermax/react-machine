@@ -6,9 +6,6 @@
 
 .include "os/v3/drivers/lib_console.asm"
 .include "os/v3/shell/lib_shell.asm"
-;.include "os/v3/arithmetic/lib_math.asm"
-;.include "os/v3/strings/lib_ascii.asm"
-;.include "os/v3/strings/lib_string.asm"
 
 
 section .data
@@ -16,6 +13,8 @@ section .data
 
 
 section .text
+    global _start
+
 
 _start:
     mov dl, OS_VERSION ; set register D with the OS version => D = OS_VERSION
@@ -39,6 +38,9 @@ _start:
 
     ; init syscalls (declaration des callbacks de syscalls)
     call init_syscalls
+
+    ; init gestion des utilisateurs
+    call init_users
 
     ; run /sbin/init (then spawn a shell)
     call run_shell
@@ -72,6 +74,11 @@ init_interrupts:
 
 
 init_syscalls:
+    ; todo
+    ret
+
+
+init_users:
     ; todo
     ret
 
