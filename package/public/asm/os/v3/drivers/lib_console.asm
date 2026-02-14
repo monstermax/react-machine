@@ -4,6 +4,9 @@
 ; Description: Console Driver
 
 
+.include "os/v3/arithmetic/lib_math.asm"
+
+
 section .data
     console_io_base  dw 0xF010  ; TODO: reproduire/copier/importer le code du bootloader pour initialiser les devices
 

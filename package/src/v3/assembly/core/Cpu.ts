@@ -4,6 +4,11 @@ import { Computer } from "./Computer";
 import { toHex } from "../utils";
 
 
+
+@external("env", "jsCpuHalted")
+declare function jsCpuHalted(): void;
+
+
 export class CpuRegisters {
     A: u8 = 0;
     B: u8 = 0;
@@ -227,6 +232,7 @@ function fetchInstructionAction(opcode: u8): ((cpu: Cpu) => void) | null {
             action = (cpu: Cpu) => {
                 cpu.halted = true;
                 console.log(`CPU Halted`)
+                jsCpuHalted()
             };
             break;
 

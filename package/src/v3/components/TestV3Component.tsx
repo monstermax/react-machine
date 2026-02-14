@@ -70,6 +70,17 @@ export const TestV3Component: React.FC = () => {
     const [diskDevice, setDiskDevice] = useState<DiskDevice | null>(null)
     const [dmaDevice, setDmaDevice] = useState<DmaDevice | null>(null)
 
+    // state
+    const [devicesLoaded, setDevicesLoaded] = useState(false)
+    const [bootloaderLoaded, setBootloaderLoaded] = useState(false)
+
+
+    // Start computer on component mount
+    useEffect(() => {
+        if (!computerPointer || !devicesLoaded || !bootloaderLoaded) return;
+        startClock()
+
+    }, [computerPointer, devicesLoaded, bootloaderLoaded])
 
     useEffect(() => {
         const _initWasm = async () => {
@@ -116,6 +127,7 @@ export const TestV3Component: React.FC = () => {
                     },
                     jsIoRead,
                     jsIoWrite,
+                    jsCpuHalted,
                 },
             };
 
@@ -163,6 +175,7 @@ export const TestV3Component: React.FC = () => {
             addDevice('screen', 'output', '', '')
             addDevice('os_disk', 'storage', '', '')
             addDevice('dma', 'system', '', '')
+            setDevicesLoaded(true)
         }
 
         const timer = setTimeout(_loadDevices, 100);
@@ -233,6 +246,11 @@ export const TestV3Component: React.FC = () => {
         device.write(port, value);
 
         //console.log('jsIoWrite:', deviceIdx, port, value)
+    }
+
+
+    const jsCpuHalted = (): void => {
+        clock.stop();
     }
 
 
@@ -330,6 +348,8 @@ export const TestV3Component: React.FC = () => {
         //console.log('memory:', wasmExports.memory)
 
         wasmExports.computerloadCode(computerPointer, valPtr, values.length);
+
+        setBootloaderLoaded(true)
     }
 
 

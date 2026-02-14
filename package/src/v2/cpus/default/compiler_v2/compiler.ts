@@ -326,7 +326,8 @@ export class Compiler {
                 continue;
             }
 
-            console.warn(`unknown token type: ${token.type} (value = "${token.value}", line = ${token.line})`)
+            //console.warn(`unknown token type: ${token.type} (value = "${token.value}", line = ${token.line})`)
+            this.error(token, `unknown token type: ${token.type} (value = "${token.value}", line = ${token.line})`)
 
             this.advance();
         }

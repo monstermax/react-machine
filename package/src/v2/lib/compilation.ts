@@ -49,7 +49,16 @@ export async function compileCode(source: string, architecture: CPUArchitecture 
         caseSensitive: options.caseSensitive || false
     });
 
-    return await compiler.compile(resolvedSource);
+    const compiled = await compiler.compile(resolvedSource);
+
+    if (compiled.errors.length > 0) {
+        compiled.errors.forEach(error => {
+            console.warn(JSON.stringify(error));
+        })
+        throw new Error(`Compilation completed with errors`)
+    }
+
+    return compiled
 }
 
 

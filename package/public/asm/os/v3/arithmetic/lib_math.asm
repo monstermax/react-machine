@@ -1,16 +1,27 @@
 ; Author: yomax
-; Date: 2026-01
+; Date: 2026-02
 ; Name: lib_math
 ; Description: 8 bits Math Library
 
 
 section .text
+    global inc_ab
     global inc_cd
+    global dec_ab
     global dec_cd
     global add_ab_e
     global add_cd_e
     global sub_ab_e
     global sub_cd_e
+
+
+; Incrémente (A:B)
+inc_ab:
+    inc al
+    jnc INC_AB_END
+    inc bl
+    INC_AB_END:
+    ret
 
 
 ; Incrémente (C:D)
@@ -19,6 +30,15 @@ inc_cd:
     jnc INC_CD_END
     inc dl
     INC_CD_END:
+    ret
+
+
+; Décrémente (A:B)
+dec_ab:
+    dec al
+    jnc DEC_AB_END
+    dec bl
+    DEC_AB_END:
     ret
 
 
