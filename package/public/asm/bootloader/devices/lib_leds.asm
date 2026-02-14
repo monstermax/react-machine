@@ -20,9 +20,19 @@ section .data
 
 section .text
     global init_leds_device
+    global leds_get_value
     global leds_set_value
     global leds_set_all
     global leds_set_none
+
+
+
+; Retourne la valeur des LEDS dans A
+leds_get_value:
+    mov cl, [leds_io_base]
+    mov dl, [leds_io_base+1]
+    ldi al, cl, dl
+    ret
 
 
 ; Set LEDs value => INPUT : A = LEDs value

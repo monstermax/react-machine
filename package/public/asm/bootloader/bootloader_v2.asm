@@ -278,7 +278,7 @@ display_devices:
     cmp el, 0
     je DISPLAY_DEVICES_END ; aucune device presente
 
-    ; TODO: lister les devices (id + name) // commencer par verifier que le device console existe (pour la sortie)
+    ; TODO: verifier que le device console existe (pour la sortie). sinon quitter ou halt
 
     mov bl, [DEVICE_TABLE_COUNT] ; nb de devices restantes à parcourir = nb de devices
 

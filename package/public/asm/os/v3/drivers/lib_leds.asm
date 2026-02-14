@@ -1,10 +1,7 @@
 ; Author: yomax
-; Date: 2026-01
+; Date: 2026-02
 ; Name: lib_leds
 ; Description: LEDs Display Driver
-
-
-; DEPREACTED / EDIT ME => voir lib_leds du bootloader
 
 
 section .data
