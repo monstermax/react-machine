@@ -167,6 +167,7 @@ export const Playground: React.FC = () => {
 
     // ── Log ──
     const [activeTab, setActiveTab] = useState<'editor' | 'log'>('editor');
+    const [rightTab, setRightTab] = useState<'devices' | 'memory'>('devices');
     const [logs, setLogs] = useState<string[]>([]);
     const logEndRef = useRef<HTMLDivElement>(null);
 
@@ -730,52 +731,72 @@ export const Playground: React.FC = () => {
                     )}
                 </div>
 
-                {/* ══════ Right: Emulator (same layout as TestV3Component) ══════ */}
-                <div className="flex-1 flex flex-col overflow-y-auto">
+                {/* ══════ Right: Emulator ══════ */}
+                <div className="flex-1 flex flex-col overflow-hidden">
 
-                    {/* Devices row */}
-                    <div className="flex gap-4 p-4 flex-wrap">
-
-                        {/* Console */}
-                        <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
-                            <Console deviceInstance={consoleDevice} />
-                        </div>
-
-                        {/* Screen */}
-                        <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
-                            <Screen deviceInstance={screenDevice} />
-                        </div>
-
-                        {/* LEDs + Keyboard */}
-                        <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14] flex flex-col gap-4">
-                            <div className="border border-zinc-800/50 rounded p-2">
-                                <Leds deviceInstance={ledsDevice} />
-                            </div>
-                            <div className="border border-zinc-800/50 rounded p-2">
-                                <Keyboard deviceInstance={keyboardDevice} />
-                            </div>
-                        </div>
-
-                        {/* CPU State (registers) */}
-                        <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14] flex flex-col gap-4">
-                            <Registers registers8={registers8} registers16={registers16} />
-                        </div>
-
-                        {/* Disk */}
-                        <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
-                            <Disk deviceInstance={diskDevice} />
-                        </div>
+                    {/* Right panel tabs */}
+                    <div className="flex border-b border-zinc-800/50 bg-[#0c0c13] shrink-0">
+                        <button onClick={() => setRightTab('devices')}
+                            className={`px-4 py-2 text-[11px] tracking-wider uppercase transition-colors cursor-pointer ${
+                                rightTab === 'devices' ? 'text-zinc-200 border-b-2 border-emerald-500' : 'text-zinc-500 hover:text-zinc-400'
+                            }`}>
+                            Devices
+                        </button>
+                        <button onClick={() => setRightTab('memory')}
+                            className={`px-4 py-2 text-[11px] tracking-wider uppercase transition-colors cursor-pointer ${
+                                rightTab === 'memory' ? 'text-zinc-200 border-b-2 border-emerald-500' : 'text-zinc-500 hover:text-zinc-400'
+                            }`}>
+                            Memory
+                        </button>
                     </div>
 
-                    {/* Memory Explorer */}
-                    <div className="px-4 pb-4">
-                        <MemoryExplorer
-                            memory={memory}
-                            offset={0x00}
-                            bytesPerLine={16}
-                            linesPerPage={16}
-                        />
-                    </div>
+                    {rightTab === 'devices' ? (
+                        <div className="flex-1 overflow-y-auto">
+                            {/* Devices */}
+                            <div className="flex gap-4 p-4 flex-wrap">
+
+                                {/* Console */}
+                                <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
+                                    <Console deviceInstance={consoleDevice} />
+                                </div>
+
+                                {/* Screen */}
+                                <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
+                                    <Screen deviceInstance={screenDevice} />
+                                </div>
+
+                                {/* LEDs + Keyboard */}
+                                <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14] flex flex-col gap-4">
+                                    <div className="border border-zinc-800/50 rounded p-2">
+                                        <Leds deviceInstance={ledsDevice} />
+                                    </div>
+                                    <div className="border border-zinc-800/50 rounded p-2">
+                                        <Keyboard deviceInstance={keyboardDevice} />
+                                    </div>
+                                </div>
+
+                                {/* CPU State (registers) */}
+                                <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14] flex flex-col gap-4">
+                                    <Registers registers8={registers8} registers16={registers16} />
+                                </div>
+
+                                {/* Disk */}
+                                <div className="border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
+                                    <Disk deviceInstance={diskDevice} />
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex-1 overflow-y-auto p-4">
+                            <MemoryExplorer
+                                memory={memory}
+                                offset={0x00}
+                                bytesPerLine={16}
+                                linesPerPage={16}
+                                open={true}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
@@ -817,4 +838,3 @@ const Registers: React.FC<RegistersProps> = (props) => {
         </>
     );
 };
-

@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { IoDevice } from "./IoDevice";
 
@@ -27,7 +27,8 @@ export class KeyboardDevice extends IoDevice {
 
     constructor(idx: u8, name: string, params: KeyboardDeviceParams) {
         super(idx, name, params);
-        this.start()
+        // Keyboard listening is handled by the React component (div focus),
+        // not by a global window listener.
     }
 
     read(port: u8): u8 {
@@ -65,33 +66,28 @@ export class KeyboardDevice extends IoDevice {
         }
     }
 
-    start() {
+    start(target: HTMLElement | Window = window) {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (!this.isEnable) return;
-
-            // Ignorer les touches spéciales (Ctrl, Alt, etc.)
-            //if (event.ctrlKey || event.altKey || event.metaKey) return;
-
-            // Ignorer si la touche ne produit pas de caractère
-            //if (event.key?.length !== 1) return;
 
             const charCode = event.key.length === 1
                 ? event.key.charCodeAt(0)
                 : event.keyCode;
 
-            // Limiter aux caractères ASCII valides (0-127)
-            //if (charCode > 127) return;
-            if (event.key === 'F5') return; // F5
-
-            //console.log(`⌨️  Key pressed: '${event.key}' (ASCII: ${charCode})`);
-
+            if (event.key === 'F5') return;
             if (charCode < 0x20 && charCode !== 13 && charCode !== 8) return;
 
             this.handleCharCodeQueued(charCode as u8);
-            event.preventDefault()
+            event.preventDefault();
+            event.stopPropagation();
         };
 
-        window.addEventListener('keydown', handleKeyDown);
+        target.addEventListener('keydown', handleKeyDown as EventListener);
+
+        // Return cleanup function
+        return () => {
+            target.removeEventListener('keydown', handleKeyDown as EventListener);
+        };
     }
 
 
@@ -140,14 +136,14 @@ export const Keyboard: React.FC<KeyboardProps> = (props) => {
 
     const [lastChar, setLastChar] = useState<u8>(0 as u8)
     const [hasChar, setHasChar] = useState<boolean>(true)
+    const [isFocused, setIsFocused] = useState(false)
+    const containerRef = useRef<HTMLDivElement>(null)
 
 
     useEffect(() => {
         if (!deviceInstance) return;
 
         deviceInstance.on('state', (state) => {
-            //console.log('Keyboard state update', state)
-
             if (state.lastChar !== undefined) {
                 setLastChar(state.lastChar)
             }
@@ -157,6 +153,15 @@ export const Keyboard: React.FC<KeyboardProps> = (props) => {
             }
         })
 
+    }, [deviceInstance])
+
+
+    // Attach keyboard listener to the container div
+    useEffect(() => {
+        if (!deviceInstance || !containerRef.current) return;
+
+        const cleanup = deviceInstance.start(containerRef.current);
+        return cleanup;
     }, [deviceInstance])
 
 
@@ -171,7 +176,17 @@ export const Keyboard: React.FC<KeyboardProps> = (props) => {
         <>
             <h2>Keyboard</h2>
 
-            <div className="grid grid-cols-2 gap-4 p-3 bg-slate-900/50 rounded">
+            <div
+                ref={containerRef}
+                tabIndex={0}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                className={`grid grid-cols-2 gap-4 p-3 bg-slate-900/50 rounded outline-none cursor-pointer transition-all ${
+                    isFocused
+                        ? 'ring-2 ring-green-500/50'
+                        : 'ring-1 ring-transparent hover:ring-slate-600/50'
+                }`}
+            >
                 <div>
                     <div className="text-xs text-slate-400 mb-1">Last Char:</div>
                     <div className="text-2xl font-mono text-green-400">
@@ -195,7 +210,10 @@ export const Keyboard: React.FC<KeyboardProps> = (props) => {
                                 }`}
                         />
                         <span className="text-sm text-slate-300">
-                            {hasChar ? 'Char Available' : 'Waiting'}
+                            {isFocused
+                                ? (hasChar ? 'Char Available' : 'Listening...')
+                                : 'Click to focus'
+                            }
                         </span>
                     </div>
                 </div>
@@ -203,4 +221,3 @@ export const Keyboard: React.FC<KeyboardProps> = (props) => {
         </>
     );
 }
-
