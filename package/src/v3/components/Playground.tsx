@@ -501,6 +501,8 @@ export const Playground: React.FC = () => {
         const controlAfter = readControlRegisters(wasmExports, computerPointer);
         const dataAfter = readDataRegisters(wasmExports, computerPointer);
         console.log('AFTER', controlAfter, dataAfter);
+
+        dumpRegisters()
     };
 
 
