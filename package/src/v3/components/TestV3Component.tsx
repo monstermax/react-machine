@@ -594,7 +594,7 @@ const Registers: React.FC<RegistersProps> = (props) => {
             <div className="flex flex-col gap-1">
                 {Object.entries(registers16).map(([name, value]) => (
                     <div key={name}>
-                        {name}: {toHex(Number(value))}
+                        {name}: {toHex(Number(value))} ({Number(value)})
                     </div>
                 ))}
             </div>
@@ -602,7 +602,7 @@ const Registers: React.FC<RegistersProps> = (props) => {
             <div className="flex flex-col gap-1">
                 {Object.entries(registers8).map(([name, value]) => (
                     <div key={name}>
-                        {name}: {toHex(value)}
+                        {name}: {toHex(value)} ({Number(value)})
                     </div>
                 ))}
             </div>
