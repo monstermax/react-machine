@@ -202,6 +202,7 @@ const instructions: InstructionDef[] = [
     {
         mnemonic: 'DEC', opcode: 0x00, operands: 'NONE', size: 1, variants: [
             { operands: 'REG', opcode: Opcode.DEC_REG, size: 2, condition: (ops) => true, mnemonic: 'DEC_REG' },
+            { operands: 'MEM', opcode: Opcode.DEC_MEM, size: 3, condition: (ops) => true, mnemonic: 'DEC_MEM' },
         ]
     },
 

@@ -63,7 +63,7 @@ console_print_string:
     ret
 
 
-; Affiche une string depuis un buffer mémoire
+; Affiche une string depuis un buffer mémoire (string max length = 256)
 ; Input: C:D = adresse du buffer, B = taille
 console_print_sized_string:
     DEQUEUE:

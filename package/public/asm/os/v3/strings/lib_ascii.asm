@@ -6,7 +6,9 @@
 
 section .data
     ASCII_NUL equ 0x00
-    ASCII_EOL equ 0x0A
+    ASCII_LF equ 0x0A
+    ASCII_CR equ 0x0D
+    ASCII_BACKSPACE equ 0x08
     ASCII_RET equ 0x0D
     ASCII_ESCAPE equ 0x1B
     ASCII_SPACE equ 0x20

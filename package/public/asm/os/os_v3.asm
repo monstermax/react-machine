@@ -6,21 +6,24 @@
 
 .include "os/v3/drivers/lib_console.asm"
 .include "os/v3/arithmetic/lib_math.asm"
+.include "os/v3/strings/lib_ascii.asm"
 
 
 section .data
-    OS_VERSION           equ 3
+    OS_VERSION            equ 3
 
-    keyboard_io_base     dw 0xF000 ; TODO: a remplacer par [keyboard_io_base] ; TODO: reproduire/copier/importer le code du bootloader pour initialiser les devices
-    shell_command_ptr    db 0x00 ; position du pointer dans l'espace "shell_command_input"
+    keyboard_io_base      dw 0xF000 ; TODO: a remplacer par [keyboard_io_base] ; TODO: reproduire/copier/importer le code du bootloader pour initialiser les devices
+    shell_command_ptr     db 0x00 ; position du pointer dans l'espace "shell_command_input"
 
-    STR_WELCOME_LINE_1   db "== OS v3 ==", 13, 13, 0
-    STR_CONSOLE_PROMPT   db "root@react-machine $ ", 0
-    STR_RUN_COMMAND      db "running command...", 13, 0
+    STR_WELCOME_LINE_1    db "== OS v3 ==", 13, 13, 0
+    STR_CONSOLE_PROMPT    db "root@react-machine $ ", 0
+    STR_RUN_COMMAND       db "running command...", 13, 0
+
+    ;SHELL_COMMAND_MAX_LEN equ 128 ; cf shell_command_input
+    SHELL_COMMAND_MAX_LEN equ 4 ; DEBUG
 
 section .bss
-    ;shell_command_input  resb 128 ; 128 bits pour stocker la commande en cours
-    shell_command_input  resb 8 ; DEBUG
+    shell_command_input  resb 128 ; 128 bits pour stocker la commande en cours
 
 
 section .text
@@ -89,7 +92,10 @@ run_shell:
     lea cl, dl, [STR_WELCOME_LINE_1]
     call console_print_string
 
-    ; run_shell_print_prompt:
+    run_shell_prompt:
+    mov [shell_command_ptr], 0x00 ; reinitialise le pointeur de position (de la chaine de caractere de la commande tapée)
+
+    ; Affiche le prompt:
     lea cl, dl, [STR_CONSOLE_PROMPT]
     call console_print_string
 
@@ -123,16 +129,36 @@ run_shell:
     mov el, [shell_command_ptr]
     call add_cd_e
     sti cl, dl, al
-    debug 1, al
-    debug 1, cl
-    debug 1, dl
-    inc [shell_command_ptr] ; incremente le pointer de position
+
+    ; Incremente le pointer de position
+    inc [shell_command_ptr]
+
+    mov fl, [shell_command_ptr] ; longueur de la chaine en cours
+
+debug 1, fl ; TODO: fix bugs
+; - reparer touche entrée quand nombre max de caracteres saisis
+; - empecher d'effacer le prompt
+
+    cmp fl, 0
+    je AFTER_BACKSPACE_CHECK ; Si chaine vide, on ne verifie pas la touche backspace
+
+;    ; Si touche backspace
+    cmp, al, ASCII_BACKSPACE
+    jne AFTER_BACKSPACE_CHECK
+    dec [shell_command_ptr]
+    dec [shell_command_ptr]
+    AFTER_BACKSPACE_CHECK:
+
+    ; Detection si longueur maximal (de la chaine) atteinte
+    ;mov fl, [shell_command_ptr]
+    cmp fl, SHELL_COMMAND_MAX_LEN
+    jg run_shell_readline
 
     ; Affiche le caractere sur la console
     call console_print_char
 
     ; Si touche Entrée, on execute la commande complete
-    cmp al, 13
+    cmp al, ASCII_CR
     je run_shell_run_command
 
     ; sinon on retourne écouter le prochain caractere clavier
@@ -141,9 +167,10 @@ run_shell:
 
     ; Execute la commande tapée
     run_shell_run_command:
+
     ; Affiche un message pour indiquer l'execution de la commande
-    lea cl, dl, [STR_RUN_COMMAND]
-    call console_print_string
+    ; lea cl, dl, [STR_RUN_COMMAND]
+    ; call console_print_string
 
     mov bl, [shell_command_ptr] ; definit la longueur de la chaine à afficher
     lea cl, dl, [shell_command_input]
@@ -156,7 +183,18 @@ run_shell:
     ; 2. si primitive => jump & direct exec
     ;    sinon parser fullpath de la command et/ou chercher dans le PATH
 
-    hlt
+    call run_command
+
+    jmp run_shell_prompt ; retour au prompt
+    ret
 
 
-    add fl, 1 ; bug here
+run_command:
+    ; recupere un pointer vers la chaine de caractere de la commande à executer
+    lea cl, dl, [STR_RUN_COMMAND] ; (C,D) = [STR_RUN_COMMAND]
+    mov bl, [shell_command_ptr] ; definit la longueur de la chaine
+
+    ; todo
+
+    ;hlt
+    ret

@@ -29,7 +29,7 @@ section .data
     STACK_END    equ 0xEFFF
 
     ; Strings
-    ASCII_EOL           equ 0x0A
+    ASCII_LF            equ 0x0A
     ASCII_SPACE         equ 0x20
     ASCII_MINUS         equ 0x2D
     STR_WELCOME_LINE_1  db "BOOTLOADER OK", 13, 0
@@ -105,7 +105,7 @@ intro:
     call print_github ; call PRINT_GITHUB
     CALL_PRINT_GITHUB_END:
 
-    mov al, 13 ; ASCII EOL
+    mov al, ASCII_LF
     call console_print_char
 
     ; print waiting for os
@@ -318,7 +318,7 @@ display_devices:
 
     call console_print_string
 
-    mov al, ASCII_EOL
+    mov al, ASCII_LF
     call console_print_char
 
     pop dl
@@ -365,7 +365,7 @@ print_run:
     call console_print_char
 
     ; 3. print EOL
-    mov al, ASCII_EOL
+    mov al, ASCII_LF
     call console_print_char
 
     ret ; end of PRINT_RUN
