@@ -21,7 +21,7 @@ section .data
     shell_command_ptr     db 0x00 ; position du pointer dans l'espace "shell_command_input"
 
     STR_WELCOME_LINE_1    db "== OS v3 ==", 13, 13, 0
-    STR_CONSOLE_PROMPT    db "root@react-machine $ ", 0
+    STR_CONSOLE_PROMPT    db "root@playground $ ", 0
     STR_RUN_COMMAND       db "running command...", 13, 0
     STR_COMMAND_NOT_FOUND db "command not found", 13, 0
     STR_COMMAND_HELP_TEST db "Commands:", 13, " - help : this message", 13, " - halt : halt the computer", 13, " - leds : toggle leds", 13, " - ls : list files", 13, " - pixels : screen demo", 13, " - sprites : screen demo", 13, " - custom : run custom code", 13, 0

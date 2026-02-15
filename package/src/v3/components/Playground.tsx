@@ -1,6 +1,7 @@
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { Editor, type PrismEditor } from "prism-react-editor";
+import { Link } from "wouter";
 
 import "prism-react-editor/prism/languages/nasm";
 import "prism-react-editor/languages/asm";
@@ -163,18 +164,64 @@ export const Playground: React.FC<{ autoStart?: boolean }> = (props) => {
     const [bootloaderLoaded, setBootloaderLoaded] = useState(false);
 
     // ── Editor ──
-    const [editorContent, setEditorContent] = useState(DEFAULT_CODE);
+    const editorRef = useRef<PrismEditor>(null);
+    const [initialContent, setInitialContent] = useState(DEFAULT_CODE);
+    const [editorContent, setEditorContent] = useState(initialContent);
     const [loadAddress, setLoadAddress] = useState(defaultLoadAddress);
     const [editorError, setEditorError] = useState<string | null>(null);
     const [editorStatus, setEditorStatus] = useState<string | null>(null);
 
     // ── Log ──
     const [activeTab, setActiveTab] = useState<'editor' | 'log'>('editor');
-    const [rightTab, setRightTab] = useState<'devices' | 'memory' | 'docs'>('devices');
+    const [rightTab, setRightTab] = useState<'devices' | 'memory' | 'sources' | 'docs'>('devices');
     const [logs, setLogs] = useState<string[]>([]);
     const logEndRef = useRef<HTMLDivElement>(null);
 
     const [clockStatus, setClockStatus] = useState(false);
+    const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+
+
+    useEffect(() => {
+        const setupKeydownEvent = (event: KeyboardEvent) => {
+            if (event.key == "Tab") {
+                event.preventDefault();
+            }
+        }
+
+        const setupKeyupEvent = (event: KeyboardEvent) => {
+            if (event.key == "Tab") {
+                const active = event.target as HTMLElement
+
+                if (active && active.matches(".pce-textarea")) {
+                    event.preventDefault();
+
+                    // todo: 
+                    // - si selection : indenter la selection
+                    // - si pas de selection : indenter la ligne courante
+
+                    const selection = editorRef.current?.getSelection()
+                    const activeLine = editorRef.current?.activeLine;
+                    //console.log({ selection, activeLine })
+
+                    if (selection) {
+                        const parts = [
+                            editorContent.slice(0, selection[0]),
+                            editorContent.slice(selection[0], selection[1]).replace(/\n/g, '\n\t'),
+                            editorContent.slice(selection[1]),
+                        ];
+
+                        //console.log({parts})
+                        //setInitialContent(parts.join('')); // DO NOT WORK
+                    }
+
+                    return;
+                }
+            }
+        }
+
+        window.addEventListener("keyup", setupKeyupEvent)
+        window.addEventListener("keydown", setupKeydownEvent)
+    }, []);
 
 
     // ═══════════════════════════════════════════
@@ -330,6 +377,18 @@ export const Playground: React.FC<{ autoStart?: boolean }> = (props) => {
         const timer = setTimeout(_initClock, 100);
         return () => clearTimeout(timer);
     }, [computerPointer]);
+
+
+    const handleOpenFile = async () => {
+        setIsFileModalOpen(true)
+    }
+
+
+    const openFile = async (filePath: string) => {
+        const response = await fetch(`/asm/${filePath}`);
+        const value = await response.text();
+        setInitialContent(value)
+    }
 
 
     // ═══════════════════════════════════════════
@@ -634,10 +693,12 @@ export const Playground: React.FC<{ autoStart?: boolean }> = (props) => {
             {/* ── Header ── */}
             <header className="flex items-center justify-between px-5 py-0 border-b border-zinc-800/80 bg-[#0d0d14] shrink-0">
                 <div className="flex items-center gap-3">
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-                    <span className="text-sm font-semibold tracking-wider text-zinc-300 uppercase">
-                        8-bit Playground
-                    </span>
+                    <Link to="/" className="flex gap-2 items-center">
+                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                        <span className="text-sm font-semibold tracking-wider text-zinc-300 uppercase">
+                            8-bit Playground
+                        </span>
+                    </Link>
                     <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 tracking-wider">v3</span>
                 </div>
 
@@ -687,10 +748,18 @@ export const Playground: React.FC<{ autoStart?: boolean }> = (props) => {
 
                     {/* Editor Toolbar */}
                     <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-800/50 bg-[#0c0c13] shrink-0">
+                        <button
+                            onClick={() => handleOpenFile()}
+                            className="cursor-pointer px-3 bg-indigo-600 hover:bg-indigo-500 rounded"
+                        >
+                            Open File
+                        </button>
+
                         <button onClick={handleCompileAndLoad}
-                            className="px-3.5 py-1.5 text-xs font-medium rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors cursor-pointer">
+                            className="ms-auto px-3.5 py-1.5 text-xs font-medium rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors cursor-pointer">
                             Compile & Load
                         </button>
+
                         <div className="flex items-center gap-1.5">
                             <label className="text-[10px] text-zinc-500 uppercase tracking-wider">@</label>
                             <input
@@ -731,11 +800,15 @@ export const Playground: React.FC<{ autoStart?: boolean }> = (props) => {
                     {/* Editor / Log content */}
                     <div className={`flex-1 overflow-auto ${activeTab === 'editor' ? "" : "hidden"}`}>
                         <Editor
+                            ref={editorRef}
                             className="h-full"
                             language="nasm"
-                            value={DEFAULT_CODE}
+                            value={initialContent}
                             onUpdate={handleEditorUpdate}
-                        />
+                            tabSize={4}
+                            insertSpaces={true}
+                        >
+                        </Editor>
                     </div>
 
                     <div className={`flex-1 overflow-y-auto p-4 bg-[#08080d] text-[11px] leading-5 ${activeTab === 'log' ? "" : "hidden"}`}>
@@ -767,6 +840,12 @@ export const Playground: React.FC<{ autoStart?: boolean }> = (props) => {
                             Memory
                         </button>
 
+                        <button onClick={() => setRightTab('sources')}
+                            className={`px-4 py-2 text-[11px] tracking-wider uppercase transition-colors cursor-pointer ${rightTab === 'sources' ? 'text-zinc-200 border-b-2 border-emerald-500' : 'text-zinc-500 hover:text-zinc-400'
+                                }`}>
+                            Sources
+                        </button>
+
                         <button onClick={() => setRightTab('docs')}
                             className={`px-4 py-2 text-[11px] tracking-wider uppercase transition-colors cursor-pointer ${rightTab === 'docs' ? 'text-zinc-200 border-b-2 border-emerald-500' : 'text-zinc-500 hover:text-zinc-400'
                                 }`}>
@@ -775,7 +854,7 @@ export const Playground: React.FC<{ autoStart?: boolean }> = (props) => {
 
 
                         {/* ── Toolbar ── */}
-                        <div className="ms-auto flex items-center gap-2 px-5 py-2 border-b border-zinc-800/60 bg-[#0b0b12] shrink-0 flex-wrap">
+                        <div className="ms-auto flex items-center gap-2 px-5 py-2 border-b border-zinc-800/60 bg-[#0b0b12] shrink-0 flex-wrap min-h-14">
                             {rightTab === 'memory' && (
                                 <>
                                     <button onClick={() => dumpRam()}
@@ -793,7 +872,7 @@ export const Playground: React.FC<{ autoStart?: boolean }> = (props) => {
                             {rightTab === 'devices' && (
                                 <>
                                     <button onClick={() => dumpRegisters()}
-                                        className="px-3 py-1.5 text-xs rounded bg-orange-700 hover:bg-orange-600 disabled:bg-zinc-700 text-zinc-200 transition-colors cursor-pointer">
+                                        className="px-3 py-1 text-xs rounded bg-orange-700 hover:bg-orange-600 disabled:bg-zinc-700 text-zinc-200 transition-colors cursor-pointer">
                                         Dump CPU State
                                     </button>
                                 </>
@@ -854,7 +933,11 @@ export const Playground: React.FC<{ autoStart?: boolean }> = (props) => {
                         />
                     </div>
 
-                    <div className={`flex-1 overflow-y-auto p-5 text-sm leading-relaxed text-zinc-300 max-w-3xl ${rightTab === 'docs' ? "" : "hidden"}`}>
+                    <div className={`flex-1 overflow-y-auto p-4 text-sm leading-relaxed text-zinc-300 ${rightTab === 'sources' ? "" : "hidden"}`}>
+                        TODO: files explorer
+                    </div>
+
+                    <div className={`flex-1 overflow-y-auto p-4 text-sm leading-relaxed text-zinc-300 ${rightTab === 'docs' ? "" : "hidden"}`}>
 
                         {/* ── Intro ── */}
                         <h2 className="text-lg font-semibold text-zinc-100 mb-3 mt-0">Introduction</h2>
@@ -1047,9 +1130,17 @@ sti cl, dl, 13       ; CR = newline
 ret`
                         }</pre>
 
-                    </div>
+                    </div> {/* .docs */}
+
                 </div>
             </div>
+
+
+            <FileModal
+                isOpen={isFileModalOpen}
+                onClose={() => setIsFileModalOpen(false)}
+                onSelectFile={openFile}
+            />
         </div>
     );
 };
@@ -1089,3 +1180,160 @@ const Registers: React.FC<RegistersProps> = (props) => {
         </>
     );
 };
+
+
+
+interface FileModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSelectFile: (filePath: string) => void;
+}
+
+interface FileIndex {
+    generated: string;
+    count: number;
+    files: string[];
+}
+
+
+export const FileModal: React.FC<FileModalProps> = ({
+    isOpen,
+    onClose,
+    onSelectFile
+}) => {
+    const [files, setFiles] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [search, setSearch] = useState('');
+
+    useEffect(() => {
+        if (isOpen) {
+            loadFileList();
+            setSearch('');
+        }
+    }, [isOpen]);
+
+    const loadFileList = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('/asm-files.json');
+            const fileIndex: FileIndex = await response.json();
+            setFiles(fileIndex.files);
+        } catch (error) {
+            console.error('Failed to load file list:', error);
+            setFiles([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    const handleFileClick = (filePath: string) => {
+        onSelectFile(filePath);
+        onClose();
+    };
+
+    const filtered = search
+        ? files.filter(f => f.toLowerCase().includes(search.toLowerCase()))
+        : files;
+
+    // Group files by directory
+    const grouped = filtered.reduce<Record<string, string[]>>((acc, file) => {
+        const parts = file.split('/');
+        const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '.';
+        if (!acc[dir]) acc[dir] = [];
+        acc[dir].push(file);
+        return acc;
+    }, {});
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            onClick={onClose}
+        >
+            <div
+                className="bg-[#111119] border border-zinc-700/50 rounded-xl w-[480px] max-h-[70vh] overflow-hidden flex flex-col shadow-2xl shadow-black/50"
+                onClick={e => e.stopPropagation()}
+                style={{ fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace" }}
+            >
+                {/* Header */}
+                <div className="flex justify-between items-center px-5 py-4 border-b border-zinc-800/60">
+                    <div className="flex items-center gap-2.5">
+                        <span className="text-indigo-400 text-sm">&#9776;</span>
+                        <h2 className="text-sm font-semibold text-zinc-200 tracking-wide">Open File</h2>
+                        {!loading && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
+                                {filtered.length} file{filtered.length !== 1 ? 's' : ''}
+                            </span>
+                        )}
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="text-zinc-500 hover:text-zinc-300 transition-colors text-lg leading-none px-1 cursor-pointer"
+                    >
+                        &#x2715;
+                    </button>
+                </div>
+
+                {/* Search */}
+                <div className="px-4 py-3 border-b border-zinc-800/40">
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Search files..."
+                        autoFocus
+                        className="w-full px-3 py-2 text-xs bg-[#0a0a10] border border-zinc-700/40 rounded-lg text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500/50 transition-colors"
+                    />
+                </div>
+
+                {/* File list */}
+                <div className="flex-1 overflow-y-auto px-2 py-2 min-h-0">
+                    {loading ? (
+                        <div className="text-center py-8 text-zinc-500 text-xs">Loading files...</div>
+                    ) : filtered.length === 0 ? (
+                        <div className="text-center py-8 text-zinc-500 text-xs">
+                            {search ? 'No matching files' : 'No files found'}
+                        </div>
+                    ) : (
+                        Object.entries(grouped).map(([dir, dirFiles]) => (
+                            <div key={dir} className="mb-2">
+                                <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
+                                    {dir}
+                                </div>
+                                {dirFiles.map((file, index) => {
+                                    const fileName = file.split('/').pop() || file;
+                                    return (
+                                        <button
+                                            key={index}
+                                            onClick={() => handleFileClick(file)}
+                                            className="w-full text-left px-3 py-2 text-xs rounded-lg cursor-pointer transition-colors text-zinc-300 hover:bg-indigo-500/10 hover:text-indigo-300 flex items-center gap-2 group"
+                                        >
+                                            <span className="text-zinc-600 group-hover:text-indigo-400/60 text-[10px] shrink-0">
+                                                &#x25B8;
+                                            </span>
+                                            <span className="truncate">{fileName}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div className="flex justify-end px-4 py-3 border-t border-zinc-800/50">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-1.5 text-xs rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 transition-colors cursor-pointer"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+

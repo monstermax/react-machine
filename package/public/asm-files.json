@@ -1,0 +1,28 @@
+{
+  "generated": "2026-02-15T01:56:05.753Z",
+  "count": 22,
+  "files": [
+    "os/os_v3.asm",
+    "os/v3/shell/lib_shell.asm",
+    "os/v3/graphics/demo_sprites_pack2.asm",
+    "os/v3/graphics/demo_sprite_youtube.asm",
+    "os/v3/graphics/lib_sprites.asm",
+    "os/v3/graphics/demo_sprites_pack1.asm",
+    "os/v3/strings/lib_string.asm",
+    "os/v3/strings/lib_ascii.asm",
+    "os/v3/arithmetic/lib_math.asm",
+    "os/v3/drivers/lib_keyboard.asm",
+    "os/v3/drivers/lib_screen.asm",
+    "os/v3/drivers/lib_console.asm",
+    "os/v3/drivers/lib_leds.asm",
+    "bootloader/lib_string.asm",
+    "bootloader/bootloader_v2.asm",
+    "bootloader/devices/lib_os_disk.asm",
+    "bootloader/devices/lib_screen.asm",
+    "bootloader/devices/lib_console.asm",
+    "bootloader/devices/lib_dma.asm",
+    "bootloader/devices/lib_leds.asm",
+    "bootloader/lib_devices.asm",
+    "bootloader/lib_math.asm"
+  ]
+}
