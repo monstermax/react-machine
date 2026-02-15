@@ -75,27 +75,27 @@ _start:
     ; Example: XOR fractal on screen
     mov el, 0
 
-.loop_y:
-    cmp el, 32
-    je .done
-    mov fl, 0
+    .loop_y:
+        cmp el, 32
+        je .done
+        mov fl, 0
 
-.loop_x:
-    cmp fl, 32
-    je .next_y
-    mov al, fl
-    xor al, el
-    shl al, 3
-    call screen_set_pixel
-    inc fl
-    jmp .loop_x
+    .loop_x:
+        cmp fl, 32
+        je .next_y
+        mov al, fl
+        xor al, el
+        shl al, 3
+        call screen_set_pixel
+        inc fl
+        jmp .loop_x
 
-.next_y:
-    inc el
-    jmp .loop_y
+    .next_y:
+        inc el
+        jmp .loop_y
 
-.done:
-    ret
+    .done:
+        ret
 
 
 ; --- Screen Utility: screen_set_pixel ---
@@ -160,7 +160,7 @@ export const Playground: React.FC = () => {
     const [bootloaderLoaded, setBootloaderLoaded] = useState(false);
 
     // ── Editor ──
-    const [code, setCode] = useState(DEFAULT_CODE);
+    const [editorContent, setEditorContent] = useState(DEFAULT_CODE);
     const [loadAddress, setLoadAddress] = useState('0xA000');
     const [editorError, setEditorError] = useState<string | null>(null);
     const [editorStatus, setEditorStatus] = useState<string | null>(null);
@@ -170,6 +170,8 @@ export const Playground: React.FC = () => {
     const [rightTab, setRightTab] = useState<'devices' | 'memory'>('devices');
     const [logs, setLogs] = useState<string[]>([]);
     const logEndRef = useRef<HTMLDivElement>(null);
+
+    const [clockStatus, setClockStatus] = useState(false);
 
 
     // ═══════════════════════════════════════════
@@ -208,6 +210,8 @@ export const Playground: React.FC = () => {
                     memory: new WebAssembly.Memory({ initial: 256 }),
                     abort: (ptr: number) => {
                         clock.stop();
+                        setClockStatus(false)
+                        setCyclesPerSecond(0)
                         const message = readWasmStringUtf16(ptr);
                         console.error("[WASM ERROR]", message);
                         addLog(`WASM ABORT: ${message}`);
@@ -345,6 +349,8 @@ export const Playground: React.FC = () => {
 
     const jsCpuHalted = (): void => {
         clock.stop();
+        setClockStatus(false)
+        setCyclesPerSecond(0)
         addLog('CPU halted');
     };
 
@@ -485,8 +491,17 @@ export const Playground: React.FC = () => {
     //  Clock controls (same as TestV3Component)
     // ═══════════════════════════════════════════
 
-    const startClock = () => clock.start();
-    const stopClock = () => clock.stop();
+    const startClock = () => {
+        clock.start();
+        setClockStatus(true)
+    }
+
+    const stopClock = () => {
+        clock.stop();
+        setClockStatus(false)
+        setCyclesPerSecond(0)
+    }
+
 
     const runCycle = () => {
         if (!wasmRef.current || computerPointer === null) return;
@@ -573,7 +588,7 @@ export const Playground: React.FC = () => {
         try {
             addLog(`Compiling user code... (target @ ${toHex(addr, 4)})`);
 
-            const compiled = await compileCode(code, CUSTOM_CPU, { startAddress: addr });
+            const compiled = await compileCode(editorContent, CUSTOM_CPU, { startAddress: addr });
 
             if (compiled.errors.length > 0) {
                 const errMsg = compiled.errors.map(e => `Line ${e.line}: ${e.message}`).join('\n');
@@ -592,7 +607,7 @@ export const Playground: React.FC = () => {
             const msg = `Loaded ${bytecode.size} bytes @ ${toHex(addr, 4)}`;
             setEditorStatus(msg);
             addLog(msg);
-            addLog(`Type "exec" in the shell to run your code (call ${toHex(addr, 4)})`);
+            addLog(`Type "custom" in the shell to run your code (call ${toHex(addr, 4)})`);
 
         } catch (e: any) {
             setEditorError(e.message || 'Compilation error');
@@ -601,7 +616,7 @@ export const Playground: React.FC = () => {
     };
 
     const handleEditorUpdate = (value: string, editor: PrismEditor) => {
-        setCode(value);
+        setEditorContent(value);
     };
 
 
@@ -614,7 +629,7 @@ export const Playground: React.FC = () => {
             style={{ fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', monospace" }}>
 
             {/* ── Header ── */}
-            <header className="flex items-center justify-between px-5 py-3 border-b border-zinc-800/80 bg-[#0d0d14] shrink-0">
+            <header className="flex items-center justify-between px-5 py-0 border-b border-zinc-800/80 bg-[#0d0d14] shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
                     <span className="text-sm font-semibold tracking-wider text-zinc-300 uppercase">
@@ -622,42 +637,44 @@ export const Playground: React.FC = () => {
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 tracking-wider">v3</span>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-zinc-500">
-                    Speed: {Math.round(10 * cyclesPerSecond) / 10}/sec.
+
+                {/* ── Toolbar ── */}
+                <div className="flex items-center gap-2 px-5 py-2 border-b border-zinc-800/60 bg-[#0b0b12] shrink-0 flex-wrap">
+                    {/* Emulator controls */}
+                    <button
+                        disabled={clockStatus}
+                        onClick={() => runCycle()}
+                        className="px-3 py-1.5 text-xs rounded bg-blue-700 hover:bg-blue-600 disabled:bg-zinc-700 text-zinc-200 transition-colors cursor-pointer"
+                        >
+                        Step
+                    </button>
+                    <button
+                        disabled={clockStatus}
+                        onClick={() => startClock()}
+                        className="px-3 py-1.5 text-xs rounded bg-emerald-700 hover:bg-emerald-600 disabled:bg-zinc-700 text-white transition-colors cursor-pointer"
+                        >
+                        Start
+                    </button>
+                    <button
+                        disabled={!clockStatus}
+                        onClick={() => stopClock()}
+                        className="px-3 py-1.5 text-xs rounded bg-red-800/80 hover:bg-red-700 disabled:bg-zinc-700 text-zinc-200 transition-colors cursor-pointer"
+                        >
+                        Stop
+                    </button>
+                </div>
+
+                <div className="flex items-center gap-4 text-xs text-zinc-500 min-w-48 justify-end">
+                    <div>Speed: </div>
+                    {!clockStatus && (
+                        <div>Stopped</div>
+                    )}
+                    {clockStatus && (
+                        <div>{Math.round(10 * cyclesPerSecond) / 10}/sec.</div>
+                    )}
                 </div>
             </header>
 
-            {/* ── Toolbar ── */}
-            <div className="flex items-center gap-2 px-5 py-2 border-b border-zinc-800/60 bg-[#0b0b12] shrink-0 flex-wrap">
-                {/* Emulator controls */}
-                <button onClick={() => runCycle()}
-                    className="px-3 py-1.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-200 transition-colors cursor-pointer">
-                    Run Cycle
-                </button>
-                <button onClick={() => startClock()}
-                    className="px-3 py-1.5 text-xs rounded bg-emerald-700 hover:bg-emerald-600 text-white transition-colors cursor-pointer">
-                    Start
-                </button>
-                <button onClick={() => stopClock()}
-                    className="px-3 py-1.5 text-xs rounded bg-red-800/80 hover:bg-red-700 text-zinc-200 transition-colors cursor-pointer">
-                    Stop
-                </button>
-
-                <div className="w-px h-5 bg-zinc-800 mx-1" />
-
-                <button onClick={() => dumpMemory()}
-                    className="px-3 py-1.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-200 transition-colors cursor-pointer">
-                    Dump Wasm Memory
-                </button>
-                <button onClick={() => dumpRam()}
-                    className="px-3 py-1.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-200 transition-colors cursor-pointer">
-                    Dump RAM
-                </button>
-                <button onClick={() => dumpRegisters()}
-                    className="px-3 py-1.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-200 transition-colors cursor-pointer">
-                    Dump Registers
-                </button>
-            </div>
 
             {/* ── Main Content ── */}
             <div className="flex-1 flex overflow-hidden">
@@ -716,7 +733,7 @@ export const Playground: React.FC = () => {
                             <Editor
                                 className="h-full"
                                 language="nasm"
-                                value={code}
+                                value={DEFAULT_CODE}
                                 onUpdate={handleEditorUpdate}
                             />
                         </div>
@@ -751,6 +768,33 @@ export const Playground: React.FC = () => {
                             }`}>
                             Memory
                         </button>
+
+
+                        {/* ── Toolbar ── */}
+                        <div className="ms-auto flex items-center gap-2 px-5 py-2 border-b border-zinc-800/60 bg-[#0b0b12] shrink-0 flex-wrap">
+                            {rightTab === 'memory' && (
+                                <>
+                                    <button onClick={() => dumpRam()}
+                                        className="px-3 py-1.5 text-xs rounded bg-orange-700 hover:bg-orange-600 disabled:bg-zinc-700 text-zinc-200 transition-colors cursor-pointer">
+                                        Dump RAM
+                                    </button>
+
+                                    <button onClick={() => dumpMemory()}
+                                        className="px-3 py-1.5 text-xs rounded bg-orange-700 hover:bg-orange-600 disabled:bg-zinc-700 text-zinc-200 transition-colors cursor-pointer">
+                                        Dump Wasm Memory
+                                    </button>
+                                </>
+                            )}
+
+                            {rightTab === 'devices' && (
+                                <>
+                                    <button onClick={() => dumpRegisters()}
+                                        className="px-3 py-1.5 text-xs rounded bg-orange-700 hover:bg-orange-600 disabled:bg-zinc-700 text-zinc-200 transition-colors cursor-pointer">
+                                        Dump CPU State
+                                    </button>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     {rightTab === 'devices' ? (
@@ -784,8 +828,10 @@ export const Playground: React.FC = () => {
                                 </div>
 
                                 {/* CPU State */}
-                                <div className="flex-1 border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
-                                    <Registers registers8={registers8} registers16={registers16} />
+                                <div className="flex-1 ">
+                                    <div className="flex flex-col gap-3 grow-0 border border-zinc-800/50 rounded-lg p-2 bg-[#0c0c14]">
+                                        <Registers registers8={registers8} registers16={registers16} />
+                                    </div>
                                 </div>
 
                                 {/* Disk ── */}
@@ -837,7 +883,7 @@ const Registers: React.FC<RegistersProps> = (props) => {
                 ))}
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="grid grid-cols-2">
                 {Object.entries(registers8).map(([name, value]) => (
                     <div key={name}>
                         {name}: {toHex(value)} ({Number(value)})

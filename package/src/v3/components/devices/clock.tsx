@@ -13,7 +13,7 @@ export class Clock extends EventEmitter {
         this.frequency = frequency;
     }
 
-    start() {
+    start(): void {
         if (this.timer) return;
 
         this.timer = setInterval(this.tick.bind(this), 1000 / this.frequency)
@@ -21,7 +21,7 @@ export class Clock extends EventEmitter {
         console.log('clock started')
     }
 
-    stop() {
+    stop(): void {
         if (!this.timer) return;
         clearInterval(this.timer)
         this.timer = null;
@@ -29,7 +29,11 @@ export class Clock extends EventEmitter {
         console.log('clock stopped')
     }
 
-    setFrequency(frequency: u32) {
+    status(): boolean {
+        return this.timer !== null;
+    }
+
+    setFrequency(frequency: u32): void {
         this.frequency = frequency;
 
         if (this.timer) {
@@ -39,7 +43,7 @@ export class Clock extends EventEmitter {
         }
     }
 
-    private tick() {
+    private tick(): void {
         this.emit('tick');
         //console.log('clock tick')
     }

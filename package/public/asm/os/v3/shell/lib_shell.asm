@@ -366,7 +366,7 @@ run_command_pixels:
 
 run_command_sprite:
     debug 9, 4
-    ;call draw_mario
+    call draw_mario
     ;call draw_mario_and_sonic ; Sonic est un peu foiré
     ;call draw_pacman
     ;call draw_ghost
@@ -375,7 +375,7 @@ run_command_sprite:
     ;call draw_mushroom
     ;call draw_creeper
     ;call draw_arcade_scene
-    call draw_youtube_logo
+    ;call draw_youtube_logo
     ret
 
 
