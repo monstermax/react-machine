@@ -10,3 +10,7 @@ cd `dirname $0`
 # Build for dev
 npx asc index.ts -o ../build/release.wasm -t ../build/release.wat --debug --sourceMap --exportRuntime
 
+wasm2c ../build/release.wasm -o ../build/release.wasm.c
+
+gcc -S -O2 -masm=intel ../build/release.wasm.c -o ../build/release.wasm.c.gcc.s
+clang -S -O2 -masm=intel ../build/release.wasm.c -o ../build/release.wasm.c.clang.s
