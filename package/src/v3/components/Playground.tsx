@@ -840,11 +840,13 @@ export const Playground: React.FC<{ autoStart?: boolean }> = (props) => {
                             Memory
                         </button>
 
+                        {/*
                         <button onClick={() => setRightTab('sources')}
                             className={`px-4 py-2 text-[11px] tracking-wider uppercase transition-colors cursor-pointer ${rightTab === 'sources' ? 'text-zinc-200 border-b-2 border-emerald-500' : 'text-zinc-500 hover:text-zinc-400'
                                 }`}>
                             Sources
                         </button>
+                        */}
 
                         <button onClick={() => setRightTab('docs')}
                             className={`px-4 py-2 text-[11px] tracking-wider uppercase transition-colors cursor-pointer ${rightTab === 'docs' ? 'text-zinc-200 border-b-2 border-emerald-500' : 'text-zinc-500 hover:text-zinc-400'
