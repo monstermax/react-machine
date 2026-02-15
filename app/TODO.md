@@ -19,3 +19,4 @@
 
 - webworkers ?
 
+- jeux: pong, arkanoid, snake, tetris, sokoban, pacman
